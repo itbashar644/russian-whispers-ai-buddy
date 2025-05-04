@@ -1,30 +1,29 @@
 
 import { DeliveryMethod } from "../types/product";
-import { Truck, Package, Home } from "lucide-react";
 
 export const deliveryMethods: DeliveryMethod[] = [
   {
     id: "standard",
-    name: "Стандартная доставка",
-    description: "Доставка в течение 3-5 рабочих дней",
+    name: "Обычная доставка",
+    description: "Доставка в течение 10-20 дней",
     price: 300,
-    estimatedDays: "3-5 дней",
+    estimatedDays: "10-20 дней",
     icon: "truck"
   },
   {
     id: "express",
-    name: "Экспресс-доставка",
-    description: "Доставка в течение 1-2 рабочих дней",
-    price: 500,
-    estimatedDays: "1-2 дня",
+    name: "Ускоренная доставка",
+    description: "Доставка в течение 5-7 дней",
+    price: 800,
+    estimatedDays: "5-7 дней",
     icon: "package"
   },
   {
     id: "pickup",
-    name: "Самовывоз",
-    description: "Забрать заказ из магазина",
+    name: "Самовывоз из пункта выдачи",
+    description: "Бесплатно при заказе от 2000 ₽",
     price: 0,
-    estimatedDays: "В тот же день",
-    icon: "home"
+    estimatedDays: "10-15 дней",
+    icon: "map-pin"
   }
 ];

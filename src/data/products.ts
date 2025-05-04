@@ -4,89 +4,146 @@ import { Product } from "../types/product";
 export const products: Product[] = [
   {
     id: "1",
-    title: "Изолят Dymatize ISO 100",
-    description: "Изолят сывороточного протеина премиум-класса. Содержит 25 г белка и 5,5 г BCAA в каждой порции. Быстрое усвоение, минимум жиров и углеводов.",
-    price: 4990,
-    discountPrice: 4490,
-    category: "protein",
+    title: "Минималистичная настольная лампа",
+    description: "Элегантная настольная лампа в минималистичном стиле с регулируемой яркостью. Идеально подходит для рабочего стола или прикроватной тумбочки.",
+    price: 2990,
+    discountPrice: 2490,
+    category: "lighting",
     imageUrl: "/placeholder.svg",
     rating: 4.8,
     inStock: true,
-    flavors: [
-      "Шоколад",
-      "Ваниль",
-      "Клубника",
-      "Печенье-крем",
-      "Карамель"
+    colors: [
+      "Белый",
+      "Чёрный",
+      "Бежевый"
     ],
-    sizes: ["907 г", "2,27 кг", "3,63 кг"],
-    weight: "2,27 кг",
-    isBestseller: true
+    material: "Металл, пластик",
+    isBestseller: true,
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Мощность", value: "8 Вт" },
+      { name: "Регулировка яркости", value: "Да" },
+      { name: "Высота", value: "38 см" }
+    ]
   },
   {
     id: "2",
-    title: "Креатин Dymatize Creatine Monohydrate",
-    description: "Микронизированный креатина моногидрат для увеличения силы и выносливости. 5 г чистого креатина в каждой порции.",
-    price: 1990,
-    category: "creatine",
+    title: "Органайзер для косметики",
+    description: "Прозрачный акриловый органайзер с несколькими отделениями для хранения косметики и аксессуаров.",
+    price: 1490,
+    category: "organization",
     imageUrl: "/placeholder.svg",
     rating: 4.7,
     inStock: true,
-    sizes: ["300 г", "500 г"],
-    weight: "300 г"
+    colors: ["Прозрачный"],
+    material: "Акрил",
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Размеры", value: "25×15×10 см" },
+      { name: "Количество отделений", value: "8" }
+    ]
   },
   {
     id: "3",
-    title: "Гейнер Dymatize Super Mass Gainer",
-    description: "Высококалорийный гейнер для набора массы. Содержит 1280 калорий, 52 г белка и 252 г углеводов в порции.",
-    price: 3490,
-    category: "gainer",
+    title: "Декоративная ваза в скандинавском стиле",
+    description: "Керамическая ваза нейтральных тонов для цветов или как самостоятельный элемент декора.",
+    price: 1990,
+    discountPrice: 1690,
+    category: "decor",
     imageUrl: "/placeholder.svg",
     rating: 4.5,
     inStock: true,
-    flavors: ["Шоколад", "Ваниль", "Печенье-крем"],
-    sizes: ["2,7 кг", "5,4 кг"],
-    weight: "2,7 кг"
+    colors: ["Белый", "Бежевый", "Серый"],
+    material: "Керамика",
+    countryOfOrigin: "Китай"
   },
   {
     id: "4",
-    title: "BCAA Dymatize BCAA Complex 5050",
-    description: "Комплекс аминокислот с разветвлённой цепью (BCAA) в соотношении 2:1:1 (лейцин, изолейцин, валин).",
-    price: 1790,
-    category: "bcaa",
+    title: "Хлопковое постельное белье",
+    description: "Комплект постельного белья из 100% хлопка с геометрическим принтом. В комплекте: пододеяльник, простыня и две наволочки.",
+    price: 3490,
+    category: "textiles",
     imageUrl: "/placeholder.svg",
     rating: 4.6,
     inStock: true,
-    flavors: ["Яблоко", "Апельсин", "Малина"],
-    sizes: ["300 г", "500 г"],
-    weight: "300 г",
-    isNew: true
+    colors: ["Светло-серый", "Голубой", "Розовый"],
+    sizes: ["Односпальный", "Полуторный", "Двуспальный"],
+    material: "100% хлопок",
+    isNew: true,
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Плотность", value: "120 г/м²" },
+      { name: "Тип ткани", value: "Сатин" }
+    ]
   },
   {
     id: "5",
-    title: "Предтренировочный комплекс Dymatize Pre W.O.",
-    description: "Мощная предтренировочная формула для максимальной энергии, концентрации и пампинга во время тренировок.",
-    price: 2490,
-    discountPrice: 2290,
-    category: "pre-workout",
+    title: "Умный ночник с датчиком движения",
+    description: "Беспроводной ночник с датчиком движения и регулировкой яркости. Работает от аккумулятора, который можно заряжать через USB.",
+    price: 1290,
+    category: "lighting",
     imageUrl: "/placeholder.svg",
-    rating: 4.7,
+    rating: 4.4,
     inStock: true,
-    flavors: ["Арбуз", "Виноград", "Лимонад"],
-    sizes: ["300 г", "400 г"],
-    weight: "300 г"
+    colors: ["Белый"],
+    material: "ABS пластик",
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Время работы", value: "До 8 часов" },
+      { name: "Способ крепления", value: "Магнитная основа, клейкая лента" }
+    ]
   },
   {
     id: "6",
-    title: "Витаминный комплекс Dymatize Athletic Multi",
-    description: "Полный комплекс витаминов и минералов, разработанный специально для спортсменов.",
-    price: 1290,
-    category: "vitamins",
+    title: "Настенное зеркало в металлической раме",
+    description: "Круглое зеркало в тонкой металлической раме. Подходит для ванной комнаты или прихожей.",
+    price: 2790,
+    category: "decor",
+    imageUrl: "/placeholder.svg",
+    rating: 4.7,
+    inStock: true,
+    colors: ["Чёрный", "Золотой"],
+    material: "Металл, стекло",
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Диаметр", value: "60 см" },
+      { name: "Толщина рамы", value: "1,5 см" }
+    ]
+  },
+  {
+    id: "7",
+    title: "Деревянная разделочная доска",
+    description: "Разделочная доска из массива акации с ручкой и бороздками для стока жидкости.",
+    price: 1890,
+    category: "kitchen",
     imageUrl: "/placeholder.svg",
     rating: 4.5,
     inStock: true,
-    sizes: ["60 таб.", "120 таб."],
-    weight: "120 таб."
+    material: "Массив акации",
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Размеры", value: "40×25×2 см" },
+      { name: "Уход", value: "Ручная мойка, обработка маслом" }
+    ]
+  },
+  {
+    id: "8",
+    title: "Набор керамических горшков для растений",
+    description: "Комплект из 3 керамических горшков разных размеров с подставками. Минималистичный дизайн подойдет для любого интерьера.",
+    price: 1990,
+    discountPrice: 1790,
+    category: "decor",
+    imageUrl: "/placeholder.svg",
+    rating: 4.8,
+    inStock: true,
+    colors: ["Белый", "Терракотовый"],
+    material: "Керамика",
+    isBestseller: true,
+    countryOfOrigin: "Китай",
+    specifications: [
+      { name: "Размеры", value: "10 см, 12 см, 15 см (диаметр)" },
+      { name: "Дренажные отверстия", value: "Есть" }
+    ]
   }
 ];
 

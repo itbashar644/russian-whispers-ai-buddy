@@ -17,7 +17,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addItem({
       product,
       quantity: 1,
-      flavor: product.flavors ? product.flavors[0] : undefined,
+      color: product.colors ? product.colors[0] : undefined,
       size: product.sizes ? product.sizes[0] : undefined,
     });
   };
@@ -69,6 +69,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {product.rating}
             </span>
           </div>
+          <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">

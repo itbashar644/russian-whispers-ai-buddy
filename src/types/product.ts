@@ -9,17 +9,22 @@ export interface Product {
   imageUrl: string;
   rating: number;
   inStock: boolean;
-  flavors?: string[];
+  colors?: string[];
   sizes?: string[];
-  weight?: string;
+  material?: string;
   isNew?: boolean;
   isBestseller?: boolean;
+  countryOfOrigin: string;
+  specifications?: {
+    name: string;
+    value: string;
+  }[];
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
-  flavor?: string;
+  color?: string;
   size?: string;
 }
 

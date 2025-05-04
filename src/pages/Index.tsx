@@ -21,23 +21,23 @@ const Index = () => {
             <div className="grid gap-6 lg:grid-cols-2 items-center">
               <div className="space-y-4">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
-                  Спортивное питание<br />для достижения ваших целей
+                  The X Shop:<br />Товары из Китая для вашего дома
                 </h1>
                 <p className="text-lg text-muted-foreground md:text-xl">
-                  Высококачественные добавки для профессионалов и любителей.
+                  Минималистичный дизайн, высокое качество, доступные цены.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button size="lg" asChild>
                     <Link to="/catalog">Смотреть каталог</Link>
                   </Button>
                   <Button variant="outline" size="lg" asChild>
-                    <Link to="/catalog?category=protein">Популярные протеины</Link>
+                    <Link to="/catalog?category=decor">Декор для дома</Link>
                   </Button>
                 </div>
               </div>
               <div className="rounded-lg overflow-hidden">
                 <img
-                  alt="Sport Nutrition"
+                  alt="The X Shop"
                   className="aspect-[4/3] object-cover w-full"
                   src="/placeholder.svg"
                 />
@@ -52,10 +52,10 @@ const Index = () => {
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { name: "Протеин", image: "/placeholder.svg", link: "/catalog?category=protein" },
-                { name: "Креатин", image: "/placeholder.svg", link: "/catalog?category=creatine" },
-                { name: "БЦАА", image: "/placeholder.svg", link: "/catalog?category=bcaa" },
-                { name: "Витамины", image: "/placeholder.svg", link: "/catalog?category=vitamins" }
+                { name: "Освещение", image: "/placeholder.svg", link: "/catalog?category=lighting" },
+                { name: "Декор", image: "/placeholder.svg", link: "/catalog?category=decor" },
+                { name: "Кухня", image: "/placeholder.svg", link: "/catalog?category=kitchen" },
+                { name: "Текстиль", image: "/placeholder.svg", link: "/catalog?category=textiles" }
               ].map((category) => (
                 <Link
                   key={category.name}
@@ -109,16 +109,16 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Качество",
-                  description: "Только проверенные бренды и сертифицированная продукция"
+                  title: "Прямые поставки",
+                  description: "Мы работаем напрямую с производителями из Китая, минуя посредников"
                 },
                 {
-                  title: "Доставка",
-                  description: "Быстрая доставка по всей России с разными вариантами"
+                  title: "Контроль качества",
+                  description: "Каждый товар проходит проверку перед отправкой клиенту"
                 },
                 {
-                  title: "Поддержка",
-                  description: "Профессиональная консультация по подбору спортивного питания"
+                  title: "Гарантия",
+                  description: "Мы предоставляем гарантию на все товары и возможность возврата"
                 }
               ].map((benefit) => (
                 <div key={benefit.title} className="text-center">
