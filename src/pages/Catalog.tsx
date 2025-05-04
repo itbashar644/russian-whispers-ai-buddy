@@ -17,6 +17,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box } from "lucide-react";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,12 +86,15 @@ const Catalog = () => {
   }, [categoryParam, priceRange, searchTerm, inStockOnly, sortBy]);
 
   const categories = [
-    { id: "protein", name: "Протеин" },
-    { id: "creatine", name: "Креатин" },
-    { id: "bcaa", name: "БЦАА" },
-    { id: "vitamins", name: "Витамины" },
-    { id: "pre-workout", name: "Предтренировочные" },
-    { id: "gainer", name: "Гейнеры" }
+    { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
+    { id: "projectors", name: "Проекторы", icon: <Projector className="h-4 w-4 mr-2" /> },
+    { id: "smartwatches", name: "Смарт-часы", icon: <Smartphone className="h-4 w-4 mr-2" /> },
+    { id: "headphones", name: "Наушники", icon: <Headphones className="h-4 w-4 mr-2" /> },
+    { id: "home", name: "Для Дома", icon: <Home className="h-4 w-4 mr-2" /> },
+    { id: "seasonal", name: "Сезонные товары", icon: <Calendar className="h-4 w-4 mr-2" /> },
+    { id: "cameras", name: "Фотоаппараты моментальной печати", icon: <Camera className="h-4 w-4 mr-2" /> },
+    { id: "kids", name: "Товары для детей", icon: <Baby className="h-4 w-4 mr-2" /> },
+    { id: "misc", name: "1000 мелочей", icon: <Box className="h-4 w-4 mr-2" /> },
   ];
 
   const handleCategoryClick = (categoryId: string | null) => {
@@ -133,10 +137,11 @@ const Catalog = () => {
                   <Button
                     key={category.id}
                     variant={categoryParam === category.id ? "default" : "outline"}
-                    className="w-full justify-start"
+                    className="w-full justify-start flex items-center"
                     onClick={() => handleCategoryClick(category.id)}
                   >
-                    {category.name}
+                    {category.icon}
+                    <span>{category.name}</span>
                   </Button>
                 ))}
               </div>

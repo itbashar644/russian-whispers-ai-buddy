@@ -5,6 +5,7 @@ import { getBestsellers, getNewProducts } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Tablet, Projector, Smartphone, Headphones } from "lucide-react";
 
 const Index = () => {
   const bestsellers = getBestsellers();
@@ -31,7 +32,7 @@ const Index = () => {
                     <Link to="/catalog">Смотреть каталог</Link>
                   </Button>
                   <Button variant="outline" size="lg" asChild>
-                    <Link to="/catalog?category=decor">Декор для дома</Link>
+                    <Link to="/catalog?category=home">Для дома</Link>
                   </Button>
                 </div>
               </div>
@@ -52,10 +53,10 @@ const Index = () => {
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { name: "Освещение", image: "/placeholder.svg", link: "/catalog?category=lighting" },
-                { name: "Декор", image: "/placeholder.svg", link: "/catalog?category=decor" },
-                { name: "Кухня", image: "/placeholder.svg", link: "/catalog?category=kitchen" },
-                { name: "Текстиль", image: "/placeholder.svg", link: "/catalog?category=textiles" }
+                { name: "Планшеты", image: "/placeholder.svg", link: "/catalog?category=tablets", icon: <Tablet className="h-8 w-8 mb-2" /> },
+                { name: "Проекторы", image: "/placeholder.svg", link: "/catalog?category=projectors", icon: <Projector className="h-8 w-8 mb-2" /> },
+                { name: "Смарт-часы", image: "/placeholder.svg", link: "/catalog?category=smartwatches", icon: <Smartphone className="h-8 w-8 mb-2" /> },
+                { name: "Наушники", image: "/placeholder.svg", link: "/catalog?category=headphones", icon: <Headphones className="h-8 w-8 mb-2" /> }
               ].map((category) => (
                 <Link
                   key={category.name}
@@ -67,7 +68,8 @@ const Index = () => {
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     src={category.image}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/40">
+                    {category.icon}
                     <h3 className="text-xl font-bold text-white">{category.name}</h3>
                   </div>
                 </Link>
