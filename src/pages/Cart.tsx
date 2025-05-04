@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -122,9 +121,9 @@ const Cart = () => {
                                   {item.product.title}
                                 </Link>
                               </h3>
-                              {(item.flavor || item.size) && (
+                              {(item.color || item.size) && (
                                 <p className="text-sm text-muted-foreground">
-                                  {item.flavor && `Вкус: ${item.flavor}`}{" "}
+                                  {item.color && `Цвет: ${item.color}`}{" "}
                                   {item.size && `Размер: ${item.size}`}
                                 </p>
                               )}

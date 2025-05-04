@@ -17,8 +17,8 @@ const ProductDetail = () => {
   const relatedProducts = id ? getRelatedProducts(id, 4) : [];
   const { addItem } = useCart();
   
-  const [selectedFlavor, setSelectedFlavor] = useState<string | undefined>(
-    product?.flavors ? product.flavors[0] : undefined
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+    product?.colors ? product.colors[0] : undefined
   );
   const [selectedSize, setSelectedSize] = useState<string | undefined>(
     product?.sizes ? product.sizes[0] : undefined
@@ -51,7 +51,7 @@ const ProductDetail = () => {
     addItem({
       product,
       quantity,
-      flavor: selectedFlavor,
+      color: selectedColor,
       size: selectedSize,
     });
   };
@@ -124,26 +124,26 @@ const ProductDetail = () => {
             </div>
 
             <div className="space-y-4">
-              {product.flavors && product.flavors.length > 0 && (
+              {product.colors && product.colors.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-2">Вкус</h3>
+                  <h3 className="font-medium mb-2">Цвет</h3>
                   <RadioGroup 
-                    value={selectedFlavor} 
-                    onValueChange={setSelectedFlavor}
+                    value={selectedColor} 
+                    onValueChange={setSelectedColor}
                     className="flex flex-wrap gap-2"
                   >
-                    {product.flavors.map((flavor) => (
-                      <div key={flavor} className="flex items-center">
+                    {product.colors.map((color) => (
+                      <div key={color} className="flex items-center">
                         <RadioGroupItem 
-                          value={flavor} 
-                          id={`flavor-${flavor}`} 
+                          value={color} 
+                          id={`color-${color}`} 
                           className="peer sr-only" 
                         />
                         <Label 
-                          htmlFor={`flavor-${flavor}`}
+                          htmlFor={`color-${color}`}
                           className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                         >
-                          {flavor}
+                          {color}
                         </Label>
                       </div>
                     ))}

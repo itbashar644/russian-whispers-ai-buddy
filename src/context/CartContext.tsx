@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
@@ -76,7 +75,7 @@ export function CartProvider({ children }: CartProviderProps) {
       const existingItemIndex = prevItems.findIndex(
         (i) => 
           i.product.id === item.product.id && 
-          i.flavor === item.flavor && 
+          i.color === item.color && 
           i.size === item.size
       );
 
