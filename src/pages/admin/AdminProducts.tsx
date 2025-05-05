@@ -1,0 +1,541 @@
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/components/ui/use-toast";
+import { Plus, Pencil, Trash, Search } from "lucide-react";
+import { products } from "@/data/products";
+import { Product } from "@/types/product";
+
+const AdminProducts = () => {
+  const [productsList, setProductsList] = useState<Product[]>(products);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+
+  // Для формы добавления/редактирования товара
+  const [formData, setFormData] = useState<Partial<Product>>({
+    title: "",
+    description: "",
+    price: 0,
+    category: "",
+    imageUrl: "/placeholder.svg",
+    rating: 5,
+    inStock: true,
+    countryOfOrigin: "Китай",
+  });
+
+  // Получаем уникальные категории
+  const categories = Array.from(new Set(productsList.map((p) => p.category)));
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === "price" || name === "discountPrice" || name === "rating"
+        ? parseFloat(value)
+        : value,
+    });
+  };
+
+  const handleCheckboxChange = (checked: boolean, name: string) => {
+    setFormData({
+      ...formData,
+      [name]: checked,
+    });
+  };
+
+  const handleSelectChange = (value: string, name: string) => {
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setFormData(product);
+  };
+
+  const filteredProducts = productsList.filter((product) => {
+    const matchesSearch = 
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleSaveProduct = () => {
+    if (!formData.title || !formData.description || !formData.category) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все обязательные поля",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editingProduct) {
+      // Редактирование существующего товара
+      setProductsList(
+        productsList.map((p) =>
+          p.id === editingProduct.id ? { ...p, ...formData } as Product : p
+        )
+      );
+
+      toast({
+        title: "Товар обновлен",
+        description: `Товар "${formData.title}" был успешно обновлен`,
+      });
+    } else {
+      // Добавление нового товара
+      const newProduct: Product = {
+        id: `${Date.now()}`,
+        title: formData.title || "",
+        description: formData.description || "",
+        price: formData.price || 0,
+        discountPrice: formData.discountPrice,
+        category: formData.category || "",
+        imageUrl: formData.imageUrl || "/placeholder.svg",
+        rating: formData.rating || 5,
+        inStock: formData.inStock !== undefined ? formData.inStock : true,
+        colors: formData.colors,
+        sizes: formData.sizes,
+        material: formData.material,
+        isNew: formData.isNew,
+        isBestseller: formData.isBestseller,
+        countryOfOrigin: formData.countryOfOrigin || "Китай",
+        specifications: formData.specifications,
+      };
+
+      setProductsList([...productsList, newProduct]);
+
+      toast({
+        title: "Товар добавлен",
+        description: `Товар "${newProduct.title}" был успешно добавлен`,
+      });
+    }
+
+    setEditingProduct(null);
+    setFormData({
+      title: "",
+      description: "",
+      price: 0,
+      category: "",
+      imageUrl: "/placeholder.svg",
+      rating: 5,
+      inStock: true,
+      countryOfOrigin: "Китай",
+    });
+  };
+
+  const handleDeleteProduct = () => {
+    if (deleteProductId) {
+      setProductsList(productsList.filter((p) => p.id !== deleteProductId));
+      
+      toast({
+        title: "Товар удален",
+        description: "Товар был успешно удален из каталога",
+      });
+      
+      setDeleteProductId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Управление товарами</h2>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Добавить товар
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingProduct ? "Редактировать товар" : "Добавить новый товар"}
+              </DialogTitle>
+              <DialogDescription>
+                Заполните форму ниже. Поля, отмеченные звездочкой (*), обязательны для заполнения.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title" className="text-right">
+                  Название *
+                </Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">
+                  Категория *
+                </Label>
+                <Select
+                  value={formData.category || ""}
+                  onValueChange={(value) => handleSelectChange(value, "category")}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Выберите категорию" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="new">Новая категория</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">
+                  Цена *
+                </Label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  value={formData.price || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="discountPrice" className="text-right">
+                  Цена со скидкой
+                </Label>
+                <Input
+                  id="discountPrice"
+                  name="discountPrice"
+                  type="number"
+                  value={formData.discountPrice || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Описание *
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="imageUrl" className="text-right">
+                  URL изображения
+                </Label>
+                <Input
+                  id="imageUrl"
+                  name="imageUrl"
+                  value={formData.imageUrl || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="material" className="text-right">
+                  Материал
+                </Label>
+                <Input
+                  id="material"
+                  name="material"
+                  value={formData.material || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="countryOfOrigin" className="text-right">
+                  Страна происхождения
+                </Label>
+                <Input
+                  id="countryOfOrigin"
+                  name="countryOfOrigin"
+                  value={formData.countryOfOrigin || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="text-right">Опции</div>
+                <div className="col-span-3 space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="inStock"
+                      checked={formData.inStock || false}
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange(!!checked, "inStock")
+                      }
+                    />
+                    <Label htmlFor="inStock">В наличии</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="isNew"
+                      checked={formData.isNew || false}
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange(!!checked, "isNew")
+                      }
+                    />
+                    <Label htmlFor="isNew">Новинка</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="isBestseller"
+                      checked={formData.isBestseller || false}
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange(!!checked, "isBestseller")
+                      }
+                    />
+                    <Label htmlFor="isBestseller">Бестселлер</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button type="submit" onClick={handleSaveProduct}>
+                {editingProduct ? "Сохранить изменения" : "Добавить товар"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Фильтры</CardTitle>
+          <CardDescription>
+            Отфильтруйте товары по категории или воспользуйтесь поиском
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="w-full md:w-1/3 relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по названию или описанию"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <div className="w-full md:w-1/3">
+              <Select
+                value={categoryFilter}
+                onValueChange={setCategoryFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Все категории" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все категории</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Список товаров</CardTitle>
+          <CardDescription>
+            Всего товаров: {filteredProducts.length}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Название</TableHead>
+                  <TableHead>Категория</TableHead>
+                  <TableHead>Цена (₽)</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">
+                      Товары не найдены
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.id}</TableCell>
+                      <TableCell>
+                        <div className="font-medium">{product.title}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[250px]">
+                          {product.description}
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>
+                        {product.discountPrice ? (
+                          <div>
+                            <span className="font-medium">{product.discountPrice.toLocaleString()}</span>{" "}
+                            <span className="text-muted-foreground line-through text-sm">
+                              {product.price.toLocaleString()}
+                            </span>
+                          </div>
+                        ) : (
+                          product.price.toLocaleString()
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          {product.inStock ? (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                              В наличии
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                              Нет в наличии
+                            </span>
+                          )}
+                          {product.isNew && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                              Новинка
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-red-500"
+                                onClick={() => setDeleteProductId(product.id)}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Вы уверены?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Это действие нельзя будет отменить. Товар будет удален из каталога.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteProduct}>
+                                  Удалить
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default AdminProducts;

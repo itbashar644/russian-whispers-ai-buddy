@@ -12,6 +12,7 @@ import Cart from "./pages/Cart";
 import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import Contacts from "./pages/Contacts";
+import AdminPanel from "./pages/admin/AdminPanel";
 import { CartProvider } from "./context/CartContext";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/delivery" element={<Delivery />} />
             <Route path="/contacts" element={<Contacts />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
