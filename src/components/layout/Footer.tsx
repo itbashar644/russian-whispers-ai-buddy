@@ -44,6 +44,18 @@ const Footer = () => {
               <li>
                 <Link to="/catalog?category=home" className="hover:underline">Для Дома</Link>
               </li>
+              <li>
+                <Link to="/catalog?category=seasonal" className="hover:underline">Сезонные товары</Link>
+              </li>
+              <li>
+                <Link to="/catalog?category=cameras" className="hover:underline">Фотоаппараты моментальной печати</Link>
+              </li>
+              <li>
+                <Link to="/catalog?category=kids" className="hover:underline">Товары для детей</Link>
+              </li>
+              <li>
+                <Link to="/catalog?category=misc" className="hover:underline">1000 мелочей</Link>
+              </li>
             </ul>
           </div>
           <div>
