@@ -15,36 +15,57 @@ import Contacts from "./pages/Contacts";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 import AdminAuth from "./components/admin/AdminAuth";
+import UserAuth from "./components/account/UserAuth";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Account from "./pages/account/Account";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <CartProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/catalog" element={<Catalog />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/delivery" element={<Delivery />} />
-            <Route path="/contacts" element={<Contacts />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/*" element={
-              <AdminAuth>
-                <AdminPanel />
-              </AdminAuth>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/catalog" element={<Catalog />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/delivery" element={<Delivery />} />
+              <Route path="/contacts" element={<Contacts />} />
+              
+              {/* Маршруты аутентификации */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              
+              {/* Маршруты личного кабинета */}
+              <Route path="/account" element={
+                <UserAuth>
+                  <Account />
+                </UserAuth>
+              } />
+              
+              {/* Маршруты админ-панели */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/*" element={
+                <AdminAuth>
+                  <AdminPanel />
+                </AdminAuth>
+              } />
+              
+              {/* Маршрут "не найдено" */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

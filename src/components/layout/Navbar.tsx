@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { ShoppingCart, Search, Menu, User, Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box } from "lucide-react";
+import { ShoppingCart, Search, Menu, User, Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,9 +19,12 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const { totalItems } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
   
   const categories = [
     { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
@@ -34,6 +37,16 @@ const Navbar = () => {
     { id: "kids", name: "Товары для детей", icon: <Baby className="h-4 w-4 mr-2" /> },
     { id: "misc", name: "1000 мелочей", icon: <Box className="h-4 w-4 mr-2" /> },
   ];
+
+  // Получаем инициалы пользователя для аватара
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map(part => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b">
@@ -87,11 +100,51 @@ const Navbar = () => {
           <Button variant="ghost" size="icon">
             <Search className="h-5 w-5" />
           </Button>
-          <Link to="/account">
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
+          
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {user && getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/account">Личный кабинет</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => logout()}>
+                  Выход
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="flex items-center">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Войти
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/register" className="flex items-center">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Регистрация
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          
           <Link to="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
