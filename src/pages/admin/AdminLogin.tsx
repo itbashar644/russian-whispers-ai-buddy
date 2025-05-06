@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { LockIcon, User, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,10 +36,8 @@ const AdminLogin = () => {
       });
 
       if (error) {
-        toast({
-          title: "Ошибка авторизации",
+        toast("Ошибка авторизации", {
           description: error.message || "Неверное имя пользователя или пароль",
-          variant: "destructive",
         });
         setLoading(false);
         return;
@@ -52,10 +50,8 @@ const AdminLogin = () => {
         .eq('user_id', data.user.id);
 
       if (rolesError) {
-        toast({
-          title: "Ошибка авторизации",
+        toast("Ошибка авторизации", {
           description: "Не удалось проверить роль пользователя",
-          variant: "destructive",
         });
         setLoading(false);
         return;
@@ -65,26 +61,22 @@ const AdminLogin = () => {
       const isAdmin = rolesData.some(r => r.role === 'admin');
 
       if (isAdmin) {
-        toast({
-          title: "Авторизация успешна",
+        toast("Авторизация успешна", {
           description: "Добро пожаловать в административную панель",
         });
         navigate("/admin");
       } else {
         // Если роль не админ, выполняем выход
         await supabase.auth.signOut();
-        toast({
-          title: "Ошибка авторизации",
+        toast("Ошибка авторизации", {
           description: "У вас нет прав доступа к админ-панели. Для назначения прав администратора обратитесь к существующему администратору.",
-          variant: "destructive",
         });
         setLoading(false);
       }
     } catch (error: any) {
-      toast({
-        title: "Ошибка авторизации",
-        description: error.message || "Произошла ошибка при входе",
-        variant: "destructive",
+      console.error("Ошибка при входе:", error);
+      toast("Ошибка авторизации", {
+        description: error.message || "Произошла ошибка при входе в систему",
       });
       setLoading(false);
     }

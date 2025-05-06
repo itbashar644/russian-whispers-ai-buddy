@@ -1,6 +1,6 @@
 
 import { Navigate, Outlet } from "react-router-dom";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -21,16 +21,12 @@ export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) =>
       setHasAccess(access);
 
       if (!isAuthenticated) {
-        toast({
-          title: "Требуется авторизация",
+        toast("Требуется авторизация", {
           description: "Пожалуйста, войдите в аккаунт",
-          variant: "destructive",
         });
       } else if (!access) {
-        toast({
-          title: "Недостаточно прав",
+        toast("Недостаточно прав", {
           description: "У вас нет доступа к административной панели",
-          variant: "destructive",
         });
       }
 
