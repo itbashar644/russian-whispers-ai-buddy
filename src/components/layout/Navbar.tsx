@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const { totalItems } = useCart();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { profile, isAuthenticated, logout } = useAuth();
   
   const categories = [
     { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
@@ -107,7 +107,7 @@ const Navbar = () => {
                 <Button variant="ghost" size="icon" className="relative">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {user && getInitials(user.name)}
+                      {profile && profile.name ? getInitials(profile.name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>

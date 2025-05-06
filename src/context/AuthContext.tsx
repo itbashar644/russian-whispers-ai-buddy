@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, Provider } from '@supabase/supabase-js';
 
 // Типы, которые соответствуют нашей структуре базы данных
 export interface UserProfile {

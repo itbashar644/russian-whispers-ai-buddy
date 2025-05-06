@@ -39,11 +39,11 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const Account = () => {
   const navigate = useNavigate();
-  const { user, logout, updateProfile, isAuthenticated } = useAuth();
+  const { profile, logout, updateProfile, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Если пользователь не авторизован, перенаправляем на страницу входа
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated || !profile) {
     navigate("/login");
     return null;
   }
@@ -51,9 +51,9 @@ const Account = () => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user.name || "",
-      phone: user.phone || "",
-      address: user.address || "",
+      name: profile.name || "",
+      phone: profile.phone || "",
+      address: profile.address || "",
     },
   });
 
@@ -84,12 +84,12 @@ const Account = () => {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                      {getInitials(user.name)}
+                      {getInitials(profile.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle>{user.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <CardTitle>{profile.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{profile.email}</p>
                   </div>
                 </div>
               </CardHeader>

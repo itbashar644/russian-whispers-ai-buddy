@@ -1,14 +1,41 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Обработка OAuth колбэка
+    // Проверяем хэш URL для обработки OAuth колбэка
+    const handleOAuthCallback = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data.user) {
+          toast("Успешная авторизация", {
+            description: "Вы успешно вошли в систему",
+          });
+          navigate('/account');
+        } else {
+          navigate('/login');
+        }
+      } catch (error: any) {
+        console.error("Ошибка при аутентификации:", error);
+        toast("Ошибка авторизации", {
+          description: error.message || "Произошла ошибка при входе в систему",
+        });
+        navigate('/login');
+      }
+    };
+
     const timer = setTimeout(() => {
-      navigate('/account');
+      handleOAuthCallback();
     }, 500);
 
     return () => clearTimeout(timer);

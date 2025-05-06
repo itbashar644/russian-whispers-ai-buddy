@@ -8,6 +8,7 @@ import {
   Eye, EyeOff, Key, Mail, ArrowRight, 
   ChevronRight, Apple 
 } from "lucide-react";
+import { type Provider } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,7 @@ const Login = () => {
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'yandex') => {
+  const handleSocialLogin = async (provider: Provider) => {
     setIsLoading(true);
     try {
       let { data, error } = await supabase.auth.signInWithOAuth({
@@ -207,15 +208,12 @@ const Login = () => {
               
               <Button 
                 variant="outline" 
-                onClick={() => handleSocialLogin('yandex')}
+                onClick={() => handleSocialLogin('apple')}
                 disabled={isLoading}
                 className="w-full flex items-center justify-center gap-2"
               >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12Z" fill="#FC3F1D"/>
-                  <path d="M13.23 17.67V6.33H15.83V17.67H13.23ZM8.17 17.67V6.33H10.76V17.67H8.17Z" fill="white"/>
-                </svg>
-                Войти через Яндекс ID
+                <Apple className="h-4 w-4" />
+                Войти через Apple
               </Button>
             </div>
           </CardContent>
