@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 
@@ -6,6 +5,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  role?: string;
   phone?: string;
   address?: string;
   orderHistory?: string[];
@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password, // В реальном приложении пароль должен быть захеширован
         name,
+        role: 'user', // Добавляем роль по умолчанию
         orderHistory: []
       };
       
