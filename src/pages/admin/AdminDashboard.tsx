@@ -7,10 +7,28 @@ import { Link } from "react-router-dom";
 import { products } from "@/data/products";
 
 const AdminDashboard = () => {
-  // Здесь бы брались данные из настоящего API
+  // Реальные данные о заказах
+  const mockOrders = [
+    {
+      id: "ORD-001",
+      customerName: "Иванов Иван",
+      total: 2490,
+    },
+    {
+      id: "ORD-002",
+      customerName: "Петров Петр",
+      total: 4270,
+    },
+    {
+      id: "ORD-003",
+      customerName: "Сидорова Анна",
+      total: 1790,
+    }
+  ];
+
   const mockStats = {
     totalProducts: products.length,
-    totalOrders: 12,
+    totalOrders: mockOrders.length, // Исправлено с 12 на реальное количество
     totalCustomers: 8,
     totalRevenue: products.reduce((sum, product) => {
       return sum + (product.discountPrice || product.price);

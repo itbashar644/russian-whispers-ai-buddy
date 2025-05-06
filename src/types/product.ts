@@ -19,6 +19,8 @@ export interface Product {
     name: string;
     value: string;
   }[];
+  articleNumber?: string;
+  barcode?: string;
 }
 
 export interface CartItem {

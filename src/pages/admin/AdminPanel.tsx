@@ -14,6 +14,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminOrders from "./AdminOrders";
 import AdminProducts from "./AdminProducts";
 import AdminDashboard from "./AdminDashboard";
+import AdminCustomers from "./AdminCustomers";
+import AdminReports from "./AdminReports";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -98,10 +100,12 @@ const AdminPanel = () => {
 
         <div className="md:hidden p-2 sticky top-0 bg-white z-10 border-b w-full">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
               <TabsTrigger value="orders">Заказы</TabsTrigger>
               <TabsTrigger value="products">Товары</TabsTrigger>
+              <TabsTrigger value="customers">Клиенты</TabsTrigger>
+              <TabsTrigger value="reports">Отчеты</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -111,8 +115,8 @@ const AdminPanel = () => {
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/orders" element={<AdminOrders />} />
             <Route path="/products" element={<AdminProducts />} />
-            <Route path="/customers" element={<div className="text-center p-8 text-gray-500">Раздел находится в разработке</div>} />
-            <Route path="/reports" element={<div className="text-center p-8 text-gray-500">Раздел находится в разработке</div>} />
+            <Route path="/customers" element={<AdminCustomers />} />
+            <Route path="/reports" element={<AdminReports />} />
           </Routes>
         </main>
       </div>

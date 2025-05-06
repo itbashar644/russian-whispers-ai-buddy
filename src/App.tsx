@@ -13,7 +13,9 @@ import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import Contacts from "./pages/Contacts";
 import AdminPanel from "./pages/admin/AdminPanel";
+import AdminLogin from "./pages/admin/AdminLogin";
 import { CartProvider } from "./context/CartContext";
+import AdminAuth from "./components/admin/AdminAuth";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +34,12 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/delivery" element={<Delivery />} />
             <Route path="/contacts" element={<Contacts />} />
-            <Route path="/admin/*" element={<AdminPanel />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/*" element={
+              <AdminAuth>
+                <AdminPanel />
+              </AdminAuth>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
