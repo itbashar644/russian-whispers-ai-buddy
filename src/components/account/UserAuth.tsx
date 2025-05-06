@@ -6,11 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 
 interface UserAuthProps {
   children?: React.ReactNode;
+  requiredRole?: string;
 }
 
-const UserAuth = ({ children }: UserAuthProps) => {
+const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
   const [isChecking, setIsChecking] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -18,12 +19,16 @@ const UserAuth = ({ children }: UserAuthProps) => {
         toast("Требуется авторизация", {
           description: "Пожалуйста, войдите в аккаунт",
         });
+      } else if (requiredRole && user?.role !== requiredRole) {
+        toast("Недостаточно прав", {
+          description: "У вас нет доступа к этому разделу",
+        });
       }
       setIsChecking(false);
     };
 
     checkAuth();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user, requiredRole]);
 
   if (isChecking) {
     return (
@@ -38,6 +43,10 @@ const UserAuth = ({ children }: UserAuthProps) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
