@@ -6,31 +6,29 @@ import { useAuth } from "@/context/AuthContext";
 
 interface UserAuthProps {
   children?: React.ReactNode;
-  requiredRole?: string;
+  requiredRole?: "admin" | "editor" | "user";
 }
 
 const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
   const [isChecking, setIsChecking] = useState(true);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, profile, hasRole } = useAuth();
 
   useEffect(() => {
-    const checkAuth = () => {
+    if (!isLoading) {
       if (!isAuthenticated) {
         toast("Требуется авторизация", {
           description: "Пожалуйста, войдите в аккаунт",
         });
-      } else if (requiredRole && user?.role !== requiredRole) {
+      } else if (requiredRole && !hasRole(requiredRole)) {
         toast("Недостаточно прав", {
           description: "У вас нет доступа к этому разделу",
         });
       }
       setIsChecking(false);
-    };
+    }
+  }, [isLoading, isAuthenticated, profile, requiredRole, hasRole]);
 
-    checkAuth();
-  }, [isAuthenticated, user, requiredRole]);
-
-  if (isChecking) {
+  if (isLoading || isChecking) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
@@ -45,7 +43,7 @@ const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to="/" replace />;
   }
 

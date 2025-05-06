@@ -34,9 +34,16 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Если пользователь уже аутентифицирован, перенаправляем на главную
+  if (isAuthenticated) {
+    navigate('/account');
+    return null;
+  }
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -49,9 +56,14 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    const success = await register(data.email, data.password, data.name);
-    if (success) {
-      navigate("/account");
+    setIsLoading(true);
+    try {
+      const success = await register(data.email, data.password, data.name);
+      if (success) {
+        navigate("/account");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,7 +83,7 @@ const Register = () => {
                 <FormItem>
                   <FormLabel>Имя</FormLabel>
                   <FormControl>
-                    <Input placeholder="Введите ваше имя" {...field} />
+                    <Input placeholder="Введите ваше имя" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,7 +97,7 @@ const Register = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Введите email" {...field} />
+                    <Input type="email" placeholder="Введите email" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,6 +115,7 @@ const Register = () => {
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Введите пароль"
+                        disabled={isLoading}
                         {...field}
                       />
                       <Button
@@ -111,6 +124,7 @@ const Register = () => {
                         size="icon"
                         className="absolute right-2 top-1/2 transform -translate-y-1/2"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -132,6 +146,7 @@ const Register = () => {
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Подтвердите пароль"
+                        disabled={isLoading}
                         {...field}
                       />
                       <Button
@@ -140,6 +155,7 @@ const Register = () => {
                         size="icon"
                         className="absolute right-2 top-1/2 transform -translate-y-1/2"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={isLoading}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -150,8 +166,8 @@ const Register = () => {
               )}
             />
             
-            <Button type="submit" className="w-full">
-              Зарегистрироваться
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </Button>
           </form>
         </Form>

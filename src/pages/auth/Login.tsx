@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -30,6 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email("Введите корректный email"),
@@ -40,9 +42,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Если пользователь уже аутентифицирован, перенаправляем на главную
+  if (isAuthenticated) {
+    navigate('/account');
+    return null;
+  }
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -64,14 +72,23 @@ const Login = () => {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
+  const handleSocialLogin = async (provider: 'google' | 'yandex') => {
     setIsLoading(true);
-    // Будет реализовано после интеграции с Supabase
-    setTimeout(() => {
+    try {
+      let { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error(`Ошибка авторизации через ${provider}:`, error);
       setIsLoading(false);
-      // Временное сообщение до имплементации
-      alert(`Вход через ${provider} будет доступен после интеграции с Supabase`);
-    }, 1000);
+    }
   };
 
   return (
@@ -172,10 +189,10 @@ const Login = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button 
                 variant="outline" 
-                onClick={() => handleSocialLogin("Google")}
+                onClick={() => handleSocialLogin('google')}
                 disabled={isLoading}
                 className="flex items-center justify-center gap-2"
               >
@@ -185,16 +202,20 @@ const Login = () => {
                   <path d="M12 22C14.583 22 16.93 21.0115 18.7045 19.404L15.6095 16.785C14.5718 17.5742 13.3037 18.001 12 18C9.39903 18 7.19053 16.3415 6.35853 14.027L3.09753 16.5395C4.75253 19.778 8.11353 22 12 22Z" fill="#4CAF50"/>
                   <path d="M21.8055 10.0415H21V10H12V14H17.6515C17.2571 15.1082 16.5467 16.0766 15.608 16.7855L15.6095 16.7845L18.7045 19.4035C18.4855 19.6025 22 17 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#1976D2"/>
                 </svg>
-                Google
+                Войти через Google
               </Button>
+              
               <Button 
                 variant="outline" 
-                onClick={() => handleSocialLogin("Apple")}
+                onClick={() => handleSocialLogin('yandex')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2"
               >
-                <Apple className="h-4 w-4" />
-                Apple
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12Z" fill="#FC3F1D"/>
+                  <path d="M13.23 17.67V6.33H15.83V17.67H13.23ZM8.17 17.67V6.33H10.76V17.67H8.17Z" fill="white"/>
+                </svg>
+                Войти через Яндекс ID
               </Button>
             </div>
           </CardContent>
@@ -208,19 +229,6 @@ const Login = () => {
                 </Link>
               </p>
             </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => handleSocialLogin("Яндекс ID")}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12Z" fill="#FC3F1D"/>
-                <path d="M13.23 17.67V6.33H15.83V17.67H13.23ZM8.17 17.67V6.33H10.76V17.67H8.17Z" fill="white"/>
-              </svg>
-              Яндекс ID
-            </Button>
           </CardFooter>
         </Card>
       </div>

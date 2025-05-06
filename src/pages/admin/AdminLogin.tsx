@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,37 +7,87 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { LockIcon, User, ArrowRight } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated, hasRole } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Проверка, авторизован ли пользователь и является ли он админом
+  useEffect(() => {
+    if (isAuthenticated && hasRole('admin')) {
+      navigate('/admin');
+    }
+  }, [isAuthenticated, hasRole, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // В реальной системе здесь будет запрос к API для проверки учетных данных
-    // Сейчас используем простую проверку на фиктивные данные
-    setTimeout(() => {
-      if (username === "admin" && password === "password") {
-        // Сохраняем состояние авторизации в localStorage
-        localStorage.setItem("adminAuth", JSON.stringify({ isAdmin: true, username }));
+    try {
+      // Используем основной метод входа, а затем проверяем роль
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+
+      if (error) {
+        toast({
+          title: "Ошибка авторизации",
+          description: error.message || "Неверное имя пользователя или пароль",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Проверяем роль пользователя
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id);
+
+      if (rolesError) {
+        toast({
+          title: "Ошибка авторизации",
+          description: "Не удалось проверить роль пользователя",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Проверяем, есть ли среди ролей роль админа
+      const isAdmin = rolesData.some(r => r.role === 'admin');
+
+      if (isAdmin) {
         toast({
           title: "Авторизация успешна",
           description: "Добро пожаловать в административную панель",
         });
         navigate("/admin");
       } else {
+        // Если роль не админ, выполняем выход
+        await supabase.auth.signOut();
         toast({
           title: "Ошибка авторизации",
-          description: "Неверное имя пользователя или пароль",
+          description: "У вас нет прав доступа к админ-панели",
           variant: "destructive",
         });
         setLoading(false);
       }
-    }, 1000);
+    } catch (error: any) {
+      toast({
+        title: "Ошибка авторизации",
+        description: error.message || "Произошла ошибка при входе",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,15 +107,16 @@ const AdminLogin = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Имя пользователя</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                 <Input
-                  id="username"
-                  placeholder="admin"
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
                   className="pl-10"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -100,8 +151,7 @@ const AdminLogin = () => {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Для демо-входа используйте:</p>
-            <p className="font-medium">Логин: admin / Пароль: password</p>
+            <p>Доступ только для администраторов системы</p>
           </div>
         </CardContent>
         <CardFooter className="border-t pt-4">

@@ -21,6 +21,9 @@ import UserAuth from "./components/account/UserAuth";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Account from "./pages/account/Account";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import AuthCallback from "./pages/auth/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +47,9 @@ const App = () => (
               {/* Маршруты аутентификации */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Маршруты личного кабинета */}
               <Route path="/account" element={

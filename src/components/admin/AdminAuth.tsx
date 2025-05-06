@@ -2,50 +2,43 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface AdminAuthProps {
   children?: React.ReactNode;
+  editorAccess?: boolean; // Если true, то редакторы также имеют доступ
 }
 
-interface AdminAuthState {
-  isAdmin: boolean;
-  username: string;
-}
-
-export const AdminAuth = ({ children }: AdminAuthProps) => {
+export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) => {
   const [isChecking, setIsChecking] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, isLoading, hasRole } = useAuth();
+  const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const adminAuth = localStorage.getItem("adminAuth");
-      if (adminAuth) {
-        try {
-          const auth = JSON.parse(adminAuth) as AdminAuthState;
-          if (auth.isAdmin) {
-            setIsAuthenticated(true);
-          } else {
-            toast({
-              title: "Требуется авторизация",
-              description: "У вас нет доступа к админ-панели",
-              variant: "destructive",
-            });
-            setIsAuthenticated(false);
-          }
-        } catch (e) {
-          console.error("Ошибка при проверке авторизации:", e);
-          setIsAuthenticated(false);
-        }
-      } else {
-        setIsAuthenticated(false);
+    if (!isLoading) {
+      // Проверяем роль пользователя
+      const access = hasRole('admin') || (editorAccess && hasRole('editor'));
+      setHasAccess(access);
+
+      if (!isAuthenticated) {
+        toast({
+          title: "Требуется авторизация",
+          description: "Пожалуйста, войдите в аккаунт",
+          variant: "destructive",
+        });
+      } else if (!access) {
+        toast({
+          title: "Недостаточно прав",
+          description: "У вас нет доступа к административной панели",
+          variant: "destructive",
+        });
       }
+
       setIsChecking(false);
-    };
+    }
+  }, [isLoading, isAuthenticated, hasRole, editorAccess]);
 
-    checkAuth();
-  }, []);
-
-  if (isChecking) {
+  if (isLoading || isChecking) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
@@ -58,6 +51,10 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
+  }
+
+  if (!hasAccess) {
+    return <Navigate to="/" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
