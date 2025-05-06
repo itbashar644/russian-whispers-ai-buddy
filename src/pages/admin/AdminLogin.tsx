@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/toast";
 import { LockIcon, User, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +75,7 @@ const AdminLogin = () => {
         await supabase.auth.signOut();
         toast({
           title: "Ошибка авторизации",
-          description: "У вас нет прав доступа к админ-панели",
+          description: "У вас нет прав доступа к админ-панели. Для назначения прав администратора обратитесь к существующему администратору.",
           variant: "destructive",
         });
         setLoading(false);
@@ -152,6 +152,7 @@ const AdminLogin = () => {
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Доступ только для администраторов системы</p>
+            <p className="mt-2">Чтобы получить права администратора, зарегистрируйтесь как обычный пользователь и обратитесь к администратору системы.</p>
           </div>
         </CardContent>
         <CardFooter className="border-t pt-4">

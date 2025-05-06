@@ -22,41 +22,54 @@ import { Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const searchParam = searchParams.get("search");
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: 0,
     max: 5000,
   });
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParam || "");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
-    let result = categoryParam 
-      ? getProductsByCategory(categoryParam)
-      : [...products];
+    // Обновляем searchTerm когда изменяется searchParam
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, [searchParam]);
+
+  useEffect(() => {
+    let result = [...products];
     
-    // Filter by price range
+    // Фильтрация по категории
+    if (categoryParam) {
+      result = getProductsByCategory(categoryParam);
+    }
+    
+    // Фильтрация по поисковому запросу
+    if (searchTerm) {
+      result = result.filter(
+        (p) => 
+          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Фильтрация по ценовому диапазону
     result = result.filter(
       (p) => 
         (p.discountPrice || p.price) >= priceRange.min && 
         (p.discountPrice || p.price) <= priceRange.max
     );
     
-    // Filter by search term
-    if (searchTerm) {
-      result = result.filter((p) => 
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Filter by in stock
+    // Фильтрация по наличию
     if (inStockOnly) {
       result = result.filter((p) => p.inStock);
     }
     
-    // Sort products
+    // Сортировка результатов
     switch (sortBy) {
       case "price-asc":
         result.sort((a, b) => 
@@ -78,7 +91,7 @@ const Catalog = () => {
         result.sort((a, b) => b.rating - a.rating);
         break;
       default:
-        // Default sorting (newest first, bestsellers)
+        // Сортировка по умолчанию
         break;
     }
     
@@ -113,6 +126,16 @@ const Catalog = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      searchParams.set("search", searchTerm);
+    } else {
+      searchParams.delete("search");
+    }
+    setSearchParams(searchParams);
   };
 
   return (
@@ -197,17 +220,19 @@ const Catalog = () => {
               <h1 className="text-2xl font-bold">
                 {categoryParam 
                   ? categories.find(c => c.id === categoryParam)?.name || "Каталог"
-                  : "Каталог товаров"}
+                  : searchTerm ? `Поиск: ${searchTerm}` : "Каталог товаров"}
               </h1>
-              <div className="flex items-center gap-4">
-                <div className="w-full md:w-auto">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+                <form onSubmit={handleSearchSubmit} className="flex gap-2">
                   <Input
                     type="search"
                     placeholder="Поиск товаров..."
                     value={searchTerm}
                     onChange={handleSearchChange}
+                    className="min-w-[200px]"
                   />
-                </div>
+                  <Button type="submit">Найти</Button>
+                </form>
                 <Select 
                   value={sortBy}
                   onValueChange={setSortBy}
@@ -233,7 +258,7 @@ const Catalog = () => {
               <div className="py-8 text-center">
                 <h2 className="text-xl font-semibold mb-2">Товары не найдены</h2>
                 <p className="text-muted-foreground">
-                  Попробуйте изменить параметры фильтрации
+                  Попробуйте изменить параметры фильтрации или поисковый запрос
                 </p>
               </div>
             )}

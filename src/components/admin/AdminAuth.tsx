@@ -1,6 +1,6 @@
 
 import { Navigate, Outlet } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 

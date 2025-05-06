@@ -1,7 +1,8 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, Menu, User, Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,14 +18,30 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useEffect } from "react";
+import { products } from "@/data/products";
+import ProductGrid from "@/components/products/ProductGrid";
 
 const Navbar = () => {
   const { totalItems } = useCart();
   const { profile, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDialog, setShowSearchDialog] = useState(false);
   
   const categories = [
     { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
@@ -38,8 +55,45 @@ const Navbar = () => {
     { id: "misc", name: "1000 мелочей", icon: <Box className="h-4 w-4 mr-2" /> },
   ];
 
+  // Функция поиска товаров
+  useEffect(() => {
+    if (searchQuery.trim().length > 2) {
+      setIsSearching(true);
+      const query = searchQuery.toLowerCase();
+      
+      const results = products.filter(product => {
+        return (
+          product.title.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query) ||
+          product.category.toLowerCase().includes(query)
+        );
+      }).slice(0, 8); // Ограничиваем результаты
+      
+      setSearchResults(results);
+      setIsSearching(false);
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
+
+  // Обработка нажатия на поиск
+  const handleSearchClick = () => {
+    setShowSearchDialog(true);
+  };
+  
+  // Обработка отправки формы поиска
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setShowSearchDialog(false);
+    if (searchQuery.trim() !== "") {
+      navigate(`/catalog?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
+
   // Получаем инициалы пользователя для аватара
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(" ")
       .map(part => part[0])
@@ -97,7 +151,7 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleSearchClick}>
             <Search className="h-5 w-5" />
           </Button>
           
@@ -116,6 +170,11 @@ const Navbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/account">Личный кабинет</Link>
                 </DropdownMenuItem>
+                {profile && (profile.role === 'admin' || profile.role === 'editor') && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">Админ-панель</Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => logout()}>
                   Выход
                 </DropdownMenuItem>
@@ -155,6 +214,47 @@ const Navbar = () => {
           </Link>
         </div>
       </div>
+      
+      {/* Диалог поиска */}
+      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Поиск по каталогу</DialogTitle>
+            <DialogDescription>
+              Введите название товара или категорию
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSearchSubmit} className="mt-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Поиск..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+                autoFocus
+              />
+              <Button type="submit">Найти</Button>
+            </div>
+          </form>
+          
+          <div className="mt-4">
+            {isSearching ? (
+              <div className="flex justify-center p-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : searchResults.length > 0 ? (
+              <div>
+                <h3 className="text-lg font-medium mb-2">Результаты поиска</h3>
+                <ProductGrid products={searchResults} />
+              </div>
+            ) : searchQuery.length > 2 && (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground">Ничего не найдено</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };
