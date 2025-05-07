@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
@@ -25,6 +24,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<UserProfile>) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean>;
+  updateEmail: (newEmail: string) => Promise<boolean>;
   hasRole: (role: 'admin' | 'editor' | 'user') => boolean;
 }
 
@@ -156,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error: any) {
       console.error("Ошибка при входе:", error);
-      toast("Ошибка входа", {
+      toast("Ошибк�� входа", {
         description: error.message || "Произошла ошибка при входе в систему",
       });
       return false;
@@ -282,6 +283,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updatePassword = async (newPassword: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.updateUser({ 
+        password: newPassword
+      });
+      
+      if (error) {
+        toast("Ошибка", {
+          description: error.message || "Не удалось обновить пароль",
+        });
+        return false;
+      }
+      
+      toast("Пароль обновлен", {
+        description: "Ваш пароль успешно изменен",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error("Ошибка при обновлении пароля:", error);
+      toast("Ошибка", {
+        description: error.message || "Произошла ошибка при обновлении пароля",
+      });
+      return false;
+    }
+  };
+
+  const updateEmail = async (newEmail: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.updateUser({ 
+        email: newEmail
+      });
+      
+      if (error) {
+        toast("Ошибка", {
+          description: error.message || "Не удалось обновить email",
+        });
+        return false;
+      }
+      
+      toast("Email обновлен", {
+        description: "На новый адрес email отправлено письмо для подтверждения",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error("Ошибка при обновлении email:", error);
+      toast("Ошибка", {
+        description: error.message || "Произошла ошибка при обновлении email",
+      });
+      return false;
+    }
+  };
+
   const hasRole = (role: 'admin' | 'editor' | 'user'): boolean => {
     return userRoles.includes(role);
   };
@@ -298,6 +353,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout, 
         updateProfile, 
         resetPassword,
+        updatePassword,
+        updateEmail,
         hasRole
       }}
     >
