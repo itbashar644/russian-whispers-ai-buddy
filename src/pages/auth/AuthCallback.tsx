@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -34,6 +34,8 @@ const AuthCallback = () => {
       }
     };
 
+    // Обрабатываем OAuth колбэк после небольшой задержки
+    // для полной загрузки состояния аутентификации
     const timer = setTimeout(() => {
       handleOAuthCallback();
     }, 500);
@@ -46,6 +48,7 @@ const AuthCallback = () => {
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
         <p className="text-muted-foreground">Авторизация...</p>
+        <p className="text-sm text-muted-foreground mt-2">The X Shop</p>
       </div>
     </div>
   );

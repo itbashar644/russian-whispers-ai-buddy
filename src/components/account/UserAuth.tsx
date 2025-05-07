@@ -34,6 +34,7 @@ const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Проверка авторизации...</p>
+          <p className="text-xs text-muted-foreground mt-1">The X Shop</p>
         </div>
       </div>
     );
