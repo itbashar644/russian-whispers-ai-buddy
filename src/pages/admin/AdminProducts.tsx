@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -190,7 +189,6 @@ const AdminProducts = () => {
     if (!formData.title || !formData.description || !formData.category) {
       toast("Ошибка", {
         description: "Пожалуйста, заполните все обязательные поля",
-        variant: "destructive",
       });
       return;
     }
