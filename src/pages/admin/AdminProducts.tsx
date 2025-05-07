@@ -47,10 +47,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
-import { Plus, Pencil, Trash, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Plus, Pencil, Trash, Search, Link, Loader2 } from "lucide-react";
 import { products } from "@/data/products";
 import { Product } from "@/types/product";
+import { importProductFromOzon, importProductFromWildberries } from "@/utils/productImporter";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>(products);
@@ -59,6 +60,9 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [ozonUrl, setOzonUrl] = useState("");
+  const [wildberriesUrl, setWildberriesUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
 
   // Для формы добавления/редактирования товара
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -104,6 +108,8 @@ const AdminProducts = () => {
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setFormData(product);
+    setOzonUrl("");
+    setWildberriesUrl("");
     setShowForm(true);
   };
 
@@ -120,10 +126,69 @@ const AdminProducts = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const importFromOzon = async () => {
+    if (!ozonUrl || !ozonUrl.includes("ozon.ru")) {
+      toast("Ошибка импорта", {
+        description: "Пожалуйста, введите корректную ссылку на товар Ozon",
+      });
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      const importedProduct = await importProductFromOzon(ozonUrl);
+      
+      if (importedProduct) {
+        setFormData({
+          ...formData,
+          ...importedProduct,
+        });
+        toast("Импорт выполнен", {
+          description: `Товар "${importedProduct.title}" успешно импортирован`,
+        });
+      }
+    } catch (error) {
+      toast("Ошибка импорта", {
+        description: "Не удалось импортировать товар с Ozon. Пожалуйста, проверьте ссылку и попробуйте снова.",
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const importFromWildberries = async () => {
+    if (!wildberriesUrl || !wildberriesUrl.includes("wildberries.ru")) {
+      toast("Ошибка импорта", {
+        description: "Пожалуйста, введите корректную ссылку на товар Wildberries",
+      });
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      const importedProduct = await importProductFromWildberries(wildberriesUrl);
+      
+      if (importedProduct) {
+        setFormData({
+          ...formData,
+          ...importedProduct,
+        });
+        toast("Импорт выполнен", {
+          description: `Товар "${importedProduct.title}" успешно импортирован`,
+        });
+      }
+    } catch (error) {
+      toast("Ошибка импорта", {
+        description: "Не удалось импортировать товар с Wildberries. Пожалуйста, проверьте ссылку и попробуйте снова.",
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const handleSaveProduct = () => {
     if (!formData.title || !formData.description || !formData.category) {
-      toast({
-        title: "Ошибка",
+      toast("Ошибка", {
         description: "Пожалуйста, заполните все обязательные поля",
         variant: "destructive",
       });
@@ -138,8 +203,7 @@ const AdminProducts = () => {
         )
       );
 
-      toast({
-        title: "Товар обновлен",
+      toast("Товар обновлен", {
         description: `Товар "${formData.title}" был успешно обновлен`,
       });
     } else {
@@ -167,8 +231,7 @@ const AdminProducts = () => {
 
       setProductsList([...productsList, newProduct]);
 
-      toast({
-        title: "Товар добавлен",
+      toast("Товар добавлен", {
         description: `Товар "${newProduct.title}" был успешно добавлен`,
       });
     }
@@ -187,14 +250,15 @@ const AdminProducts = () => {
       barcode: "",
     });
     setShowForm(false);
+    setOzonUrl("");
+    setWildberriesUrl("");
   };
 
   const handleDeleteProduct = () => {
     if (deleteProductId) {
       setProductsList(productsList.filter((p) => p.id !== deleteProductId));
       
-      toast({
-        title: "Товар удален",
+      toast("Товар удален", {
         description: "Товар был успешно удален из каталога",
       });
       
@@ -216,6 +280,8 @@ const AdminProducts = () => {
       articleNumber: "",
       barcode: "",
     });
+    setOzonUrl("");
+    setWildberriesUrl("");
     setShowForm(true);
   };
 
@@ -237,11 +303,63 @@ const AdminProducts = () => {
               {editingProduct ? "Редактировать товар" : "Добавить новый товар"}
             </DialogTitle>
             <DialogDescription>
-              Заполните форму ниже. Поля, отмеченные звездочкой (*), обязательны для заполнения.
+              Заполните форму ниже или импортируйте данные с маркетплейсов. Поля, отмеченные звездочкой (*), обязательны для заполнения.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 mb-4">
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+              <h3 className="text-sm font-medium">Импорт товара с маркетплейсов</h3>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ozonUrl" className="text-right">
+                  Ссылка Ozon
+                </Label>
+                <div className="col-span-3 flex space-x-2">
+                  <Input
+                    id="ozonUrl"
+                    placeholder="https://www.ozon.ru/product/..."
+                    value={ozonUrl}
+                    onChange={(e) => setOzonUrl(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={importFromOzon} 
+                    disabled={isImporting || !ozonUrl} 
+                    variant="outline"
+                    size="icon"
+                  >
+                    {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="wildberriesUrl" className="text-right">
+                  Ссылка WB
+                </Label>
+                <div className="col-span-3 flex space-x-2">
+                  <Input
+                    id="wildberriesUrl"
+                    placeholder="https://www.wildberries.ru/catalog/..."
+                    value={wildberriesUrl}
+                    onChange={(e) => setWildberriesUrl(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={importFromWildberries} 
+                    disabled={isImporting || !wildberriesUrl} 
+                    variant="outline"
+                    size="icon"
+                  >
+                    {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right">
                 Название *
