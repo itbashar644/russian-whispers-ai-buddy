@@ -21,6 +21,7 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Download, Calendar, TrendingUp, Database } from "lucide-react";
 import { format, subDays, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
+import { DateRange as DateRangeType } from "react-day-picker";
 
 // Расширенные фиктивные данные для отчетов
 const salesData = [
@@ -66,10 +67,20 @@ const dailyData = Array.from({ length: 30 }, (_, i) => ({
 const AdminReports = () => {
   const [reportPeriod, setReportPeriod] = useState("month");
   const [activeTab, setActiveTab] = useState("sales");
-  const [dateRange, setDateRange] = useState({
+  const [dateRange, setDateRange] = useState<{
+    from: Date;
+    to: Date;
+  }>({
     from: subMonths(new Date(), 1),
     to: new Date(),
   });
+
+  // Обработчик изменения диапазона дат
+  const handleDateRangeChange = (range: DateRangeType | undefined) => {
+    if (range?.from && range?.to) {
+      setDateRange({ from: range.from, to: range.to });
+    }
+  };
 
   const generateReportLink = () => {
     // В реальном приложении здесь был бы код для генерации отчета
@@ -84,7 +95,7 @@ const AdminReports = () => {
           <DateRange
             from={dateRange.from}
             to={dateRange.to}
-            onSelect={setDateRange}
+            onSelect={handleDateRangeChange}
           />
           <Select
             value={reportPeriod}
