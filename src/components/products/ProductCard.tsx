@@ -79,10 +79,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   href={product.wildberriesUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-6 h-6 bg-purple-700 rounded-full text-white hover:bg-purple-800 transition-colors"
+                  className="flex items-center justify-center w-6 h-6 overflow-hidden rounded-md hover:opacity-80 transition-opacity"
                   title="Открыть на Wildberries"
                 >
-                  <span className="text-xs font-bold">WB</span>
+                  <img 
+                    src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png" 
+                    alt="Wildberries" 
+                    className="w-full h-full object-contain" 
+                  />
                 </a>
               )}
               
@@ -91,10 +95,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   href={product.ozonUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-6 h-6 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors"
+                  className="flex items-center justify-center w-6 h-6 overflow-hidden rounded-md hover:opacity-80 transition-opacity"
                   title="Открыть на Ozon"
                 >
-                  <span className="text-xs font-bold">O</span>
+                  <img 
+                    src="/lovable-uploads/2382cf41-b25e-4a18-b0ed-379ed4b92f63.png" 
+                    alt="Ozon" 
+                    className="w-full h-full object-contain" 
+                  />
                 </a>
               )}
               
@@ -103,10 +111,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   href={product.avitoUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-6 h-6 bg-green-600 rounded-full text-white hover:bg-green-700 transition-colors"
+                  className="flex items-center justify-center w-6 h-6 overflow-hidden rounded-md hover:opacity-80 transition-opacity"
                   title="Открыть на Авито"
                 >
-                  <span className="text-xs font-bold">A</span>
+                  <img 
+                    src="/lovable-uploads/2a6149e2-4731-4f83-bcc9-e00d95412f6c.png" 
+                    alt="Avito" 
+                    className="w-full h-full object-contain" 
+                  />
                 </a>
               )}
             </div>
