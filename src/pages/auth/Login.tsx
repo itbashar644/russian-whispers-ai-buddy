@@ -79,11 +79,7 @@ const Login = () => {
       let { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            // Явно указываем название приложения для OAuth процесса
-            application_name: 'The X Shop'
-          }
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       });
       
