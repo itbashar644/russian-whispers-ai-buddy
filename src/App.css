@@ -45,6 +45,7 @@
 /* Add scroll-to-top behavior when navigating */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 0;
 }
 
 /* Force pages to start at the top when loaded */
@@ -54,6 +55,14 @@ html {
 
 body {
   overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* Ensure page content starts at the top */
@@ -63,3 +72,8 @@ body {
   flex-direction: column;
 }
 
+/* Reset scroll position when navigating to new routes */
+html {
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+}
