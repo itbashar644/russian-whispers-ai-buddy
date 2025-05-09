@@ -21,6 +21,7 @@ const ProductDetail = () => {
     product?.colors ? product.colors[0] : undefined
   );
   const [quantity, setQuantity] = useState(1);
+  const [imageError, setImageError] = useState(false);
 
   // Update selected color when product changes
   useEffect(() => {
@@ -67,6 +68,12 @@ const ProductDetail = () => {
   // Определяем отображаемую цену для кнопки
   const displayPrice = product.discountPrice || product.price;
 
+  // Функция для обработки ошибок загрузки изображения
+  const handleImageError = () => {
+    console.error("Ошибка загрузки изображения:", product.imageUrl);
+    setImageError(true);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -85,9 +92,10 @@ const ProductDetail = () => {
           <div>
             <div className="border rounded-lg overflow-hidden">
               <img 
-                src={product.imageUrl} 
+                src={imageError ? "/placeholder.svg" : product.imageUrl} 
                 alt={product.title} 
                 className="w-full h-auto object-cover aspect-square" 
+                onError={handleImageError}
               />
             </div>
             
@@ -97,7 +105,7 @@ const ProductDetail = () => {
                 <video 
                   controls 
                   className="w-full h-auto"
-                  poster={product.imageUrl}
+                  poster={imageError ? "/placeholder.svg" : product.imageUrl}
                 >
                   <source src={product.videoUrl} type="video/mp4" />
                   Ваш браузер не поддерживает видео.

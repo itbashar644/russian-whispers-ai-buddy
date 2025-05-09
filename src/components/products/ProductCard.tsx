@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem } = useCart();
+  const [imageError, setImageError] = useState(false);
   
   const handleAddToCart = () => {
     addItem({
@@ -23,14 +25,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Определяем отображаемую цену для кнопки
   const displayPrice = product.discountPrice || product.price;
+  
+  // Функция для обработки ошибок загрузки изображения
+  const handleImageError = () => {
+    console.error("Ошибка загрузки изображения:", product.imageUrl);
+    setImageError(true);
+  };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={`/product/${product.id}`} className="aspect-square overflow-hidden">
         <img 
-          src={product.imageUrl} 
+          src={imageError ? "/placeholder.svg" : product.imageUrl} 
           alt={product.title} 
           className="h-full w-full object-cover transition-transform hover:scale-105" 
+          onError={handleImageError}
         />
       </Link>
       <CardContent className="flex-grow p-4">

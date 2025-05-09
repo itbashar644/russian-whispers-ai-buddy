@@ -172,6 +172,19 @@ const AdminProducts = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // Add this function to handle image validation
+  const validateImageUrl = (url: string): boolean => {
+    if (!url) return true; // Empty URL is considered valid (will use default)
+    
+    // Basic URL validation
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   const handleSaveProduct = () => {
     let finalCategory = formData.category || "";
     
@@ -189,6 +202,14 @@ const AdminProducts = () => {
     if (!formData.title || !formData.description || !finalCategory) {
       toast("Ошибка", {
         description: "Пожалуйста, заполните все обязательные поля",
+      });
+      return;
+    }
+
+    // Validate image URL if provided and not the default
+    if (formData.imageUrl && formData.imageUrl !== "/placeholder.svg" && !validateImageUrl(formData.imageUrl)) {
+      toast("Ошибка URL изображения", {
+        description: "Пожалуйста, укажите корректный URL изображения или оставьте поле пустым",
       });
       return;
     }
@@ -231,7 +252,7 @@ const AdminProducts = () => {
         ozonUrl: formData.ozonUrl || undefined,
         wildberriesUrl: formData.wildberriesUrl || undefined,
         avitoUrl: formData.avitoUrl || undefined,
-        videoUrl: formData.videoUrl || undefined, // Добавляем URL видео
+        videoUrl: formData.videoUrl || undefined,
       };
 
       addOrUpdateProduct(newProduct);
