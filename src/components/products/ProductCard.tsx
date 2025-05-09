@@ -95,7 +95,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   title="Открыть на Wildberries"
                 >
                   <img 
-                    src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png" 
+                    src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png" 
                     alt="Wildberries" 
                     className="w-full h-full object-contain" 
                   />

@@ -149,7 +149,11 @@ const ProductDetail = () => {
                         title="Открыть на Wildberries"
                       >
                         <div className="flex items-center justify-center w-8 h-8 bg-purple-700 rounded-full text-white hover:bg-purple-800 transition-colors">
-                          <span className="text-sm font-bold">WB</span>
+                          <img 
+                            src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
+                            alt="Wildberries" 
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                         <span className="hidden sm:inline">Wildberries</span>
                       </a>
