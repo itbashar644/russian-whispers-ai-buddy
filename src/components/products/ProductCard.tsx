@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ExternalLink } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
@@ -70,12 +70,53 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
+          
+          {/* Marketplace icons */}
+          {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
+            <div className="flex items-center gap-2 mt-2">
+              {product.wildberriesUrl && (
+                <a 
+                  href={product.wildberriesUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-6 h-6 bg-purple-700 rounded-full text-white hover:bg-purple-800 transition-colors"
+                  title="Открыть на Wildberries"
+                >
+                  <span className="text-xs font-bold">WB</span>
+                </a>
+              )}
+              
+              {product.ozonUrl && (
+                <a 
+                  href={product.ozonUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-6 h-6 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors"
+                  title="Открыть на Ozon"
+                >
+                  <span className="text-xs font-bold">O</span>
+                </a>
+              )}
+              
+              {product.avitoUrl && (
+                <a 
+                  href={product.avitoUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-6 h-6 bg-green-600 rounded-full text-white hover:bg-green-700 transition-colors"
+                  title="Открыть на Авито"
+                >
+                  <span className="text-xs font-bold">A</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <Button 
           onClick={handleAddToCart} 
-          className="w-full"
+          className="flex-1"
           disabled={!product.inStock}
         >
           <ShoppingCart className="mr-2 h-4 w-4" /> В корзину

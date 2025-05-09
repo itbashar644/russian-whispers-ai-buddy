@@ -61,6 +61,7 @@ const AdminProducts = () => {
   const [showForm, setShowForm] = useState(false);
   const [ozonUrl, setOzonUrl] = useState("");
   const [wildberriesUrl, setWildberriesUrl] = useState("");
+  const [avitoUrl, setAvitoUrl] = useState("");
   const [isImporting, setIsImporting] = useState(false);
 
   // Для формы добавления/редактирования товара
@@ -75,6 +76,9 @@ const AdminProducts = () => {
     countryOfOrigin: "Китай",
     articleNumber: "",
     barcode: "",
+    ozonUrl: "",
+    wildberriesUrl: "",
+    avitoUrl: "",
   });
 
   // Получаем уникальные категории
@@ -109,6 +113,7 @@ const AdminProducts = () => {
     setFormData(product);
     setOzonUrl("");
     setWildberriesUrl("");
+    setAvitoUrl("");
     setShowForm(true);
   };
 
@@ -250,6 +255,7 @@ const AdminProducts = () => {
     setShowForm(false);
     setOzonUrl("");
     setWildberriesUrl("");
+    setAvitoUrl("");
   };
 
   const handleDeleteProduct = () => {
@@ -280,6 +286,7 @@ const AdminProducts = () => {
     });
     setOzonUrl("");
     setWildberriesUrl("");
+    setAvitoUrl("");
     setShowForm(true);
   };
 
@@ -535,6 +542,52 @@ const AdminProducts = () => {
                   />
                   <Label htmlFor="isBestseller">Бестселлер</Label>
                 </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+              <h3 className="text-sm font-medium">Ссылки на маркетплейсы</h3>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ozonUrl" className="text-right">
+                  Ссылка на Ozon
+                </Label>
+                <Input
+                  id="ozonUrl"
+                  name="ozonUrl"
+                  placeholder="https://www.ozon.ru/product/..."
+                  value={formData.ozonUrl || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="wildberriesUrl" className="text-right">
+                  Ссылка на Wildberries
+                </Label>
+                <Input
+                  id="wildberriesUrl"
+                  name="wildberriesUrl"
+                  placeholder="https://www.wildberries.ru/catalog/..."
+                  value={formData.wildberriesUrl || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="avitoUrl" className="text-right">
+                  Ссылка на Авито
+                </Label>
+                <Input
+                  id="avitoUrl"
+                  name="avitoUrl"
+                  placeholder="https://www.avito.ru/..."
+                  value={formData.avitoUrl || ""}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
               </div>
             </div>
           </div>

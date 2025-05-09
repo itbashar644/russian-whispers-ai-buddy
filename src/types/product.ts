@@ -21,6 +21,9 @@ export interface Product {
   }[];
   articleNumber?: string;
   barcode?: string;
+  wildberriesUrl?: string;
+  ozonUrl?: string;
+  avitoUrl?: string;
 }
 
 export interface CartItem {

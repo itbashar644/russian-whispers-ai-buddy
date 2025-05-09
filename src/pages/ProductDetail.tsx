@@ -121,6 +121,59 @@ const ProductDetail = () => {
                   <span className="text-2xl font-bold">{product.price} ₽</span>
                 )}
               </div>
+
+              {/* Marketplace links */}
+              {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
+                <div className="flex items-center gap-3 my-4">
+                  <span className="text-sm text-muted-foreground">Доступен на:</span>
+                  <div className="flex gap-3">
+                    {product.wildberriesUrl && (
+                      <a 
+                        href={product.wildberriesUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
+                        title="Открыть на Wildberries"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 bg-purple-700 rounded-full text-white hover:bg-purple-800 transition-colors">
+                          <span className="text-sm font-bold">WB</span>
+                        </div>
+                        <span className="hidden sm:inline">Wildberries</span>
+                      </a>
+                    )}
+                    
+                    {product.ozonUrl && (
+                      <a 
+                        href={product.ozonUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                        title="Открыть на Ozon"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors">
+                          <span className="text-sm font-bold">O</span>
+                        </div>
+                        <span className="hidden sm:inline">Ozon</span>
+                      </a>
+                    )}
+                    
+                    {product.avitoUrl && (
+                      <a 
+                        href={product.avitoUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
+                        title="Открыть на Авито"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full text-white hover:bg-green-700 transition-colors">
+                          <span className="text-sm font-bold">A</span>
+                        </div>
+                        <span className="hidden sm:inline">Авито</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
