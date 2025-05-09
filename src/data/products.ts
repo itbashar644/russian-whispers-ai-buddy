@@ -1,4 +1,3 @@
-
 import { Product } from "../types/product";
 
 // Default products to populate the catalog initially
@@ -84,12 +83,14 @@ export const addOrUpdateProduct = (product: Product): void => {
     // Add new product
     products.push(product);
   }
+  // Save to localStorage immediately after modifying the products array
   saveProductsToStorage();
 };
 
 // Function to remove a product
 export const removeProduct = (productId: string): void => {
   products = products.filter(p => p.id !== productId);
+  // Save to localStorage immediately after modifying the products array
   saveProductsToStorage();
 };
 

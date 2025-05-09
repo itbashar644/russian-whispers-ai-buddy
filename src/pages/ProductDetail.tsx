@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -24,6 +23,14 @@ const ProductDetail = () => {
     product?.sizes ? product.sizes[0] : undefined
   );
   const [quantity, setQuantity] = useState(1);
+
+  // Update selected color and size when product changes
+  useEffect(() => {
+    if (product) {
+      setSelectedColor(product.colors ? product.colors[0] : undefined);
+      setSelectedSize(product.sizes ? product.sizes[0] : undefined);
+    }
+  }, [product]);
 
   // Force scroll to top when component mounts
   useEffect(() => {

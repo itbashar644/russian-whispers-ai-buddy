@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +46,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash, Search } from "lucide-react";
+import { Plus, Pencil, Trash, Search, X } from "lucide-react";
 import { 
   products, 
   addOrUpdateProduct, 
@@ -81,7 +80,11 @@ const AdminProducts = () => {
     countryOfOrigin: "Россия",
     articleNumber: "",
     barcode: "",
+    colors: [],
   });
+
+  // Add state for new color
+  const [newColor, setNewColor] = useState("");
 
   // Load categories on mount
   useEffect(() => {
@@ -127,6 +130,25 @@ const AdminProducts = () => {
     setFormData({
       ...formData,
       [name]: value,
+    });
+  };
+
+  // Add function to handle adding colors
+  const handleAddColor = () => {
+    if (newColor.trim() && !formData.colors?.includes(newColor.trim())) {
+      setFormData({
+        ...formData,
+        colors: [...(formData.colors || []), newColor.trim()],
+      });
+      setNewColor("");
+    }
+  };
+
+  // Add function to handle removing colors
+  const handleRemoveColor = (colorToRemove: string) => {
+    setFormData({
+      ...formData,
+      colors: formData.colors?.filter(color => color !== colorToRemove),
     });
   };
 
@@ -552,6 +574,52 @@ const AdminProducts = () => {
                   onChange={handleInputChange}
                   className="col-span-3"
                 />
+              </div>
+            </div>
+            
+            {/* Add colors input */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right">
+                Цвета
+              </Label>
+              <div className="col-span-3 space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    value={newColor}
+                    onChange={(e) => setNewColor(e.target.value)}
+                    placeholder="Название цвета"
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleAddColor}
+                    variant="secondary"
+                  >
+                    Добавить
+                  </Button>
+                </div>
+                
+                {formData.colors && formData.colors.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.colors.map((color) => (
+                      <div 
+                        key={color}
+                        className="flex items-center bg-muted rounded-md px-3 py-1 text-sm"
+                      >
+                        <span>{color}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 ml-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => handleRemoveColor(color)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

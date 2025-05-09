@@ -71,6 +71,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
           
+          {/* Colors display if available */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-xs text-muted-foreground">Цвета:</span>
+              <div className="flex gap-1">
+                {product.colors.map((color) => (
+                  <span key={color} className="text-xs">{color}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Marketplace icons */}
           {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
             <div className="flex items-center gap-2 mt-2">
