@@ -165,7 +165,7 @@ const ProductDetail = () => {
                       >
                         <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
                           <img 
-                            src="/lovable-uploads/ab959231-fd7d-4a09-9b4e-428144a0b03d.png"
+                            src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
                             alt="Ozon" 
                             className="w-full h-full object-contain"
                           />
