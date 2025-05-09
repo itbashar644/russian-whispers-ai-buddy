@@ -44,7 +44,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash, Search } from "lucide-react";
@@ -73,15 +72,12 @@ const AdminProducts = () => {
     countryOfOrigin: "Китай",
     articleNumber: "",
     barcode: "",
-    ozonUrl: "",
-    wildberriesUrl: "",
-    avitoUrl: "",
   });
 
   // Load categories on mount
   useEffect(() => {
     setCategories(getAllCategories());
-  }, []);
+  }, [products]);
 
   // Update the productsList when the global products array changes
   useEffect(() => {
@@ -213,9 +209,6 @@ const AdminProducts = () => {
       countryOfOrigin: "Китай",
       articleNumber: "",
       barcode: "",
-      ozonUrl: "",
-      wildberriesUrl: "",
-      avitoUrl: "",
     });
     setNewCategory("");
     setShowForm(false);
@@ -247,9 +240,6 @@ const AdminProducts = () => {
       countryOfOrigin: "Китай",
       articleNumber: "",
       barcode: "",
-      ozonUrl: "",
-      wildberriesUrl: "",
-      avitoUrl: "",
     });
     setShowForm(true);
   };

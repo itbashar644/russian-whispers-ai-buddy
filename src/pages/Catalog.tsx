@@ -11,13 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box } from "lucide-react";
+import { Box } from "lucide-react";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,34 +103,9 @@ const Catalog = () => {
     setFilteredProducts(result);
   }, [categoryParam, priceRange, searchTerm, inStockOnly, sortBy, products]);
 
-  // Dynamically generate category icons
-  const getCategoryIconMap = () => {
-    const defaultIcons = {
-      "Планшеты": <Tablet className="h-4 w-4 mr-2" />,
-      "Проекторы": <Projector className="h-4 w-4 mr-2" />,
-      "Смарт-часы": <Smartphone className="h-4 w-4 mr-2" />,
-      "Наушники": <Headphones className="h-4 w-4 mr-2" />,
-      "Для Дома": <Home className="h-4 w-4 mr-2" />,
-      "Сезонные товары": <Calendar className="h-4 w-4 mr-2" />,
-      "Фотоаппараты": <Camera className="h-4 w-4 mr-2" />,
-      "Товары для детей": <Baby className="h-4 w-4 mr-2" />,
-      "Освещение": <Home className="h-4 w-4 mr-2" />,
-      "Органайзеры": <Box className="h-4 w-4 mr-2" />,
-      "Декор": <Home className="h-4 w-4 mr-2" />,
-      "Текстиль": <Home className="h-4 w-4 mr-2" />,
-      "Кухня": <Home className="h-4 w-4 mr-2" />,
-    };
-    
-    // Create a map of all available categories with default icon as Box
-    const categoryIcons: Record<string, JSX.Element> = {};
-    availableCategories.forEach(category => {
-      categoryIcons[category] = defaultIcons[category] || <Box className="h-4 w-4 mr-2" />;
-    });
-
-    return categoryIcons;
+  const getCategoryIcon = () => {
+    return <Box className="h-4 w-4 mr-2" />;
   };
-
-  const categoryIcons = getCategoryIconMap();
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -186,7 +160,7 @@ const Catalog = () => {
                     className="w-full justify-start flex items-center"
                     onClick={() => handleCategoryClick(category)}
                   >
-                    {categoryIcons[category]}
+                    {getCategoryIcon()}
                     <span>{category}</span>
                   </Button>
                 ))}
