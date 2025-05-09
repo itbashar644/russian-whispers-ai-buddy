@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,9 @@ const Index = () => {
   const categories = getAllCategories();
 
   useEffect(() => {
-    // Displaying all categories
+    // Если категорий меньше 4, просто показываем все имеющиеся
+    // В противном случае, берем первые 4 категории
+    const categoriesToShow = categories.slice(0, 4);
   }, [categories]);
 
   return (
@@ -61,8 +64,7 @@ const Index = () => {
           <div className="container px-4 md:px-6">
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {/* Показываем все категории вместо первых четырех */}
-              {categories.map((category) => (
+              {categories.slice(0, 4).map((category) => (
                 <Link
                   key={category}
                   to={`/catalog?category=${category}`}
