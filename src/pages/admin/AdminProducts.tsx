@@ -81,7 +81,8 @@ const AdminProducts = () => {
     articleNumber: "",
     barcode: "",
     colors: [],
-    videoUrl: "", // Добавляем поле для URL видео
+    videoUrl: "", 
+    videoType: "mp4", // Добавляем поле для типа видео
   });
 
   // Add state for new color
@@ -121,7 +122,7 @@ const AdminProducts = () => {
   };
 
   const handleSelectChange = (value: string, name: string) => {
-    if (value === "new") {
+    if (name === "category" && value === "new") {
       // Show input for new category
       setShowNewCategoryInput(true);
       setNewCategory("");
@@ -253,6 +254,7 @@ const AdminProducts = () => {
         wildberriesUrl: formData.wildberriesUrl || undefined,
         avitoUrl: formData.avitoUrl || undefined,
         videoUrl: formData.videoUrl || undefined,
+        videoType: formData.videoUrl ? formData.videoType : undefined,
       };
 
       addOrUpdateProduct(newProduct);
@@ -276,6 +278,7 @@ const AdminProducts = () => {
       articleNumber: "",
       barcode: "",
       videoUrl: "", // Сбрасываем URL видео
+      videoType: "mp4",
     });
     setNewCategory("");
     setShowNewCategoryInput(false);
@@ -309,6 +312,7 @@ const AdminProducts = () => {
       articleNumber: "",
       barcode: "",
       videoUrl: "", // Сбрасываем URL видео
+      videoType: "mp4",
     });
     setNewCategory("");
     setShowNewCategoryInput(false);
@@ -603,19 +607,58 @@ const AdminProducts = () => {
               </div>
             </div>
             
-            {/* Добавляем поле для URL видео */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoUrl" className="text-right">
-                URL видео
-              </Label>
-              <Input
-                id="videoUrl"
-                name="videoUrl"
-                value={formData.videoUrl || ""}
-                onChange={handleInputChange}
-                placeholder="https://example.com/video.mp4"
-                className="col-span-3"
-              />
+            {/* Обновляем секцию для URL видео с выбором типа видео */}
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+              <h3 className="text-sm font-medium">Видео товара</h3>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="videoType" className="text-right">
+                  Тип видео
+                </Label>
+                <Select
+                  value={formData.videoType || "mp4"}
+                  onValueChange={(value) => handleSelectChange(value, "videoType")}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Выберите тип видео" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mp4">MP4 (прямая ссылка)</SelectItem>
+                    <SelectItem value="vk">ВКонтакте</SelectItem>
+                    <SelectItem value="youtube">YouTube</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="videoUrl" className="text-right">
+                  URL видео
+                </Label>
+                <Input
+                  id="videoUrl"
+                  name="videoUrl"
+                  value={formData.videoUrl || ""}
+                  onChange={handleInputChange}
+                  placeholder={
+                    formData.videoType === "vk"
+                      ? "https://vkvideo.ru/video-123456_789012 или с video_ext.php"
+                      : formData.videoType === "youtube"
+                      ? "https://youtube.com/watch?v=AbCdEfG или https://youtu.be/AbCdEfG"
+                      : "https://example.com/video.mp4"
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="col-span-4 text-xs text-muted-foreground pl-4 md:pl-[calc(25%+1rem)]">
+                {formData.videoType === "vk" ? (
+                  <p>Принимаются ссылки на видео ВКонтакте в форматах: vkvideo.ru/video-ID_ID, vk.com/video-ID_ID или с video_ext.php</p>
+                ) : formData.videoType === "youtube" ? (
+                  <p>Принимаются ссылки на видео YouTube в форматах: youtube.com/watch?v=ID или youtu.be/ID</p>
+                ) : (
+                  <p>Укажите прямую ссылку на MP4-видеофайл</p>
+                )}
+              </div>
             </div>
             
             {/* Предпросмотр изображения, если URL задан */}

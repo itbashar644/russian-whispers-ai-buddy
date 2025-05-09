@@ -8,6 +8,7 @@ export interface Product {
   category: string;
   imageUrl: string;
   videoUrl?: string;
+  videoType?: 'mp4' | 'vk' | 'youtube'; // Add video type field
   rating: number;
   inStock: boolean;
   colors?: string[];

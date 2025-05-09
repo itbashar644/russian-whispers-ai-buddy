@@ -10,6 +10,7 @@ import ProductGrid from "@/components/products/ProductGrid";
 import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { formatVideoUrl } from "@/lib/utils";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ const ProductDetail = () => {
   );
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // Update selected color when product changes
   useEffect(() => {
@@ -74,6 +76,56 @@ const ProductDetail = () => {
     setImageError(true);
   };
 
+  // Функция для обработки ошибок загрузки видео
+  const handleVideoError = () => {
+    console.error("Ошибка загрузки видео:", product.videoUrl);
+    setVideoError(true);
+  };
+
+  // Функция для определения типа рендера видео в зависимости от типа
+  const renderVideo = () => {
+    if (!product.videoUrl) return null;
+    
+    // Если произошла ошибка загрузки видео, не показываем блок
+    if (videoError) return null;
+
+    // Определяем тип видео (по умолчанию mp4 для обратной совместимости)
+    const videoType = product.videoType || 'mp4';
+    
+    switch (videoType) {
+      case 'vk':
+      case 'youtube':
+        const formattedUrl = formatVideoUrl(product.videoUrl, videoType);
+        return (
+          <div className="mt-4 border rounded-lg overflow-hidden aspect-video">
+            <iframe 
+              src={formattedUrl}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              title={product.title}
+              onError={handleVideoError}
+            />
+          </div>
+        );
+      case 'mp4':
+      default:
+        return (
+          <div className="mt-4 border rounded-lg overflow-hidden">
+            <video 
+              controls 
+              className="w-full h-auto"
+              poster={imageError ? "/placeholder.svg" : product.imageUrl}
+              onError={handleVideoError}
+            >
+              <source src={product.videoUrl} type="video/mp4" />
+              Ваш браузер не поддерживает видео.
+            </video>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -100,18 +152,7 @@ const ProductDetail = () => {
             </div>
             
             {/* Видео, если есть */}
-            {product.videoUrl && (
-              <div className="mt-4 border rounded-lg overflow-hidden">
-                <video 
-                  controls 
-                  className="w-full h-auto"
-                  poster={imageError ? "/placeholder.svg" : product.imageUrl}
-                >
-                  <source src={product.videoUrl} type="video/mp4" />
-                  Ваш браузер не поддерживает видео.
-                </video>
-              </div>
-            )}
+            {product.videoUrl && renderVideo()}
           </div>
 
           <div className="space-y-6">
