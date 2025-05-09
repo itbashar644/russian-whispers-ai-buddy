@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProductsByCategory, products, getAllCategories } from "@/data/products";
@@ -32,10 +31,17 @@ const Catalog = () => {
   const [sortBy, setSortBy] = useState("default");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
+  // Обновляем категории при монтировании компонента и при каждом входе на страницу
   useEffect(() => {
-    // Update categories from products
     setAvailableCategories(getAllCategories());
-  }, [products]);
+    
+    // Добавляем интервал для периодической проверки обновлений категорий
+    const intervalId = setInterval(() => {
+      setAvailableCategories(getAllCategories());
+    }, 5000); // Проверка каждые 5 секунд
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     // Update searchTerm when searchParam changes

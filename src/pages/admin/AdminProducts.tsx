@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +48,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash, Search } from "lucide-react";
-import { products, addOrUpdateProduct, removeProduct, getAllCategories } from "@/data/products";
+import { 
+  products, 
+  addOrUpdateProduct, 
+  removeProduct, 
+  getAllCategories, 
+  addCategory 
+} from "@/data/products";
 import { Product } from "@/types/product";
 import ProductImportExport from "@/components/admin/ProductImportExport";
 
@@ -79,7 +86,7 @@ const AdminProducts = () => {
   // Load categories on mount
   useEffect(() => {
     setCategories(getAllCategories());
-  }, [products]);
+  }, []);
 
   // Update the productsList when the global products array changes
   useEffect(() => {
@@ -89,6 +96,7 @@ const AdminProducts = () => {
   // Add this function to refresh products list
   const refreshProductsList = () => {
     setProductsList([...products]);
+    setCategories(getAllCategories()); // Обновляем список категорий
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -147,6 +155,12 @@ const AdminProducts = () => {
     // Use the new category if provided
     if (showNewCategoryInput && newCategory.trim()) {
       finalCategory = newCategory.trim();
+      
+      // Add new category to the global list
+      addCategory(finalCategory);
+      
+      // Refresh categories list
+      setCategories(getAllCategories());
     }
     
     if (!formData.title || !formData.description || !finalCategory) {
@@ -202,11 +216,6 @@ const AdminProducts = () => {
       toast("Товар добавлен", {
         description: `Товар "${newProduct.title}" был успешно добавлен`,
       });
-      
-      // Add new category to the list if it's a new one
-      if (showNewCategoryInput && newCategory && !categories.includes(newCategory)) {
-        setCategories([...categories, newCategory]);
-      }
     }
 
     setEditingProduct(null);

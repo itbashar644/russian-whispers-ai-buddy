@@ -123,20 +123,59 @@ export const getNewProducts = (limit: number = 4): Product[] => {
     .slice(0, limit);
 };
 
-// Function to get all unique categories
-export const getAllCategories = (): string[] => {
-  // If there are no products yet, return default catalog categories
-  if (products.length === 0) {
-    return [
-      "Сумки и рюкзаки",
-      "Аксессуары",
-      "Украшения",
-      "Одежда",
-      "Обувь",
-      "Для дома"
-    ];
+// Load categories from localStorage or default ones if not available
+const getInitialCategories = (): string[] => {
+  const defaultCategories = [
+    "Сумки и рюкзаки",
+    "Аксессуары",
+    "Украшения",
+    "Одежда",
+    "Обувь",
+    "Для дома"
+  ];
+  
+  // Get unique categories from products
+  const uniqueCategories = Array.from(new Set(products.map(product => product.category)));
+  
+  // Get saved categories from localStorage
+  const savedCategories = localStorage.getItem('catalog_categories');
+  
+  if (savedCategories) {
+    try {
+      const parsedCategories = JSON.parse(savedCategories);
+      // Merge with unique categories from products to ensure all products have a category
+      return Array.from(new Set([...parsedCategories, ...uniqueCategories]));
+    } catch (error) {
+      console.error('Failed to parse saved categories:', error);
+      return uniqueCategories.length > 0 ? uniqueCategories : defaultCategories;
+    }
   }
   
-  // Otherwise return all unique categories from products
-  return Array.from(new Set(products.map(product => product.category)));
+  return uniqueCategories.length > 0 ? uniqueCategories : defaultCategories;
+};
+
+// Store current categories
+let categories: string[] = getInitialCategories();
+
+// Function to save categories to localStorage
+const saveCategoriesToStorage = () => {
+  try {
+    localStorage.setItem('catalog_categories', JSON.stringify(categories));
+  } catch (error) {
+    console.error('Failed to save categories to storage:', error);
+  }
+};
+
+// Function to get all unique categories
+export const getAllCategories = (): string[] => {
+  // Return stored categories
+  return [...categories];
+};
+
+// Function to add a new category
+export const addCategory = (category: string): void => {
+  if (!categories.includes(category)) {
+    categories.push(category);
+    saveCategoriesToStorage();
+  }
 };

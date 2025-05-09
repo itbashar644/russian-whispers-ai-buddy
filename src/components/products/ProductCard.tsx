@@ -99,7 +99,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   title="Открыть на Ozon"
                 >
                   <img 
-                    src="/lovable-uploads/2382cf41-b25e-4a18-b0ed-379ed4b92f63.png" 
+                    src="/lovable-uploads/2d6239d5-f8e0-47da-94ea-53c5c11cd869.png" 
                     alt="Ozon" 
                     className="w-full h-full object-contain" 
                   />

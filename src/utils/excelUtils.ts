@@ -1,6 +1,7 @@
 
 import * as XLSX from 'xlsx';
 import { Product } from '@/types/product';
+import { addCategory, getAllCategories } from '@/data/products';
 
 // Convert products array to Excel workbook
 export const productsToExcel = (products: Product[]): XLSX.WorkBook => {
@@ -102,7 +103,7 @@ export const excelToProducts = (data: ArrayBuffer): Product[] => {
   const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
   
   // Map to Product objects
-  return jsonData.map((row) => {
+  const products = jsonData.map((row) => {
     // Create a base product object
     const product: Product = {
       id: row.id || `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -128,20 +129,31 @@ export const excelToProducts = (data: ArrayBuffer): Product[] => {
     if (row.wildberriesUrl) product.wildberriesUrl = row.wildberriesUrl;
     if (row.ozonUrl) product.ozonUrl = row.ozonUrl;
     if (row.avitoUrl) product.avitoUrl = row.avitoUrl;
+
+    // Добавляем категорию в общий список категорий, если она новая
+    if (row.category && typeof row.category === 'string') {
+      addCategory(row.category);
+    }
     
     return product;
   });
+
+  return products;
 };
 
 // Create template Excel file for importing products
 export const getImportTemplate = (): XLSX.WorkBook => {
+  // Получаем все доступные категории
+  const categories = getAllCategories();
+  const categoriesString = categories.join(', ');
+
   const templateData = [{
     id: '',
     title: 'Название товара',
     description: 'Описание товара',
     price: 0,
     discountPrice: '',
-    category: 'Категория',
+    category: categories.length > 0 ? categories[0] : 'Другое',
     imageUrl: '/placeholder.svg',
     rating: 5,
     inStock: 'Да',
@@ -157,9 +169,36 @@ export const getImportTemplate = (): XLSX.WorkBook => {
     ozonUrl: '',
     avitoUrl: '',
   }];
+
+  // Добавляем примечание по категориям
+  const templateData2 = [{
+    id: '',
+    title: 'ПРИМЕЧАНИЕ: Доступные категории',
+    description: categoriesString,
+    price: '',
+    discountPrice: '',
+    category: 'Вы можете использовать существующие категории или добавить новую',
+    imageUrl: '',
+    rating: '',
+    inStock: '',
+    colors: '',
+    sizes: '',
+    material: '',
+    isNew: '',
+    isBestseller: '',
+    countryOfOrigin: '',
+    articleNumber: '',
+    barcode: '',
+    wildberriesUrl: '',
+    ozonUrl: '',
+    avitoUrl: '',
+  }];
   
   // Create worksheet from template data
   const worksheet = XLSX.utils.json_to_sheet(templateData);
+  
+  // Add notes about categories on row 3
+  XLSX.utils.sheet_add_json(worksheet, templateData2, { skipHeader: true, origin: "A3" });
   
   // Add notes about fields
   worksheet['!cols'] = [
