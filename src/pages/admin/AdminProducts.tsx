@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +49,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash, Search } from "lucide-react";
 import { products, addOrUpdateProduct, removeProduct, getAllCategories } from "@/data/products";
 import { Product } from "@/types/product";
+import ProductImportExport from "@/components/admin/ProductImportExport";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>(products);
@@ -85,6 +85,11 @@ const AdminProducts = () => {
   useEffect(() => {
     setProductsList([...products]);
   }, [products]);
+
+  // Add this function to refresh products list
+  const refreshProductsList = () => {
+    setProductsList([...products]);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -264,6 +269,23 @@ const AdminProducts = () => {
           Добавить товар
         </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Импорт/Экспорт</span>
+          </CardTitle>
+          <CardDescription>
+            Массовое управление товарами через Excel-файлы
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProductImportExport 
+            products={productsList} 
+            onImportComplete={refreshProductsList}
+          />
+        </CardContent>
+      </Card>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
