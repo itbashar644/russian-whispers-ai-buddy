@@ -7,7 +7,7 @@ export interface Product {
   discountPrice?: number;
   category: string;
   imageUrl: string;
-  videoUrl?: string; // Добавляем поле для ссылки на видео
+  videoUrl?: string;
   rating: number;
   inStock: boolean;
   colors?: string[];
@@ -22,4 +22,20 @@ export interface Product {
   ozonUrl?: string;
   wildberriesUrl?: string;
   avitoUrl?: string;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  color?: string;
+  size?: string;
+}
+
+export interface DeliveryMethod {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  estimatedDays: string;
+  icon: string;
 }
