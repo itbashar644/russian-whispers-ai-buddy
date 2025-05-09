@@ -1,4 +1,3 @@
-
 import { Product } from "../types/product";
 
 // Функция для генерации случайного рейтинга в диапазоне от 4.7 до 4.9
@@ -15,6 +14,7 @@ const defaultProducts: Product[] = [
     price: 5990,
     category: "Сумки и рюкзаки",
     imageUrl: "/placeholder.svg",
+    additionalImages: ["/placeholder.svg", "/placeholder.svg"],
     rating: 4.8,
     inStock: true,
     countryOfOrigin: "Россия",

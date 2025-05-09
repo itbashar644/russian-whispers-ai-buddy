@@ -7,8 +7,9 @@ export interface Product {
   discountPrice?: number;
   category: string;
   imageUrl: string;
+  additionalImages?: string[]; // Add support for multiple images
   videoUrl?: string;
-  videoType?: 'mp4' | 'vk' | 'youtube'; // Add video type field
+  videoType?: 'mp4' | 'vk' | 'youtube';
   rating: number;
   inStock: boolean;
   colors?: string[];

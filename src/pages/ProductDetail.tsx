@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -24,11 +23,13 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Update selected color when product changes
   useEffect(() => {
     if (product) {
       setSelectedColor(product.colors ? product.colors[0] : undefined);
+      setCurrentImageIndex(0); // Reset image index when product changes
     }
   }, [product]);
 
@@ -69,6 +70,15 @@ const ProductDetail = () => {
 
   // Определяем отображаемую цену для кнопки
   const displayPrice = product.discountPrice || product.price;
+
+  // Get all available images (main image + additional images)
+  const allImages = [
+    product.imageUrl,
+    ...(product.additionalImages || [])
+  ].filter(Boolean);
+
+  // Current image to display
+  const currentImage = allImages[currentImageIndex] || "/placeholder.svg";
 
   // Функция для обработки ошибок загрузки изображения
   const handleImageError = () => {
@@ -142,14 +152,39 @@ const ProductDetail = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>
+            {/* Main image display */}
             <div className="border rounded-lg overflow-hidden">
               <img 
-                src={imageError ? "/placeholder.svg" : product.imageUrl} 
+                src={imageError ? "/placeholder.svg" : currentImage} 
                 alt={product.title} 
                 className="w-full h-auto object-cover aspect-square" 
                 onError={handleImageError}
               />
             </div>
+            
+            {/* Thumbnails gallery */}
+            {allImages.length > 1 && (
+              <div className="mt-4 grid grid-cols-5 gap-2">
+                {allImages.map((img, index) => (
+                  <button 
+                    key={index}
+                    className={`border rounded overflow-hidden aspect-square ${
+                      index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${product.title} - изображение ${index + 1}`}
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
             
             {/* Видео, если есть */}
             {product.videoUrl && renderVideo()}

@@ -75,6 +75,7 @@ const AdminProducts = () => {
     price: 0,
     category: "",
     imageUrl: "/placeholder.svg",
+    additionalImages: [], // Initialize empty array for additional images
     rating: 5,
     inStock: true,
     countryOfOrigin: "Россия",
@@ -82,8 +83,11 @@ const AdminProducts = () => {
     barcode: "",
     colors: [],
     videoUrl: "", 
-    videoType: "mp4", // Добавляем поле для типа видео
+    videoType: "mp4",
   });
+
+  // Add state for new image URL
+  const [newImageUrl, setNewImageUrl] = useState("");
 
   // Add state for new color
   const [newColor, setNewColor] = useState("");
@@ -146,6 +150,25 @@ const AdminProducts = () => {
     }
   };
 
+  // Add function to handle adding additional images
+  const handleAddImage = () => {
+    if (newImageUrl.trim()) {
+      setFormData({
+        ...formData,
+        additionalImages: [...(formData.additionalImages || []), newImageUrl.trim()],
+      });
+      setNewImageUrl("");
+    }
+  };
+
+  // Add function to handle removing images
+  const handleRemoveImage = (imageToRemove: string) => {
+    setFormData({
+      ...formData,
+      additionalImages: formData.additionalImages?.filter(image => image !== imageToRemove),
+    });
+  };
+
   // Add function to handle removing colors
   const handleRemoveColor = (colorToRemove: string) => {
     setFormData({
@@ -186,6 +209,23 @@ const AdminProducts = () => {
     }
   };
 
+  // Function to validate all image URLs
+  const validateAllImageUrls = (mainImageUrl: string, additionalImages: string[] = []): boolean => {
+    if (mainImageUrl && mainImageUrl !== "/placeholder.svg" && !validateImageUrl(mainImageUrl)) {
+      return false;
+    }
+    
+    if (additionalImages && additionalImages.length > 0) {
+      for (const url of additionalImages) {
+        if (!validateImageUrl(url)) {
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  };
+
   const handleSaveProduct = () => {
     let finalCategory = formData.category || "";
     
@@ -207,10 +247,10 @@ const AdminProducts = () => {
       return;
     }
 
-    // Validate image URL if provided and not the default
-    if (formData.imageUrl && formData.imageUrl !== "/placeholder.svg" && !validateImageUrl(formData.imageUrl)) {
-      toast("Ошибка URL изображения", {
-        description: "Пожалуйста, укажите корректный URL изображения или оставьте поле пустым",
+    // Validate image URLs
+    if (!validateAllImageUrls(formData.imageUrl || "", formData.additionalImages)) {
+      toast("Ошибка URL изображений", {
+        description: "Пожалуйста, укажите корректные URL изображений",
       });
       return;
     }
@@ -239,6 +279,7 @@ const AdminProducts = () => {
         discountPrice: formData.discountPrice,
         category: finalCategory,
         imageUrl: formData.imageUrl || "/placeholder.svg",
+        additionalImages: formData.additionalImages,
         rating: formData.rating || 5,
         inStock: formData.inStock !== undefined ? formData.inStock : true,
         colors: formData.colors,
@@ -272,12 +313,13 @@ const AdminProducts = () => {
       price: 0,
       category: "",
       imageUrl: "/placeholder.svg",
+      additionalImages: [], // Reset additional images
       rating: 5,
       inStock: true,
       countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
-      videoUrl: "", // Сбрасываем URL видео
+      videoUrl: "",
       videoType: "mp4",
     });
     setNewCategory("");
@@ -306,12 +348,13 @@ const AdminProducts = () => {
       price: 0,
       category: "",
       imageUrl: "/placeholder.svg",
+      additionalImages: [], // Reset additional images
       rating: 5,
       inStock: true,
       countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
-      videoUrl: "", // Сбрасываем URL видео
+      videoUrl: "",
       videoType: "mp4",
     });
     setNewCategory("");
@@ -485,7 +528,7 @@ const AdminProducts = () => {
             
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="imageUrl" className="text-right">
-                URL изображения
+                Основное изображение
               </Label>
               <Input
                 id="imageUrl"
@@ -495,6 +538,61 @@ const AdminProducts = () => {
                 placeholder="https://example.com/image.jpg"
                 className="col-span-3"
               />
+            </div>
+            
+            {/* Add section for additional images */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right">
+                Дополнительные изображения
+              </Label>
+              <div className="col-span-3 space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    placeholder="URL изображения"
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleAddImage}
+                    variant="secondary"
+                  >
+                    Добавить
+                  </Button>
+                </div>
+                
+                {formData.additionalImages && formData.additionalImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.additionalImages.map((imgUrl, index) => (
+                      <div 
+                        key={index}
+                        className="relative group"
+                      >
+                        <div className="w-24 h-24 border rounded overflow-hidden">
+                          <img 
+                            src={imgUrl} 
+                            alt={`Дополнительное изображение ${index + 1}`} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg";
+                            }}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleRemoveImage(imgUrl)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
@@ -607,7 +705,7 @@ const AdminProducts = () => {
               </div>
             </div>
             
-            {/* Обновляем секцию для URL видео с выбором типа видео */}
+            {/* Секция для URL видео с выбором типа видео */}
             <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <h3 className="text-sm font-medium">Видео товара</h3>
               
@@ -661,11 +759,11 @@ const AdminProducts = () => {
               </div>
             </div>
             
-            {/* Предпросмотр изображения, если URL задан */}
+            {/* Предпросмотр изображения, если URL зад��н */}
             {formData.imageUrl && formData.imageUrl !== "/placeholder.svg" && (
               <div className="grid grid-cols-4 items-start gap-4">
                 <div className="text-right">
-                  Предпросмотр изображения
+                  Предпросмотр основного изображения
                 </div>
                 <div className="col-span-3 border rounded p-2">
                   <img 
