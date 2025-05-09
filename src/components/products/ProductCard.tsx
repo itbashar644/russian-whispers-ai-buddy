@@ -22,6 +22,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
+  // Определяем отображаемую цену для кнопки
+  const displayPrice = product.discountPrice || product.price;
+
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={`/product/${product.id}`} className="aspect-square overflow-hidden">
@@ -143,7 +146,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           className="flex-1"
           disabled={!product.inStock}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" /> В корзину
+          <ShoppingCart className="mr-2 h-4 w-4" /> Купить на сайте за {displayPrice} ₽
         </Button>
       </CardFooter>
     </Card>

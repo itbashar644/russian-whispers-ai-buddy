@@ -81,6 +81,7 @@ const AdminProducts = () => {
     articleNumber: "",
     barcode: "",
     colors: [],
+    videoUrl: "", // Добавляем поле для URL видео
   });
 
   // Add state for new color
@@ -230,6 +231,7 @@ const AdminProducts = () => {
         ozonUrl: formData.ozonUrl || undefined,
         wildberriesUrl: formData.wildberriesUrl || undefined,
         avitoUrl: formData.avitoUrl || undefined,
+        videoUrl: formData.videoUrl || undefined, // Добавляем URL видео
       };
 
       addOrUpdateProduct(newProduct);
@@ -252,6 +254,7 @@ const AdminProducts = () => {
       countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
+      videoUrl: "", // Сбрасываем URL видео
     });
     setNewCategory("");
     setShowNewCategoryInput(false);
@@ -284,6 +287,7 @@ const AdminProducts = () => {
       countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
+      videoUrl: "", // Сбрасываем URL видео
     });
     setNewCategory("");
     setShowNewCategoryInput(false);
@@ -463,6 +467,7 @@ const AdminProducts = () => {
                 name="imageUrl"
                 value={formData.imageUrl || ""}
                 onChange={handleInputChange}
+                placeholder="https://example.com/image.jpg"
                 className="col-span-3"
               />
             </div>
@@ -576,6 +581,43 @@ const AdminProducts = () => {
                 />
               </div>
             </div>
+            
+            {/* Добавляем поле для URL видео */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="videoUrl" className="text-right">
+                URL видео
+              </Label>
+              <Input
+                id="videoUrl"
+                name="videoUrl"
+                value={formData.videoUrl || ""}
+                onChange={handleInputChange}
+                placeholder="https://example.com/video.mp4"
+                className="col-span-3"
+              />
+            </div>
+            
+            {/* Предпросмотр изображения, если URL задан */}
+            {formData.imageUrl && formData.imageUrl !== "/placeholder.svg" && (
+              <div className="grid grid-cols-4 items-start gap-4">
+                <div className="text-right">
+                  Предпросмотр изображения
+                </div>
+                <div className="col-span-3 border rounded p-2">
+                  <img 
+                    src={formData.imageUrl} 
+                    alt="Предпросмотр" 
+                    className="max-h-[200px] object-contain mx-auto" 
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                      toast("Ошибка загрузки изображения", {
+                        description: "Проверьте корректность URL-адреса",
+                      });
+                    }}
+                  />
+                </div>
+              </div>
+            )}
             
             {/* Add colors input */}
             <div className="grid grid-cols-4 items-start gap-4">

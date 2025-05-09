@@ -1,15 +1,23 @@
 
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getBestsellers, getNewProducts } from "@/data/products";
+import { getBestsellers, getNewProducts, getAllCategories } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Tablet, Projector, Smartphone, Headphones } from "lucide-react";
+import { Box } from "lucide-react";
 
 const Index = () => {
   const bestsellers = getBestsellers();
   const newProducts = getNewProducts();
+  const categories = getAllCategories();
+
+  useEffect(() => {
+    // Если категорий меньше 4, просто показываем все имеющиеся
+    // В противном случае, берем первые 4 категории
+    const categoriesToShow = categories.slice(0, 4);
+  }, [categories]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -31,9 +39,13 @@ const Index = () => {
                   <Button size="lg" asChild>
                     <Link to="/catalog">Смотреть каталог</Link>
                   </Button>
-                  <Button variant="outline" size="lg" asChild>
-                    <Link to="/catalog?category=home">Для дома</Link>
-                  </Button>
+                  {categories.length > 0 && (
+                    <Button variant="outline" size="lg" asChild>
+                      <Link to={`/catalog?category=${categories[0]}`}>
+                        {categories[0]}
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="rounded-lg overflow-hidden">
@@ -52,25 +64,20 @@ const Index = () => {
           <div className="container px-4 md:px-6">
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { name: "Планшеты", image: "/placeholder.svg", link: "/catalog?category=tablets", icon: <Tablet className="h-8 w-8 mb-2" /> },
-                { name: "Проекторы", image: "/placeholder.svg", link: "/catalog?category=projectors", icon: <Projector className="h-8 w-8 mb-2" /> },
-                { name: "Смарт-часы", image: "/placeholder.svg", link: "/catalog?category=smartwatches", icon: <Smartphone className="h-8 w-8 mb-2" /> },
-                { name: "Наушники", image: "/placeholder.svg", link: "/catalog?category=headphones", icon: <Headphones className="h-8 w-8 mb-2" /> }
-              ].map((category) => (
+              {categories.slice(0, 4).map((category) => (
                 <Link
-                  key={category.name}
-                  to={category.link}
+                  key={category}
+                  to={`/catalog?category=${category}`}
                   className="group relative aspect-square overflow-hidden rounded-lg"
                 >
                   <img
-                    alt={category.name}
+                    alt={category}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    src={category.image}
+                    src="/placeholder.svg"
                   />
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/40">
-                    {category.icon}
-                    <h3 className="text-xl font-bold text-white">{category.name}</h3>
+                    <Box className="h-8 w-8 mb-2" />
+                    <h3 className="text-xl font-bold text-white">{category}</h3>
                   </div>
                 </Link>
               ))}

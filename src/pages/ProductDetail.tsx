@@ -69,6 +69,9 @@ const ProductDetail = () => {
     });
   };
 
+  // Определяем отображаемую цену для кнопки
+  const displayPrice = product.discountPrice || product.price;
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -92,6 +95,20 @@ const ProductDetail = () => {
                 className="w-full h-auto object-cover aspect-square" 
               />
             </div>
+            
+            {/* Видео, если есть */}
+            {product.videoUrl && (
+              <div className="mt-4 border rounded-lg overflow-hidden">
+                <video 
+                  controls 
+                  className="w-full h-auto"
+                  poster={product.imageUrl}
+                >
+                  <source src={product.videoUrl} type="video/mp4" />
+                  Ваш браузер не поддерживает видео.
+                </video>
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -148,7 +165,7 @@ const ProductDetail = () => {
                         className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
                         title="Открыть на Wildberries"
                       >
-                        <div className="flex items-center justify-center w-8 h-8 bg-purple-700 rounded-full text-white hover:bg-purple-800 transition-colors">
+                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
                           <img 
                             src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
                             alt="Wildberries" 
@@ -286,7 +303,7 @@ const ProductDetail = () => {
                   disabled={!product.inStock}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  {product.inStock ? "Добавить в корзину" : "Нет в наличии"}
+                  {product.inStock ? `Купить на сайте за ${displayPrice} ₽` : "Нет в наличии"}
                 </Button>
               </div>
             </div>

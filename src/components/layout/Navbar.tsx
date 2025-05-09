@@ -1,6 +1,6 @@
 
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Menu, User, Tablet, Projector, Smartphone, Headphones, Home, Calendar, Camera, Baby, Box, LogIn, UserPlus } from "lucide-react";
+import { ShoppingCart, Search, Menu, User, Box, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,7 +30,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
-import { products } from "@/data/products";
+import { products, getAllCategories } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 
 const Navbar = () => {
@@ -42,18 +42,19 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   
-  const categories = [
-    { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
-    { id: "projectors", name: "Проекторы", icon: <Projector className="h-4 w-4 mr-2" /> },
-    { id: "smartwatches", name: "Смарт-часы", icon: <Smartphone className="h-4 w-4 mr-2" /> },
-    { id: "headphones", name: "Наушники", icon: <Headphones className="h-4 w-4 mr-2" /> },
-    { id: "home", name: "Для Дома", icon: <Home className="h-4 w-4 mr-2" /> },
-    { id: "seasonal", name: "Сезонные товары", icon: <Calendar className="h-4 w-4 mr-2" /> },
-    { id: "cameras", name: "Фотоаппараты моментальной печати", icon: <Camera className="h-4 w-4 mr-2" /> },
-    { id: "kids", name: "Товары для детей", icon: <Baby className="h-4 w-4 mr-2" /> },
-    { id: "misc", name: "1000 мелочей", icon: <Box className="h-4 w-4 mr-2" /> },
-  ];
+  // Загрузка категорий из админки
+  useEffect(() => {
+    setAvailableCategories(getAllCategories());
+    
+    // Добавляем интервал для периодической проверки обновлений категорий
+    const intervalId = setInterval(() => {
+      setAvailableCategories(getAllCategories());
+    }, 5000); // Проверка каждые 5 секунд
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Функция поиска товаров
   useEffect(() => {
@@ -102,6 +103,11 @@ const Navbar = () => {
       .slice(0, 2);
   };
 
+  // Получаем иконку для категории
+  const getCategoryIcon = (category: string) => {
+    return <Box className="h-4 w-4 mr-2" />;
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b">
       <div className="container flex items-center justify-between h-16 px-4 md:px-6">
@@ -127,18 +133,18 @@ const Navbar = () => {
                 <NavigationMenuTrigger>Категории</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {categories.map((category) => (
-                      <li key={category.id}>
+                    {availableCategories.map((category) => (
+                      <li key={category}>
                         <NavigationMenuLink asChild>
                           <Link
-                            to={`/catalog?category=${category.id}`}
+                            to={`/catalog?category=${category}`}
                             className={cn(
                               "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                               "flex items-center"
                             )}
                           >
-                            {category.icon}
-                            <div className="text-sm font-medium">{category.name}</div>
+                            {getCategoryIcon(category)}
+                            <div className="text-sm font-medium">{category}</div>
                           </Link>
                         </NavigationMenuLink>
                       </li>

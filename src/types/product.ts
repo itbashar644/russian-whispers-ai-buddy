@@ -7,37 +7,19 @@ export interface Product {
   discountPrice?: number;
   category: string;
   imageUrl: string;
+  videoUrl?: string; // Добавляем поле для ссылки на видео
   rating: number;
   inStock: boolean;
   colors?: string[];
   sizes?: string[];
   material?: string;
+  countryOfOrigin: string;
+  specifications?: Record<string, string>;
   isNew?: boolean;
   isBestseller?: boolean;
-  countryOfOrigin: string;
-  specifications?: {
-    name: string;
-    value: string;
-  }[];
   articleNumber?: string;
   barcode?: string;
-  wildberriesUrl?: string;
   ozonUrl?: string;
+  wildberriesUrl?: string;
   avitoUrl?: string;
 }
-
-export interface CartItem {
-  product: Product;
-  quantity: number;
-  color?: string;
-  size?: string;
-}
-
-export type DeliveryMethod = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  estimatedDays: string;
-  icon: string;
-};
