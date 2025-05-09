@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -162,8 +163,12 @@ const ProductDetail = () => {
                         className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
                         title="Открыть на Ozon"
                       >
-                        <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors">
-                          <span className="text-sm font-bold">O</span>
+                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+                          <img 
+                            src="/lovable-uploads/ab959231-fd7d-4a09-9b4e-428144a0b03d.png"
+                            alt="Ozon" 
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                         <span className="hidden sm:inline">Ozon</span>
                       </a>
