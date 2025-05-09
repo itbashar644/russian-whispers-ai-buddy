@@ -1,4 +1,3 @@
-
 import { Product } from "../types/product";
 
 // Export products as a variable that can be modified by the admin panel
@@ -53,5 +52,18 @@ export const getNewProducts = (limit: number = 4): Product[] => {
 
 // Function to get all unique categories
 export const getAllCategories = (): string[] => {
+  // If there are no products yet, return default catalog categories
+  if (products.length === 0) {
+    return [
+      "Сумки и рюкзаки",
+      "Аксессуары",
+      "Украшения",
+      "Одежда",
+      "Обувь",
+      "Для ��ома"
+    ];
+  }
+  
+  // Otherwise return all unique categories from products
   return Array.from(new Set(products.map(product => product.category)));
 };

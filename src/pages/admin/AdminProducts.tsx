@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,6 +60,7 @@ const AdminProducts = () => {
   const [showForm, setShowForm] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
 
   // For form add/edit product
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -69,7 +71,7 @@ const AdminProducts = () => {
     imageUrl: "/placeholder.svg",
     rating: 5,
     inStock: true,
-    countryOfOrigin: "Китай",
+    countryOfOrigin: "Россия",
     articleNumber: "",
     barcode: "",
   });
@@ -104,6 +106,7 @@ const AdminProducts = () => {
   const handleSelectChange = (value: string, name: string) => {
     if (value === "new") {
       // Show input for new category
+      setShowNewCategoryInput(true);
       setNewCategory("");
       return;
     }
@@ -134,22 +137,26 @@ const AdminProducts = () => {
   });
 
   const handleSaveProduct = () => {
-    if (!formData.title || !formData.description || !(formData.category || newCategory)) {
+    let finalCategory = formData.category || "";
+    
+    // Use the new category if provided
+    if (showNewCategoryInput && newCategory.trim()) {
+      finalCategory = newCategory.trim();
+    }
+    
+    if (!formData.title || !formData.description || !finalCategory) {
       toast("Ошибка", {
         description: "Пожалуйста, заполните все обязательные поля",
       });
       return;
     }
 
-    // Use the new category if provided
-    const category = newCategory || formData.category;
-    
     if (editingProduct) {
       // Editing existing product
       const updatedProduct: Product = {
         ...editingProduct,
         ...formData,
-        category: category || editingProduct.category,
+        category: finalCategory,
       } as Product;
       
       addOrUpdateProduct(updatedProduct);
@@ -166,7 +173,7 @@ const AdminProducts = () => {
         description: formData.description || "",
         price: formData.price || 0,
         discountPrice: formData.discountPrice,
-        category: category || "",
+        category: finalCategory,
         imageUrl: formData.imageUrl || "/placeholder.svg",
         rating: formData.rating || 5,
         inStock: formData.inStock !== undefined ? formData.inStock : true,
@@ -175,7 +182,7 @@ const AdminProducts = () => {
         material: formData.material,
         isNew: formData.isNew,
         isBestseller: formData.isBestseller,
-        countryOfOrigin: formData.countryOfOrigin || "Китай",
+        countryOfOrigin: formData.countryOfOrigin || "Россия",
         specifications: formData.specifications,
         articleNumber: formData.articleNumber || "",
         barcode: formData.barcode || "",
@@ -192,7 +199,7 @@ const AdminProducts = () => {
       });
       
       // Add new category to the list if it's a new one
-      if (newCategory && !categories.includes(newCategory)) {
+      if (showNewCategoryInput && newCategory && !categories.includes(newCategory)) {
         setCategories([...categories, newCategory]);
       }
     }
@@ -206,11 +213,12 @@ const AdminProducts = () => {
       imageUrl: "/placeholder.svg",
       rating: 5,
       inStock: true,
-      countryOfOrigin: "Китай",
+      countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
     });
     setNewCategory("");
+    setShowNewCategoryInput(false);
     setShowForm(false);
   };
 
@@ -237,10 +245,12 @@ const AdminProducts = () => {
       imageUrl: "/placeholder.svg",
       rating: 5,
       inStock: true,
-      countryOfOrigin: "Китай",
+      countryOfOrigin: "Россия",
       articleNumber: "",
       barcode: "",
     });
+    setNewCategory("");
+    setShowNewCategoryInput(false);
     setShowForm(true);
   };
 
@@ -310,7 +320,7 @@ const AdminProducts = () => {
               <Label htmlFor="category" className="text-right">
                 Категория *
               </Label>
-              {newCategory !== "" ? (
+              {showNewCategoryInput ? (
                 <div className="col-span-3 flex gap-2">
                   <Input
                     id="newCategory"
@@ -321,7 +331,10 @@ const AdminProducts = () => {
                   />
                   <Button 
                     variant="outline" 
-                    onClick={() => setNewCategory("")}
+                    onClick={() => {
+                      setShowNewCategoryInput(false);
+                      setNewCategory("");
+                    }}
                   >
                     Отмена
                   </Button>
