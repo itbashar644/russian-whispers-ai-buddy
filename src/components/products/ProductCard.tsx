@@ -127,7 +127,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   title="Открыть на Авито"
                 >
                   <img 
-                    src="/lovable-uploads/2a6149e2-4731-4f83-bcc9-e00d95412f6c.png" 
+                    src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png" 
                     alt="Avito" 
                     className="w-full h-full object-contain" 
                   />

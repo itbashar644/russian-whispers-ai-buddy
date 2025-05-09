@@ -186,8 +186,12 @@ const ProductDetail = () => {
                         className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
                         title="Открыть на Авито"
                       >
-                        <div className="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full text-white hover:bg-green-700 transition-colors">
-                          <span className="text-sm font-bold">A</span>
+                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+                          <img 
+                            src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
+                            alt="Avito" 
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                         <span className="hidden sm:inline">Авито</span>
                       </a>
