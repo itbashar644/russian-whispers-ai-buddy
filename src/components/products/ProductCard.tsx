@@ -17,8 +17,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addItem({
       product,
       quantity: 1,
-      color: product.colors ? product.colors[0] : undefined,
-      size: product.sizes ? product.sizes[0] : undefined,
+      color: product.colors ? product.colors[0] : undefined
     });
   };
 

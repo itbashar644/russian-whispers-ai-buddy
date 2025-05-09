@@ -1,4 +1,10 @@
+
 import { Product } from "../types/product";
+
+// Функция для генерации случайного рейтинга в диапазоне от 4.7 до 4.9
+const generateRandomRating = (): number => {
+  return Number((Math.random() * 0.2 + 4.7).toFixed(1));
+};
 
 // Default products to populate the catalog initially
 const defaultProducts: Product[] = [
@@ -39,7 +45,6 @@ const defaultProducts: Product[] = [
     rating: 4.7,
     inStock: true,
     countryOfOrigin: "Россия",
-    sizes: ["16", "17", "18", "19"],
     material: "Серебро 925 пробы, малахит",
     isBestseller: true,
   }
@@ -75,6 +80,11 @@ const saveProductsToStorage = () => {
 
 // Function to add or update products
 export const addOrUpdateProduct = (product: Product): void => {
+  // Если рейтинг не указан, генерируем случайный в диапазоне от 4.7 до 4.9
+  if (!product.rating) {
+    product.rating = generateRandomRating();
+  }
+  
   const index = products.findIndex(p => p.id === product.id);
   if (index >= 0) {
     // Update existing product

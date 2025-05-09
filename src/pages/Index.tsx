@@ -13,12 +13,6 @@ const Index = () => {
   const newProducts = getNewProducts();
   const categories = getAllCategories();
 
-  useEffect(() => {
-    // Если категорий меньше 4, просто показываем все имеющиеся
-    // В противном случае, берем первые 4 категории
-    const categoriesToShow = categories.slice(0, 4);
-  }, [categories]);
-
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -63,8 +57,8 @@ const Index = () => {
         <section className="py-12">
           <div className="container px-4 md:px-6">
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {categories.slice(0, 4).map((category) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {categories.map((category) => (
                 <Link
                   key={category}
                   to={`/catalog?category=${category}`}

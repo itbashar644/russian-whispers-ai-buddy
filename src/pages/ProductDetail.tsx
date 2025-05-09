@@ -20,16 +20,12 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors ? product.colors[0] : undefined
   );
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    product?.sizes ? product.sizes[0] : undefined
-  );
   const [quantity, setQuantity] = useState(1);
 
-  // Update selected color and size when product changes
+  // Update selected color when product changes
   useEffect(() => {
     if (product) {
       setSelectedColor(product.colors ? product.colors[0] : undefined);
-      setSelectedSize(product.sizes ? product.sizes[0] : undefined);
     }
   }, [product]);
 
@@ -64,8 +60,7 @@ const ProductDetail = () => {
     addItem({
       product,
       quantity,
-      color: selectedColor,
-      size: selectedSize,
+      color: selectedColor
     });
   };
 
@@ -239,33 +234,6 @@ const ProductDetail = () => {
                           className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                         >
                           {color}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {product.sizes && product.sizes.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-2">Размер</h3>
-                  <RadioGroup 
-                    value={selectedSize} 
-                    onValueChange={setSelectedSize}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {product.sizes.map((size) => (
-                      <div key={size} className="flex items-center">
-                        <RadioGroupItem 
-                          value={size} 
-                          id={`size-${size}`} 
-                          className="peer sr-only" 
-                        />
-                        <Label 
-                          htmlFor={`size-${size}`}
-                          className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                        >
-                          {size}
                         </Label>
                       </div>
                     ))}

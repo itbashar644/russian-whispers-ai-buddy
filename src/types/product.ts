@@ -11,7 +11,6 @@ export interface Product {
   rating: number;
   inStock: boolean;
   colors?: string[];
-  sizes?: string[];
   material?: string;
   countryOfOrigin: string;
   specifications?: Record<string, string>;
@@ -28,7 +27,6 @@ export interface CartItem {
   product: Product;
   quantity: number;
   color?: string;
-  size?: string;
 }
 
 export interface DeliveryMethod {
