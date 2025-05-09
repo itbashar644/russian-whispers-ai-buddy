@@ -145,7 +145,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           className="flex-1"
           disabled={!product.inStock}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" /> Купить на сайте за {displayPrice} ₽
+          <ShoppingCart className="mr-2 h-4 w-4" /> Купить за {displayPrice} ₽
         </Button>
       </CardFooter>
     </Card>

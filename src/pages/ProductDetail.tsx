@@ -271,7 +271,7 @@ const ProductDetail = () => {
                   disabled={!product.inStock}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  {product.inStock ? `Купить на сайте за ${displayPrice} ₽` : "Нет в наличии"}
+                  {product.inStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
                 </Button>
               </div>
             </div>
