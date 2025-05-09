@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,7 +24,6 @@ import {
   DialogFooter, 
   DialogHeader, 
   DialogTitle,
-  DialogTrigger
 } from "@/components/ui/dialog";
 import { 
   Select, 
@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash, Search } from "lucide-react";
-import { products } from "@/data/products";
+import { products, addOrUpdateProduct, removeProduct, getAllCategories } from "@/data/products";
 import { Product } from "@/types/product";
 
 const AdminProducts = () => {
@@ -58,8 +58,10 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState("");
 
-  // Для формы добавления/редактирования товара
+  // For form add/edit product
   const [formData, setFormData] = useState<Partial<Product>>({
     title: "",
     description: "",
@@ -76,8 +78,15 @@ const AdminProducts = () => {
     avitoUrl: "",
   });
 
-  // Получаем уникальные категории
-  const categories = Array.from(new Set(productsList.map((p) => p.category)));
+  // Load categories on mount
+  useEffect(() => {
+    setCategories(getAllCategories());
+  }, []);
+
+  // Update the productsList when the global products array changes
+  useEffect(() => {
+    setProductsList([...products]);
+  }, [products]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -97,6 +106,12 @@ const AdminProducts = () => {
   };
 
   const handleSelectChange = (value: string, name: string) => {
+    if (value === "new") {
+      // Show input for new category
+      setNewCategory("");
+      return;
+    }
+    
     setFormData({
       ...formData,
       [name]: value,
@@ -123,33 +138,39 @@ const AdminProducts = () => {
   });
 
   const handleSaveProduct = () => {
-    if (!formData.title || !formData.description || !formData.category) {
+    if (!formData.title || !formData.description || !(formData.category || newCategory)) {
       toast("Ошибка", {
         description: "Пожалуйста, заполните все обязательные поля",
       });
       return;
     }
 
+    // Use the new category if provided
+    const category = newCategory || formData.category;
+    
     if (editingProduct) {
-      // Редактирование существующего товара
-      setProductsList(
-        productsList.map((p) =>
-          p.id === editingProduct.id ? { ...p, ...formData } as Product : p
-        )
-      );
+      // Editing existing product
+      const updatedProduct: Product = {
+        ...editingProduct,
+        ...formData,
+        category: category || editingProduct.category,
+      } as Product;
+      
+      addOrUpdateProduct(updatedProduct);
+      setProductsList([...products]);
 
       toast("Товар обновлен", {
-        description: `Товар "${formData.title}" был успешно обновлен`,
+        description: `Товар "${updatedProduct.title}" был успешно обновлен`,
       });
     } else {
-      // Добавление нового товара
+      // Adding new product
       const newProduct: Product = {
         id: `${Date.now()}`,
         title: formData.title || "",
         description: formData.description || "",
         price: formData.price || 0,
         discountPrice: formData.discountPrice,
-        category: formData.category || "",
+        category: category || "",
         imageUrl: formData.imageUrl || "/placeholder.svg",
         rating: formData.rating || 5,
         inStock: formData.inStock !== undefined ? formData.inStock : true,
@@ -167,11 +188,17 @@ const AdminProducts = () => {
         avitoUrl: formData.avitoUrl || undefined,
       };
 
-      setProductsList([...productsList, newProduct]);
+      addOrUpdateProduct(newProduct);
+      setProductsList([...products]);
 
       toast("Товар добавлен", {
         description: `Товар "${newProduct.title}" был успешно добавлен`,
       });
+      
+      // Add new category to the list if it's a new one
+      if (newCategory && !categories.includes(newCategory)) {
+        setCategories([...categories, newCategory]);
+      }
     }
 
     setEditingProduct(null);
@@ -190,12 +217,14 @@ const AdminProducts = () => {
       wildberriesUrl: "",
       avitoUrl: "",
     });
+    setNewCategory("");
     setShowForm(false);
   };
 
   const handleDeleteProduct = () => {
     if (deleteProductId) {
-      setProductsList(productsList.filter((p) => p.id !== deleteProductId));
+      removeProduct(deleteProductId);
+      setProductsList([...products]);
       
       toast("Товар удален", {
         description: "Товар был успешно удален из каталога",
@@ -291,22 +320,40 @@ const AdminProducts = () => {
               <Label htmlFor="category" className="text-right">
                 Категория *
               </Label>
-              <Select
-                value={formData.category || ""}
-                onValueChange={(value) => handleSelectChange(value, "category")}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Выберите категорию" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="new">Новая категория</SelectItem>
-                </SelectContent>
-              </Select>
+              {newCategory !== "" ? (
+                <div className="col-span-3 flex gap-2">
+                  <Input
+                    id="newCategory"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Введите новую категорию"
+                    className="flex-1"
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setNewCategory("")}
+                  >
+                    Отмена
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={formData.category || ""}
+                  onValueChange={(value) => handleSelectChange(value, "category")}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Выберите категорию" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="new">Новая категория</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">

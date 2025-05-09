@@ -1,7 +1,8 @@
 
 import { Product } from "../types/product";
 
-export const products: Product[] = [
+// Export products as a variable that can be modified by the admin panel
+export let products: Product[] = [
   {
     id: "1",
     title: "Минималистичная настольная лампа",
@@ -163,6 +164,23 @@ export const products: Product[] = [
   }
 ];
 
+// Function to add or update products
+export const addOrUpdateProduct = (product: Product): void => {
+  const index = products.findIndex(p => p.id === product.id);
+  if (index >= 0) {
+    // Update existing product
+    products[index] = product;
+  } else {
+    // Add new product
+    products.push(product);
+  }
+};
+
+// Function to remove a product
+export const removeProduct = (productId: string): void => {
+  products = products.filter(p => p.id !== productId);
+};
+
 export const getProductById = (id: string): Product | undefined => {
   return products.find((product) => product.id === id);
 };
@@ -191,4 +209,9 @@ export const getNewProducts = (limit: number = 4): Product[] => {
   return products
     .filter((product) => product.isNew)
     .slice(0, limit);
+};
+
+// Function to get all unique categories
+export const getAllCategories = (): string[] => {
+  return Array.from(new Set(products.map(product => product.category)));
 };

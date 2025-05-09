@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getProductsByCategory, products } from "@/data/products";
+import { getProductsByCategory, products, getAllCategories } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,9 +31,15 @@ const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("default");
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    // Обновляем searchTerm когда изменяется searchParam
+    // Update categories from products
+    setAvailableCategories(getAllCategories());
+  }, [products]);
+
+  useEffect(() => {
+    // Update searchTerm when searchParam changes
     if (searchParam) {
       setSearchTerm(searchParam);
     }
@@ -42,12 +48,12 @@ const Catalog = () => {
   useEffect(() => {
     let result = [...products];
     
-    // Фильтрация по категории
+    // Filter by category
     if (categoryParam) {
       result = getProductsByCategory(categoryParam);
     }
     
-    // Фильтрация по поисковому запросу
+    // Filter by search term
     if (searchTerm) {
       result = result.filter(
         (p) => 
@@ -57,19 +63,19 @@ const Catalog = () => {
       );
     }
     
-    // Фильтрация по ценовому диапазону
+    // Filter by price range
     result = result.filter(
       (p) => 
         (p.discountPrice || p.price) >= priceRange.min && 
         (p.discountPrice || p.price) <= priceRange.max
     );
     
-    // Фильтрация по наличию
+    // Filter by stock
     if (inStockOnly) {
       result = result.filter((p) => p.inStock);
     }
     
-    // Сортировка результатов
+    // Sort results
     switch (sortBy) {
       case "price-asc":
         result.sort((a, b) => 
@@ -91,24 +97,41 @@ const Catalog = () => {
         result.sort((a, b) => b.rating - a.rating);
         break;
       default:
-        // Сортировка по умолчанию
+        // Default sorting
         break;
     }
     
     setFilteredProducts(result);
-  }, [categoryParam, priceRange, searchTerm, inStockOnly, sortBy]);
+  }, [categoryParam, priceRange, searchTerm, inStockOnly, sortBy, products]);
 
-  const categories = [
-    { id: "tablets", name: "Планшеты", icon: <Tablet className="h-4 w-4 mr-2" /> },
-    { id: "projectors", name: "Проекторы", icon: <Projector className="h-4 w-4 mr-2" /> },
-    { id: "smartwatches", name: "Смарт-часы", icon: <Smartphone className="h-4 w-4 mr-2" /> },
-    { id: "headphones", name: "Наушники", icon: <Headphones className="h-4 w-4 mr-2" /> },
-    { id: "home", name: "Для Дома", icon: <Home className="h-4 w-4 mr-2" /> },
-    { id: "seasonal", name: "Сезонные товары", icon: <Calendar className="h-4 w-4 mr-2" /> },
-    { id: "cameras", name: "Фотоаппараты моментальной печати", icon: <Camera className="h-4 w-4 mr-2" /> },
-    { id: "kids", name: "Товары для детей", icon: <Baby className="h-4 w-4 mr-2" /> },
-    { id: "misc", name: "1000 мелочей", icon: <Box className="h-4 w-4 mr-2" /> },
-  ];
+  // Dynamically generate category icons
+  const getCategoryIconMap = () => {
+    const defaultIcons = {
+      "Планшеты": <Tablet className="h-4 w-4 mr-2" />,
+      "Проекторы": <Projector className="h-4 w-4 mr-2" />,
+      "Смарт-часы": <Smartphone className="h-4 w-4 mr-2" />,
+      "Наушники": <Headphones className="h-4 w-4 mr-2" />,
+      "Для Дома": <Home className="h-4 w-4 mr-2" />,
+      "Сезонные товары": <Calendar className="h-4 w-4 mr-2" />,
+      "Фотоаппараты": <Camera className="h-4 w-4 mr-2" />,
+      "Товары для детей": <Baby className="h-4 w-4 mr-2" />,
+      "Освещение": <Home className="h-4 w-4 mr-2" />,
+      "Органайзеры": <Box className="h-4 w-4 mr-2" />,
+      "Декор": <Home className="h-4 w-4 mr-2" />,
+      "Текстиль": <Home className="h-4 w-4 mr-2" />,
+      "Кухня": <Home className="h-4 w-4 mr-2" />,
+    };
+    
+    // Create a map of all available categories with default icon as Box
+    const categoryIcons: Record<string, JSX.Element> = {};
+    availableCategories.forEach(category => {
+      categoryIcons[category] = defaultIcons[category] || <Box className="h-4 w-4 mr-2" />;
+    });
+
+    return categoryIcons;
+  };
+
+  const categoryIcons = getCategoryIconMap();
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -156,15 +179,15 @@ const Catalog = () => {
                 >
                   Все товары
                 </Button>
-                {categories.map((category) => (
+                {availableCategories.map((category) => (
                   <Button
-                    key={category.id}
-                    variant={categoryParam === category.id ? "default" : "outline"}
+                    key={category}
+                    variant={categoryParam === category ? "default" : "outline"}
                     className="w-full justify-start flex items-center"
-                    onClick={() => handleCategoryClick(category.id)}
+                    onClick={() => handleCategoryClick(category)}
                   >
-                    {category.icon}
-                    <span>{category.name}</span>
+                    {categoryIcons[category]}
+                    <span>{category}</span>
                   </Button>
                 ))}
               </div>
@@ -219,7 +242,7 @@ const Catalog = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <h1 className="text-2xl font-bold">
                 {categoryParam 
-                  ? categories.find(c => c.id === categoryParam)?.name || "Каталог"
+                  ? availableCategories.includes(categoryParam) ? categoryParam : "Каталог"
                   : searchTerm ? `Поиск: ${searchTerm}` : "Каталог товаров"}
               </h1>
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
