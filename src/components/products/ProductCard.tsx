@@ -18,7 +18,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
       product,
       quantity: 1,
       color: product.colors ? product.colors[0] : undefined,
-      size: product.sizes ? product.sizes[0] : undefined,
     });
   };
 
@@ -130,7 +129,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   title="Открыть на Авито"
                 >
                   <img 
-                    src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png" 
+                    src="/lovable-uploads/2d6239d5-f8e0-47da-94ea-53c5c11cd869.png" 
                     alt="Avito" 
                     className="w-full h-full object-contain" 
                   />

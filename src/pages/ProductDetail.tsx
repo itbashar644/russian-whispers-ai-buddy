@@ -20,16 +20,12 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product?.colors ? product.colors[0] : undefined
   );
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    product?.sizes ? product.sizes[0] : undefined
-  );
   const [quantity, setQuantity] = useState(1);
 
-  // Update selected color and size when product changes
+  // Update selected color when product changes
   useEffect(() => {
     if (product) {
       setSelectedColor(product.colors ? product.colors[0] : undefined);
-      setSelectedSize(product.sizes ? product.sizes[0] : undefined);
     }
   }, [product]);
 
@@ -65,7 +61,6 @@ const ProductDetail = () => {
       product,
       quantity,
       color: selectedColor,
-      size: selectedSize,
     });
   };
 
@@ -134,6 +129,11 @@ const ProductDetail = () => {
                 <span className="text-sm text-muted-foreground">
                   Рейтинг: {product.rating}/5
                 </span>
+                {product.reviews && (
+                  <span className="text-sm text-muted-foreground">
+                    ({product.reviews.length} отзывов)
+                  </span>
+                )}
               </div>
 
               <div className="mb-6">
@@ -205,7 +205,7 @@ const ProductDetail = () => {
                       >
                         <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
                           <img 
-                            src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
+                            src="/lovable-uploads/2d6239d5-f8e0-47da-94ea-53c5c11cd869.png"
                             alt="Avito" 
                             className="w-full h-full object-contain"
                           />
@@ -239,33 +239,6 @@ const ProductDetail = () => {
                           className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                         >
                           {color}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              )}
-
-              {product.sizes && product.sizes.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-2">Размер</h3>
-                  <RadioGroup 
-                    value={selectedSize} 
-                    onValueChange={setSelectedSize}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {product.sizes.map((size) => (
-                      <div key={size} className="flex items-center">
-                        <RadioGroupItem 
-                          value={size} 
-                          id={`size-${size}`} 
-                          className="peer sr-only" 
-                        />
-                        <Label 
-                          htmlFor={`size-${size}`}
-                          className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                        >
-                          {size}
                         </Label>
                       </div>
                     ))}
@@ -314,6 +287,41 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Reviews section */}
+        {product.reviews && product.reviews.length > 0 && (
+          <section className="mt-12 border-t pt-8">
+            <h2 className="text-2xl font-bold mb-6">Отзывы покупателей ({product.reviews.length})</h2>
+            
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {product.reviews.slice(0, 9).map((review) => (
+                <div key={review.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">{review.author}</span>
+                    <span className="text-sm text-muted-foreground">{review.date}</span>
+                  </div>
+                  <div className="flex mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        fill={i < review.rating ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className={`w-4 h-4 ${
+                          i < review.rating ? "text-yellow-500" : "text-gray-300"
+                        }`}
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-sm">{review.text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {relatedProducts.length > 0 && (
           <section className="mt-16">
