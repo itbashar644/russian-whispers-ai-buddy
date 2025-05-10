@@ -1,3 +1,4 @@
+
 import { Product } from "../types/product";
 
 // Функция для генерации случайного рейтинга в диапазоне от 4.7 до 4.9
@@ -189,4 +190,31 @@ export const addCategory = (category: string): void => {
     categories.push(category);
     saveCategoriesToStorage();
   }
+};
+
+// Function to remove a category
+export const removeCategory = (category: string): void => {
+  // Проверяем, используется ли категория в продуктах
+  const productsInCategory = products.filter(p => p.category === category);
+  
+  if (productsInCategory.length === 0) {
+    // Если категория не используется, удаляем ее
+    categories = categories.filter(c => c !== category);
+    saveCategoriesToStorage();
+    return true;
+  }
+  
+  return false; // Если категория используется, возвращаем false
+};
+
+// Function to update products when a category is removed
+export const updateProductsCategory = (oldCategory: string, newCategory: string): void => {
+  // Обновляем категорию для всех продуктов из старой категории
+  products.forEach(product => {
+    if (product.category === oldCategory) {
+      product.category = newCategory;
+    }
+  });
+  
+  saveProductsToStorage();
 };

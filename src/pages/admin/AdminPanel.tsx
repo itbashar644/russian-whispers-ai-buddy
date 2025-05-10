@@ -1,124 +1,135 @@
 
-import React, { useState } from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
-import { 
-  ShoppingCart, 
-  Package, 
-  Users, 
-  FileText, 
-  ChartBar, 
-  LayoutDashboard 
-} from "lucide-react";
+import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AdminOrders from "./AdminOrders";
-import AdminProducts from "./AdminProducts";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Users,
+  BarChart3,
+  LogOut,
+  Settings,
+  List,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import AdminDashboard from "./AdminDashboard";
+import AdminProducts from "./AdminProducts";
+import AdminOrders from "./AdminOrders";
 import AdminCustomers from "./AdminCustomers";
 import AdminReports from "./AdminReports";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import AdminCategories from "./AdminCategories";
 
 const AdminPanel = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const { signOut } = useAuth();
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    navigate(`/admin/${value === "dashboard" ? "" : value}`);
+  const handleSignOut = async () => {
+    await signOut();
+    toast("Выход выполнен", {
+      description: "Вы вышли из административной панели",
+    });
   };
 
+  const navigation = [
+    {
+      title: "Панель управления",
+      href: "/admin",
+      icon: <LayoutDashboard className="h-4 w-4" />,
+    },
+    {
+      title: "Товары",
+      href: "/admin/products",
+      icon: <Package className="h-4 w-4" />,
+    },
+    {
+      title: "Категории",
+      href: "/admin/categories",
+      icon: <List className="h-4 w-4" />,
+    },
+    {
+      title: "Заказы",
+      href: "/admin/orders",
+      icon: <ShoppingCart className="h-4 w-4" />,
+    },
+    {
+      title: "Пользователи",
+      href: "/admin/customers",
+      icon: <Users className="h-4 w-4" />,
+    },
+    {
+      title: "Отчеты",
+      href: "/admin/reports",
+      icon: <BarChart3 className="h-4 w-4" />,
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <LayoutDashboard className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Административная панель</h1>
-          </div>
-          <div>
-            <Button variant="outline" asChild>
-              <Link to="/">Вернуться на сайт</Link>
-            </Button>
-          </div>
+    <div className="flex min-h-screen bg-muted/20">
+      {/* Sidebar */}
+      <div className="hidden md:flex w-64 flex-col border-r bg-background">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold">Админ панель</h2>
+          <p className="text-sm text-muted-foreground">Управление магазином</p>
         </div>
-      </header>
-
-      <div className="flex flex-1">
-        <aside className="w-64 bg-white border-r p-4 hidden md:block">
-          <nav className="space-y-2">
-            <Link 
-              to="/admin" 
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-md ${
-                activeTab === "dashboard" ? "bg-primary/10 text-primary" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("dashboard")}
+        <nav className="flex-1 px-4 space-y-1">
+          {navigation.map((item) => (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              end={item.href === "/admin"}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center py-2 px-3 rounded-md text-sm font-medium",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )
+              }
             >
-              <ChartBar size={20} />
-              <span>Дашборд</span>
-            </Link>
-            <Link 
-              to="/admin/orders" 
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-md ${
-                activeTab === "orders" ? "bg-primary/10 text-primary" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("orders")}
-            >
-              <ShoppingCart size={20} />
-              <span>Заказы</span>
-            </Link>
-            <Link 
-              to="/admin/products" 
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-md ${
-                activeTab === "products" ? "bg-primary/10 text-primary" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("products")}
-            >
-              <Package size={20} />
-              <span>Товары</span>
-            </Link>
-            <Link 
-              to="/admin/customers" 
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-md ${
-                activeTab === "customers" ? "bg-primary/10 text-primary" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("customers")}
-            >
-              <Users size={20} />
-              <span>Клиенты</span>
-            </Link>
-            <Link 
-              to="/admin/reports" 
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-md ${
-                activeTab === "reports" ? "bg-primary/10 text-primary" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("reports")}
-            >
-              <FileText size={20} />
-              <span>Отчеты</span>
-            </Link>
-          </nav>
-        </aside>
-
-        <div className="md:hidden p-2 sticky top-0 bg-white z-10 border-b w-full">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
-              <TabsTrigger value="orders">Заказы</TabsTrigger>
-              <TabsTrigger value="products">Товары</TabsTrigger>
-              <TabsTrigger value="customers">Клиенты</TabsTrigger>
-              <TabsTrigger value="reports">Отчеты</TabsTrigger>
-            </TabsList>
-          </Tabs>
+              {item.icon}
+              <span className="ml-3">{item.title}</span>
+            </NavLink>
+          ))}
+        </nav>
+        <div className="p-4 border-t">
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Выйти
+          </Button>
         </div>
+      </div>
 
-        <main className="flex-1 p-6">
+      {/* Mobile sidebar */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b bg-background">
+        <h2 className="text-xl font-bold">Админ панель</h2>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="icon">
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
+        <div className="p-6 flex-1">
           <Routes>
             <Route path="/" element={<AdminDashboard />} />
-            <Route path="/orders" element={<AdminOrders />} />
             <Route path="/products" element={<AdminProducts />} />
+            <Route path="/categories" element={<AdminCategories />} />
+            <Route path="/orders" element={<AdminOrders />} />
             <Route path="/customers" element={<AdminCustomers />} />
             <Route path="/reports" element={<AdminReports />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
-        </main>
+        </div>
       </div>
     </div>
   );
