@@ -56,6 +56,8 @@ import {
 } from "@/data/products";
 import { Product } from "@/types/product";
 import ProductImportExport from "@/components/admin/ProductImportExport";
+import ImageUploader from "@/components/admin/ImageUploader";
+import MultipleImageUploader from "@/components/admin/MultipleImageUploader";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>(products);
@@ -75,7 +77,7 @@ const AdminProducts = () => {
     price: 0,
     category: "",
     imageUrl: "/placeholder.svg",
-    additionalImages: [], // Initialize empty array for additional images
+    additionalImages: [], 
     rating: 5,
     inStock: true,
     countryOfOrigin: "Россия",
@@ -362,6 +364,20 @@ const AdminProducts = () => {
     setShowForm(true);
   };
 
+  const handleMainImageUploaded = (url: string) => {
+    setFormData({
+      ...formData,
+      imageUrl: url,
+    });
+  };
+
+  const handleAdditionalImagesChange = (urls: string[]) => {
+    setFormData({
+      ...formData,
+      additionalImages: urls,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -526,72 +542,28 @@ const AdminProducts = () => {
               />
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right">
                 Основное изображение
               </Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl || ""}
-                onChange={handleInputChange}
-                placeholder="https://example.com/image.jpg"
-                className="col-span-3"
-              />
+              <div className="col-span-3">
+                <ImageUploader
+                  initialImageUrl={formData.imageUrl}
+                  onImageUploaded={handleMainImageUploaded}
+                  onRemoveImage={() => setFormData({...formData, imageUrl: "/placeholder.svg"})}
+                />
+              </div>
             </div>
             
-            {/* Add section for additional images */}
             <div className="grid grid-cols-4 items-start gap-4">
               <Label className="text-right">
                 Дополнительные изображения
               </Label>
-              <div className="col-span-3 space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    placeholder="URL изображения"
-                    className="flex-1"
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={handleAddImage}
-                    variant="secondary"
-                  >
-                    Добавить
-                  </Button>
-                </div>
-                
-                {formData.additionalImages && formData.additionalImages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.additionalImages.map((imgUrl, index) => (
-                      <div 
-                        key={index}
-                        className="relative group"
-                      >
-                        <div className="w-24 h-24 border rounded overflow-hidden">
-                          <img 
-                            src={imgUrl} 
-                            alt={`Дополнительное изображение ${index + 1}`} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg";
-                            }}
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute -top-2 -right-2 h-6 w-6 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(imgUrl)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="col-span-3">
+                <MultipleImageUploader
+                  initialImageUrls={formData.additionalImages}
+                  onImagesChange={handleAdditionalImagesChange}
+                />
               </div>
             </div>
             
@@ -759,28 +731,6 @@ const AdminProducts = () => {
               </div>
             </div>
             
-            {/* Предпросмотр изображения, если URL зад��н */}
-            {formData.imageUrl && formData.imageUrl !== "/placeholder.svg" && (
-              <div className="grid grid-cols-4 items-start gap-4">
-                <div className="text-right">
-                  Предпросмотр основного изображения
-                </div>
-                <div className="col-span-3 border rounded p-2">
-                  <img 
-                    src={formData.imageUrl} 
-                    alt="Предпросмотр" 
-                    className="max-h-[200px] object-contain mx-auto" 
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.svg";
-                      toast("Ошибка загрузки изображения", {
-                        description: "Проверьте корректность URL-адреса",
-                      });
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-            
             {/* Add colors input */}
             <div className="grid grid-cols-4 items-start gap-4">
               <Label className="text-right">
@@ -890,7 +840,7 @@ const AdminProducts = () => {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Артикул</TableHead>
-                  <TableHead>Название</TableHead>
+                  <TableHead>Наз��ание</TableHead>
                   <TableHead>Категория</TableHead>
                   <TableHead>Цена (₽)</TableHead>
                   <TableHead>Статус</TableHead>
