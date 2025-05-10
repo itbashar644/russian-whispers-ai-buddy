@@ -193,7 +193,7 @@ export const addCategory = (category: string): void => {
 };
 
 // Function to remove a category
-export const removeCategory = (category: string): void => {
+export const removeCategory = (category: string): boolean => {
   // Проверяем, используется ли категория в продуктах
   const productsInCategory = products.filter(p => p.category === category);
   

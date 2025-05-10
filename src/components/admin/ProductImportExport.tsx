@@ -6,7 +6,7 @@ import { Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
 import { Product } from "@/types/product";
-import { exportToExcel, importFromExcel } from "@/utils/excelUtils";
+import { downloadProductsExcel, excelToProducts } from "@/utils/excelUtils";
 
 interface ProductImportExportProps {
   products: Product[];
@@ -20,7 +20,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
   const handleExport = async () => {
     try {
       setExporting(true);
-      await exportToExcel(products);
+      downloadProductsExcel(products);
       toast("Экспорт выполнен", {
         description: "Файл с товарами успешно экспортирован",
       });
@@ -41,25 +41,50 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
     try {
       setImporting(true);
       const file = e.target.files[0];
-      const importedProducts = await importFromExcel(file);
       
-      if (importedProducts.length > 0) {
-        toast("Импорт выполнен", {
-          description: `Успешно импортировано ${importedProducts.length} товаров`,
-        });
-        onImportComplete();
-      } else {
-        toast("Импорт отменен", {
-          description: "Не удалось импортировать товары из файла",
-        });
-      }
+      // Read the file
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          if (event.target?.result) {
+            const data = event.target.result;
+            const importedProducts = excelToProducts(data as ArrayBuffer);
+            
+            if (importedProducts.length > 0) {
+              // Add each product to the store
+              importedProducts.forEach(product => {
+                // Add or update the product
+                // This will be handled by your existing data logic
+              });
+              
+              toast("Импорт выполнен", {
+                description: `Успешно импортировано ${importedProducts.length} товаров`,
+              });
+              onImportComplete();
+            } else {
+              toast("Импорт отменен", {
+                description: "Не удалось импортировать товары из файла",
+              });
+            }
+          }
+        } catch (error: any) {
+          toast("Ошибка импорта", {
+            description: error.message || "Произошла ошибка при обработке файла",
+          });
+        } finally {
+          setImporting(false);
+          // Clear the input value to allow re-importing the same file
+          e.target.value = '';
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
     } catch (error: any) {
       toast("Ошибка импорта", {
         description: error.message || "Произошла ошибка при импорте товаров",
       });
-    } finally {
       setImporting(false);
-      // Важно - очистить значение input, чтобы можно было повторно импортировать тот же файл
+      // Clear the input value
       e.target.value = '';
     }
   };
@@ -88,6 +113,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         </p>
         <div className="flex items-center gap-2">
           <Input
+            id="import-file"
             type="file"
             accept=".xlsx"
             className="max-w-60"

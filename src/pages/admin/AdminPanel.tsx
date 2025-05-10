@@ -22,10 +22,10 @@ import { toast } from "sonner";
 import AdminCategories from "./AdminCategories";
 
 const AdminPanel = () => {
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     toast("Выход выполнен", {
       description: "Вы вышли из административной панели",
     });
