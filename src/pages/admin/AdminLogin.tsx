@@ -19,9 +19,16 @@ const AdminLogin = () => {
 
   // Проверка, авторизован ли пользователь и является ли он админом
   useEffect(() => {
-    if (isAuthenticated && hasRole('admin')) {
-      navigate('/admin');
-    }
+    const checkAdminRole = async () => {
+      if (isAuthenticated) {
+        const isAdmin = await hasRole('admin');
+        if (isAdmin) {
+          navigate('/admin');
+        }
+      }
+    };
+    
+    checkAdminRole();
   }, [isAuthenticated, hasRole, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {

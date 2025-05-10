@@ -17,25 +17,39 @@ export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) =>
   useEffect(() => {
     const checkAccess = async () => {
       if (!isLoading) {
-        // Проверяем роль пользователя
-        const access = await hasRole('admin') || (editorAccess && await hasRole('editor'));
-        setHasAccess(access);
-
         if (!isAuthenticated) {
           toast("Требуется авторизация", {
             description: "Пожалуйста, войдите в аккаунт",
           });
-        } else if (!access) {
-          toast("Недостаточно прав", {
-            description: "У вас нет доступа к административной панели",
-          });
+          setIsChecking(false);
+          return;
         }
 
-        setIsChecking(false);
+        // Проверяем роль пользователя
+        try {
+          const isAdmin = await hasRole('admin');
+          const isEditor = editorAccess && await hasRole('editor');
+          const access = isAdmin || isEditor;
+          
+          setHasAccess(access);
+
+          if (!access) {
+            toast("Недостаточно прав", {
+              description: "У вас нет доступа к административной панели",
+            });
+          }
+        } catch (error) {
+          console.error("Ошибка при проверке прав доступа:", error);
+          setHasAccess(false);
+        } finally {
+          setIsChecking(false);
+        }
       }
     };
 
-    checkAccess();
+    if (!isLoading) {
+      checkAccess();
+    }
   }, [isLoading, isAuthenticated, hasRole, editorAccess]);
 
   if (isLoading || isChecking) {
