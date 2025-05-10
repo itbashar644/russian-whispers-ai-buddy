@@ -1,10 +1,6 @@
 
-import { Product } from "../types/product";
-
-// Функция для генерации случайного рейтинга в диапазоне от 4.7 до 4.9
-const generateRandomRating = (): number => {
-  return Number((Math.random() * 0.2 + 4.7).toFixed(1));
-};
+import { Product } from "@/types/product";
+import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
 
 // Default products to populate the catalog initially
 const defaultProducts: Product[] = [
@@ -53,30 +49,15 @@ const defaultProducts: Product[] = [
 
 // Get products from localStorage or use default ones if not available
 const getInitialProducts = (): Product[] => {
-  const savedProducts = localStorage.getItem('catalog_products');
-  
-  if (savedProducts) {
-    try {
-      return JSON.parse(savedProducts);
-    } catch (error) {
-      console.error('Failed to parse saved products:', error);
-      return [...defaultProducts];
-    }
-  }
-  
-  return [...defaultProducts];
+  return getFromStorage<Product[]>('catalog_products', [...defaultProducts]);
 };
 
 // Export products as a variable that can be modified by the admin panel
 export let products: Product[] = getInitialProducts();
 
 // Function to save products to localStorage
-const saveProductsToStorage = () => {
-  try {
-    localStorage.setItem('catalog_products', JSON.stringify(products));
-  } catch (error) {
-    console.error('Failed to save products to storage:', error);
-  }
+const saveProductsToStorage = (): void => {
+  saveToStorage('catalog_products', products);
 };
 
 // Function to add or update products
@@ -133,88 +114,4 @@ export const getNewProducts = (limit: number = 4): Product[] => {
   return products
     .filter((product) => product.isNew)
     .slice(0, limit);
-};
-
-// Load categories from localStorage or default ones if not available
-const getInitialCategories = (): string[] => {
-  const defaultCategories = [
-    "Сумки и рюкзаки",
-    "Аксессуары",
-    "Украшения",
-    "Одежда",
-    "Обувь",
-    "Для дома"
-  ];
-  
-  // Get unique categories from products
-  const uniqueCategories = Array.from(new Set(products.map(product => product.category)));
-  
-  // Get saved categories from localStorage
-  const savedCategories = localStorage.getItem('catalog_categories');
-  
-  if (savedCategories) {
-    try {
-      const parsedCategories = JSON.parse(savedCategories);
-      // Merge with unique categories from products to ensure all products have a category
-      return Array.from(new Set([...parsedCategories, ...uniqueCategories]));
-    } catch (error) {
-      console.error('Failed to parse saved categories:', error);
-      return uniqueCategories.length > 0 ? uniqueCategories : defaultCategories;
-    }
-  }
-  
-  return uniqueCategories.length > 0 ? uniqueCategories : defaultCategories;
-};
-
-// Store current categories
-let categories: string[] = getInitialCategories();
-
-// Function to save categories to localStorage
-const saveCategoriesToStorage = () => {
-  try {
-    localStorage.setItem('catalog_categories', JSON.stringify(categories));
-  } catch (error) {
-    console.error('Failed to save categories to storage:', error);
-  }
-};
-
-// Function to get all unique categories
-export const getAllCategories = (): string[] => {
-  // Return stored categories
-  return [...categories];
-};
-
-// Function to add a new category
-export const addCategory = (category: string): void => {
-  if (!categories.includes(category)) {
-    categories.push(category);
-    saveCategoriesToStorage();
-  }
-};
-
-// Function to remove a category
-export const removeCategory = (category: string): boolean => {
-  // Проверяем, используется ли категория в продуктах
-  const productsInCategory = products.filter(p => p.category === category);
-  
-  if (productsInCategory.length === 0) {
-    // Если категория не используется, удаляем ее
-    categories = categories.filter(c => c !== category);
-    saveCategoriesToStorage();
-    return true;
-  }
-  
-  return false; // Если категория используется, возвращаем false
-};
-
-// Function to update products when a category is removed
-export const updateProductsCategory = (oldCategory: string, newCategory: string): void => {
-  // Обновляем категорию для всех продуктов из старой категории
-  products.forEach(product => {
-    if (product.category === oldCategory) {
-      product.category = newCategory;
-    }
-  });
-  
-  saveProductsToStorage();
 };

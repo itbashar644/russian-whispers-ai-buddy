@@ -66,9 +66,6 @@ const CategoryManager = () => {
       // Перемещаем продукты из удаляемой категории в выбранную
       updateProductsCategory(categoryToDelete, targetCategory);
       
-      // Удаляем категорию
-      removeCategory(categoryToDelete);
-      
       toast("Категория удалена", {
         description: `Продукты перемещены в категорию "${targetCategory}" и категория "${categoryToDelete}" удалена`,
       });
