@@ -15,22 +15,26 @@ export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) =>
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
+    let isMounted = true; // Флаг для предотвращения обновления состояния после размонтирования
+
     const checkAccess = async () => {
-      if (!isLoading) {
+      try {
         if (!isAuthenticated) {
-          toast("Требуется авторизация", {
-            description: "Пожалуйста, войдите в аккаунт",
-          });
-          setIsChecking(false);
+          if (isMounted) {
+            toast("Требуется авторизация", {
+              description: "Пожалуйста, войдите в аккаунт",
+            });
+            setIsChecking(false);
+          }
           return;
         }
 
         // Проверяем роль пользователя
-        try {
-          const isAdmin = await hasRole('admin');
-          const isEditor = editorAccess && await hasRole('editor');
-          const access = isAdmin || isEditor;
-          
+        const isAdmin = await hasRole('admin');
+        const isEditor = editorAccess && await hasRole('editor');
+        const access = isAdmin || isEditor;
+        
+        if (isMounted) {
           setHasAccess(access);
 
           if (!access) {
@@ -38,10 +42,12 @@ export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) =>
               description: "У вас нет доступа к административной панели",
             });
           }
-        } catch (error) {
-          console.error("Ошибка при проверке прав доступа:", error);
+          setIsChecking(false);
+        }
+      } catch (error) {
+        console.error("Ошибка при проверке прав доступа:", error);
+        if (isMounted) {
           setHasAccess(false);
-        } finally {
           setIsChecking(false);
         }
       }
@@ -50,6 +56,10 @@ export const AdminAuth = ({ children, editorAccess = false }: AdminAuthProps) =>
     if (!isLoading) {
       checkAccess();
     }
+
+    return () => {
+      isMounted = false; // Предотвращаем обновление состояния после размонтирования
+    };
   }, [isLoading, isAuthenticated, hasRole, editorAccess]);
 
   if (isLoading || isChecking) {

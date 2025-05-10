@@ -14,21 +14,40 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const navigate = useNavigate();
   const { isAuthenticated, hasRole } = useAuth();
 
   // Проверка, авторизован ли пользователь и является ли он админом
   useEffect(() => {
+    let isMounted = true;
+    
     const checkAdminRole = async () => {
       if (isAuthenticated) {
-        const isAdmin = await hasRole('admin');
-        if (isAdmin) {
-          navigate('/admin');
+        try {
+          const isAdmin = await hasRole('admin');
+          if (isAdmin && isMounted) {
+            navigate('/admin');
+          }
+        } catch (error) {
+          console.error("Ошибка при проверке роли администратора:", error);
+        } finally {
+          if (isMounted) {
+            setIsCheckingAdmin(false);
+          }
+        }
+      } else {
+        if (isMounted) {
+          setIsCheckingAdmin(false);
         }
       }
     };
     
     checkAdminRole();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated, hasRole, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,6 +55,9 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
+      // Очистка предыдущего состояния авторизации
+      cleanupAuthState();
+      
       // Используем основной метод входа, а затем проверяем роль
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
@@ -71,7 +93,9 @@ const AdminLogin = () => {
         toast("Авторизация успешна", {
           description: "Добро пожаловать в административную панель",
         });
-        navigate("/admin");
+        
+        // Используем полную перезагрузку страницы для обеспечения чистого состояния
+        window.location.href = "/admin";
       } else {
         // Если роль не админ, выполняем выход
         await supabase.auth.signOut();
@@ -88,6 +112,17 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
+
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Проверка авторизации...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 items-center justify-center p-4">

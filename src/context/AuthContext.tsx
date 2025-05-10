@@ -26,7 +26,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (newPassword: string) => Promise<boolean>;
   updateEmail: (newEmail: string) => Promise<boolean>;
-  hasRole: (role: 'admin' | 'editor' | 'user') => boolean;
+  hasRole: (role: 'admin' | 'editor' | 'user') => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -337,8 +337,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const hasRole = (role: 'admin' | 'editor' | 'user'): boolean => {
-    return userRoles.includes(role);
+  const hasRole = async (role: 'admin' | 'editor' | 'user'): Promise<boolean> => {
+    // Если нет пользователя, то нет и ролей
+    if (!user) return false;
+    
+    // Если у нас уже есть кэшированные роли, используем их
+    if (userRoles.length > 0) {
+      return userRoles.includes(role);
+    }
+    
+    // Если ролей еще нет, загружаем их из базы данных
+    try {
+      const { data: rolesData, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Ошибка при проверке ролей:', error);
+        return false;
+      }
+      
+      const roles = rolesData.map(r => r.role);
+      // Кэшируем роли для будущих проверок
+      setUserRoles(roles);
+      
+      return roles.includes(role);
+    } catch (error) {
+      console.error('Ошибка при проверке ролей:', error);
+      return false;
+    }
   };
 
   return (
