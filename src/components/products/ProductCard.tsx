@@ -33,7 +33,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
+    <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md relative">
+      {!product.inStock && (
+        <div className="absolute top-0 right-0 left-0 bg-red-500 text-white text-center text-xs py-1 px-2 z-10">
+          Нет в наличии
+        </div>
+      )}
       <Link to={`/product/${product.id}`} className="aspect-square overflow-hidden">
         <img 
           src={imageError ? "/placeholder.svg" : product.imageUrl} 
@@ -81,6 +86,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
+          
+          {/* Stock information */}
+          {product.stockQuantity !== undefined && product.stockQuantity > 0 && (
+            <p className="text-xs text-green-600">
+              В наличии: {product.stockQuantity} шт.
+            </p>
+          )}
           
           {/* Colors display if available */}
           {product.colors && product.colors.length > 0 && (
@@ -153,8 +165,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
           onClick={handleAddToCart} 
           className="flex-1"
           disabled={!product.inStock}
+          variant={product.inStock ? "default" : "outline"}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" /> Купить за {displayPrice} ₽
+          <ShoppingCart className="mr-2 h-4 w-4" /> 
+          {product.inStock 
+            ? `Купить за ${displayPrice} ₽` 
+            : "Нет в наличии"}
         </Button>
       </CardFooter>
     </Card>

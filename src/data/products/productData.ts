@@ -18,6 +18,8 @@ const defaultProducts: Product[] = [
     colors: ["Черный", "Коричневый", "Бежевый"],
     material: "Натуральная кожа",
     isBestseller: true,
+    stockQuantity: 15,
+    isArchived: false,
   },
   {
     id: "2",
@@ -31,6 +33,8 @@ const defaultProducts: Product[] = [
     inStock: true,
     countryOfOrigin: "Россия",
     isNew: true,
+    stockQuantity: 8,
+    isArchived: false,
   },
   {
     id: "3",
@@ -44,6 +48,8 @@ const defaultProducts: Product[] = [
     countryOfOrigin: "Россия",
     material: "Серебро 925 пробы, малахит",
     isBestseller: true,
+    stockQuantity: 5,
+    isArchived: false,
   }
 ];
 
@@ -67,6 +73,18 @@ export const addOrUpdateProduct = (product: Product): void => {
     product.rating = generateRandomRating();
   }
   
+  // Ensure stockQuantity and isArchived fields have default values if not provided
+  if (product.stockQuantity === undefined) {
+    product.stockQuantity = 0;
+  }
+  
+  if (product.isArchived === undefined) {
+    product.isArchived = false;
+  }
+  
+  // Update inStock status based on stock quantity
+  product.inStock = product.stockQuantity > 0;
+  
   const index = products.findIndex(p => p.id === product.id);
   if (index >= 0) {
     // Update existing product
@@ -79,11 +97,48 @@ export const addOrUpdateProduct = (product: Product): void => {
   saveProductsToStorage();
 };
 
-// Function to remove a product
+// Function to archive a product
+export const archiveProduct = (productId: string): void => {
+  const index = products.findIndex(p => p.id === productId);
+  if (index >= 0) {
+    products[index].isArchived = true;
+    saveProductsToStorage();
+  }
+};
+
+// Function to restore an archived product
+export const restoreProduct = (productId: string): void => {
+  const index = products.findIndex(p => p.id === productId);
+  if (index >= 0) {
+    products[index].isArchived = false;
+    saveProductsToStorage();
+  }
+};
+
+// Function to update product stock
+export const updateProductStock = (productId: string, quantity: number): void => {
+  const index = products.findIndex(p => p.id === productId);
+  if (index >= 0) {
+    products[index].stockQuantity = quantity;
+    products[index].inStock = quantity > 0;
+    saveProductsToStorage();
+  }
+};
+
+// Function to decrease stock after an order
+export const decreaseProductStock = (productId: string, quantity: number): void => {
+  const index = products.findIndex(p => p.id === productId);
+  if (index >= 0 && products[index].stockQuantity !== undefined) {
+    const newQuantity = Math.max(0, products[index].stockQuantity! - quantity);
+    products[index].stockQuantity = newQuantity;
+    products[index].inStock = newQuantity > 0;
+    saveProductsToStorage();
+  }
+};
+
+// Function to remove a product (now it just archives it)
 export const removeProduct = (productId: string): void => {
-  products = products.filter(p => p.id !== productId);
-  // Save to localStorage immediately after modifying the products array
-  saveProductsToStorage();
+  archiveProduct(productId);
 };
 
 export const getProductById = (id: string): Product | undefined => {
@@ -91,8 +146,8 @@ export const getProductById = (id: string): Product | undefined => {
 };
 
 export const getProductsByCategory = (category: string): Product[] => {
-  if (!category) return products;
-  return products.filter((product) => product.category === category);
+  if (!category) return products.filter(p => !p.isArchived);
+  return products.filter((product) => product.category === category && !product.isArchived);
 };
 
 export const getRelatedProducts = (id: string, limit: number = 4): Product[] => {
@@ -100,18 +155,35 @@ export const getRelatedProducts = (id: string, limit: number = 4): Product[] => 
   if (!currentProduct) return [];
   
   return products
-    .filter((product) => product.id !== id && product.category === currentProduct.category)
+    .filter((product) => product.id !== id && product.category === currentProduct.category && !product.isArchived)
     .slice(0, limit);
 };
 
 export const getBestsellers = (limit: number = 4): Product[] => {
   return products
-    .filter((product) => product.isBestseller)
+    .filter((product) => product.isBestseller && !product.isArchived)
     .slice(0, limit);
 };
 
 export const getNewProducts = (limit: number = 4): Product[] => {
   return products
-    .filter((product) => product.isNew)
+    .filter((product) => product.isNew && !product.isArchived)
     .slice(0, limit);
+};
+
+export const getArchivedProducts = (): Product[] => {
+  return products.filter(p => p.isArchived);
+};
+
+export const getOutOfStockProducts = (): Product[] => {
+  return products.filter(p => !p.inStock && !p.isArchived);
+};
+
+export const getLowStockProducts = (threshold: number = 5): Product[] => {
+  return products.filter(p => 
+    p.stockQuantity !== undefined && 
+    p.stockQuantity > 0 && 
+    p.stockQuantity <= threshold && 
+    !p.isArchived
+  );
 };

@@ -20,17 +20,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash } from "lucide-react";
+import { Archive, Pencil } from "lucide-react";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ProductListProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (productId: string) => void;
+  onArchive: (productId: string) => void;
 }
 
-const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
+const ProductList = ({ products, onEdit, onArchive }: ProductListProps) => {
   return (
     <Card>
       <CardHeader>
@@ -49,8 +49,8 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
                 <TableHead>Название</TableHead>
                 <TableHead>Категория</TableHead>
                 <TableHead>Цена (₽)</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
+                <TableHead>Наличие</TableHead>
+                <TableHead className="text-right w-[120px]">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,21 +85,19 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col gap-1">
                         {product.inStock ? (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs inline-block w-fit">
                             В наличии
                           </span>
                         ) : (
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs inline-block w-fit">
                             Нет в наличии
                           </span>
                         )}
-                        {product.isNew && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                            Новинка
-                          </span>
-                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {product.stockQuantity !== undefined ? `${product.stockQuantity} шт.` : 'Не указано'}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -117,24 +115,24 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
                             <Button
                               variant="outline"
                               size="icon"
-                              className="text-red-500"
+                              className="text-amber-500"
                             >
-                              <Trash className="h-4 w-4" />
+                              <Archive className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                Вы уверены?
+                                Архивировать товар?
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Это действие нельзя будет отменить. Товар будет удален из каталога.
+                                Товар будет скрыт из каталога, но вы сможете восстановить его позже из архива.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Отмена</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDelete(product.id)}>
-                                Удалить
+                              <AlertDialogAction onClick={() => onArchive(product.id)}>
+                                Архивировать
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

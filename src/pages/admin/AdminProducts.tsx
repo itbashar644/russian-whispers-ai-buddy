@@ -7,24 +7,30 @@ import { Plus } from "lucide-react";
 import { 
   products, 
   addOrUpdateProduct, 
-  removeProduct, 
+  archiveProduct,
+  restoreProduct,
   getAllCategories, 
-  addCategory 
+  addCategory,
+  getArchivedProducts 
 } from "@/data/products";
 import { Product } from "@/types/product";
 import ProductImportExport from "@/components/admin/ProductImportExport";
 import ProductFilters from "@/components/admin/ProductFilters";
 import ProductList from "@/components/admin/ProductList";
+import ArchivedProductsList from "@/components/admin/ArchivedProductsList";
 import ProductForm from "@/components/admin/ProductForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminProducts = () => {
-  const [productsList, setProductsList] = useState<Product[]>(products);
+  const [productsList, setProductsList] = useState<Product[]>([]);
+  const [archivedProductsList, setArchivedProductsList] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState("active");
 
   // Default product state for new products
   const defaultProduct: Partial<Product> = {
@@ -42,6 +48,8 @@ const AdminProducts = () => {
     colors: [],
     videoUrl: "",
     videoType: "mp4",
+    stockQuantity: 0,
+    isArchived: false,
   };
 
   // Load categories on mount
@@ -51,12 +59,14 @@ const AdminProducts = () => {
 
   // Update the productsList when the global products array changes
   useEffect(() => {
-    setProductsList([...products]);
+    setProductsList(products.filter(p => !p.isArchived));
+    setArchivedProductsList(getArchivedProducts());
   }, [products]);
 
   // Function to refresh products list
   const refreshProductsList = () => {
-    setProductsList([...products]);
+    setProductsList(products.filter(p => !p.isArchived));
+    setArchivedProductsList(getArchivedProducts());
     setCategories(getAllCategories());
   };
 
@@ -70,12 +80,21 @@ const AdminProducts = () => {
     setShowForm(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    removeProduct(productId);
-    setProductsList([...products]);
+  const handleArchiveProduct = (productId: string) => {
+    archiveProduct(productId);
+    refreshProductsList();
     
-    toast("Товар удален", {
-      description: "Товар был успешно удален из каталога",
+    toast("Товар архивирован", {
+      description: "Товар был перемещен в архив и скрыт из каталога",
+    });
+  };
+
+  const handleRestoreProduct = (productId: string) => {
+    restoreProduct(productId);
+    refreshProductsList();
+    
+    toast("Товар восстановлен", {
+      description: "Товар был восстановлен из архива и добавлен в каталог",
     });
   };
 
@@ -88,7 +107,7 @@ const AdminProducts = () => {
       } as Product;
       
       addOrUpdateProduct(updatedProduct);
-      setProductsList([...products]);
+      refreshProductsList();
 
       toast("Товар обновлен", {
         description: `Товар "${updatedProduct.title}" был успешно обновлен`,
@@ -105,7 +124,7 @@ const AdminProducts = () => {
         imageUrl: formData.imageUrl || "/placeholder.svg",
         additionalImages: formData.additionalImages,
         rating: formData.rating || 5,
-        inStock: formData.inStock !== undefined ? formData.inStock : true,
+        inStock: formData.stockQuantity ? formData.stockQuantity > 0 : formData.inStock !== undefined ? formData.inStock : true,
         colors: formData.colors,
         sizes: formData.sizes,
         material: formData.material,
@@ -120,10 +139,12 @@ const AdminProducts = () => {
         avitoUrl: formData.avitoUrl || undefined,
         videoUrl: formData.videoUrl || undefined,
         videoType: formData.videoUrl ? formData.videoType : undefined,
+        stockQuantity: formData.stockQuantity || 0,
+        isArchived: false,
       };
 
       addOrUpdateProduct(newProduct);
-      setProductsList([...products]);
+      refreshProductsList();
 
       toast("Товар добавлен", {
         description: `Товар "${newProduct.title}" был успешно добавлен`,
@@ -175,7 +196,7 @@ const AdminProducts = () => {
         </CardHeader>
         <CardContent>
           <ProductImportExport 
-            products={productsList} 
+            products={[...productsList, ...archivedProductsList]} 
             onImportComplete={refreshProductsList}
           />
         </CardContent>
@@ -201,19 +222,35 @@ const AdminProducts = () => {
         </DialogContent>
       </Dialog>
       
-      <ProductFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-        categories={categories}
-      />
-      
-      <ProductList
-        products={filteredProducts}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
-      />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="active">Активные товары</TabsTrigger>
+          <TabsTrigger value="archive">Архив ({archivedProductsList.length})</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="active" className="space-y-4">
+          <ProductFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            categories={categories}
+          />
+          
+          <ProductList
+            products={filteredProducts}
+            onEdit={handleEditProduct}
+            onArchive={handleArchiveProduct}
+          />
+        </TabsContent>
+        
+        <TabsContent value="archive">
+          <ArchivedProductsList 
+            products={archivedProductsList}
+            onRestore={handleRestoreProduct}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { formatVideoUrl } from "@/lib/utils";
+import { toast } from "react-toastify";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +61,16 @@ const ProductDetail = () => {
     }
   };
 
+  // Update logic in the handleAddToCart to prevent adding if stockQuantity is 0
   const handleAddToCart = () => {
+    // Check if there's enough stock
+    if (product.stockQuantity !== undefined && quantity > product.stockQuantity) {
+      toast.error("Недостаточно товара на складе", {
+        description: `Доступно: ${product.stockQuantity} шт.`
+      });
+      return;
+    }
+    
     addItem({
       product,
       quantity,
@@ -231,6 +241,26 @@ const ProductDetail = () => {
                 )}
               </div>
 
+              {/* Stock information */}
+              <div className="mb-4">
+                {product.inStock ? (
+                  <>
+                    <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                      В наличии
+                    </span>
+                    {product.stockQuantity !== undefined && (
+                      <span className="text-sm ml-2 text-muted-foreground">
+                        {product.stockQuantity} шт.
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="inline-block px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                    Нет в наличии
+                  </span>
+                )}
+              </div>
+
               {/* Marketplace links */}
               {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
                 <div className="flex items-center gap-3 my-4">
@@ -341,6 +371,7 @@ const ProductDetail = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => handleQuantityChange(quantity + 1)}
+                    disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
                   >
                     +
                   </Button>
