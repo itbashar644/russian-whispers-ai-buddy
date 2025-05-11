@@ -85,13 +85,27 @@ export async function createOrder(orderData: {
         error: { message: "Недостаточно товаров на складе для выполнения заказа" } 
       };
     }
-
+    
+    // Generate a unique order ID
+    const orderId = generateOrderId();
+    
+    // Convert CartItem[] to a JSON-compatible format
+    // This resolves the type mismatch issue with Supabase
+    const jsonItems = JSON.parse(JSON.stringify(orderData.items));
+    
     const { data, error } = await supabase
       .from('orders')
-      .insert([{
-        id: generateOrderId(),
-        ...orderData
-      }])
+      .insert({
+        id: orderId,
+        user_id: orderData.user_id,
+        items: jsonItems,
+        total: orderData.total,
+        delivery_method: orderData.delivery_method,
+        customer_name: orderData.customer_name,
+        customer_email: orderData.customer_email,
+        customer_phone: orderData.customer_phone,
+        delivery_address: orderData.delivery_address
+      })
       .select();
 
     if (error) {
