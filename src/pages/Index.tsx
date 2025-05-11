@@ -44,9 +44,9 @@ const Index = () => {
               </div>
               <div className="rounded-lg overflow-hidden">
                 <img
-                  alt="The X Shop"
+                  alt="Современная электроника для дома"
                   className="aspect-[4/3] object-cover w-full"
-                  src="/placeholder.svg"
+                  src="/lovable-uploads/ad1eca62-0e32-4fde-93cb-39b20a11b70f.png"
                 />
               </div>
             </div>
