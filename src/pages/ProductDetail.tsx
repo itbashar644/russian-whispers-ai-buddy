@@ -25,6 +25,36 @@ const ProductDetail = () => {
   const [videoError, setVideoError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Get stock status text
+  const getStockStatusText = () => {
+    if (!product.inStock) {
+      return "Нет в наличии";
+    }
+    
+    if (product.stockQuantity !== undefined) {
+      if (product.stockQuantity <= 3) {
+        return `Осталось всего ${product.stockQuantity} шт.`;
+      } else {
+        return `В наличии: ${product.stockQuantity} шт.`;
+      }
+    }
+    
+    return "В наличии";
+  };
+  
+  // Get stock status class
+  const getStockStatusClass = () => {
+    if (!product.inStock) {
+      return "text-red-500";
+    }
+    
+    if (product.stockQuantity !== undefined && product.stockQuantity <= 3) {
+      return "text-orange-500";
+    }
+    
+    return "text-green-600";
+  };
+
   // Update selected color when product changes
   useEffect(() => {
     if (product) {
@@ -193,6 +223,12 @@ const ProductDetail = () => {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+              
+              {/* Add stock status indicator */}
+              <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
+                {getStockStatusText()}
+              </div>
+              
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
@@ -341,6 +377,8 @@ const ProductDetail = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => handleQuantityChange(quantity + 1)}
+                    // Disable incrementing if it would exceed available stock
+                    disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
                   >
                     +
                   </Button>

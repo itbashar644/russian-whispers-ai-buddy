@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -246,6 +245,28 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
           type="number"
           value={formData.price || ""}
           onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="stockQuantity" className="text-right">
+          Количество на складе
+        </Label>
+        <Input
+          id="stockQuantity"
+          name="stockQuantity"
+          type="number"
+          value={formData.stockQuantity !== undefined ? formData.stockQuantity : ""}
+          onChange={(e) => {
+            const value = e.target.value ? parseInt(e.target.value) : undefined;
+            setFormData({
+              ...formData,
+              stockQuantity: value,
+              inStock: value !== undefined ? value > 0 : formData.inStock
+            });
+          }}
+          min="0"
           className="col-span-3"
         />
       </div>

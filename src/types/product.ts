@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   title: string;
@@ -24,6 +25,7 @@ export interface Product {
   wildberriesUrl?: string;
   avitoUrl?: string;
   archived?: boolean; // New field to mark archived products
+  stockQuantity?: number; // New field to track inventory quantity
 }
 
 export interface CartItem {

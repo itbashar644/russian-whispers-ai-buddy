@@ -1,5 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { CartItem } from "@/types/product";
+import { decreaseProductStock } from "@/data/products";
+import { toast } from "@/components/ui/sonner";
+import { v4 as uuidv4 } from "uuid";
 
 export async function getAllOrders() {
   try {
@@ -64,4 +68,69 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function getUserOrders(userId: string) {
   // This function is essentially an alias for getOrdersByUserId for backward compatibility
   return getOrdersByUserId(userId);
+}
+
+// New function to place an order
+export async function placeOrder(orderData: {
+  user_id?: string;
+  items: CartItem[];
+  total: number;
+  delivery_method: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  delivery_address: string;
+}) {
+  try {
+    // Check stock availability for all items before placing the order
+    for (const item of orderData.items) {
+      if (!decreaseProductStock(item.product.id, item.quantity)) {
+        return {
+          success: false,
+          error: {
+            message: `Недостаточно товара ${item.product.title} на складе`
+          }
+        };
+      }
+    }
+
+    // Convert CartItem array to JSON-compatible format
+    const jsonItems = JSON.parse(JSON.stringify(orderData.items));
+    
+    // Generate a unique ID for the order
+    const orderId = uuidv4();
+
+    // Create the order in the database
+    const { data, error } = await supabase
+      .from('orders')
+      .insert({
+        id: orderId,
+        user_id: orderData.user_id,
+        items: jsonItems,
+        total: orderData.total,
+        delivery_method: orderData.delivery_method,
+        customer_name: orderData.customer_name,
+        customer_email: orderData.customer_email,
+        customer_phone: orderData.customer_phone,
+        delivery_address: orderData.delivery_address,
+        status: 'new'
+      })
+      .select();
+
+    if (error) {
+      console.error('Error creating order:', error);
+      // Revert the stock decrease since the order failed
+      for (const item of orderData.items) {
+        // This is a simplified approach; in a real app, you'd need a more robust solution
+        // like using transactions or a background job to ensure consistency
+        decreaseProductStock(item.product.id, -item.quantity);
+      }
+      return { success: false, error };
+    }
+
+    return { success: true, order: data[0] };
+  } catch (error) {
+    console.error('Unexpected error creating order:', error);
+    return { success: false, error };
+  }
 }

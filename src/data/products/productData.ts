@@ -18,6 +18,7 @@ const defaultProducts: Product[] = [
     colors: ["Черный", "Коричневый", "Бежевый"],
     material: "Натуральная кожа",
     isBestseller: true,
+    stockQuantity: 15,
   },
   {
     id: "2",
@@ -31,6 +32,7 @@ const defaultProducts: Product[] = [
     inStock: true,
     countryOfOrigin: "Россия",
     isNew: true,
+    stockQuantity: 8,
   },
   {
     id: "3",
@@ -44,6 +46,7 @@ const defaultProducts: Product[] = [
     countryOfOrigin: "Россия",
     material: "Серебро 925 пробы, малахит",
     isBestseller: true,
+    stockQuantity: 20,
   }
 ];
 
@@ -67,6 +70,11 @@ export const addOrUpdateProduct = (product: Product): void => {
     product.rating = generateRandomRating();
   }
   
+  // Update inStock status based on stock quantity
+  if (product.stockQuantity !== undefined) {
+    product.inStock = product.stockQuantity > 0;
+  }
+  
   const index = products.findIndex(p => p.id === product.id);
   if (index >= 0) {
     // Update existing product
@@ -77,6 +85,24 @@ export const addOrUpdateProduct = (product: Product): void => {
   }
   // Save to localStorage immediately after modifying the products array
   saveProductsToStorage();
+};
+
+// Function to decrease stock quantity when products are ordered
+export const decreaseProductStock = (productId: string, quantity: number): boolean => {
+  const product = products.find(p => p.id === productId);
+  
+  if (!product || product.stockQuantity === undefined) {
+    return false;
+  }
+  
+  if (product.stockQuantity < quantity) {
+    return false; // Not enough stock
+  }
+  
+  product.stockQuantity -= quantity;
+  product.inStock = product.stockQuantity > 0;
+  saveProductsToStorage();
+  return true;
 };
 
 // Function to archive a product
@@ -102,6 +128,15 @@ export const removeProduct = (productId: string): void => {
   products = products.filter(p => p.id !== productId);
   // Save to localStorage immediately after modifying the products array
   saveProductsToStorage();
+};
+
+// Function to check if a product has enough stock
+export const checkProductStock = (productId: string, requestedQuantity: number): boolean => {
+  const product = products.find(p => p.id === productId);
+  if (!product || product.stockQuantity === undefined) {
+    return true; // For backward compatibility with products without stockQuantity
+  }
+  return product.stockQuantity >= requestedQuantity;
 };
 
 export const getProductById = (id: string): Product | undefined => {

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ import { deliveryMethods } from "@/data/deliveryMethods";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "@/components/ui/sonner";
-import { Truck, Package, Home } from "lucide-react";
+import { Truck, Package, Home, AlertTriangle } from "lucide-react";
+import { checkProductStock } from "@/data/products";
+import { placeOrder } from "@/services/orderService";
 
 const getDeliveryIcon = (iconName: string) => {
   switch (iconName) {
@@ -30,7 +33,8 @@ const Cart = () => {
     removeItem, 
     setDeliveryMethod,
     subtotal, 
-    total 
+    total,
+    clearCart
   } = useCart();
   
   const [orderForm, setOrderForm] = useState({
@@ -39,6 +43,8 @@ const Cart = () => {
     phone: "",
     address: "",
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -49,7 +55,23 @@ const Cart = () => {
     setDeliveryMethod(method);
   };
   
-  const handleCheckout = (e: React.FormEvent) => {
+  // Function to verify stock availability
+  const verifyStock = () => {
+    for (const item of items) {
+      if (!checkProductStock(item.product.id, item.quantity)) {
+        toast.error(
+          `Недостаточно товара "${item.product.title}" на складе`,
+          {
+            description: "Пожалуйста, уменьшите количество или удалите товар из корзины."
+          }
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+  
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (items.length === 0) {
@@ -62,14 +84,56 @@ const Cart = () => {
       return;
     }
     
-    // In a real app, this would send the order to a server
-    toast.success("Заказ успешно оформлен! Спасибо за покупку.");
+    if (!verifyStock()) {
+      return;
+    }
     
-    // Simulate payment success and redirect to homepage
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
+    setIsSubmitting(true);
+    
+    // Create order data object
+    const orderData = {
+      items,
+      total,
+      delivery_method: deliveryMethod.id,
+      customer_name: orderForm.name,
+      customer_email: orderForm.email,
+      customer_phone: orderForm.phone,
+      delivery_address: orderForm.address,
+    };
+    
+    try {
+      // Process the order
+      const result = await placeOrder(orderData);
+      
+      if (result.success) {
+        toast.success("Заказ успешно оформлен! Спасибо за покупку.");
+        // Clear the cart after successful order
+        clearCart();
+        // Redirect to homepage after a delay
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      } else {
+        toast.error("Ошибка при оформлении заказа", {
+          description: result.error?.message || "Пожалуйста, попробуйте снова позже."
+        });
+      }
+    } catch (error) {
+      toast.error("Произошла неожиданная ошибка", {
+        description: "Пожалуйста, попробуйте снова позже."
+      });
+      console.error("Order placement error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Check for low stock items
+  const lowStockItems = items.filter(item => {
+    return item.product.stockQuantity !== undefined && 
+           item.product.stockQuantity <= 3 &&
+           item.product.stockQuantity >= item.quantity;
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -91,6 +155,18 @@ const Cart = () => {
         ) : (
           <div className="grid md:grid-cols-[2fr_1fr] gap-8">
             <div>
+              {lowStockItems.length > 0 && (
+                <div className="mb-4 p-4 border border-orange-200 bg-orange-50 rounded-lg flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-orange-700">Внимание: товары с низким остатком</p>
+                    <p className="text-sm text-orange-600">
+                      В вашей корзине есть товары, которые заканчиваются. Рекомендуем оформить заказ как можно скорее.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="rounded-lg border overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-muted">
@@ -103,71 +179,96 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item) => (
-                      <tr key={item.product.id} className="border-t">
-                        <td className="p-4">
-                          <div className="flex items-center gap-4">
-                            <img 
-                              src={item.product.imageUrl} 
-                              alt={item.product.title} 
-                              className="w-16 h-16 object-cover rounded" 
-                            />
-                            <div>
-                              <h3 className="font-medium">
-                                <Link 
-                                  to={`/product/${item.product.id}`} 
-                                  className="hover:underline"
-                                >
-                                  {item.product.title}
-                                </Link>
-                              </h3>
-                              {(item.color || item.size) && (
-                                <p className="text-sm text-muted-foreground">
-                                  {item.color && `Цвет: ${item.color}`}{" "}
-                                  {item.size && `Размер: ${item.size}`}
-                                </p>
-                              )}
+                    {items.map((item) => {
+                      // Calculate max available quantity
+                      const maxQuantity = item.product.stockQuantity !== undefined ? 
+                        item.product.stockQuantity : 99;
+                      
+                      // Check if current quantity exceeds available stock
+                      const isOutOfStock = item.product.stockQuantity !== undefined && 
+                        item.quantity > item.product.stockQuantity;
+                        
+                      return (
+                        <tr key={item.product.id} className="border-t">
+                          <td className="p-4">
+                            <div className="flex items-center gap-4">
+                              <img 
+                                src={item.product.imageUrl} 
+                                alt={item.product.title} 
+                                className="w-16 h-16 object-cover rounded" 
+                              />
+                              <div>
+                                <h3 className="font-medium">
+                                  <Link 
+                                    to={`/product/${item.product.id}`} 
+                                    className="hover:underline"
+                                  >
+                                    {item.product.title}
+                                  </Link>
+                                </h3>
+                                {(item.color || item.size) && (
+                                  <p className="text-sm text-muted-foreground">
+                                    {item.color && `Цвет: ${item.color}`}{" "}
+                                    {item.size && `Размер: ${item.size}`}
+                                  </p>
+                                )}
+                                
+                                {/* Stock warning */}
+                                {isOutOfStock && (
+                                  <p className="text-sm text-red-500 font-medium">
+                                    Доступно только {item.product.stockQuantity} шт.
+                                  </p>
+                                )}
+                                
+                                {!isOutOfStock && item.product.stockQuantity !== undefined && item.product.stockQuantity <= 3 && (
+                                  <p className="text-sm text-orange-500">
+                                    Осталось всего {item.product.stockQuantity} шт.
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right hidden sm:table-cell">
-                          {item.product.discountPrice || item.product.price} ₽
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
+                          </td>
+                          <td className="p-4 text-right hidden sm:table-cell">
+                            {item.product.discountPrice || item.product.price} ₽
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
+                              >
+                                -
+                              </Button>
+                              <span className="w-8 text-center">{item.quantity}</span>
+                              <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                disabled={item.quantity >= maxQuantity}
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </td>
+                          <td className="p-4 text-right font-medium">
+                            {(item.product.discountPrice || item.product.price) * item.quantity} ₽
+                          </td>
+                          <td className="p-4 text-right">
                             <Button 
-                              variant="outline" 
+                              variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                              onClick={() => removeItem(item.product.id)}
                             >
-                              -
+                              ×
                             </Button>
-                            <span className="w-8 text-center">{item.quantity}</span>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right font-medium">
-                          {(item.product.discountPrice || item.product.price) * item.quantity} ₽
-                        </td>
-                        <td className="p-4 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => removeItem(item.product.id)}
-                          >
-                            ×
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -288,9 +389,25 @@ const Cart = () => {
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full">
-                    Оформить заказ
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={isSubmitting || items.some(item => 
+                      item.product.stockQuantity !== undefined && 
+                      item.quantity > item.product.stockQuantity
+                    )}
+                  >
+                    {isSubmitting ? "Оформление..." : "Оформить заказ"}
                   </Button>
+                  
+                  {items.some(item => 
+                    item.product.stockQuantity !== undefined && 
+                    item.quantity > item.product.stockQuantity
+                  ) && (
+                    <p className="text-sm text-red-500 text-center">
+                      Некоторые товары недоступны в запрашиваемом количестве
+                    </p>
+                  )}
                 </form>
               </div>
             </div>

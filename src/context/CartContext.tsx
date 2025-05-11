@@ -1,7 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
 import { toast } from "@/components/ui/sonner";
+import { checkProductStock } from "@/data/products";
 
 interface CartContextType {
   items: CartItem[];
@@ -79,6 +81,16 @@ export function CartProvider({ children }: CartProviderProps) {
           i.size === item.size
       );
 
+      // Check if there's enough stock for the requested quantity
+      const totalRequestedQuantity = existingItemIndex >= 0 
+        ? prevItems[existingItemIndex].quantity + item.quantity 
+        : item.quantity;
+      
+      if (!checkProductStock(item.product.id, totalRequestedQuantity)) {
+        toast.error("Недостаточно товара на складе");
+        return prevItems; // Don't update cart if not enough stock
+      }
+
       if (existingItemIndex >= 0) {
         // Item exists, update quantity
         const newItems = [...prevItems];
@@ -107,11 +119,19 @@ export function CartProvider({ children }: CartProviderProps) {
       return;
     }
 
-    setItems((prevItems) =>
-      prevItems.map((item) =>
+    setItems((prevItems) => {
+      const item = prevItems.find(item => item.product.id === itemId);
+      
+      // Check if there's enough stock for the requested quantity
+      if (item && !checkProductStock(itemId, quantity)) {
+        toast.error("Недостаточно товара на складе");
+        return prevItems; // Don't update if not enough stock
+      }
+      
+      return prevItems.map((item) =>
         item.product.id === itemId ? { ...item, quantity } : item
-      )
-    );
+      );
+    });
   };
 
   const clearCart = () => {
