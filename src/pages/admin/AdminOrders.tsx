@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,17 +24,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-// Добавим типы для заказов
-interface OrderItem {
+// Типы для заказов
+export interface OrderItem {
   productId: string;
   productName: string;
   price: number;
   quantity: number;
+  color?: string;
+  size?: string;
 }
 
-interface Order {
+export interface Order {
   id: string;
   customerName: string;
   customerEmail: string;
@@ -45,91 +48,81 @@ interface Order {
   date: string;
   address: string;
   deliveryMethod: string;
+  userId: string | null;
 }
 
-// Создадим фиктивные данные для демонстрации
-const mockOrders: Order[] = [
-  {
-    id: "ORD-001",
-    customerName: "Иванов Иван",
-    customerEmail: "ivanov@example.com",
-    customerPhone: "+7 (900) 123-45-67",
-    items: [
-      { 
-        productId: "1", 
-        productName: "Минималистичная настольная лампа", 
-        price: 2490, 
-        quantity: 1 
-      }
-    ],
-    total: 2490,
-    status: "new",
-    date: "2023-06-01T10:00:00",
-    address: "г. Москва, ул. Пушкина, д. 10, кв. 5",
-    deliveryMethod: "СДЭК"
-  },
-  {
-    id: "ORD-002",
-    customerName: "Петров Петр",
-    customerEmail: "petrov@example.com",
-    customerPhone: "+7 (900) 987-65-43",
-    items: [
-      { 
-        productId: "3", 
-        productName: "Декоративная ваза в скандинавском стиле", 
-        price: 1690, 
-        quantity: 1 
-      },
-      { 
-        productId: "5", 
-        productName: "Умный ночник с датчиком движения", 
-        price: 1290, 
-        quantity: 2 
-      }
-    ],
-    total: 4270,
-    status: "processing",
-    date: "2023-06-02T14:30:00",
-    address: "г. Санкт-Петербург, Невский пр-т, д. 100, кв. 15",
-    deliveryMethod: "Почта России"
-  },
-  {
-    id: "ORD-003",
-    customerName: "Сидорова Анна",
-    customerEmail: "sidorova@example.com",
-    customerPhone: "+7 (900) 555-55-55",
-    items: [
-      { 
-        productId: "8", 
-        productName: "Набор керамических горшков для растений", 
-        price: 1790, 
-        quantity: 1 
-      }
-    ],
-    total: 1790,
-    status: "shipped",
-    date: "2023-06-03T09:15:00",
-    address: "г. Екатеринбург, ул. Ленина, д. 50, кв. 25",
-    deliveryMethod: "OZON"
-  }
-];
-
 const AdminOrders = () => {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
 
-  const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
-    
-    toast({
-      title: "Статус заказа обновлен",
-      description: `Заказ ${orderId} теперь имеет статус "${newStatus}"`,
-    });
+  // Загрузка заказов из Supabase
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          // Преобразуем данные из базы в формат Order
+          const formattedOrders: Order[] = data.map(order => ({
+            id: order.id,
+            customerName: order.customer_name,
+            customerEmail: order.customer_email,
+            customerPhone: order.customer_phone,
+            items: order.items,
+            total: order.total,
+            status: order.status,
+            date: order.created_at,
+            address: order.delivery_address,
+            deliveryMethod: order.delivery_method,
+            userId: order.user_id
+          }));
+          
+          setOrders(formattedOrders);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        toast.error('Ошибка при загрузке заказов');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Обновляем локальное состояние заказов
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+      
+      toast.success('Статус заказа обновлен', {
+        description: `Заказ ${orderId} теперь имеет статус "${getStatusText(newStatus)}"`,
+      });
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast.error('Ошибка при обновлении статуса заказа');
+    }
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -224,69 +217,75 @@ const AdminOrders = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID заказа</TableHead>
-                  <TableHead>Клиент</TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Сумма</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead>Доставка</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">
-                      Заказы не найдены
-                    </TableCell>
+                    <TableHead>ID заказа</TableHead>
+                    <TableHead>Клиент</TableHead>
+                    <TableHead>Дата</TableHead>
+                    <TableHead>Сумма</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Доставка</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
-                ) : (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>
-                        <div className="font-medium">{order.customerName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {order.customerEmail}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(order.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>{order.total.toLocaleString()} ₽</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusText(order.status)}
-                        </span>
-                      </TableCell>
-                      <TableCell>{order.deliveryMethod}</TableCell>
-                      <TableCell className="text-right">
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order.id, value as Order["status"])}
-                        >
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Изменить статус" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="new">Новый</SelectItem>
-                            <SelectItem value="processing">В обработке</SelectItem>
-                            <SelectItem value="shipped">Отправлен</SelectItem>
-                            <SelectItem value="delivered">Доставлен</SelectItem>
-                            <SelectItem value="cancelled">Отменен</SelectItem>
-                          </SelectContent>
-                        </Select>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        Заказы не найдены
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">{order.id}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{order.customerName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {order.customerEmail}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(order.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{order.total.toLocaleString()} ₽</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                        </TableCell>
+                        <TableCell>{order.deliveryMethod}</TableCell>
+                        <TableCell className="text-right">
+                          <Select
+                            value={order.status}
+                            onValueChange={(value) => handleStatusChange(order.id, value as Order["status"])}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Изменить статус" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">Новый</SelectItem>
+                              <SelectItem value="processing">В обработке</SelectItem>
+                              <SelectItem value="shipped">Отправлен</SelectItem>
+                              <SelectItem value="delivered">Доставлен</SelectItem>
+                              <SelectItem value="cancelled">Отменен</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

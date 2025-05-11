@@ -16,11 +16,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
   date: string;
-  status: "processing" | "shipped" | "delivered" | "canceled";
+  status: "new" | "processing" | "shipped" | "delivered" | "cancelled";
   items: CartItem[];
   total: number;
   deliveryMethod: string;
@@ -33,90 +35,101 @@ const UserOrders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Имитируем загрузку заказов
-    const fetchOrders = () => {
+    if (!user) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchOrders = async () => {
       setLoading(true);
       
-      // В реальном приложении здесь будет запрос к API
-      setTimeout(() => {
-        // Генерируем демо-заказы
-        if (user) {
-          const demoOrders: Order[] = [
-            {
-              id: "ORD-2023-001",
-              date: "15.04.2023",
-              status: "delivered",
-              items: [
-                {
-                  product: {
-                    id: "p1",
-                    title: "Портативный проектор XYZ",
-                    description: "Компактный проектор с разрешением HD.",
-                    price: 24990,
-                    category: "projectors",
-                    imageUrl: "/placeholder.svg",
-                    rating: 4.5,
-                    inStock: true,
-                    countryOfOrigin: "Китай",
-                  },
-                  quantity: 1
-                }
-              ],
-              total: 24990,
-              deliveryMethod: "Курьер",
-              deliveryAddress: "г. Москва, ул. Ленина, 123"
-            },
-            {
-              id: "ORD-2023-002",
-              date: "22.05.2023",
-              status: "shipped",
-              items: [
-                {
-                  product: {
-                    id: "p2",
-                    title: "Наушники беспроводные ABC",
-                    description: "Беспроводные наушники с шумоподавлением.",
-                    price: 6990,
-                    category: "headphones",
-                    imageUrl: "/placeholder.svg",
-                    rating: 4.2,
-                    inStock: true,
-                    countryOfOrigin: "Китай",
-                  },
-                  quantity: 2
-                }
-              ],
-              total: 13980,
-              deliveryMethod: "Самовывоз",
-              deliveryAddress: "г. Москва, ул. Пушкина, 10"
-            }
-          ];
-          setOrders(demoOrders);
+      try {
+        // Получаем заказы пользователя из базы
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
         }
-        
+
+        if (data) {
+          // Преобразуем данные из базы в формат Order
+          const formattedOrders: Order[] = data.map(order => ({
+            id: order.id,
+            date: order.created_at,
+            status: order.status,
+            items: order.items,
+            total: order.total,
+            deliveryMethod: order.delivery_method,
+            deliveryAddress: order.delivery_address
+          }));
+          
+          setOrders(formattedOrders);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        toast.error('Не удалось загрузить ваши заказы');
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
     
     fetchOrders();
+
+    // Подписываемся на обновления заказов в реальном времени
+    const ordersSubscription = supabase
+      .channel('public:orders')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          // Обновляем статус заказа, если он изменился
+          const updatedOrder = payload.new as any;
+          setOrders(currentOrders => 
+            currentOrders.map(order => 
+              order.id === updatedOrder.id 
+                ? { ...order, status: updatedOrder.status } 
+                : order
+            )
+          );
+
+          toast.info(`Статус заказа ${updatedOrder.id} изменен на "${getStatusText(updatedOrder.status)}"`);
+        }
+      )
+      .subscribe();
+
+    // Отписываемся при размонтировании компонента
+    return () => {
+      supabase.removeChannel(ordersSubscription);
+    };
   }, [user]);
 
   const getStatusColor = (status: Order["status"]) => {
     switch(status) {
-      case "processing": return "bg-blue-500";
+      case "new": return "bg-blue-500";
+      case "processing": return "bg-yellow-500";
       case "shipped": return "bg-orange-500";
       case "delivered": return "bg-green-500";
-      case "canceled": return "bg-red-500";
+      case "cancelled": return "bg-red-500";
       default: return "bg-gray-500";
     }
   };
 
   const getStatusText = (status: Order["status"]) => {
     switch(status) {
+      case "new": return "Новый";
       case "processing": return "В обработке";
       case "shipped": return "Отправлен";
       case "delivered": return "Доставлен";
-      case "canceled": return "Отменен";
+      case "cancelled": return "Отменен";
       default: return "Неизвестно";
     }
   };
@@ -167,7 +180,7 @@ const UserOrders = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full">
                   <div>
                     <span className="font-medium">{order.id}</span>
-                    <span className="text-muted-foreground ml-4">{order.date}</span>
+                    <span className="text-muted-foreground ml-4">{new Date(order.date).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-2 sm:mt-0">
                     <Badge variant="secondary">

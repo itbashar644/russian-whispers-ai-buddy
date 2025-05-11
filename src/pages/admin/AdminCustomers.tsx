@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,100 +17,93 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus } from "lucide-react";
+import { Search, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Фиктивные данные клиентов
-const mockCustomers = [
-  {
-    id: "1",
-    name: "Иванов Иван",
-    email: "ivanov@example.com",
-    phone: "+7 (900) 123-45-67",
-    registrationDate: "2023-01-15",
-    totalOrders: 3,
-    totalSpent: 15600,
-  },
-  {
-    id: "2",
-    name: "Петров Петр",
-    email: "petrov@example.com",
-    phone: "+7 (900) 987-65-43",
-    registrationDate: "2023-02-10",
-    totalOrders: 2,
-    totalSpent: 8700,
-  },
-  {
-    id: "3",
-    name: "Сидорова Анна",
-    email: "sidorova@example.com",
-    phone: "+7 (900) 555-55-55",
-    registrationDate: "2023-03-05",
-    totalOrders: 1,
-    totalSpent: 4200,
-  },
-  {
-    id: "4",
-    name: "Козлов Дмитрий",
-    email: "kozlov@example.com",
-    phone: "+7 (900) 111-22-33",
-    registrationDate: "2023-03-15",
-    totalOrders: 4,
-    totalSpent: 23500,
-  },
-  {
-    id: "5",
-    name: "Новикова Елена",
-    email: "novikova@example.com",
-    phone: "+7 (900) 444-55-66",
-    registrationDate: "2023-04-01",
-    totalOrders: 2,
-    totalSpent: 9800,
-  },
-  {
-    id: "6",
-    name: "Морозов Алексей",
-    email: "morozov@example.com",
-    phone: "+7 (900) 777-88-99",
-    registrationDate: "2023-05-12",
-    totalOrders: 1,
-    totalSpent: 5600,
-  },
-  {
-    id: "7",
-    name: "Волкова Ольга",
-    email: "volkova@example.com",
-    phone: "+7 (900) 333-22-11",
-    registrationDate: "2023-05-20",
-    totalOrders: 3,
-    totalSpent: 18200,
-  },
-  {
-    id: "8",
-    name: "Соколов Игорь",
-    email: "sokolov@example.com",
-    phone: "+7 (900) 666-77-88",
-    registrationDate: "2023-06-05",
-    totalOrders: 2,
-    totalSpent: 12400,
-  }
-];
+// Тип для клиента
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  registrationDate: string;
+  totalOrders: number;
+  totalSpent: number;
+}
 
 const AdminCustomers = () => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Загрузка клиентов из базы данных
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setLoading(true);
+      try {
+        // Получаем пользователей из таблицы profiles
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*');
+
+        if (profilesError) {
+          throw profilesError;
+        }
+
+        // Получаем заказы из таблицы orders
+        const { data: orders, error: ordersError } = await supabase
+          .from('orders')
+          .select('*');
+
+        if (ordersError) {
+          throw ordersError;
+        }
+
+        // Формируем данные о клиентах
+        const formattedCustomers: Customer[] = profiles.map(profile => {
+          // Находим заказы клиента
+          const userOrders = orders.filter(order => order.user_id === profile.id);
+          
+          // Считаем общую сумму покупок
+          const totalSpent = userOrders.reduce((sum, order) => sum + order.total, 0);
+
+          return {
+            id: profile.id,
+            name: profile.name || 'Без имени',
+            email: profile.email || 'Нет email',
+            phone: profile.phone,
+            registrationDate: profile.created_at,
+            totalOrders: userOrders.length,
+            totalSpent: totalSpent
+          };
+        });
+
+        setCustomers(formattedCustomers);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        toast.error('Ошибка при загрузке данных о клиентах');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
   
-  const filteredCustomers = mockCustomers.filter((customer) =>
+  const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
+    (customer.phone && customer.phone.includes(searchTerm))
   );
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Клиенты</h2>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Добавить клиента
+        <Button disabled>
+          <Users className="mr-2 h-4 w-4" />
+          Клиенты
         </Button>
       </div>
 
@@ -142,48 +135,54 @@ const AdminCustomers = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Клиент</TableHead>
-                  <TableHead>Дата регистрации</TableHead>
-                  <TableHead>Заказов</TableHead>
-                  <TableHead>Сумма покупок</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4">
-                      Клиенты не найдены
-                    </TableCell>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Клиент</TableHead>
+                    <TableHead>Дата регистрации</TableHead>
+                    <TableHead>Заказов</TableHead>
+                    <TableHead>Сумма покупок</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
-                ) : (
-                  filteredCustomers.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">{customer.id}</TableCell>
-                      <TableCell>
-                        <div className="font-medium">{customer.name}</div>
-                        <div className="text-sm text-muted-foreground">{customer.email}</div>
-                        <div className="text-sm text-muted-foreground">{customer.phone}</div>
-                      </TableCell>
-                      <TableCell>{new Date(customer.registrationDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{customer.totalOrders}</TableCell>
-                      <TableCell>{customer.totalSpent.toLocaleString()} ₽</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm">
-                          Подробнее
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {filteredCustomers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">
+                        Клиенты не найдены
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    filteredCustomers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="font-medium">{customer.id}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">{customer.email}</div>
+                          <div className="text-sm text-muted-foreground">{customer.phone}</div>
+                        </TableCell>
+                        <TableCell>{new Date(customer.registrationDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{customer.totalOrders}</TableCell>
+                        <TableCell>{customer.totalSpent.toLocaleString()} ₽</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" size="sm">
+                            Подробнее
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
