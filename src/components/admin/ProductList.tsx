@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, RefreshCcw, ArchiveX } from "lucide-react";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -28,13 +28,49 @@ interface ProductListProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  deleteButtonText?: string;
+  deleteButtonColor?: "red" | "green" | "orange";
+  onPermanentDelete?: (productId: string) => void;
+  mode?: "active" | "archived";
 }
 
-const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
+const ProductList = ({ 
+  products, 
+  onEdit, 
+  onDelete,
+  deleteButtonText = "Удалить",
+  deleteButtonColor = "red",
+  onPermanentDelete,
+  mode = "active"
+}: ProductListProps) => {
+  const getDeleteButtonClasses = () => {
+    switch (deleteButtonColor) {
+      case "green":
+        return "text-green-500 hover:text-green-600 hover:bg-green-50";
+      case "orange":
+        return "text-orange-500 hover:text-orange-600 hover:bg-orange-50";
+      default:
+        return "text-red-500 hover:text-red-600 hover:bg-red-50";
+    }
+  };
+
+  const getDeleteButtonIcon = () => {
+    switch (deleteButtonColor) {
+      case "green":
+        return <RefreshCcw className="h-4 w-4" />;
+      case "orange":
+        return <ArchiveX className="h-4 w-4" />;
+      default:
+        return <Trash className="h-4 w-4" />;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Список товаров</CardTitle>
+        <CardTitle>
+          {mode === "active" ? "Список товаров" : "Архив товаров"}
+        </CardTitle>
         <CardDescription>
           Всего товаров: {products.length}
         </CardDescription>
@@ -57,7 +93,7 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
               {products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-4">
-                    Товары не найдены
+                    {mode === "active" ? "Товары не найдены" : "Архив пуст"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -100,26 +136,33 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
                             Новинка
                           </span>
                         )}
+                        {mode === "archived" && (
+                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
+                            В архиве
+                          </span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onEdit(product)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        {mode === "active" && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onEdit(product)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
                         
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="outline"
                               size="icon"
-                              className="text-red-500"
+                              className={getDeleteButtonClasses()}
                             >
-                              <Trash className="h-4 w-4" />
+                              {getDeleteButtonIcon()}
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -128,17 +171,53 @@ const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
                                 Вы уверены?
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Это действие нельзя будет отменить. Товар будет удален из каталога.
+                                {mode === "active" 
+                                  ? "Товар будет перемещен в архив и скрыт с сайта. Вы сможете восстановить его позже."
+                                  : "Товар будет восстановлен из архива и станет снова доступен на сайте."
+                                }
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Отмена</AlertDialogCancel>
                               <AlertDialogAction onClick={() => onDelete(product.id)}>
-                                Удалить
+                                {deleteButtonText}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        
+                        {mode === "archived" && onPermanentDelete && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Удалить навсегда?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Товар будет удален навсегда без возможности восстановления. Это действие нельзя будет отменить.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => onPermanentDelete(product.id)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  Удалить навсегда
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

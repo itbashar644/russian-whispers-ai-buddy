@@ -79,7 +79,25 @@ export const addOrUpdateProduct = (product: Product): void => {
   saveProductsToStorage();
 };
 
-// Function to remove a product
+// Function to archive a product
+export const archiveProduct = (productId: string): void => {
+  const product = products.find(p => p.id === productId);
+  if (product) {
+    product.archived = true;
+    saveProductsToStorage();
+  }
+};
+
+// Function to restore an archived product
+export const restoreProduct = (productId: string): void => {
+  const product = products.find(p => p.id === productId);
+  if (product) {
+    product.archived = false;
+    saveProductsToStorage();
+  }
+};
+
+// Original remove function (kept for compatibility)
 export const removeProduct = (productId: string): void => {
   products = products.filter(p => p.id !== productId);
   // Save to localStorage immediately after modifying the products array
@@ -91,8 +109,8 @@ export const getProductById = (id: string): Product | undefined => {
 };
 
 export const getProductsByCategory = (category: string): Product[] => {
-  if (!category) return products;
-  return products.filter((product) => product.category === category);
+  if (!category) return products.filter(p => !p.archived);
+  return products.filter((product) => product.category === category && !product.archived);
 };
 
 export const getRelatedProducts = (id: string, limit: number = 4): Product[] => {
@@ -100,18 +118,28 @@ export const getRelatedProducts = (id: string, limit: number = 4): Product[] => 
   if (!currentProduct) return [];
   
   return products
-    .filter((product) => product.id !== id && product.category === currentProduct.category)
+    .filter((product) => product.id !== id && product.category === currentProduct.category && !product.archived)
     .slice(0, limit);
 };
 
 export const getBestsellers = (limit: number = 4): Product[] => {
   return products
-    .filter((product) => product.isBestseller)
+    .filter((product) => product.isBestseller && !product.archived)
     .slice(0, limit);
 };
 
 export const getNewProducts = (limit: number = 4): Product[] => {
   return products
-    .filter((product) => product.isNew)
+    .filter((product) => product.isNew && !product.archived)
     .slice(0, limit);
+};
+
+// New function to get all archived products
+export const getArchivedProducts = (): Product[] => {
+  return products.filter(p => p.archived);
+};
+
+// New function to get all active (non-archived) products
+export const getActiveProducts = (): Product[] => {
+  return products.filter(p => !p.archived);
 };

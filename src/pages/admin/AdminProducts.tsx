@@ -9,7 +9,11 @@ import {
   addOrUpdateProduct, 
   removeProduct, 
   getAllCategories, 
-  addCategory 
+  addCategory, 
+  archiveProduct,
+  restoreProduct,
+  getActiveProducts,
+  getArchivedProducts
 } from "@/data/products";
 import { Product } from "@/types/product";
 import ProductImportExport from "@/components/admin/ProductImportExport";
@@ -17,9 +21,11 @@ import ProductFilters from "@/components/admin/ProductFilters";
 import ProductList from "@/components/admin/ProductList";
 import ProductForm from "@/components/admin/ProductForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>(products);
+  const [activeTab, setActiveTab] = useState<string>("active");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -42,6 +48,7 @@ const AdminProducts = () => {
     colors: [],
     videoUrl: "",
     videoType: "mp4",
+    archived: false,
   };
 
   // Load categories on mount
@@ -49,14 +56,22 @@ const AdminProducts = () => {
     setCategories(getAllCategories());
   }, []);
 
-  // Update the productsList when the global products array changes
+  // Update the productsList when the global products array or activeTab changes
   useEffect(() => {
-    setProductsList([...products]);
-  }, [products]);
+    if (activeTab === "active") {
+      setProductsList(getActiveProducts());
+    } else {
+      setProductsList(getArchivedProducts());
+    }
+  }, [products, activeTab]);
 
   // Function to refresh products list
   const refreshProductsList = () => {
-    setProductsList([...products]);
+    if (activeTab === "active") {
+      setProductsList(getActiveProducts());
+    } else {
+      setProductsList(getArchivedProducts());
+    }
     setCategories(getAllCategories());
   };
 
@@ -70,13 +85,37 @@ const AdminProducts = () => {
     setShowForm(true);
   };
 
+  const handleArchiveProduct = (productId: string) => {
+    archiveProduct(productId);
+    refreshProductsList();
+    
+    toast.info("Товар архивирован", {
+      description: "Товар был перемещен в архив",
+    });
+  };
+
+  const handleRestoreProduct = (productId: string) => {
+    restoreProduct(productId);
+    refreshProductsList();
+    
+    toast.success("Товар восстановлен", {
+      description: "Товар был возвращен из архива",
+    });
+  };
+
   const handleDeleteProduct = (productId: string) => {
     removeProduct(productId);
-    setProductsList([...products]);
+    refreshProductsList();
     
     toast("Товар удален", {
-      description: "Товар был успешно удален из каталога",
+      description: "Товар был удален навсегда",
     });
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchTerm("");
+    setCategoryFilter("all");
   };
 
   const handleSaveProduct = (formData: Partial<Product>) => {
@@ -88,7 +127,7 @@ const AdminProducts = () => {
       } as Product;
       
       addOrUpdateProduct(updatedProduct);
-      setProductsList([...products]);
+      refreshProductsList();
 
       toast("Товар обновлен", {
         description: `Товар "${updatedProduct.title}" был успешно обновлен`,
@@ -120,10 +159,11 @@ const AdminProducts = () => {
         avitoUrl: formData.avitoUrl || undefined,
         videoUrl: formData.videoUrl || undefined,
         videoType: formData.videoUrl ? formData.videoType : undefined,
+        archived: false,
       };
 
       addOrUpdateProduct(newProduct);
-      setProductsList([...products]);
+      refreshProductsList();
 
       toast("Товар добавлен", {
         description: `Товар "${newProduct.title}" был успешно добавлен`,
@@ -140,6 +180,7 @@ const AdminProducts = () => {
     }
   };
 
+  // Filter products based on search term and category
   const filteredProducts = productsList.filter((product) => {
     const matchesSearch = 
       product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -158,28 +199,72 @@ const AdminProducts = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Управление товарами</h2>
         
-        <Button onClick={handleAddNewProduct}>
+        <Button onClick={handleAddNewProduct} disabled={activeTab === "archived"}>
           <Plus className="mr-2 h-4 w-4" />
           Добавить товар
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Импорт/Экспорт</span>
-          </CardTitle>
-          <CardDescription>
-            Массовое управление товарами через Excel-файлы
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProductImportExport 
-            products={productsList} 
-            onImportComplete={refreshProductsList}
+      <Tabs defaultValue="active" value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="grid grid-cols-2 w-[400px]">
+          <TabsTrigger value="active">Активные товары</TabsTrigger>
+          <TabsTrigger value="archived">Архив</TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Импорт/Экспорт</span>
+              </CardTitle>
+              <CardDescription>
+                Массовое управление товарами через Excel-файлы
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProductImportExport 
+                products={productsList} 
+                onImportComplete={refreshProductsList}
+              />
+            </CardContent>
+          </Card>
+
+          <ProductFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            categories={categories}
           />
-        </CardContent>
-      </Card>
+          
+          <ProductList
+            products={filteredProducts}
+            onEdit={handleEditProduct}
+            onDelete={handleArchiveProduct}
+            deleteButtonText="Архивировать"
+            deleteButtonColor="orange"
+            mode="active"
+          />
+        </TabsContent>
+        <TabsContent value="archived">
+          <ProductFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            categories={categories}
+          />
+          
+          <ProductList
+            products={filteredProducts}
+            onEdit={handleEditProduct}
+            onDelete={handleRestoreProduct}
+            deleteButtonText="Восстановить"
+            deleteButtonColor="green"
+            onPermanentDelete={handleDeleteProduct}
+            mode="archived"
+          />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -200,20 +285,6 @@ const AdminProducts = () => {
           />
         </DialogContent>
       </Dialog>
-      
-      <ProductFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-        categories={categories}
-      />
-      
-      <ProductList
-        products={filteredProducts}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
-      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   title: string;
@@ -24,6 +23,7 @@ export interface Product {
   ozonUrl?: string;
   wildberriesUrl?: string;
   avitoUrl?: string;
+  archived?: boolean; // New field to mark archived products
 }
 
 export interface CartItem {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getProductsByCategory, products, getAllCategories, getCategoryObjects } from "@/data/products";
+import { getProductsByCategory, products, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,11 +54,12 @@ const Catalog = () => {
   }, [searchParam]);
 
   useEffect(() => {
-    let result = [...products];
+    // Start with active products only
+    let result = getActiveProducts();
     
     // Filter by category
     if (categoryParam) {
-      result = getProductsByCategory(categoryParam);
+      result = result.filter(p => p.category === categoryParam);
     }
     
     // Filter by search term
