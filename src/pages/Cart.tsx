@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "@/components/ui/sonner";
 import { Truck, Package, Home } from "lucide-react";
-import { createOrder } from "@/services/orderService";
-import { getProductById } from "@/data/products/productData";
 
 const getDeliveryIcon = (iconName: string) => {
   switch (iconName) {
@@ -33,9 +30,7 @@ const Cart = () => {
     removeItem, 
     setDeliveryMethod,
     subtotal, 
-    total,
-    clearCart,
-    validateStock
+    total 
   } = useCart();
   
   const [orderForm, setOrderForm] = useState({
@@ -44,43 +39,6 @@ const Cart = () => {
     phone: "",
     address: "",
   });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Проверяем наличие товаров перед оформлением заказа
-  const checkStock = () => {
-    // Проверяем актуальность данных о наличии товаров
-    for (const item of items) {
-      const currentProduct = getProductById(item.product.id);
-      if (!currentProduct) {
-        // Товар не найден, удаляем из корзины
-        toast.error(`Товар "${item.product.title}" больше не доступен и удален из корзины`);
-        removeItem(item.product.id);
-        return false;
-      }
-      
-      if (!currentProduct.inStock) {
-        // Товар не в наличии
-        toast.error(`Товар "${item.product.title}" закончился и удален из корзины`);
-        removeItem(item.product.id);
-        return false;
-      }
-      
-      if (currentProduct.stockQuantity !== undefined && currentProduct.stockQuantity < item.quantity) {
-        // Недостаточно товара
-        if (currentProduct.stockQuantity <= 0) {
-          toast.error(`Товар "${item.product.title}" закончился и удален из корзины`);
-          removeItem(item.product.id);
-        } else {
-          toast.error(`Доступно только ${currentProduct.stockQuantity} шт. товара "${item.product.title}"`);
-          updateQuantity(item.product.id, currentProduct.stockQuantity);
-        }
-        return false;
-      }
-    }
-    
-    return true;
-  };
   
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -91,7 +49,7 @@ const Cart = () => {
     setDeliveryMethod(method);
   };
   
-  const handleCheckout = async (e: React.FormEvent) => {
+  const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (items.length === 0) {
@@ -103,44 +61,14 @@ const Cart = () => {
       toast.error("Пожалуйста, выберите способ доставки.");
       return;
     }
-
-    // Проверяем наличие товаров
-    const isStockValid = validateStock() && checkStock();
-    if (!isStockValid) {
-      return;
-    }
     
-    setIsSubmitting(true);
+    // In a real app, this would send the order to a server
+    toast.success("Заказ успешно оформлен! Спасибо за покупку.");
     
-    try {
-      // Создаем заказ
-      const result = await createOrder({
-        items: items,
-        total: total,
-        delivery_method: deliveryMethod.id,
-        customer_name: orderForm.name,
-        customer_email: orderForm.email,
-        customer_phone: orderForm.phone,
-        delivery_address: orderForm.address
-      });
-      
-      if (result.success) {
-        toast.success("Заказ успешно оформлен! Спасибо за покупку.");
-        clearCart();
-        
-        // Redirect to homepage
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
-      } else {
-        toast.error(`Ошибка при оформлении заказа: ${result.error?.message || 'Пожалуйста, попробуйте позже'}`);
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      toast.error("Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте позже.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simulate payment success and redirect to homepage
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
   };
 
   return (
@@ -175,92 +103,71 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item) => {
-                      // Получаем актуальные данные о товаре для проверки наличия
-                      const currentProduct = getProductById(item.product.id);
-                      const stockQuantity = currentProduct?.stockQuantity;
-                      const isAvailable = currentProduct?.inStock && 
-                        (stockQuantity === undefined || stockQuantity >= item.quantity);
-                      
-                      return (
-                        <tr key={item.product.id} className="border-t">
-                          <td className="p-4">
-                            <div className="flex items-center gap-4">
-                              <img 
-                                src={item.product.imageUrl} 
-                                alt={item.product.title} 
-                                className="w-16 h-16 object-cover rounded" 
-                              />
-                              <div>
-                                <h3 className="font-medium">
-                                  <Link 
-                                    to={`/product/${item.product.id}`} 
-                                    className="hover:underline"
-                                  >
-                                    {item.product.title}
-                                  </Link>
-                                </h3>
-                                {(item.color || item.size) && (
-                                  <p className="text-sm text-muted-foreground">
-                                    {item.color && `Цвет: ${item.color}`}{" "}
-                                    {item.size && `Размер: ${item.size}`}
-                                  </p>
-                                )}
-                                {!isAvailable && (
-                                  <p className="text-sm text-red-600 mt-1 font-medium">
-                                    {!currentProduct?.inStock 
-                                      ? "Нет в наличии" 
-                                      : `Доступно только ${stockQuantity} шт.`}
-                                  </p>
-                                )}
-                              </div>
+                    {items.map((item) => (
+                      <tr key={item.product.id} className="border-t">
+                        <td className="p-4">
+                          <div className="flex items-center gap-4">
+                            <img 
+                              src={item.product.imageUrl} 
+                              alt={item.product.title} 
+                              className="w-16 h-16 object-cover rounded" 
+                            />
+                            <div>
+                              <h3 className="font-medium">
+                                <Link 
+                                  to={`/product/${item.product.id}`} 
+                                  className="hover:underline"
+                                >
+                                  {item.product.title}
+                                </Link>
+                              </h3>
+                              {(item.color || item.size) && (
+                                <p className="text-sm text-muted-foreground">
+                                  {item.color && `Цвет: ${item.color}`}{" "}
+                                  {item.size && `Размер: ${item.size}`}
+                                </p>
+                              )}
                             </div>
-                          </td>
-                          <td className="p-4 text-right hidden sm:table-cell">
-                            {item.product.discountPrice || item.product.price} ₽
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button 
-                                variant="outline" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                              >
-                                -
-                              </Button>
-                              <span className="w-8 text-center">{item.quantity}</span>
-                              <Button 
-                                variant="outline" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                disabled={stockQuantity !== undefined && item.quantity >= stockQuantity}
-                              >
-                                +
-                              </Button>
-                            </div>
-                            {stockQuantity !== undefined && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                Доступно: {stockQuantity}
-                              </div>
-                            )}
-                          </td>
-                          <td className="p-4 text-right font-medium">
-                            {(item.product.discountPrice || item.product.price) * item.quantity} ₽
-                          </td>
-                          <td className="p-4 text-right">
+                          </div>
+                        </td>
+                        <td className="p-4 text-right hidden sm:table-cell">
+                          {item.product.discountPrice || item.product.price} ₽
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
                             <Button 
-                              variant="ghost" 
+                              variant="outline" 
                               size="icon" 
-                              onClick={() => removeItem(item.product.id)}
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             >
-                              ×
+                              -
                             </Button>
-                          </td>
-                        </tr>
-                      )
-                    })}
+                            <span className="w-8 text-center">{item.quantity}</span>
+                            <Button 
+                              variant="outline" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </td>
+                        <td className="p-4 text-right font-medium">
+                          {(item.product.discountPrice || item.product.price) * item.quantity} ₽
+                        </td>
+                        <td className="p-4 text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => removeItem(item.product.id)}
+                          >
+                            ×
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -381,12 +288,8 @@ const Cart = () => {
                     />
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isSubmitting || items.length === 0 || !deliveryMethod}
-                  >
-                    {isSubmitting ? "Оформление..." : "Оформить заказ"}
+                  <Button type="submit" className="w-full">
+                    Оформить заказ
                   </Button>
                 </form>
               </div>

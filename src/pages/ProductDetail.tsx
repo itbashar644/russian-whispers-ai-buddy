@@ -30,11 +30,6 @@ const ProductDetail = () => {
     if (product) {
       setSelectedColor(product.colors ? product.colors[0] : undefined);
       setCurrentImageIndex(0); // Reset image index when product changes
-      
-      // Ограничиваем выбранное количество доступным запасом
-      if (product.stockQuantity !== undefined && quantity > product.stockQuantity) {
-        setQuantity(Math.max(1, product.stockQuantity));
-      }
     }
   }, [product]);
 
@@ -60,11 +55,6 @@ const ProductDetail = () => {
   }
 
   const handleQuantityChange = (value: number) => {
-    // Ограничиваем максимальное количество доступным запасом
-    if (product.stockQuantity !== undefined) {
-      value = Math.min(value, product.stockQuantity);
-    }
-    
     if (value >= 1) {
       setQuantity(value);
     }
@@ -89,30 +79,6 @@ const ProductDetail = () => {
 
   // Current image to display
   const currentImage = allImages[currentImageIndex] || "/placeholder.svg";
-
-  // Функция для получения текста о наличии товара
-  const getStockText = () => {
-    if (!product.inStock) {
-      return <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-sm">Нет в наличии</span>;
-    }
-    
-    if (product.stockQuantity !== undefined) {
-      if (product.stockQuantity <= 5) {
-        return (
-          <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-sm">
-            Осталось всего {product.stockQuantity} шт.
-          </span>
-        );
-      }
-      return (
-        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">
-          В наличии ({product.stockQuantity} шт.)
-        </span>
-      );
-    }
-    
-    return <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">В наличии</span>;
-  };
 
   // Функция для обработки ошибок загрузки изображения
   const handleImageError = () => {
@@ -265,11 +231,6 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Наличие товара */}
-              <div className="mb-4">
-                {getStockText()}
-              </div>
-
               {/* Marketplace links */}
               {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
                 <div className="flex items-center gap-3 my-4">
@@ -380,16 +341,9 @@ const ProductDetail = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => handleQuantityChange(quantity + 1)}
-                    disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
                   >
                     +
                   </Button>
-                  
-                  {product.stockQuantity !== undefined && (
-                    <span className="ml-4 text-xs text-muted-foreground">
-                      Доступно: {product.stockQuantity} шт.
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -398,8 +352,7 @@ const ProductDetail = () => {
                   size="lg" 
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={!product.inStock || (product.stockQuantity !== undefined && product.stockQuantity < 1)}
-                  variant={product.inStock ? "default" : "outline"}
+                  disabled={!product.inStock}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   {product.inStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}

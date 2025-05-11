@@ -40,21 +40,10 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "price" || name === "discountPrice" || name === "rating" || name === "stockQuantity"
+      [name]: name === "price" || name === "discountPrice" || name === "rating"
         ? parseFloat(value)
         : value,
     });
-    
-    // Автоматически обновляем статус наличия в зависимости от stockQuantity
-    if (name === "stockQuantity") {
-      const stockQuantity = parseFloat(value);
-      if (!isNaN(stockQuantity)) {
-        setFormData(prev => ({
-          ...prev,
-          inStock: stockQuantity > 0
-        }));
-      }
-    }
   };
 
   const handleCheckboxChange = (checked: boolean, name: string) => {
@@ -158,11 +147,6 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
         description: "Пожалуйста, укажите корректные URL изображений",
       });
       return;
-    }
-
-    // Ensure inStock is correctly set based on stockQuantity
-    if (finalFormData.stockQuantity !== undefined) {
-      finalFormData.inStock = finalFormData.stockQuantity > 0;
     }
 
     onSave(finalFormData);
@@ -280,21 +264,6 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
         />
       </div>
       
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="stockQuantity" className="text-right">
-          Количество на складе
-        </Label>
-        <Input
-          id="stockQuantity"
-          name="stockQuantity"
-          type="number"
-          min="0"
-          value={formData.stockQuantity !== undefined ? formData.stockQuantity : ""}
-          onChange={handleInputChange}
-          className="col-span-3"
-        />
-      </div>
-      
       <div className="grid grid-cols-4 items-start gap-4">
         <Label htmlFor="description" className="text-right">
           Описание *
@@ -370,11 +339,8 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
               onCheckedChange={(checked) => 
                 handleCheckboxChange(!!checked, "inStock")
               }
-              disabled={formData.stockQuantity !== undefined}
             />
-            <Label htmlFor="inStock" className={formData.stockQuantity !== undefined ? "text-muted-foreground" : ""}>
-              В наличии {formData.stockQuantity !== undefined && "(определяется по количеству)"}
-            </Label>
+            <Label htmlFor="inStock">В наличии</Label>
           </div>
           
           <div className="flex items-center space-x-2">
