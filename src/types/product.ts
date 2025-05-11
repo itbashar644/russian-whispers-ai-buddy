@@ -24,9 +24,6 @@ export interface Product {
   ozonUrl?: string;
   wildberriesUrl?: string;
   avitoUrl?: string;
-  // New fields for archiving and inventory
-  isArchived?: boolean;
-  stockQuantity?: number;
 }
 
 export interface CartItem {

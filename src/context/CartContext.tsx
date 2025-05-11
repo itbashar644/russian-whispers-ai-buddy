@@ -1,152 +1,146 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { CartItem, DeliveryMethod } from "../types/product";
+import { deliveryMethods } from "../data/deliveryMethods";
+import { toast } from "@/components/ui/sonner";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { CartItem, Product } from "@/types/product";
-import { getFromStorage, saveToStorage } from "@/data/products/utils";
-import { toast } from "sonner";
-
-interface CartContextProps {
-  cartItems: CartItem[];
+interface CartContextType {
+  items: CartItem[];
+  deliveryMethod: DeliveryMethod | null;
   addItem: (item: CartItem) => void;
-  removeItem: (productId: string, color?: string) => void;
-  updateQuantity: (productId: string, quantity: number, color?: string) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  setDeliveryMethod: (method: DeliveryMethod) => void;
   totalItems: number;
-  totalPrice: number;
+  subtotal: number;
+  total: number;
 }
 
-const CartContext = createContext<CartContextProps>({
-  cartItems: [],
-  addItem: () => {},
-  removeItem: () => {},
-  updateQuantity: () => {},
-  clearCart: () => {},
-  totalItems: 0,
-  totalPrice: 0,
-});
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const useCart = () => useContext(CartContext);
+export function useCart() {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
+}
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  
-  // Load cart from localStorage
+interface CartProviderProps {
+  children: ReactNode;
+}
+
+export function CartProvider({ children }: CartProviderProps) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(
+    deliveryMethods[0]
+  );
+
+  // Load cart from localStorage on initial load
   useEffect(() => {
-    const savedCart = getFromStorage<CartItem[]>("cart", []);
-    setCartItems(savedCart);
+    const storedCart = localStorage.getItem("cart");
+    const storedDelivery = localStorage.getItem("deliveryMethod");
+    
+    if (storedCart) {
+      try {
+        setItems(JSON.parse(storedCart));
+      } catch (e) {
+        console.error("Failed to parse cart from localStorage");
+      }
+    }
+    
+    if (storedDelivery) {
+      try {
+        setDeliveryMethod(JSON.parse(storedDelivery));
+      } catch (e) {
+        console.error("Failed to parse delivery method from localStorage");
+      }
+    }
   }, []);
-  
-  // Save cart to localStorage when it changes
+
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    saveToStorage("cart", cartItems);
-  }, [cartItems]);
-  
-  const addItem = (newItem: CartItem) => {
-    // Check stock before adding
-    if (newItem.product.stockQuantity !== undefined && 
-        newItem.quantity > newItem.product.stockQuantity) {
-      toast.error("Недостаточно товара на складе", {
-        description: `Доступно: ${newItem.product.stockQuantity} шт.`
-      });
+    localStorage.setItem("cart", JSON.stringify(items));
+  }, [items]);
+
+  // Save delivery method to localStorage whenever it changes
+  useEffect(() => {
+    if (deliveryMethod) {
+      localStorage.setItem("deliveryMethod", JSON.stringify(deliveryMethod));
+    }
+  }, [deliveryMethod]);
+
+  const addItem = (item: CartItem) => {
+    setItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex(
+        (i) => 
+          i.product.id === item.product.id && 
+          i.color === item.color && 
+          i.size === item.size
+      );
+
+      if (existingItemIndex >= 0) {
+        // Item exists, update quantity
+        const newItems = [...prevItems];
+        newItems[existingItemIndex] = {
+          ...newItems[existingItemIndex],
+          quantity: newItems[existingItemIndex].quantity + item.quantity,
+        };
+        return newItems;
+      } else {
+        // Item doesn't exist, add it
+        return [...prevItems, item];
+      }
+    });
+    
+    toast.success("Товар добавлен в корзину");
+  };
+
+  const removeItem = (itemId: string) => {
+    setItems((prevItems) => prevItems.filter((item) => item.product.id !== itemId));
+    toast.info("Товар удален из корзины");
+  };
+
+  const updateQuantity = (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(itemId);
       return;
     }
 
-    setCartItems(prevItems => {
-      // Check if item already in cart (same product and color)
-      const existingItemIndex = prevItems.findIndex(
-        item => 
-          item.product.id === newItem.product.id && 
-          item.color === newItem.color
-      );
-      
-      if (existingItemIndex >= 0) {
-        // Update quantity of existing item
-        const updatedItems = [...prevItems];
-        const newQuantity = updatedItems[existingItemIndex].quantity + newItem.quantity;
-        
-        // Check if updated quantity exceeds available stock
-        if (newItem.product.stockQuantity !== undefined && 
-            newQuantity > newItem.product.stockQuantity) {
-          toast.error("Недостаточно товара на складе", {
-            description: `Доступно: ${newItem.product.stockQuantity} шт.`
-          });
-          return prevItems;
-        }
-        
-        updatedItems[existingItemIndex].quantity = newQuantity;
-        
-        toast.success("Товар добавлен в корзину", {
-          description: `${newItem.product.title} (${newQuantity} шт.)`
-        });
-        
-        return updatedItems;
-      } else {
-        // Add new item
-        toast.success("Товар добавлен в корзину", {
-          description: `${newItem.product.title} (${newItem.quantity} шт.)`
-        });
-        
-        return [...prevItems, newItem];
-      }
-    });
-  };
-  
-  const removeItem = (productId: string, color?: string) => {
-    setCartItems(prevItems => 
-      prevItems.filter(item => 
-        !(item.product.id === productId && item.color === color)
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.product.id === itemId ? { ...item, quantity } : item
       )
     );
   };
-  
-  const updateQuantity = (productId: string, quantity: number, color?: string) => {
-    setCartItems(prevItems => {
-      const updatedItems = [...prevItems];
-      const itemIndex = updatedItems.findIndex(
-        item => item.product.id === productId && item.color === color
-      );
-      
-      if (itemIndex >= 0) {
-        // Check if updated quantity exceeds available stock
-        const product = updatedItems[itemIndex].product;
-        if (product.stockQuantity !== undefined && 
-            quantity > product.stockQuantity) {
-          toast.error("Недостаточно товара на складе", {
-            description: `Доступно: ${product.stockQuantity} шт.`
-          });
-          return prevItems;
-        }
-        
-        updatedItems[itemIndex].quantity = quantity;
-      }
-      
-      return updatedItems;
-    });
-  };
-  
-  const clearCart = () => {
-    setCartItems([]);
-  };
-  
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  
-  const totalPrice = cartItems.reduce((sum, item) => {
-    const price = item.product.discountPrice || item.product.price;
-    return sum + (price * item.quantity);
-  }, 0);
 
-  return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        totalItems,
-        totalPrice,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const clearCart = () => {
+    setItems([]);
+    toast.info("Корзина очищена");
+  };
+
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+
+  const subtotal = items.reduce(
+    (total, item) => 
+      total + (item.product.discountPrice || item.product.price) * item.quantity, 
+    0
   );
-};
+
+  const total = subtotal + (deliveryMethod?.price || 0);
+
+  const value = {
+    items,
+    deliveryMethod,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    setDeliveryMethod,
+    totalItems,
+    subtotal,
+    total,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
