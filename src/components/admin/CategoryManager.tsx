@@ -3,11 +3,14 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { 
-  getAllCategories, 
+  getAllCategories,
+  getCategoryObjects, 
   addCategory, 
   removeCategory, 
   getProductsByCategory, 
-  updateProductsCategory 
+  updateProductsCategory,
+  updateCategoryImage,
+  Category
 } from "@/data/products";
 import CategoryForm from "./CategoryForm";
 import CategoryList from "./CategoryList";
@@ -15,6 +18,7 @@ import CategoryMoveDialog from "./CategoryMoveDialog";
 
 const CategoryManager = () => {
   const [categories, setCategories] = useState<string[]>([]);
+  const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [targetCategory, setTargetCategory] = useState<string>("");
   const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -25,6 +29,7 @@ const CategoryManager = () => {
 
   const loadCategories = () => {
     setCategories(getAllCategories());
+    setCategoryObjects(getCategoryObjects());
   };
 
   const handleAddCategory = (newCategory: string) => {
@@ -32,6 +37,14 @@ const CategoryManager = () => {
     loadCategories();
     toast("Категория добавлена", {
       description: `Категория "${newCategory}" была успешно добавлена`,
+    });
+  };
+
+  const handleUpdateCategoryImage = (categoryName: string, imageUrl: string) => {
+    updateCategoryImage(categoryName, imageUrl);
+    loadCategories();
+    toast("Изображение обновлено", {
+      description: `Изображение для категории "${categoryName}" было успешно обновлено`,
     });
   };
 
@@ -98,8 +111,9 @@ const CategoryManager = () => {
         />
 
         <CategoryList 
-          categories={categories} 
+          categories={categoryObjects} 
           onDeleteAttempt={handleDeleteAttempt} 
+          onUpdateImage={handleUpdateCategoryImage}
         />
 
         <CategoryMoveDialog

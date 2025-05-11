@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getProductsByCategory, products, getAllCategories } from "@/data/products";
+import { getProductsByCategory, products, getAllCategories, getCategoryObjects } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,14 +30,17 @@ const Catalog = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("default");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [categoryObjects, setCategoryObjects] = useState<Array<{ name: string; imageUrl: string }>>([]);
 
   // Обновляем категории при монтировании компонента и при каждом входе на страницу
   useEffect(() => {
     setAvailableCategories(getAllCategories());
+    setCategoryObjects(getCategoryObjects());
     
     // Добавляем интервал для периодической проверки обновлений категорий
     const intervalId = setInterval(() => {
       setAvailableCategories(getAllCategories());
+      setCategoryObjects(getCategoryObjects());
     }, 5000); // Проверка каждые 5 секунд
     
     return () => clearInterval(intervalId);
@@ -141,6 +144,11 @@ const Catalog = () => {
     setSearchParams(searchParams);
   };
 
+  // Находим объект категории по имени
+  const findCategoryByName = (name: string) => {
+    return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -159,17 +167,29 @@ const Catalog = () => {
                 >
                   Все товары
                 </Button>
-                {availableCategories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={categoryParam === category ? "default" : "outline"}
-                    className="w-full justify-start flex items-center"
-                    onClick={() => handleCategoryClick(category)}
-                  >
-                    {getCategoryIcon()}
-                    <span>{category}</span>
-                  </Button>
-                ))}
+                {availableCategories.map((category) => {
+                  const categoryObj = findCategoryByName(category);
+                  return (
+                    <Button
+                      key={category}
+                      variant={categoryParam === category ? "default" : "outline"}
+                      className="w-full justify-start flex items-center"
+                      onClick={() => handleCategoryClick(category)}
+                    >
+                      <span className="w-4 h-4 mr-2 overflow-hidden flex-shrink-0">
+                        <img 
+                          src={categoryObj.imageUrl} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                          alt=""
+                        />
+                      </span>
+                      <span>{category}</span>
+                    </Button>
+                  );
+                })}
               </div>
             </div>
 
