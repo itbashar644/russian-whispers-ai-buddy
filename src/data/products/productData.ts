@@ -14,6 +14,7 @@ const defaultProducts: Product[] = [
     additionalImages: ["/placeholder.svg", "/placeholder.svg"],
     rating: 4.8,
     inStock: true,
+    stockQuantity: 15, // Добавляем начальное количество
     countryOfOrigin: "Россия",
     colors: ["Черный", "Коричневый", "Бежевый"],
     material: "Натуральная кожа",
@@ -29,6 +30,7 @@ const defaultProducts: Product[] = [
     imageUrl: "/placeholder.svg",
     rating: 4.9,
     inStock: true,
+    stockQuantity: 8, // Добавляем начальное количество
     countryOfOrigin: "Россия",
     isNew: true,
   },
@@ -41,6 +43,7 @@ const defaultProducts: Product[] = [
     imageUrl: "/placeholder.svg",
     rating: 4.7,
     inStock: true,
+    stockQuantity: 25, // Добавляем начальное количество
     countryOfOrigin: "Россия",
     material: "Серебро 925 пробы, малахит",
     isBestseller: true,
@@ -67,6 +70,11 @@ export const addOrUpdateProduct = (product: Product): void => {
     product.rating = generateRandomRating();
   }
   
+  // Автоматически устанавливаем статус наличия в зависимости от stockQuantity
+  if (product.stockQuantity !== undefined) {
+    product.inStock = product.stockQuantity > 0;
+  }
+  
   const index = products.findIndex(p => p.id === product.id);
   if (index >= 0) {
     // Update existing product
@@ -77,6 +85,31 @@ export const addOrUpdateProduct = (product: Product): void => {
   }
   // Save to localStorage immediately after modifying the products array
   saveProductsToStorage();
+};
+
+// Function to update product stock quantity
+export const updateProductStock = (productId: string, newQuantity: number): void => {
+  const product = products.find(p => p.id === productId);
+  if (product) {
+    product.stockQuantity = newQuantity;
+    product.inStock = newQuantity > 0;
+    saveProductsToStorage();
+  }
+};
+
+// Function to decrease product stock quantity (for order processing)
+export const decreaseProductStock = (productId: string, quantity: number): boolean => {
+  const product = products.find(p => p.id === productId);
+  if (product && product.stockQuantity !== undefined) {
+    if (product.stockQuantity >= quantity) {
+      product.stockQuantity -= quantity;
+      product.inStock = product.stockQuantity > 0;
+      saveProductsToStorage();
+      return true;
+    }
+    return false; // Not enough stock
+  }
+  return false; // Product not found or stockQuantity not defined
 };
 
 // Function to archive a product

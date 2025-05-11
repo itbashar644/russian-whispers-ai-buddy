@@ -32,6 +32,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
     setImageError(true);
   };
 
+  // Определяем текст для наличия товара
+  const getStockText = () => {
+    if (!product.inStock) {
+      return <span className="text-red-500 text-xs">Нет в наличии</span>;
+    }
+    
+    if (product.stockQuantity !== undefined) {
+      if (product.stockQuantity <= 5) {
+        return <span className="text-orange-500 text-xs">Осталось {product.stockQuantity} шт.</span>;
+      }
+      return <span className="text-green-500 text-xs">В наличии</span>;
+    }
+    
+    return <span className="text-green-500 text-xs">В наличии</span>;
+  };
+
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={`/product/${product.id}`} className="aspect-square overflow-hidden">
@@ -80,6 +96,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {product.rating}
             </span>
           </div>
+
+          {/* Отображение наличия товара */}
+          <div className="mt-1">
+            {getStockText()}
+          </div>
+          
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
           
           {/* Colors display if available */}
@@ -153,8 +175,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
           onClick={handleAddToCart} 
           className="flex-1"
           disabled={!product.inStock}
+          variant={product.inStock ? "default" : "outline"}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" /> Купить за {displayPrice} ₽
+          <ShoppingCart className="mr-2 h-4 w-4" /> 
+          {product.inStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
         </Button>
       </CardFooter>
     </Card>

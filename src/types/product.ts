@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   title: string;
@@ -11,6 +12,7 @@ export interface Product {
   videoType?: 'mp4' | 'vk' | 'youtube';
   rating: number;
   inStock: boolean;
+  stockQuantity?: number; // Добавляем количество товара в наличии
   colors?: string[];
   sizes?: string[];
   material?: string;

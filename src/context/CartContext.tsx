@@ -1,7 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
 import { toast } from "@/components/ui/sonner";
+import { getProductById } from "@/data/products";
 
 interface CartContextType {
   items: CartItem[];
@@ -14,6 +16,7 @@ interface CartContextType {
   totalItems: number;
   subtotal: number;
   total: number;
+  validateStock: () => boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -70,7 +73,70 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [deliveryMethod]);
 
+  // Проверяем наличие и достаточное количество товара
+  const checkProductAvailability = (productId: string, requestedQuantity: number): boolean => {
+    const currentProduct = getProductById(productId);
+    
+    if (!currentProduct) {
+      return false; // Товар не найден
+    }
+    
+    if (!currentProduct.inStock) {
+      return false; // Товар не в наличии
+    }
+    
+    // Проверяем количество, если оно указано
+    if (currentProduct.stockQuantity !== undefined) {
+      return currentProduct.stockQuantity >= requestedQuantity;
+    }
+    
+    // Если количество не указано, но товар в наличии, считаем что его достаточно
+    return true;
+  };
+
+  // Проверка всей корзины
+  const validateStock = (): boolean => {
+    for (const item of items) {
+      const isAvailable = checkProductAvailability(item.product.id, item.quantity);
+      if (!isAvailable) {
+        // Получаем актуальные данные о товаре
+        const currentProduct = getProductById(item.product.id);
+        if (!currentProduct) {
+          toast.error(`Товар "${item.product.title}" больше не доступен и будет удален из корзины.`);
+          removeItem(item.product.id);
+          return false;
+        } else if (!currentProduct.inStock) {
+          toast.error(`Товар "${item.product.title}" закончился и будет удален из корзины.`);
+          removeItem(item.product.id);
+          return false;
+        } else if (currentProduct.stockQuantity !== undefined && currentProduct.stockQuantity < item.quantity) {
+          toast.error(`Для товара "${item.product.title}" доступно только ${currentProduct.stockQuantity} шт.`);
+          updateQuantity(item.product.id, currentProduct.stockQuantity);
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const addItem = (item: CartItem) => {
+    // Проверяем наличие товара перед добавлением
+    const isAvailable = checkProductAvailability(item.product.id, item.quantity);
+    
+    if (!isAvailable) {
+      // Получаем актуальные данные о товаре для точного сообщения
+      const currentProduct = getProductById(item.product.id);
+      
+      if (!currentProduct || !currentProduct.inStock) {
+        toast.error("Товар не в наличии.");
+        return;
+      } else if (currentProduct.stockQuantity !== undefined && currentProduct.stockQuantity < item.quantity) {
+        toast.error(`Доступно только ${currentProduct.stockQuantity} шт.`);
+        // Добавляем в корзину максимально доступное количество
+        item.quantity = currentProduct.stockQuantity;
+      }
+    }
+
     setItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
         (i) => 
@@ -82,10 +148,18 @@ export function CartProvider({ children }: CartProviderProps) {
       if (existingItemIndex >= 0) {
         // Item exists, update quantity
         const newItems = [...prevItems];
-        newItems[existingItemIndex] = {
-          ...newItems[existingItemIndex],
-          quantity: newItems[existingItemIndex].quantity + item.quantity,
-        };
+        
+        // Проверяем, не превышает ли общее количество доступное на складе
+        const currentProduct = getProductById(item.product.id);
+        const newQuantity = newItems[existingItemIndex].quantity + item.quantity;
+        
+        if (currentProduct && currentProduct.stockQuantity !== undefined && newQuantity > currentProduct.stockQuantity) {
+          toast.warning(`В корзину добавлено максимально доступное количество: ${currentProduct.stockQuantity} шт.`);
+          newItems[existingItemIndex].quantity = currentProduct.stockQuantity;
+        } else {
+          newItems[existingItemIndex].quantity = newQuantity;
+        }
+        
         return newItems;
       } else {
         // Item doesn't exist, add it
@@ -105,6 +179,14 @@ export function CartProvider({ children }: CartProviderProps) {
     if (quantity <= 0) {
       removeItem(itemId);
       return;
+    }
+    
+    // Проверяем доступное количество перед обновлением
+    const currentProduct = getProductById(itemId);
+    
+    if (currentProduct && currentProduct.stockQuantity !== undefined && quantity > currentProduct.stockQuantity) {
+      toast.warning(`Доступно только ${currentProduct.stockQuantity} шт.`);
+      quantity = currentProduct.stockQuantity;
     }
 
     setItems((prevItems) =>
@@ -140,6 +222,7 @@ export function CartProvider({ children }: CartProviderProps) {
     totalItems,
     subtotal,
     total,
+    validateStock,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
