@@ -10,7 +10,8 @@ import {
   removeCategory, 
   updateProductsCategory,
   updateCategoryImage,
-  Category,
+  // Import the type separately
+  type Category,
   // Rename this import to avoid conflict
   getProductsByCategory as getCategoryProducts
 } from "./categoryData";
@@ -23,7 +24,9 @@ export {
   removeCategory, 
   updateProductsCategory,
   updateCategoryImage,
-  Category,
   // Export with the new name
   getCategoryProducts
 };
+
+// Re-export the type properly
+export type { Category };
