@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getUserOrders } from "@/services/orderService";
 
 interface Order {
   id: string;
@@ -45,30 +46,24 @@ const UserOrders = () => {
       setLoading(true);
       
       try {
-        // Получаем заказы пользователя из базы
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-          
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          // Преобразуем данные из базы в формат Order
-          const formattedOrders: Order[] = data.map(order => ({
+        // Get user orders from service function
+        const result = await getUserOrders(user.id);
+        
+        if (result.success && result.orders) {
+          // Format orders for display
+          const formattedOrders: Order[] = result.orders.map(order => ({
             id: order.id,
             date: order.created_at,
-            status: order.status,
-            items: order.items,
+            status: order.status as Order["status"],
+            items: order.items as CartItem[],
             total: order.total,
             deliveryMethod: order.delivery_method,
             deliveryAddress: order.delivery_address
           }));
           
           setOrders(formattedOrders);
+        } else {
+          throw new Error("Failed to fetch orders");
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -80,9 +75,9 @@ const UserOrders = () => {
     
     fetchOrders();
 
-    // Подписываемся на обновления заказов в реальном времени
+    // Subscribe to real-time updates for orders
     const ordersSubscription = supabase
-      .channel('public:orders')
+      .channel('orders_channel')
       .on('postgres_changes', 
         { 
           event: 'UPDATE', 
@@ -91,12 +86,15 @@ const UserOrders = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          // Обновляем статус заказа, если он изменился
+          // Update order status if it changes
           const updatedOrder = payload.new as any;
           setOrders(currentOrders => 
             currentOrders.map(order => 
               order.id === updatedOrder.id 
-                ? { ...order, status: updatedOrder.status } 
+                ? { 
+                    ...order, 
+                    status: updatedOrder.status as Order["status"]
+                  } 
                 : order
             )
           );
@@ -106,7 +104,7 @@ const UserOrders = () => {
       )
       .subscribe();
 
-    // Отписываемся при размонтировании компонента
+    // Cleanup subscription on unmount
     return () => {
       supabase.removeChannel(ordersSubscription);
     };

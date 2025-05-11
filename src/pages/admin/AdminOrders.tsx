@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getAllOrders, updateOrderStatus } from "@/services/orderService";
 
 // Типы для заказов
 export interface OrderItem {
@@ -62,25 +63,18 @@ const AdminOrders = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .order('created_at', { ascending: false });
+        const result = await getAllOrders();
 
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
+        if (result.success && result.orders) {
           // Преобразуем данные из базы в формат Order
-          const formattedOrders: Order[] = data.map(order => ({
+          const formattedOrders: Order[] = result.orders.map(order => ({
             id: order.id,
             customerName: order.customer_name,
             customerEmail: order.customer_email,
             customerPhone: order.customer_phone,
-            items: order.items,
+            items: order.items as OrderItem[],
             total: order.total,
-            status: order.status,
+            status: order.status as Order["status"],
             date: order.created_at,
             address: order.delivery_address,
             deliveryMethod: order.delivery_method,
@@ -88,6 +82,8 @@ const AdminOrders = () => {
           }));
           
           setOrders(formattedOrders);
+        } else {
+          throw new Error("Failed to fetch orders");
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -98,27 +94,63 @@ const AdminOrders = () => {
     };
 
     fetchOrders();
+
+    // Subscribe to real-time updates
+    const ordersSubscription = supabase
+      .channel('orders_admin_channel')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'orders' 
+        },
+        (payload) => {
+          const newOrder = payload.new as any;
+          
+          const formattedOrder: Order = {
+            id: newOrder.id,
+            customerName: newOrder.customer_name,
+            customerEmail: newOrder.customer_email,
+            customerPhone: newOrder.customer_phone,
+            items: newOrder.items as OrderItem[],
+            total: newOrder.total,
+            status: newOrder.status as Order["status"],
+            date: newOrder.created_at,
+            address: newOrder.delivery_address,
+            deliveryMethod: newOrder.delivery_method,
+            userId: newOrder.user_id
+          };
+          
+          setOrders(prevOrders => [formattedOrder, ...prevOrders]);
+          toast.info(`Получен новый заказ: ${newOrder.id}`);
+        }
+      )
+      .subscribe();
+      
+    // Cleanup on unmount
+    return () => {
+      supabase.removeChannel(ordersSubscription);
+    };
   }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      // Обновляем локальное состояние заказов
-      setOrders(
-        orders.map((order) =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
+      const result = await updateOrderStatus(orderId, newStatus);
       
-      toast.success('Статус заказа обновлен', {
-        description: `Заказ ${orderId} теперь имеет статус "${getStatusText(newStatus)}"`,
-      });
+      if (result.success) {
+        // Обновляем локальное состояние заказов
+        setOrders(
+          orders.map((order) =>
+            order.id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+        
+        toast.success('Статус заказа обновлен', {
+          description: `Заказ ${orderId} теперь имеет статус "${getStatusText(newStatus)}"`,
+        });
+      } else {
+        throw new Error("Failed to update order status");
+      }
     } catch (error) {
       console.error('Error updating order status:', error);
       toast.error('Ошибка при обновлении статуса заказа');
