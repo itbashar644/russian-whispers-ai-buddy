@@ -51,14 +51,17 @@ const AdminCustomers = () => {
           throw profilesError;
         }
 
-        // Получаем заказы с типизацией any для обхода TypeScript ошибок
-        const { data: orders, error: ordersError } = await supabase
+        // Get orders data using explicit type casting for safety
+        const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
-          .select('*') as { data: any[]; error: any };
-
+          .select('*');
+        
         if (ordersError) {
           throw ordersError;
         }
+        
+        // Safely cast to the expected type
+        const orders = ordersData as any[];
 
         // Формируем данные о клиентах
         const formattedCustomers: Customer[] = profiles.map(profile => {
@@ -66,7 +69,7 @@ const AdminCustomers = () => {
           const userOrders = orders ? orders.filter(order => order.user_id === profile.id) : [];
           
           // Считаем общую сумму покупок
-          const totalSpent = userOrders.reduce((sum, order) => sum + +order.total, 0);
+          const totalSpent = userOrders.reduce((sum, order) => sum + Number(order.total), 0);
 
           return {
             id: profile.id,

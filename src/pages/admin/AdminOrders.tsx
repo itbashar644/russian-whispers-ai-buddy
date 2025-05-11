@@ -72,7 +72,8 @@ const AdminOrders = () => {
             customerName: order.customer_name,
             customerEmail: order.customer_email,
             customerPhone: order.customer_phone,
-            items: order.items as OrderItem[],
+            // Use type assertion to properly convert JSON items to OrderItem[]
+            items: (order.items as unknown) as OrderItem[],
             total: order.total,
             status: order.status as Order["status"],
             date: order.created_at,
@@ -112,7 +113,8 @@ const AdminOrders = () => {
             customerName: newOrder.customer_name,
             customerEmail: newOrder.customer_email,
             customerPhone: newOrder.customer_phone,
-            items: newOrder.items as OrderItem[],
+            // Cast JSON items to OrderItem[] type using double assertion
+            items: (newOrder.items as unknown) as OrderItem[],
             total: newOrder.total,
             status: newOrder.status as Order["status"],
             date: newOrder.created_at,

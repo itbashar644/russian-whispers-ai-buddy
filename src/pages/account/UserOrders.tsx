@@ -55,7 +55,8 @@ const UserOrders = () => {
             id: order.id,
             date: order.created_at,
             status: order.status as Order["status"],
-            items: order.items as CartItem[],
+            // Cast the items to CartItem[] with type assertion
+            items: (order.items as unknown) as CartItem[],
             total: order.total,
             deliveryMethod: order.delivery_method,
             deliveryAddress: order.delivery_address
