@@ -46,7 +46,7 @@ const Index = () => {
                 <img
                   alt="Современная электроника для дома"
                   className="aspect-[4/3] object-cover w-full"
-                  src="/lovable-uploads/ad1eca62-0e32-4fde-93cb-39b20a11b70f.png"
+                  src="/lovable-uploads/a497aa08-0713-4ff4-b2f4-4cf8d992b055.png"
                 />
               </div>
             </div>
