@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -6,8 +5,8 @@ import {
   getAllCategories,
   getCategoryObjects, 
   addCategory, 
-  removeCategory, 
-  getProductsByCategory, 
+  removeCategory,
+  getCategoryProducts,
   updateProductsCategory,
   updateCategoryImage,
   Category
@@ -52,7 +51,7 @@ const CategoryManager = () => {
     setCategoryToDelete(category);
     
     // Проверяем, есть ли продукты в этой категории
-    const productsInCategory = getProductsByCategory(category);
+    const productsInCategory = getCategoryProducts(category);
     
     if (productsInCategory.length > 0) {
       // Если есть продукты, предложим переместить их в другую категорию
@@ -101,7 +100,7 @@ const CategoryManager = () => {
       <CardHeader>
         <CardTitle>Управление категориями</CardTitle>
         <CardDescription>
-          Добавляйте, удаляйте и редактируйте категории товаров
+          Добавляйте, удаляйт�� и редактируйте категории товаров
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
