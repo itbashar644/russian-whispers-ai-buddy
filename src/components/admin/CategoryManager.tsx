@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -27,8 +28,14 @@ const CategoryManager = () => {
   }, []);
 
   const loadCategories = () => {
-    setCategories(getAllCategories());
-    setCategoryObjects(getCategoryObjects());
+    const allCategories = getAllCategories();
+    const categoryObjs = getCategoryObjects();
+    
+    setCategories(allCategories);
+    setCategoryObjects(categoryObjs);
+    
+    console.log("Loaded categories:", allCategories);
+    console.log("Category objects:", categoryObjs);
   };
 
   const handleAddCategory = (newCategory: string) => {
@@ -100,7 +107,7 @@ const CategoryManager = () => {
       <CardHeader>
         <CardTitle>Управление категориями</CardTitle>
         <CardDescription>
-          Добавляйте, удаляйт�� и редактируйте категории товаров
+          Добавляйте, удаляйте и редактируйте категории товаров
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

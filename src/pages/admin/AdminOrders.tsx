@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAllOrders, updateOrderStatus } from "@/services/orderService";
+import { Archive } from "lucide-react";
 
 // Типы для заказов
 export interface OrderItem {
@@ -45,7 +46,7 @@ export interface Order {
   customerPhone: string;
   items: OrderItem[];
   total: number;
-  status: "new" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: "new" | "processing" | "shipped" | "delivered" | "cancelled" | "archived";
   date: string;
   address: string;
   deliveryMethod: string;
@@ -57,6 +58,7 @@ const AdminOrders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
 
   // Загрузка заказов из Supabase
   useEffect(() => {
@@ -159,7 +161,16 @@ const AdminOrders = () => {
     }
   };
 
+  const handleArchiveOrder = async (orderId: string) => {
+    await handleStatusChange(orderId, "archived");
+  };
+
   const filteredOrders = orders.filter((order) => {
+    // Фильтрация по архивным заказам
+    if (!showArchived && order.status === "archived") {
+      return false;
+    }
+    
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,6 +194,8 @@ const AdminOrders = () => {
         return "bg-green-100 text-green-800";
       case "cancelled":
         return "bg-red-100 text-red-800";
+      case "archived":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -194,7 +207,8 @@ const AdminOrders = () => {
       processing: "В обработке",
       shipped: "Отправлен",
       delivered: "Доставлен",
-      cancelled: "Отменен"
+      cancelled: "Отменен",
+      archived: "Архивирован"
     };
     return statusMap[status];
   };
@@ -236,8 +250,18 @@ const AdminOrders = () => {
                   <SelectItem value="shipped">Отправленные</SelectItem>
                   <SelectItem value="delivered">Доставленные</SelectItem>
                   <SelectItem value="cancelled">Отмененные</SelectItem>
+                  <SelectItem value="archived">Архивированные</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="w-full md:w-1/3 flex items-center space-x-2">
+              <Button 
+                variant={showArchived ? "default" : "outline"} 
+                onClick={() => setShowArchived(!showArchived)}
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                {showArchived ? "Скрыть архивные" : "Показать архивные"}
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -278,7 +302,7 @@ const AdminOrders = () => {
                     </TableRow>
                   ) : (
                     filteredOrders.map((order) => (
-                      <TableRow key={order.id}>
+                      <TableRow key={order.id} className={order.status === 'archived' ? 'opacity-60' : ''}>
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>
                           <div className="font-medium">{order.customerName}</div>
@@ -297,21 +321,35 @@ const AdminOrders = () => {
                         </TableCell>
                         <TableCell>{order.deliveryMethod}</TableCell>
                         <TableCell className="text-right">
-                          <Select
-                            value={order.status}
-                            onValueChange={(value) => handleStatusChange(order.id, value as Order["status"])}
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue placeholder="Изменить статус" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">Новый</SelectItem>
-                              <SelectItem value="processing">В обработке</SelectItem>
-                              <SelectItem value="shipped">Отправлен</SelectItem>
-                              <SelectItem value="delivered">Доставлен</SelectItem>
-                              <SelectItem value="cancelled">Отменен</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center justify-end space-x-2">
+                            {order.status !== 'archived' && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleArchiveOrder(order.id)}
+                                className="text-gray-500"
+                              >
+                                <Archive className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => handleStatusChange(order.id, value as Order["status"])}
+                              disabled={order.status === 'archived'}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Изменить статус" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="new">Новый</SelectItem>
+                                <SelectItem value="processing">В обработке</SelectItem>
+                                <SelectItem value="shipped">Отправлен</SelectItem>
+                                <SelectItem value="delivered">Доставлен</SelectItem>
+                                <SelectItem value="cancelled">Отменен</SelectItem>
+                                <SelectItem value="archived">Архивирован</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

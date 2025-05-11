@@ -1,39 +1,56 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, Package, Users, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { products } from "@/data/products";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
-  // Реальные данные о заказах
-  const mockOrders = [
-    {
-      id: "ORD-001",
-      customerName: "Иванов Иван",
-      total: 2490,
-    },
-    {
-      id: "ORD-002",
-      customerName: "Петров Петр",
-      total: 4270,
-    },
-    {
-      id: "ORD-003",
-      customerName: "Сидорова Анна",
-      total: 1790,
-    }
-  ];
-
-  const mockStats = {
+  const [stats, setStats] = useState({
     totalProducts: products.length,
-    totalOrders: mockOrders.length, // Исправлено с 12 на реальное количество
-    totalCustomers: 8,
-    totalRevenue: products.reduce((sum, product) => {
-      return sum + (product.discountPrice || product.price);
-    }, 0)
-  };
+    totalOrders: 0,
+    totalCustomers: 0,
+    totalRevenue: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Get orders that are not archived
+        const { data: orders, error: ordersError } = await supabase
+          .from('orders')
+          .select('*')
+          .not('status', 'eq', 'archived');
+          
+        if (ordersError) throw ordersError;
+        
+        // Get distinct customers count
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id');
+          
+        if (profilesError) throw profilesError;
+        
+        // Calculate stats
+        const totalOrders = orders ? orders.length : 0;
+        const totalCustomers = profiles ? profiles.length : 0;
+        const totalRevenue = orders ? orders.reduce((sum, order) => sum + Number(order.total), 0) : 0;
+        
+        setStats({
+          totalProducts: products.length,
+          totalOrders,
+          totalCustomers,
+          totalRevenue
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+    
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -51,9 +68,9 @@ const AdminDashboard = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.totalOrders}</div>
+            <div className="text-2xl font-bold">{stats.totalOrders}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Всего заказов в системе
+              Активные заказы в системе
             </p>
             <Button variant="link" size="sm" className="mt-2 h-auto p-0" asChild>
               <Link to="/admin/orders" className="flex items-center">
@@ -69,7 +86,7 @@ const AdminDashboard = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.totalProducts}</div>
+            <div className="text-2xl font-bold">{stats.totalProducts}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Всего товаров в каталоге
             </p>
@@ -87,7 +104,7 @@ const AdminDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.totalCustomers}</div>
+            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Всего клиентов в базе
             </p>
@@ -116,9 +133,9 @@ const AdminDashboard = () => {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.totalRevenue.toLocaleString()} ₽</div>
+            <div className="text-2xl font-bold">{stats.totalRevenue.toLocaleString()} ₽</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Общая сумма по заказам
+              Общая сумма по активным заказам
             </p>
             <Button variant="link" size="sm" className="mt-2 h-auto p-0" asChild>
               <Link to="/admin/reports" className="flex items-center">

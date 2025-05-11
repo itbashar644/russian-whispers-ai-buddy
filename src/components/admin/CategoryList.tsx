@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, Image } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Category } from "@/data/products";
 import ImageUploader from "@/components/admin/ImageUploader";
 
@@ -41,14 +41,16 @@ const CategoryList: React.FC<CategoryListProps> = ({
                 <TableCell className="max-w-[500px]">
                   <div className="flex flex-col gap-2">
                     <div className="h-20 w-20 overflow-hidden border rounded-md">
-                      <img 
-                        src={category.imageUrl} 
-                        alt={category.name}
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
+                      {category.imageUrl && (
+                        <img 
+                          src={category.imageUrl} 
+                          alt={category.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                      )}
                     </div>
                     <ImageUploader
                       initialImageUrl={category.imageUrl}

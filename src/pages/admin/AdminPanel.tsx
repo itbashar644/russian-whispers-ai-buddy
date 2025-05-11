@@ -1,5 +1,5 @@
 
-import { Routes, Route, NavLink, Navigate } from "react-router-dom";
+import { Routes, Route, NavLink, Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -10,6 +10,7 @@ import {
   LogOut,
   Settings,
   List,
+  Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminDashboard from "./AdminDashboard";
@@ -92,7 +93,16 @@ const AdminPanel = () => {
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t space-y-2">
+          <Link to="/">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              На сайт
+            </Button>
+          </Link>
           <Button
             variant="outline"
             className="w-full justify-start"
@@ -108,8 +118,10 @@ const AdminPanel = () => {
       <div className="md:hidden flex items-center justify-between p-4 border-b bg-background">
         <h2 className="text-xl font-bold">Админ панель</h2>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon">
-            <Settings className="h-4 w-4" />
+          <Button variant="outline" size="icon" asChild>
+            <Link to="/">
+              <Home className="h-4 w-4" />
+            </Link>
           </Button>
           <Button variant="outline" size="icon" onClick={handleSignOut}>
             <LogOut className="h-4 w-4" />
