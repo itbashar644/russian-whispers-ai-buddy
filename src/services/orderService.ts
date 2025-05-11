@@ -59,3 +59,9 @@ export async function updateOrderStatus(orderId: string, status: string) {
     return { success: false, error };
   }
 }
+
+// Add the missing getUserOrders function that's being imported in UserOrders.tsx
+export async function getUserOrders(userId: string) {
+  // This function is essentially an alias for getOrdersByUserId for backward compatibility
+  return getOrdersByUserId(userId);
+}
