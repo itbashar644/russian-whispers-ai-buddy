@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -44,9 +43,9 @@ const Index = () => {
               </div>
               <div className="rounded-lg overflow-hidden">
                 <img
-                  alt="The X Shop"
+                  alt="Современные технологические товары"
                   className="aspect-[4/3] object-cover w-full"
-                  src="/placeholder.svg"
+                  src="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png"
                 />
               </div>
             </div>
