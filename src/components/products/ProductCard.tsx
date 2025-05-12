@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -81,6 +80,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
+          
+          {/* Add stock status indicator */}
+          <div className={`text-xs font-medium ${product.inStock ? "text-green-600" : "text-red-500"}`}>
+            {product.inStock ? "В наличии" : "Нет в наличии"}
+          </div>
           
           {/* Colors display if available */}
           {product.colors && product.colors.length > 0 && (

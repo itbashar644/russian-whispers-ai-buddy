@@ -1,4 +1,3 @@
-
 import { Product } from "@/types/product";
 import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
 
@@ -103,31 +102,6 @@ export const decreaseProductStock = (productId: string, quantity: number): boole
   product.inStock = product.stockQuantity > 0;
   saveProductsToStorage();
   return true;
-};
-
-// Function to archive a product
-export const archiveProduct = (productId: string): void => {
-  const product = products.find(p => p.id === productId);
-  if (product) {
-    product.archived = true;
-    saveProductsToStorage();
-  }
-};
-
-// Function to restore an archived product
-export const restoreProduct = (productId: string): void => {
-  const product = products.find(p => p.id === productId);
-  if (product) {
-    product.archived = false;
-    saveProductsToStorage();
-  }
-};
-
-// Original remove function (kept for compatibility)
-export const removeProduct = (productId: string): void => {
-  products = products.filter(p => p.id !== productId);
-  // Save to localStorage immediately after modifying the products array
-  saveProductsToStorage();
 };
 
 // Function to check if a product has enough stock

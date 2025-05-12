@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
