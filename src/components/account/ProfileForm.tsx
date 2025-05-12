@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, Telegram, WhatsApp } from "lucide-react";
 import { toast } from "sonner";
 import {
   Form,
@@ -30,7 +30,8 @@ const profileSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
   phone: z.string().optional(),
   address: z.string().optional(),
-  preferredContactMethod: z.enum(['phone', 'telegram', 'whatsapp']).optional(),
+  preferredContactMethod: z.enum(['phone', 'telegram', 'whatsapp']),
+  telegramNickname: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -48,8 +49,11 @@ const ProfileForm: React.FC = () => {
       phone: profile?.phone || "",
       address: profile?.address || "",
       preferredContactMethod: profile?.preferredContactMethod || "phone",
+      telegramNickname: profile?.telegramNickname || "",
     },
   });
+
+  const watchContactMethod = form.watch("preferredContactMethod");
 
   // Load saved addresses if available
   React.useEffect(() => {
@@ -149,9 +153,21 @@ const ProfileForm: React.FC = () => {
                         <SelectValue placeholder="Выберите способ связи" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="phone">По телефону</SelectItem>
-                        <SelectItem value="telegram">Telegram</SelectItem>
-                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                        <SelectItem value="phone">
+                          По телефону
+                        </SelectItem>
+                        <SelectItem value="telegram">
+                          <div className="flex items-center">
+                            <Telegram className="h-4 w-4 mr-2 text-[#1EAEDB]" />
+                            Telegram
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="whatsapp">
+                          <div className="flex items-center">
+                            <WhatsApp className="h-4 w-4 mr-2 text-[#25D366]" />
+                            WhatsApp
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -159,6 +175,32 @@ const ProfileForm: React.FC = () => {
                 </FormItem>
               )}
             />
+            
+            {/* Отображаем поле для ника Telegram только если выбран соответствующий способ связи */}
+            {watchContactMethod === "telegram" && (
+              <FormField
+                control={form.control}
+                name="telegramNickname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ник в Telegram</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center">
+                        <span className="bg-[#1EAEDB] p-2 rounded-l-md">
+                          <Telegram className="h-5 w-5 text-white" />
+                        </span>
+                        <Input 
+                          placeholder="Введите ваш ник в Telegram" 
+                          className="rounded-l-none"
+                          {...field} 
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             {/* Избранные адреса доставки */}
             <div className="space-y-4">

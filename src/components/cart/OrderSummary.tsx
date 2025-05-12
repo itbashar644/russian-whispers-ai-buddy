@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
+import { Telegram, WhatsApp } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ interface OrderSummaryProps {
     phone: string;
     address: string;
     contactMethod: string;
+    telegramNickname?: string;
   }) => void;
   isSubmitting: boolean;
   hasStockIssues: boolean;
@@ -41,6 +43,7 @@ const OrderSummary = ({
     phone: "",
     address: "",
     contactMethod: "phone",
+    telegramNickname: "",
   });
 
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,11 +141,42 @@ const OrderSummary = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="phone">По телефону</SelectItem>
-              <SelectItem value="telegram">Telegram</SelectItem>
-              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+              <SelectItem value="telegram">
+                <div className="flex items-center">
+                  <Telegram className="h-4 w-4 mr-2 text-[#1EAEDB]" />
+                  Telegram
+                </div>
+              </SelectItem>
+              <SelectItem value="whatsapp">
+                <div className="flex items-center">
+                  <WhatsApp className="h-4 w-4 mr-2 text-[#25D366]" />
+                  WhatsApp
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Показываем поле для ника в Telegram если выбран этот способ связи */}
+        {orderForm.contactMethod === "telegram" && (
+          <div>
+            <Label htmlFor="telegramNickname">Ник в Telegram</Label>
+            <div className="flex items-center">
+              <span className="bg-[#1EAEDB] p-2 rounded-l-md">
+                <Telegram className="h-5 w-5 text-white" />
+              </span>
+              <Input
+                id="telegramNickname"
+                name="telegramNickname"
+                placeholder="Ваш ник в Telegram"
+                value={orderForm.telegramNickname}
+                onChange={handleOrderFormChange}
+                className="rounded-l-none"
+                required
+              />
+            </div>
+          </div>
+        )}
         
         <Button 
           type="submit" 
