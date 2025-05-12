@@ -1,6 +1,5 @@
 
 import React from "react";
-import { CartItem } from "@/types/product";
 import {
   AccordionContent,
   AccordionItem,
@@ -10,13 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import OrderStatus from "./OrderStatus";
 import OrderItemTable from "./OrderItemTable";
 import OrderTracking from "./OrderTracking";
+import { CartItem } from "@/types/product";
 
 interface OrderAccordionItemProps {
   id: string;
   order_number: number;
   date: string;
   status: "new" | "processing" | "shipped" | "delivered" | "cancelled" | "archived";
-  items: CartItem[];
+  items: any[];
   total: number;
   deliveryMethod: string;
   deliveryAddress: string;
@@ -36,6 +36,9 @@ const OrderAccordionItem: React.FC<OrderAccordionItemProps> = ({
   trackingNumber,
   trackingUrl,
 }) => {
+  // Ensure items are properly typed or provide fallback
+  const safeItems = Array.isArray(items) ? items : [];
+  
   return (
     <AccordionItem key={id} value={id}>
       <AccordionTrigger className="hover:no-underline">
@@ -54,7 +57,7 @@ const OrderAccordionItem: React.FC<OrderAccordionItemProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4 pt-2">
-          <OrderItemTable items={items} />
+          <OrderItemTable items={safeItems} />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

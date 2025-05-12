@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { CartItem } from "@/types/product";
 import { 
   Card, 
   CardContent, 
@@ -22,7 +21,7 @@ interface Order {
   order_number: number;
   date: string;
   status: "new" | "processing" | "shipped" | "delivered" | "cancelled" | "archived";
-  items: CartItem[];
+  items: any[];
   total: number;
   deliveryMethod: string;
   deliveryAddress: string;
@@ -53,6 +52,7 @@ const UserOrders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Helper function to validate order status and provide type safety
   const validateOrderStatus = (status: string): Order["status"] => {
@@ -63,6 +63,10 @@ const UserOrders = () => {
   };
 
   useEffect(() => {
+    // Clear any previous errors
+    setError(null);
+    
+    // Only attempt to fetch orders if we have a user
     if (!user) {
       setOrders([]);
       setLoading(false);
@@ -73,10 +77,12 @@ const UserOrders = () => {
       setLoading(true);
       
       try {
+        console.log('Fetching orders for user:', user.id);
         // Get user orders from service function
         const result = await getUserOrders(user.id);
         
         if (result.success && result.orders) {
+          console.log('Orders fetched successfully:', result.orders.length);
           // Format orders for display
           const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => ({
             id: order.id,
@@ -84,7 +90,7 @@ const UserOrders = () => {
             date: order.created_at,
             status: validateOrderStatus(order.status),
             // Cast the items to CartItem[] with type assertion
-            items: (order.items as unknown) as CartItem[],
+            items: (order.items as unknown) as any[],
             total: order.total,
             deliveryMethod: order.delivery_method,
             deliveryAddress: order.delivery_address,
@@ -94,11 +100,13 @@ const UserOrders = () => {
           
           setOrders(formattedOrders);
         } else {
+          console.error('Failed to fetch orders:', result.error);
+          setError('Не удалось загрузить заказы');
           throw new Error("Failed to fetch orders");
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
-        toast.error('Не удалось загрузить ваши заказы');
+        setError('Не удалось загрузить ваши заказы');
       } finally {
         setLoading(false);
       }
@@ -170,6 +178,28 @@ const UserOrders = () => {
         <CardContent>
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Мои заказы</CardTitle>
+          <CardDescription>История ваших заказов</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center">
+            <p className="text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
+            >
+              Попробовать снова
+            </button>
           </div>
         </CardContent>
       </Card>
