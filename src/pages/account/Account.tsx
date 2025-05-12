@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -42,20 +41,31 @@ const Account = () => {
   const { profile, logout, updateProfile, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
 
-  // Если пользователь не авторизован, перенаправляем на страницу входа
-  if (!isAuthenticated || !profile) {
-    navigate("/login");
-    return null;
-  }
-
+  // Create the form regardless of authentication state to ensure consistent hook usage
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile.name || "",
-      phone: profile.phone || "",
-      address: profile.address || "",
+      name: profile?.name || "",
+      phone: profile?.phone || "",
+      address: profile?.address || "",
     },
   });
+
+  // Use useEffect to handle redirect instead of conditional rendering
+  useEffect(() => {
+    if (!isAuthenticated || !profile) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, profile, navigate]);
+
+  // If we're not authenticated, render a loading state but keep all hooks
+  if (!isAuthenticated || !profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const onSubmit = (data: ProfileFormValues) => {
     updateProfile(data);
