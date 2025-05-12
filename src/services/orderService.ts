@@ -82,6 +82,8 @@ export async function placeOrder(orderData: {
   delivery_address: string;
 }) {
   try {
+    console.log('Placing order with data:', orderData);
+    
     // Check stock availability for all items before placing the order
     for (const item of orderData.items) {
       if (!decreaseProductStock(item.product.id, item.quantity)) {
@@ -105,7 +107,7 @@ export async function placeOrder(orderData: {
       .from('orders')
       .insert({
         id: orderId,
-        user_id: orderData.user_id,
+        user_id: orderData.user_id || null, // Ensure null for guest checkout
         items: jsonItems,
         total: orderData.total,
         delivery_method: orderData.delivery_method,
@@ -128,6 +130,7 @@ export async function placeOrder(orderData: {
       return { success: false, error };
     }
 
+    console.log('Order created successfully:', data);
     return { success: true, order: data[0] };
   } catch (error) {
     console.error('Unexpected error creating order:', error);
