@@ -26,8 +26,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getAllOrders, updateOrderStatus } from "@/services/orderService";
-import { Archive } from "lucide-react";
+import { getAllOrders, updateOrderStatus, updateOrderTracking } from "@/services/orderService";
+import { Archive, ExternalLink, Truck } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 // Типы для заказов
 export interface OrderItem {
@@ -52,6 +63,8 @@ export interface Order {
   address: string;
   deliveryMethod: string;
   userId: string | null;
+  trackingNumber?: string;
+  trackingUrl?: string;
 }
 
 const AdminOrders = () => {
@@ -60,6 +73,11 @@ const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
+  
+  // Tracking information form state
+  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [trackingUrl, setTrackingUrl] = useState("");
 
   // Загрузка заказов из Supabase
   useEffect(() => {
@@ -83,7 +101,9 @@ const AdminOrders = () => {
             date: order.created_at,
             address: order.delivery_address,
             deliveryMethod: order.delivery_method,
-            userId: order.user_id
+            userId: order.user_id,
+            trackingNumber: order.tracking_number || undefined,
+            trackingUrl: order.tracking_url || undefined
           }));
           
           setOrders(formattedOrders);
@@ -125,7 +145,9 @@ const AdminOrders = () => {
             date: newOrder.created_at,
             address: newOrder.delivery_address,
             deliveryMethod: newOrder.delivery_method,
-            userId: newOrder.user_id
+            userId: newOrder.user_id,
+            trackingNumber: newOrder.tracking_number || undefined,
+            trackingUrl: newOrder.tracking_url || undefined
           };
           
           setOrders(prevOrders => [formattedOrder, ...prevOrders]);
@@ -161,7 +183,7 @@ const AdminOrders = () => {
         );
         
         toast.success('Статус заказа обновлен', {
-          description: `Заказ ${orderId} теперь имеет статус "${getStatusText(newStatus)}"`,
+          description: `Заказ №${orders.find(o => o.id === orderId)?.orderNumber} теперь имеет статус "${getStatusText(newStatus)}"`,
         });
       } else {
         throw new Error("Failed to update order status");
@@ -174,6 +196,54 @@ const AdminOrders = () => {
 
   const handleArchiveOrder = async (orderId: string) => {
     await handleStatusChange(orderId, "archived");
+  };
+
+  const handleTrackingSubmit = async () => {
+    if (!selectedOrderId) return;
+
+    try {
+      const result = await updateOrderTracking(
+        selectedOrderId, 
+        trackingNumber.trim(),
+        trackingUrl.trim()
+      );
+      
+      if (result.success) {
+        // Update local state
+        setOrders(
+          orders.map((order) =>
+            order.id === selectedOrderId 
+              ? { 
+                  ...order, 
+                  trackingNumber: trackingNumber.trim(),
+                  trackingUrl: trackingUrl.trim() 
+                } 
+              : order
+          )
+        );
+        
+        // Reset form
+        setTrackingNumber("");
+        setTrackingUrl("");
+        setSelectedOrderId("");
+        
+        const orderNumber = orders.find(o => o.id === selectedOrderId)?.orderNumber;
+        toast.success('Информация о треке обновлена', {
+          description: `Трек-номер для заказа №${orderNumber} успешно сохранен`,
+        });
+      } else {
+        throw new Error("Failed to update tracking information");
+      }
+    } catch (error) {
+      console.error('Error updating tracking information:', error);
+      toast.error('Ошибка при обновлении информации о треке');
+    }
+  };
+
+  const openTrackingDialog = (order: Order) => {
+    setSelectedOrderId(order.id);
+    setTrackingNumber(order.trackingNumber || '');
+    setTrackingUrl(order.trackingUrl || '');
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -303,13 +373,14 @@ const AdminOrders = () => {
                     <TableHead>Сумма</TableHead>
                     <TableHead>Статус</TableHead>
                     <TableHead>Доставка</TableHead>
+                    <TableHead>Трекинг</TableHead>
                     <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-4">
+                      <TableCell colSpan={9} className="text-center py-4">
                         Заказы не найдены
                       </TableCell>
                     </TableRow>
@@ -334,8 +405,66 @@ const AdminOrders = () => {
                           </span>
                         </TableCell>
                         <TableCell>{order.deliveryMethod}</TableCell>
+                        <TableCell>
+                          {order.trackingNumber ? (
+                            <div className="flex items-center">
+                              <Truck className="h-4 w-4 mr-1" />
+                              <span className="text-xs">{order.trackingNumber}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">Не задан</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end space-x-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => openTrackingDialog(order)}
+                                >
+                                  <Truck className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Данные для отслеживания заказа</DialogTitle>
+                                  <DialogDescription>
+                                    Добавьте трек-номер и ссылку для отслеживания заказа №{order.orderNumber}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="tracking-number">Трек-номер</Label>
+                                    <Input 
+                                      id="tracking-number" 
+                                      value={trackingNumber} 
+                                      onChange={(e) => setTrackingNumber(e.target.value)}
+                                      placeholder="Введите трек-номер"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="tracking-url">Ссылка для отслеживания</Label>
+                                    <Input 
+                                      id="tracking-url" 
+                                      value={trackingUrl} 
+                                      onChange={(e) => setTrackingUrl(e.target.value)}
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Отмена</Button>
+                                  </DialogClose>
+                                  <DialogClose asChild>
+                                    <Button onClick={handleTrackingSubmit}>Сохранить</Button>
+                                  </DialogClose>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+
                             {order.status !== 'archived' && (
                               <Button 
                                 variant="outline" 

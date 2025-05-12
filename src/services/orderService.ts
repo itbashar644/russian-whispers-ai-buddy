@@ -70,6 +70,30 @@ export async function getUserOrders(userId: string) {
   return getOrdersByUserId(userId);
 }
 
+// New function to update order tracking information
+export async function updateOrderTracking(orderId: string, trackingNumber: string, trackingUrl: string) {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ 
+        tracking_number: trackingNumber,
+        tracking_url: trackingUrl
+      })
+      .eq('id', orderId)
+      .select();
+
+    if (error) {
+      console.error('Error updating order tracking:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, order: data[0] };
+  } catch (error) {
+    console.error('Unexpected error updating order tracking:', error);
+    return { success: false, error };
+  }
+}
+
 // New function to place an order
 export async function placeOrder(orderData: {
   user_id?: string;

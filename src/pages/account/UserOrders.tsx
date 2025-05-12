@@ -16,10 +16,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { getUserOrders } from "@/services/orderService";
+import { ExternalLink, Truck } from "lucide-react";
 
 interface Order {
   id: string;
@@ -30,6 +32,8 @@ interface Order {
   total: number;
   deliveryMethod: string;
   deliveryAddress: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
 }
 
 // Define a type that matches what's returned from the database
@@ -47,6 +51,8 @@ interface OrderFromDB {
   total: number;
   updated_at: string;
   user_id: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
 }
 
 const UserOrders = () => {
@@ -79,7 +85,9 @@ const UserOrders = () => {
             items: (order.items as unknown) as CartItem[],
             total: order.total,
             deliveryMethod: order.delivery_method,
-            deliveryAddress: order.delivery_address
+            deliveryAddress: order.delivery_address,
+            trackingNumber: order.tracking_number || undefined,
+            trackingUrl: order.tracking_url || undefined
           }));
           
           setOrders(formattedOrders);
@@ -115,13 +123,18 @@ const UserOrders = () => {
                 ? { 
                     ...order, 
                     status: validateOrderStatus(updatedOrder.status),
-                    order_number: updatedOrder.order_number
+                    order_number: updatedOrder.order_number,
+                    trackingNumber: updatedOrder.tracking_number || undefined,
+                    trackingUrl: updatedOrder.tracking_url || undefined
                   } 
                 : order
             )
           );
 
-          toast.info(`Статус заказа №${updatedOrder.order_number} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
+          // Only show notification if the status changed (not for tracking updates)
+          if (payload.old && (payload.old as any).status !== updatedOrder.status) {
+            toast.info(`Статус заказа №${updatedOrder.order_number} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
+          }
         }
       )
       .subscribe();
@@ -276,6 +289,24 @@ const UserOrders = () => {
                       <p className="text-muted-foreground">{order.deliveryAddress}</p>
                     </div>
                   </div>
+                  
+                  {order.trackingNumber && (
+                    <div className="pt-2">
+                      <h4 className="font-semibold mb-2">Отслеживание</h4>
+                      {order.trackingUrl ? (
+                        <Button variant="outline" onClick={() => window.open(order.trackingUrl, '_blank')}>
+                          <Truck className="mr-2 h-4 w-4" /> 
+                          Трек-номер: {order.trackingNumber}
+                          <ExternalLink className="ml-2 h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          <Truck className="inline-block mr-2 h-4 w-4" />
+                          Трек-номер: {order.trackingNumber}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="flex justify-between items-center pt-2">
                     <span className="font-semibold">Итого</span>
