@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -108,7 +107,7 @@ const Account = () => {
     toast.success("Адрес удален из избранных");
   };
 
-  // Получаем инициалы пользователя для аватара
+  // Получаем инициалы пользователя для ��ватара
   const getInitials = (name: string) => {
     return name
       .split(" ")

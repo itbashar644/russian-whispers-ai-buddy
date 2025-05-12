@@ -12,6 +12,8 @@ export interface UserProfile {
   address?: string;
   avatar_url?: string;
   role?: 'admin' | 'editor' | 'user';
+  preferredContactMethod?: 'phone' | 'telegram' | 'whatsapp';
+  savedAddresses?: string[];
 }
 
 interface AuthContextType {
@@ -77,7 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const fullProfile = {
         ...profileData,
-        role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user'
+        role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
+        // Ensure these properties are initialized with default values if not present
+        preferredContactMethod: profileData.preferredContactMethod || 'phone',
+        savedAddresses: profileData.savedAddresses || []
       };
 
       setProfile(fullProfile as UserProfile);
@@ -96,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(!!currentSession);
         
         if (currentSession?.user) {
-          // Используем setTimeout для предотвращения блокировок
+          // Использ��в setTimeout для предотвращения блокировок
           setTimeout(() => {
             loadUserProfile(currentSession.user.id);
           }, 0);
