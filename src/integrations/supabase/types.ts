@@ -34,7 +34,7 @@ export type Database = {
           delivery_method: string
           id: string
           items: Json
-          order_number: number
+          order_number?: number
           status?: string
           total: number
           updated_at?: string

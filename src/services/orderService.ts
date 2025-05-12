@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CartItem } from "@/types/product";
 import { decreaseProductStock } from "@/data/products";

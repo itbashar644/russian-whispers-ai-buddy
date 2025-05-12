@@ -41,6 +41,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  orderNumber: number;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -71,13 +72,14 @@ const AdminOrders = () => {
           // Преобразуем данные из базы в формат Order
           const formattedOrders: Order[] = result.orders.map(order => ({
             id: order.id,
+            orderNumber: order.order_number,
             customerName: order.customer_name,
             customerEmail: order.customer_email,
             customerPhone: order.customer_phone,
             // Use type assertion to properly convert JSON items to OrderItem[]
             items: (order.items as unknown) as OrderItem[],
             total: order.total,
-            status: order.status as Order["status"],
+            status: validateOrderStatus(order.status),
             date: order.created_at,
             address: order.delivery_address,
             deliveryMethod: order.delivery_method,
@@ -112,13 +114,14 @@ const AdminOrders = () => {
           
           const formattedOrder: Order = {
             id: newOrder.id,
+            orderNumber: newOrder.order_number,
             customerName: newOrder.customer_name,
             customerEmail: newOrder.customer_email,
             customerPhone: newOrder.customer_phone,
             // Cast JSON items to OrderItem[] type using double assertion
             items: (newOrder.items as unknown) as OrderItem[],
             total: newOrder.total,
-            status: newOrder.status as Order["status"],
+            status: validateOrderStatus(newOrder.status),
             date: newOrder.created_at,
             address: newOrder.delivery_address,
             deliveryMethod: newOrder.delivery_method,
@@ -126,7 +129,7 @@ const AdminOrders = () => {
           };
           
           setOrders(prevOrders => [formattedOrder, ...prevOrders]);
-          toast.info(`Получен новый заказ: ${newOrder.id}`);
+          toast.info(`Получен новый заказ №${newOrder.order_number}`);
         }
       )
       .subscribe();
@@ -136,6 +139,14 @@ const AdminOrders = () => {
       supabase.removeChannel(ordersSubscription);
     };
   }, []);
+
+  // Helper function to validate order status
+  const validateOrderStatus = (status: string): Order["status"] => {
+    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled", "archived"];
+    return validStatuses.includes(status as Order["status"]) 
+      ? (status as Order["status"]) 
+      : "new"; // Default to "new" if invalid status
+  };
 
   const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
     try {
@@ -175,7 +186,8 @@ const AdminOrders = () => {
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerPhone.toLowerCase().includes(searchTerm.toLowerCase());
+      order.customerPhone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.orderNumber.toString().includes(searchTerm);
 
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
@@ -284,6 +296,7 @@ const AdminOrders = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>№</TableHead>
                     <TableHead>ID заказа</TableHead>
                     <TableHead>Клиент</TableHead>
                     <TableHead>Дата</TableHead>
@@ -296,13 +309,14 @@ const AdminOrders = () => {
                 <TableBody>
                   {filteredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-4">
+                      <TableCell colSpan={8} className="text-center py-4">
                         Заказы не найдены
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredOrders.map((order) => (
                       <TableRow key={order.id} className={order.status === 'archived' ? 'opacity-60' : ''}>
+                        <TableCell className="font-medium">{order.orderNumber}</TableCell>
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>
                           <div className="font-medium">{order.customerName}</div>

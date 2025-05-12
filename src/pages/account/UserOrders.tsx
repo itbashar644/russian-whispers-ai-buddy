@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { CartItem } from "@/types/product";
@@ -24,7 +25,7 @@ interface Order {
   id: string;
   order_number: number;
   date: string;
-  status: "new" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: "new" | "processing" | "shipped" | "delivered" | "cancelled" | "archived";
   items: CartItem[];
   total: number;
   deliveryMethod: string;
@@ -71,9 +72,9 @@ const UserOrders = () => {
           // Format orders for display
           const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => ({
             id: order.id,
-            order_number: order.order_number || 0, // Use order number, default to 0 if missing
+            order_number: order.order_number,
             date: order.created_at,
-            status: validateOrderStatus(order.status), // Use helper function to validate status
+            status: validateOrderStatus(order.status),
             // Cast the items to CartItem[] with type assertion
             items: (order.items as unknown) as CartItem[],
             total: order.total,
@@ -114,13 +115,13 @@ const UserOrders = () => {
                 ? { 
                     ...order, 
                     status: validateOrderStatus(updatedOrder.status),
-                    order_number: updatedOrder.order_number || 0
+                    order_number: updatedOrder.order_number
                   } 
                 : order
             )
           );
 
-          toast.info(`Статус заказа №${updatedOrder.order_number || ''} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
+          toast.info(`Статус заказа №${updatedOrder.order_number} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
         }
       )
       .subscribe();
@@ -133,7 +134,7 @@ const UserOrders = () => {
 
   // Helper function to validate order status and provide type safety
   const validateOrderStatus = (status: string): Order["status"] => {
-    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled"];
+    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled", "archived"];
     return validStatuses.includes(status as Order["status"]) 
       ? (status as Order["status"]) 
       : "new"; // Default to "new" if invalid status
@@ -146,6 +147,7 @@ const UserOrders = () => {
       case "shipped": return "bg-orange-500";
       case "delivered": return "bg-green-500";
       case "cancelled": return "bg-red-500";
+      case "archived": return "bg-gray-500";
       default: return "bg-gray-500";
     }
   };
@@ -157,6 +159,7 @@ const UserOrders = () => {
       case "shipped": return "Отправлен";
       case "delivered": return "Доставлен";
       case "cancelled": return "Отменен";
+      case "archived": return "Архивирован";
       default: return "Неизвестно";
     }
   };
