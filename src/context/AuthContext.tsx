@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
@@ -77,15 +78,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const roles = rolesData.map(r => r.role);
       setUserRoles(roles);
 
-      const fullProfile = {
-        ...profileData,
-        role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
-        // Ensure these properties are initialized with default values if not present
-        preferredContactMethod: profileData.preferredContactMethod || 'phone',
-        savedAddresses: profileData.savedAddresses || []
+      // Cast the profile data to make TypeScript happy and ensure all fields are properly typed
+      const typedProfileData = profileData as {
+        id: string;
+        email: string | null;
+        name: string | null;
+        phone: string | null;
+        address: string | null;
+        avatar_url: string | null;
+        preferredcontactmethod: string | null; // Note the lowercase in DB column
+        savedaddresses: any | null; // Note the lowercase in DB column
       };
 
-      setProfile(fullProfile as UserProfile);
+      const fullProfile: UserProfile = {
+        id: typedProfileData.id,
+        email: typedProfileData.email || '',
+        name: typedProfileData.name || '',
+        phone: typedProfileData.phone || undefined,
+        address: typedProfileData.address || undefined,
+        avatar_url: typedProfileData.avatar_url || undefined,
+        role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
+        // Map database column names to our camelCase interface properties
+        preferredContactMethod: (typedProfileData.preferredcontactmethod as 'phone' | 'telegram' | 'whatsapp') || 'phone',
+        savedAddresses: Array.isArray(typedProfileData.savedaddresses) ? typedProfileData.savedaddresses : []
+      };
+
+      setProfile(fullProfile);
     } catch (error) {
       console.error('Ошибка при загрузке профиля:', error);
     }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -41,7 +42,7 @@ const profileSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
   phone: z.string().optional(),
   address: z.string().optional(),
-  preferredContactMethod: z.string().optional(),
+  preferredContactMethod: z.enum(['phone', 'telegram', 'whatsapp']).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
