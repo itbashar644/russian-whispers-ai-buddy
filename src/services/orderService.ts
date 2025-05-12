@@ -26,6 +26,7 @@ export async function getAllOrders() {
 
 export async function getOrdersByUserId(userId: string) {
   try {
+    console.log(`Fetching orders for user ID: ${userId}`);
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -37,6 +38,7 @@ export async function getOrdersByUserId(userId: string) {
       return { success: false, error };
     }
 
+    console.log(`Found ${data?.length || 0} orders for user ID: ${userId}`);
     return { success: true, orders: data };
   } catch (error) {
     console.error('Unexpected error fetching user orders:', error);
@@ -66,6 +68,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
 // Function that's being imported in UserOrders.tsx
 export async function getUserOrders(userId: string) {
+  console.log(`Getting orders for user ID: ${userId}`);
   // This function is essentially an alias for getOrdersByUserId for backward compatibility
   return getOrdersByUserId(userId);
 }
@@ -125,6 +128,9 @@ export async function placeOrder(orderData: {
     
     // Generate a unique ID for the order
     const orderId = uuidv4();
+
+    console.log('Creating order with ID:', orderId);
+    console.log('User ID:', orderData.user_id || 'Guest checkout');
 
     // Create the order in the database
     // Set order_number to 0 temporarily and let the database trigger update it

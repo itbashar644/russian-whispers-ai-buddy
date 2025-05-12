@@ -11,9 +11,12 @@ import { placeOrder } from "@/services/orderService";
 import CartTable from "@/components/cart/CartTable";
 import DeliveryMethodSelector from "@/components/cart/DeliveryMethodSelector";
 import OrderSummary from "@/components/cart/OrderSummary";
+import { useAuth } from "@/context/AuthContext"; // Добавляем импорт для получения данных о пользователе
 
 const Cart = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Получаем доступ к данным о пользователе
+  
   const { 
     items, 
     deliveryMethod, 
@@ -53,6 +56,7 @@ const Cart = () => {
     
     // Create order data object
     const orderData = {
+      user_id: user?.id, // Добавляем ID пользователя, если он авторизован
       items,
       total,
       delivery_method: deliveryMethod.id,
@@ -70,10 +74,22 @@ const Cart = () => {
         toast.success("Заказ успешно оформлен! Спасибо за покупку.");
         // Clear the cart after successful order
         clearCart();
-        // Redirect to homepage after a delay
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+        
+        // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
+        if (user) {
+          toast.info("Вы можете отслеживать статус заказа в личном кабинете", {
+            duration: 5000
+          });
+          // Перенаправляем после небольшой задержки для чтения сообщения
+          setTimeout(() => {
+            navigate("/account");
+          }, 2000);
+        } else {
+          // Иначе перенаправляем на главную страницу
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
+        }
       } else {
         toast.error("Ошибка при оформлении заказа", {
           description: result.error?.message || "Пожалуйста, попробуйте снова позже."

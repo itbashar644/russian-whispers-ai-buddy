@@ -63,7 +63,7 @@ const UserOrders = () => {
   };
 
   useEffect(() => {
-    console.log("UserOrders component mounted");
+    console.log("UserOrders component mounted, user:", user?.id);
     // Clear any previous errors
     setError(null);
     
@@ -83,12 +83,22 @@ const UserOrders = () => {
         // Get user orders from service function
         const result = await getUserOrders(user.id);
         
+        console.log('Orders fetch result:', result);
+        
         if (result.success && result.orders) {
           console.log('Orders fetched successfully:', result.orders.length);
+          
+          if (result.orders.length === 0) {
+            console.log("No orders found for user");
+            setOrders([]);
+            setLoading(false);
+            return;
+          }
           
           // Format orders for display
           const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => {
             try {
+              console.log('Formatting order:', order.id);
               // Преобразуем данные из БД в формат для отображения
               return {
                 id: order.id || `unknown-${Math.random()}`,
@@ -178,10 +188,52 @@ const UserOrders = () => {
         console.log("Subscription status:", status);
       });
 
+    // Также подписываемся на вставку новых заказов
+    const newOrdersSubscription = supabase
+      .channel('new_orders_channel')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log("New order received:", payload);
+          try {
+            const newOrder = payload.new as OrderFromDB;
+            
+            // Форматируем новый заказ и добавляем его в список
+            const formattedOrder: Order = {
+              id: newOrder.id || `unknown-${Math.random()}`,
+              order_number: newOrder.order_number || 0,
+              date: newOrder.created_at || new Date().toISOString(),
+              status: validateOrderStatus(newOrder.status),
+              items: Array.isArray(newOrder.items) ? newOrder.items : [],
+              total: newOrder.total || 0,
+              deliveryMethod: newOrder.delivery_method || "Не указан",
+              deliveryAddress: newOrder.delivery_address || "Не указан",
+              trackingNumber: newOrder.tracking_number || undefined,
+              trackingUrl: newOrder.tracking_url || undefined
+            };
+            
+            // Добавляем новый заказ в начало списка
+            setOrders(currentOrders => [formattedOrder, ...currentOrders]);
+            toast.info(`Добавлен новый заказ №${newOrder.order_number}`);
+          } catch (error) {
+            console.error("Error processing new order:", error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log("New orders subscription status:", status);
+      });
+
     // Cleanup subscription on unmount
     return () => {
       console.log("UserOrders component unmounting, removing subscription");
       supabase.removeChannel(ordersSubscription);
+      supabase.removeChannel(newOrdersSubscription);
     };
   }, [user]);
 
