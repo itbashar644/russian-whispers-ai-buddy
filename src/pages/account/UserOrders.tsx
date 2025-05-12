@@ -10,18 +10,12 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+  Accordion
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { getUserOrders } from "@/services/orderService";
-import { ExternalLink, Truck } from "lucide-react";
+import OrderAccordionItem from "@/components/orders/OrderAccordionItem";
 
 interface Order {
   id: string;
@@ -59,6 +53,14 @@ const UserOrders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to validate order status and provide type safety
+  const validateOrderStatus = (status: string): Order["status"] => {
+    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled", "archived"];
+    return validStatuses.includes(status as Order["status"]) 
+      ? (status as Order["status"]) 
+      : "new"; // Default to "new" if invalid status
+  };
 
   useEffect(() => {
     if (!user) {
@@ -145,26 +147,7 @@ const UserOrders = () => {
     };
   }, [user]);
 
-  // Helper function to validate order status and provide type safety
-  const validateOrderStatus = (status: string): Order["status"] => {
-    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled", "archived"];
-    return validStatuses.includes(status as Order["status"]) 
-      ? (status as Order["status"]) 
-      : "new"; // Default to "new" if invalid status
-  };
-
-  const getStatusColor = (status: Order["status"]) => {
-    switch(status) {
-      case "new": return "bg-blue-500";
-      case "processing": return "bg-yellow-500";
-      case "shipped": return "bg-orange-500";
-      case "delivered": return "bg-green-500";
-      case "cancelled": return "bg-red-500";
-      case "archived": return "bg-gray-500";
-      default: return "bg-gray-500";
-    }
-  };
-
+  // For notification toast
   const getStatusText = (status: Order["status"]) => {
     switch(status) {
       case "new": return "Новый";
@@ -218,103 +201,19 @@ const UserOrders = () => {
       <CardContent>
         <Accordion type="single" collapsible className="w-full">
           {orders.map((order) => (
-            <AccordionItem key={order.id} value={order.id}>
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full">
-                  <div>
-                    <span className="font-medium">Заказ №{order.order_number}</span>
-                    <span className="text-muted-foreground ml-4">{new Date(order.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-2 sm:mt-0">
-                    <Badge variant="secondary">
-                      {order.total.toLocaleString()} ₽
-                    </Badge>
-                    <Badge className={getStatusColor(order.status) + " text-white"}>
-                      {getStatusText(order.status)}
-                    </Badge>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4 pt-2">
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Товар</TableHead>
-                          <TableHead className="text-center">Количество</TableHead>
-                          <TableHead className="text-right">Цена</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {order.items.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden">
-                                  <img 
-                                    src={item.product.imageUrl} 
-                                    alt={item.product.title}
-                                    className="h-full w-full object-cover"
-                                  />
-                                </div>
-                                <div>
-                                  <p className="font-medium">{item.product.title}</p>
-                                  {item.color && (
-                                    <p className="text-xs text-muted-foreground">Цвет: {item.color}</p>
-                                  )}
-                                  {item.size && (
-                                    <p className="text-xs text-muted-foreground">Размер: {item.size}</p>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center">{item.quantity}</TableCell>
-                            <TableCell className="text-right">
-                              {(item.product.price * item.quantity).toLocaleString()} ₽
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">Способ доставки</h4>
-                      <p className="text-muted-foreground">{order.deliveryMethod}</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Адрес доставки</h4>
-                      <p className="text-muted-foreground">{order.deliveryAddress}</p>
-                    </div>
-                  </div>
-                  
-                  {order.trackingNumber && (
-                    <div className="pt-2">
-                      <h4 className="font-semibold mb-2">Отслеживание</h4>
-                      {order.trackingUrl ? (
-                        <Button variant="outline" onClick={() => window.open(order.trackingUrl, '_blank')}>
-                          <Truck className="mr-2 h-4 w-4" /> 
-                          Трек-номер: {order.trackingNumber}
-                          <ExternalLink className="ml-2 h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <p className="text-muted-foreground">
-                          <Truck className="inline-block mr-2 h-4 w-4" />
-                          Трек-номер: {order.trackingNumber}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="font-semibold">Итого</span>
-                    <span className="font-bold text-lg">{order.total.toLocaleString()} ₽</span>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+            <OrderAccordionItem
+              key={order.id}
+              id={order.id}
+              order_number={order.order_number}
+              date={order.date}
+              status={order.status}
+              items={order.items}
+              total={order.total}
+              deliveryMethod={order.deliveryMethod}
+              deliveryAddress={order.deliveryAddress}
+              trackingNumber={order.trackingNumber}
+              trackingUrl={order.trackingUrl}
+            />
           ))}
         </Accordion>
       </CardContent>

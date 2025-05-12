@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,37 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getAllOrders, updateOrderStatus, updateOrderTracking } from "@/services/orderService";
-import { Archive, ExternalLink, Truck } from "lucide-react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { 
+  getAllOrders, 
+  updateOrderStatus, 
+  updateOrderTracking 
+} from "@/services/orderService";
+import OrderFilter from "@/components/admin/orders/OrderFilter";
+import OrdersTable from "@/components/admin/orders/OrdersTable";
 
 // Типы для заказов
 export interface OrderItem {
@@ -73,11 +50,6 @@ const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
-  
-  // Tracking information form state
-  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
-  const [trackingNumber, setTrackingNumber] = useState("");
-  const [trackingUrl, setTrackingUrl] = useState("");
 
   // Загрузка заказов из Supabase
   useEffect(() => {
@@ -198,12 +170,10 @@ const AdminOrders = () => {
     await handleStatusChange(orderId, "archived");
   };
 
-  const handleTrackingSubmit = async () => {
-    if (!selectedOrderId) return;
-
+  const handleTrackingUpdate = async (orderId: string, trackingNumber: string, trackingUrl: string) => {
     try {
       const result = await updateOrderTracking(
-        selectedOrderId, 
+        orderId, 
         trackingNumber.trim(),
         trackingUrl.trim()
       );
@@ -212,7 +182,7 @@ const AdminOrders = () => {
         // Update local state
         setOrders(
           orders.map((order) =>
-            order.id === selectedOrderId 
+            order.id === orderId 
               ? { 
                   ...order, 
                   trackingNumber: trackingNumber.trim(),
@@ -222,12 +192,7 @@ const AdminOrders = () => {
           )
         );
         
-        // Reset form
-        setTrackingNumber("");
-        setTrackingUrl("");
-        setSelectedOrderId("");
-        
-        const orderNumber = orders.find(o => o.id === selectedOrderId)?.orderNumber;
+        const orderNumber = orders.find(o => o.id === orderId)?.orderNumber;
         toast.success('Информация о треке обновлена', {
           description: `Трек-номер для заказа №${orderNumber} успешно сохранен`,
         });
@@ -238,12 +203,6 @@ const AdminOrders = () => {
       console.error('Error updating tracking information:', error);
       toast.error('Ошибка при обновлении информации о треке');
     }
-  };
-
-  const openTrackingDialog = (order: Order) => {
-    setSelectedOrderId(order.id);
-    setTrackingNumber(order.trackingNumber || '');
-    setTrackingUrl(order.trackingUrl || '');
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -309,43 +268,14 @@ const AdminOrders = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="w-full md:w-1/3">
-              <Input
-                placeholder="Поиск по ID, имени или контактам"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="w-full md:w-1/3">
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Все статусы" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все статусы</SelectItem>
-                  <SelectItem value="new">Новые</SelectItem>
-                  <SelectItem value="processing">В обработке</SelectItem>
-                  <SelectItem value="shipped">Отправленные</SelectItem>
-                  <SelectItem value="delivered">Доставленные</SelectItem>
-                  <SelectItem value="cancelled">Отмененные</SelectItem>
-                  <SelectItem value="archived">Архивированные</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-full md:w-1/3 flex items-center space-x-2">
-              <Button 
-                variant={showArchived ? "default" : "outline"} 
-                onClick={() => setShowArchived(!showArchived)}
-              >
-                <Archive className="h-4 w-4 mr-2" />
-                {showArchived ? "Скрыть архивные" : "Показать архивные"}
-              </Button>
-            </div>
-          </div>
+          <OrderFilter 
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            showArchived={showArchived}
+            onToggleArchived={() => setShowArchived(!showArchived)}
+          />
         </CardContent>
       </Card>
 
@@ -357,150 +287,15 @@ const AdminOrders = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>№</TableHead>
-                    <TableHead>ID заказа</TableHead>
-                    <TableHead>Клиент</TableHead>
-                    <TableHead>Дата</TableHead>
-                    <TableHead>Сумма</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead>Доставка</TableHead>
-                    <TableHead>Трекинг</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOrders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-4">
-                        Заказы не найдены
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredOrders.map((order) => (
-                      <TableRow key={order.id} className={order.status === 'archived' ? 'opacity-60' : ''}>
-                        <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                        <TableCell className="font-medium">{order.id}</TableCell>
-                        <TableCell>
-                          <div className="font-medium">{order.customerName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.customerEmail}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(order.date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{order.total.toLocaleString()} ₽</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                            {getStatusText(order.status)}
-                          </span>
-                        </TableCell>
-                        <TableCell>{order.deliveryMethod}</TableCell>
-                        <TableCell>
-                          {order.trackingNumber ? (
-                            <div className="flex items-center">
-                              <Truck className="h-4 w-4 mr-1" />
-                              <span className="text-xs">{order.trackingNumber}</span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">Не задан</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openTrackingDialog(order)}
-                                >
-                                  <Truck className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Данные для отслеживания заказа</DialogTitle>
-                                  <DialogDescription>
-                                    Добавьте трек-номер и ссылку для отслеживания заказа №{order.orderNumber}
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                  <div className="space-y-2">
-                                    <Label htmlFor="tracking-number">Трек-номер</Label>
-                                    <Input 
-                                      id="tracking-number" 
-                                      value={trackingNumber} 
-                                      onChange={(e) => setTrackingNumber(e.target.value)}
-                                      placeholder="Введите трек-номер"
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="tracking-url">Ссылка для отслеживания</Label>
-                                    <Input 
-                                      id="tracking-url" 
-                                      value={trackingUrl} 
-                                      onChange={(e) => setTrackingUrl(e.target.value)}
-                                      placeholder="https://..."
-                                    />
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <DialogClose asChild>
-                                    <Button variant="outline">Отмена</Button>
-                                  </DialogClose>
-                                  <DialogClose asChild>
-                                    <Button onClick={handleTrackingSubmit}>Сохранить</Button>
-                                  </DialogClose>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-
-                            {order.status !== 'archived' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleArchiveOrder(order.id)}
-                                className="text-gray-500"
-                              >
-                                <Archive className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Select
-                              value={order.status}
-                              onValueChange={(value) => handleStatusChange(order.id, value as Order["status"])}
-                              disabled={order.status === 'archived'}
-                            >
-                              <SelectTrigger className="w-[140px]">
-                                <SelectValue placeholder="Изменить статус" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="new">Новый</SelectItem>
-                                <SelectItem value="processing">В обработке</SelectItem>
-                                <SelectItem value="shipped">Отправлен</SelectItem>
-                                <SelectItem value="delivered">Доставлен</SelectItem>
-                                <SelectItem value="cancelled">Отменен</SelectItem>
-                                <SelectItem value="archived">Архивирован</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <OrdersTable 
+            orders={filteredOrders}
+            loading={loading}
+            onStatusChange={handleStatusChange}
+            onArchive={handleArchiveOrder}
+            onTrackingUpdate={handleTrackingUpdate}
+            getStatusColor={getStatusColor}
+            getStatusText={getStatusText}
+          />
         </CardContent>
       </Card>
     </div>
