@@ -25,9 +25,12 @@ const ProductDetail = () => {
   const [videoError, setVideoError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Check stock availability
+  const hasStock = product?.inStock && (product?.stockQuantity === undefined ? false : product?.stockQuantity > 0);
+
   // Get stock status text
   const getStockStatusText = () => {
-    if (!product.inStock) {
+    if (!hasStock) {
       return "Нет в наличии";
     }
     
@@ -35,7 +38,7 @@ const ProductDetail = () => {
       if (product.stockQuantity <= 3) {
         return `Осталось всего ${product.stockQuantity} шт.`;
       } else {
-        return `В наличии: ${product.stockQuantity} шт.`;
+        return `В наличи��: ${product.stockQuantity} шт.`;
       }
     }
     
@@ -44,7 +47,7 @@ const ProductDetail = () => {
   
   // Get stock status class
   const getStockStatusClass = () => {
-    if (!product.inStock) {
+    if (!hasStock) {
       return "text-red-500";
     }
     
@@ -86,16 +89,23 @@ const ProductDetail = () => {
 
   const handleQuantityChange = (value: number) => {
     if (value >= 1) {
-      setQuantity(value);
+      // Don't exceed available stock
+      if (product.stockQuantity !== undefined && value > product.stockQuantity) {
+        setQuantity(product.stockQuantity);
+      } else {
+        setQuantity(value);
+      }
     }
   };
 
   const handleAddToCart = () => {
-    addItem({
-      product,
-      quantity,
-      color: selectedColor
-    });
+    if (hasStock) {
+      addItem({
+        product,
+        quantity,
+        color: selectedColor
+      });
+    }
   };
 
   // Определяем отображаемую цену для кнопки
@@ -390,10 +400,10 @@ const ProductDetail = () => {
                   size="lg" 
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={!product.inStock}
+                  disabled={!hasStock}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  {product.inStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
+                  {hasStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
                 </Button>
               </div>
             </div>

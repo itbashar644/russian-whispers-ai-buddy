@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -30,6 +31,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     console.error("Ошибка загрузки изображения:", product.imageUrl);
     setImageError(true);
   };
+
+  // Проверка наличия товара
+  const hasStock = product.inStock && (product.stockQuantity === undefined ? false : product.stockQuantity > 0);
 
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
@@ -82,8 +86,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <p className="text-xs text-muted-foreground">Страна: {product.countryOfOrigin}</p>
           
           {/* Add stock status indicator */}
-          <div className={`text-xs font-medium ${product.inStock ? "text-green-600" : "text-red-500"}`}>
-            {product.inStock ? "В наличии" : "Нет в наличии"}
+          <div className={`text-xs font-medium ${hasStock ? "text-green-600" : "text-red-500"}`}>
+            {hasStock ? "В наличии" : "Нет в наличии"}
           </div>
           
           {/* Colors display if available */}
@@ -156,7 +160,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <Button 
           onClick={handleAddToCart} 
           className="flex-1"
-          disabled={!product.inStock}
+          disabled={!hasStock}
         >
           <ShoppingCart className="mr-2 h-4 w-4" /> Купить за {displayPrice} ₽
         </Button>

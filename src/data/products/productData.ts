@@ -1,3 +1,4 @@
+
 import { Product } from "@/types/product";
 import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
 
@@ -72,6 +73,9 @@ export const addOrUpdateProduct = (product: Product): void => {
   // Update inStock status based on stock quantity
   if (product.stockQuantity !== undefined) {
     product.inStock = product.stockQuantity > 0;
+  } else {
+    // Если stockQuantity не указано, считаем товар как отсутствующий в наличии
+    product.inStock = false;
   }
   
   const index = products.findIndex(p => p.id === product.id);
@@ -133,7 +137,7 @@ export const removeProduct = (productId: string): void => {
 export const checkProductStock = (productId: string, requestedQuantity: number): boolean => {
   const product = products.find(p => p.id === productId);
   if (!product || product.stockQuantity === undefined) {
-    return true; // For backward compatibility with products without stockQuantity
+    return false; // Если stockQuantity неопределен, считаем что товара нет в наличии
   }
   return product.stockQuantity >= requestedQuantity;
 };
