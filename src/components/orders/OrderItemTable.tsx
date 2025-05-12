@@ -7,11 +7,25 @@ interface OrderItemTableProps {
 }
 
 const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
-  // Guard against invalid items data
+  // Проверка на пустой массив или отсутствие данных
   if (!Array.isArray(items) || items.length === 0) {
     return (
       <div className="border rounded-lg p-4 text-center text-muted-foreground">
         Информация о товарах недоступна
+      </div>
+    );
+  }
+
+  // Проверка структуры данных
+  const hasValidItems = items.some(item => 
+    item && (typeof item === 'object') && 
+    item.product && (typeof item.product === 'object')
+  );
+
+  if (!hasValidItems) {
+    return (
+      <div className="border rounded-lg p-4 text-center text-muted-foreground">
+        Некорректный формат данных товаров
       </div>
     );
   }
@@ -28,48 +42,63 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
         </TableHeader>
         <TableBody>
           {items.map((item, index) => {
-            // Handle potential missing data in item structure
-            const product = item?.product || {};
-            const quantity = item?.quantity || 1;
-            const price = product?.price || 0;
-            
-            return (
-              <TableRow key={index}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden">
-                      {product.imageUrl ? (
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.title || "Товар"}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder.svg';
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">Нет фото</span>
-                        </div>
-                      )}
+            try {
+              // Безопасное получение данных о товаре
+              const product = item?.product || {};
+              const quantity = item?.quantity || 1;
+              const price = product?.price || 0;
+              const title = product?.title || "Товар";
+              const imageUrl = product?.imageUrl || "";
+              const color = item?.color || null;
+              const size = item?.size || null;
+              
+              return (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden">
+                        {imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={title}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder.svg';
+                            }}
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-xs text-gray-500">Нет фото</span>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{title}</p>
+                        {color && (
+                          <p className="text-xs text-muted-foreground">Цвет: {color}</p>
+                        )}
+                        {size && (
+                          <p className="text-xs text-muted-foreground">Размер: {size}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{product.title || "Товар"}</p>
-                      {item.color && (
-                        <p className="text-xs text-muted-foreground">Цвет: {item.color}</p>
-                      )}
-                      {item.size && (
-                        <p className="text-xs text-muted-foreground">Размер: {item.size}</p>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">{quantity}</TableCell>
-                <TableCell className="text-right">
-                  {(price * quantity).toLocaleString()} ₽
-                </TableCell>
-              </TableRow>
-            );
+                  </TableCell>
+                  <TableCell className="text-center">{quantity}</TableCell>
+                  <TableCell className="text-right">
+                    {(price * quantity).toLocaleString()} ₽
+                  </TableCell>
+                </TableRow>
+              );
+            } catch (error) {
+              console.error("Ошибка при рендеринге товара:", error, item);
+              return (
+                <TableRow key={index}>
+                  <TableCell colSpan={3} className="text-center text-red-500">
+                    Ошибка отображения товара
+                  </TableCell>
+                </TableRow>
+              );
+            }
           })}
         </TableBody>
       </Table>

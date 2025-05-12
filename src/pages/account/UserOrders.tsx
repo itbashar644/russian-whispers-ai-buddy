@@ -63,11 +63,13 @@ const UserOrders = () => {
   };
 
   useEffect(() => {
+    console.log("UserOrders component mounted");
     // Clear any previous errors
     setError(null);
     
     // Only attempt to fetch orders if we have a user
     if (!user) {
+      console.log("No user found, setting empty orders");
       setOrders([]);
       setLoading(false);
       return;
@@ -83,30 +85,50 @@ const UserOrders = () => {
         
         if (result.success && result.orders) {
           console.log('Orders fetched successfully:', result.orders.length);
-          // Format orders for display
-          const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => ({
-            id: order.id,
-            order_number: order.order_number,
-            date: order.created_at,
-            status: validateOrderStatus(order.status),
-            // Cast the items to CartItem[] with type assertion
-            items: (order.items as unknown) as any[],
-            total: order.total,
-            deliveryMethod: order.delivery_method,
-            deliveryAddress: order.delivery_address,
-            trackingNumber: order.tracking_number || undefined,
-            trackingUrl: order.tracking_url || undefined
-          }));
           
+          // Format orders for display
+          const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => {
+            try {
+              // Преобразуем данные из БД в формат для отображения
+              return {
+                id: order.id || `unknown-${Math.random()}`,
+                order_number: order.order_number || 0,
+                date: order.created_at || new Date().toISOString(),
+                status: validateOrderStatus(order.status),
+                // Проверяем, что items это массив
+                items: Array.isArray(order.items) ? order.items : [],
+                total: order.total || 0,
+                deliveryMethod: order.delivery_method || "Не указан",
+                deliveryAddress: order.delivery_address || "Не указан",
+                trackingNumber: order.tracking_number || undefined,
+                trackingUrl: order.tracking_url || undefined
+              };
+            } catch (err) {
+              console.error("Error formatting order:", err, order);
+              // Возвращаем заказ с минимальными данными в случае ошибки
+              return {
+                id: order.id || `error-${Math.random()}`,
+                order_number: order.order_number || 0,
+                date: new Date().toISOString(),
+                status: "new",
+                items: [],
+                total: 0,
+                deliveryMethod: "Ошибка загрузки",
+                deliveryAddress: "Ошибка загрузки",
+              };
+            }
+          });
+          
+          console.log('Orders formatted:', formattedOrders);
           setOrders(formattedOrders);
         } else {
           console.error('Failed to fetch orders:', result.error);
           setError('Не удалось загрузить заказы');
-          throw new Error("Failed to fetch orders");
+          throw new Error(result.error?.message || "Failed to fetch orders");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching orders:', error);
-        setError('Не удалось загрузить ваши заказы');
+        setError(`Не удалось загрузить ваши заказы: ${error.message || "Неизвестная ошибка"}`);
       } finally {
         setLoading(false);
       }
@@ -125,32 +147,40 @@ const UserOrders = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
+          console.log("Real-time update received:", payload);
           // Update order status if it changes
-          const updatedOrder = payload.new as OrderFromDB;
-          setOrders(currentOrders => 
-            currentOrders.map(order => 
-              order.id === updatedOrder.id 
-                ? { 
-                    ...order, 
-                    status: validateOrderStatus(updatedOrder.status),
-                    order_number: updatedOrder.order_number,
-                    trackingNumber: updatedOrder.tracking_number || undefined,
-                    trackingUrl: updatedOrder.tracking_url || undefined
-                  } 
-                : order
-            )
-          );
+          try {
+            const updatedOrder = payload.new as OrderFromDB;
+            setOrders(currentOrders => 
+              currentOrders.map(order => 
+                order.id === updatedOrder.id 
+                  ? { 
+                      ...order, 
+                      status: validateOrderStatus(updatedOrder.status),
+                      order_number: updatedOrder.order_number || 0,
+                      trackingNumber: updatedOrder.tracking_number || undefined,
+                      trackingUrl: updatedOrder.tracking_url || undefined
+                    } 
+                  : order
+              )
+            );
 
-          // Only show notification if the status changed (not for tracking updates)
-          if (payload.old && (payload.old as any).status !== updatedOrder.status) {
-            toast.info(`Статус заказа №${updatedOrder.order_number} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
+            // Only show notification if the status changed (not for tracking updates)
+            if (payload.old && (payload.old as any).status !== updatedOrder.status) {
+              toast.info(`Статус заказа №${updatedOrder.order_number} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
+            }
+          } catch (error) {
+            console.error("Error processing real-time update:", error);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     // Cleanup subscription on unmount
     return () => {
+      console.log("UserOrders component unmounting, removing subscription");
       supabase.removeChannel(ordersSubscription);
     };
   }, [user]);
@@ -168,7 +198,9 @@ const UserOrders = () => {
     }
   };
 
+  // Отображаем состояние загрузки
   if (loading) {
+    console.log("Rendering loading state");
     return (
       <Card>
         <CardHeader>
@@ -184,7 +216,9 @@ const UserOrders = () => {
     );
   }
 
+  // Отображаем состояние ошибки
   if (error) {
+    console.log("Rendering error state:", error);
     return (
       <Card>
         <CardHeader>
@@ -206,7 +240,9 @@ const UserOrders = () => {
     );
   }
 
+  // Отображаем пустое состояние
   if (orders.length === 0) {
+    console.log("Rendering empty state");
     return (
       <Card>
         <CardHeader>
@@ -222,6 +258,8 @@ const UserOrders = () => {
     );
   }
 
+  // Отображаем список заказов
+  console.log("Rendering orders list:", orders.length);
   return (
     <Card>
       <CardHeader>
