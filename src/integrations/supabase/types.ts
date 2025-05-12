@@ -74,6 +74,7 @@ export type Database = {
           phone: string | null
           preferredcontactmethod: string | null
           savedaddresses: Json | null
+          telegramnickname: string | null
           updated_at: string | null
         }
         Insert: {
@@ -86,6 +87,7 @@ export type Database = {
           phone?: string | null
           preferredcontactmethod?: string | null
           savedaddresses?: Json | null
+          telegramnickname?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -98,6 +100,7 @@ export type Database = {
           phone?: string | null
           preferredcontactmethod?: string | null
           savedaddresses?: Json | null
+          telegramnickname?: string | null
           updated_at?: string | null
         }
         Relationships: []

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash, Telegram, WhatsApp } from "lucide-react";
+import { Plus, Trash, MessageCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
 import {
   Form,
@@ -154,17 +154,20 @@ const ProfileForm: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="phone">
-                          По телефону
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 mr-2" />
+                            По телефону
+                          </div>
                         </SelectItem>
                         <SelectItem value="telegram">
                           <div className="flex items-center">
-                            <Telegram className="h-4 w-4 mr-2 text-[#1EAEDB]" />
+                            <MessageCircle className="h-4 w-4 mr-2 text-[#1EAEDB]" />
                             Telegram
                           </div>
                         </SelectItem>
                         <SelectItem value="whatsapp">
                           <div className="flex items-center">
-                            <WhatsApp className="h-4 w-4 mr-2 text-[#25D366]" />
+                            <MessageCircle className="h-4 w-4 mr-2 text-[#25D366]" />
                             WhatsApp
                           </div>
                         </SelectItem>
@@ -187,7 +190,7 @@ const ProfileForm: React.FC = () => {
                     <FormControl>
                       <div className="flex items-center">
                         <span className="bg-[#1EAEDB] p-2 rounded-l-md">
-                          <Telegram className="h-5 w-5 text-white" />
+                          <MessageCircle className="h-5 w-5 text-white" />
                         </span>
                         <Input 
                           placeholder="Введите ваш ник в Telegram" 
