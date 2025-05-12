@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
@@ -39,35 +40,42 @@ export function CartProvider({ children }: CartProviderProps) {
 
   // Load cart from localStorage on initial load
   useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    const storedDelivery = localStorage.getItem("deliveryMethod");
-    
-    if (storedCart) {
-      try {
+    try {
+      const storedCart = localStorage.getItem("cart");
+      const storedDelivery = localStorage.getItem("deliveryMethod");
+      
+      if (storedCart) {
         setItems(JSON.parse(storedCart));
-      } catch (e) {
-        console.error("Failed to parse cart from localStorage");
       }
-    }
-    
-    if (storedDelivery) {
-      try {
+      
+      if (storedDelivery) {
         setDeliveryMethod(JSON.parse(storedDelivery));
-      } catch (e) {
-        console.error("Failed to parse delivery method from localStorage");
       }
+    } catch (e) {
+      console.error("Failed to parse cart from localStorage", e);
+      // If there's an error parsing, use default empty state
+      setItems([]);
+      setDeliveryMethod(deliveryMethods[0]);
     }
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
+    try {
+      localStorage.setItem("cart", JSON.stringify(items));
+    } catch (e) {
+      console.error("Failed to save cart to localStorage", e);
+    }
   }, [items]);
 
   // Save delivery method to localStorage whenever it changes
   useEffect(() => {
-    if (deliveryMethod) {
-      localStorage.setItem("deliveryMethod", JSON.stringify(deliveryMethod));
+    try {
+      if (deliveryMethod) {
+        localStorage.setItem("deliveryMethod", JSON.stringify(deliveryMethod));
+      }
+    } catch (e) {
+      console.error("Failed to save delivery method to localStorage", e);
     }
   }, [deliveryMethod]);
 
