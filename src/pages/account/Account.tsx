@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -27,11 +28,21 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import UserOrders from "./UserOrders";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Plus, Trash } from "lucide-react";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
   phone: z.string().optional(),
   address: z.string().optional(),
+  preferredContactMethod: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -40,6 +51,8 @@ const Account = () => {
   const navigate = useNavigate();
   const { profile, logout, updateProfile, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
+  const [favoriteAddresses, setFavoriteAddresses] = useState<string[]>([]);
+  const [newAddress, setNewAddress] = useState("");
 
   // Create the form regardless of authentication state to ensure consistent hook usage
   const form = useForm<ProfileFormValues>({
@@ -48,6 +61,7 @@ const Account = () => {
       name: profile?.name || "",
       phone: profile?.phone || "",
       address: profile?.address || "",
+      preferredContactMethod: profile?.preferredContactMethod || "phone",
     },
   });
 
@@ -55,6 +69,11 @@ const Account = () => {
   useEffect(() => {
     if (!isAuthenticated || !profile) {
       navigate("/login");
+    } else {
+      // Load saved addresses if available
+      if (profile.savedAddresses && Array.isArray(profile.savedAddresses)) {
+        setFavoriteAddresses(profile.savedAddresses);
+      }
     }
   }, [isAuthenticated, profile, navigate]);
 
@@ -68,7 +87,25 @@ const Account = () => {
   }
 
   const onSubmit = (data: ProfileFormValues) => {
-    updateProfile(data);
+    const updatedProfile = {
+      ...data,
+      savedAddresses: favoriteAddresses
+    };
+    updateProfile(updatedProfile);
+    toast.success("Профиль успешно обновлен");
+  };
+
+  const handleAddAddress = () => {
+    if (newAddress.trim() && !favoriteAddresses.includes(newAddress)) {
+      setFavoriteAddresses([...favoriteAddresses, newAddress]);
+      setNewAddress("");
+      toast.success("Адрес добавлен в избранное");
+    }
+  };
+
+  const handleRemoveAddress = (address: string) => {
+    setFavoriteAddresses(favoriteAddresses.filter(addr => addr !== address));
+    toast.success("Адрес удален из избранных");
   };
 
   // Получаем инициалы пользователя для аватара
@@ -185,7 +222,7 @@ const Account = () => {
                           name="address"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Адрес доставки</FormLabel>
+                              <FormLabel>Основной адрес доставки</FormLabel>
                               <FormControl>
                                 <Textarea 
                                   placeholder="Введите адрес доставки" 
@@ -197,6 +234,75 @@ const Account = () => {
                             </FormItem>
                           )}
                         />
+
+                        {/* Предпочтительный способ связи */}
+                        <FormField
+                          control={form.control}
+                          name="preferredContactMethod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Предпочтительный способ связи</FormLabel>
+                              <FormControl>
+                                <Select 
+                                  value={field.value} 
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Выберите способ связи" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="phone">По телефону</SelectItem>
+                                    <SelectItem value="telegram">Telegram</SelectItem>
+                                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Избранные адреса доставки */}
+                        <div className="space-y-4">
+                          <h3 className="text-md font-semibold">Избранные адреса доставки</h3>
+                          
+                          <div className="space-y-2">
+                            {favoriteAddresses.length > 0 ? (
+                              favoriteAddresses.map((address, index) => (
+                                <div key={index} className="flex items-center gap-2 p-3 border rounded-md">
+                                  <div className="flex-1">
+                                    <p className="text-sm">{address}</p>
+                                  </div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleRemoveAddress(address)}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-muted-foreground">У вас пока нет избранных адресов</p>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Input 
+                              placeholder="Новый адрес доставки" 
+                              value={newAddress}
+                              onChange={(e) => setNewAddress(e.target.value)}
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              onClick={handleAddAddress}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Добавить
+                            </Button>
+                          </div>
+                        </div>
                         
                         <Button type="submit">
                           Сохранить изменения

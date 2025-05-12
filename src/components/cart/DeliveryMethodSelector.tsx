@@ -3,7 +3,7 @@ import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { DeliveryMethod } from "@/types/product";
-import { Truck, Package, Home } from "lucide-react";
+import { Truck, Package, MapPin, Mail } from "lucide-react";
 
 interface DeliveryMethodSelectorProps {
   deliveryMethod: DeliveryMethod | null;
@@ -21,7 +21,8 @@ const DeliveryMethodSelector = ({
     switch (iconName) {
       case 'truck': return <Truck className="h-5 w-5" />;
       case 'package': return <Package className="h-5 w-5" />;
-      case 'home': return <Home className="h-5 w-5" />;
+      case 'map-pin': return <MapPin className="h-5 w-5" />;
+      case 'mail': return <Mail className="h-5 w-5" />;
       default: return null;
     }
   };
@@ -62,9 +63,6 @@ const DeliveryMethodSelector = ({
                 <p className="text-sm text-muted-foreground">
                   {method.description}
                 </p>
-              </div>
-              <div className="font-medium">
-                {method.price > 0 ? `${method.price} ₽` : "Бесплатно"}
               </div>
             </div>
           </div>

@@ -4,6 +4,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -14,6 +21,7 @@ interface OrderSummaryProps {
     email: string;
     phone: string;
     address: string;
+    contactMethod: string;
   }) => void;
   isSubmitting: boolean;
   hasStockIssues: boolean;
@@ -32,11 +40,16 @@ const OrderSummary = ({
     email: "",
     phone: "",
     address: "",
+    contactMethod: "phone",
   });
 
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setOrderForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleContactMethodChange = (value: string) => {
+    setOrderForm((prev) => ({ ...prev, contactMethod: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,7 +68,7 @@ const OrderSummary = ({
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Доставка:</span>
-          <span>{deliveryMethod ? (deliveryMethod.price > 0 ? `${deliveryMethod.price} ₽` : "Бесплатно") : "-"}</span>
+          <span>Бесплатно</span>
         </div>
         <div className="border-t my-2"></div>
         <div className="flex justify-between font-medium text-lg">
@@ -112,6 +125,23 @@ const OrderSummary = ({
             onChange={handleOrderFormChange}
             required
           />
+        </div>
+
+        <div>
+          <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
+          <Select 
+            value={orderForm.contactMethod} 
+            onValueChange={handleContactMethodChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите способ связи" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="phone">По телефону</SelectItem>
+              <SelectItem value="telegram">Telegram</SelectItem>
+              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         <Button 
