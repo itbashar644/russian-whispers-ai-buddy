@@ -32,6 +32,23 @@ interface Order {
   deliveryAddress: string;
 }
 
+// Define a type that matches what's returned from the database
+interface OrderFromDB {
+  id: string;
+  order_number: number;
+  created_at: string;
+  customer_email: string;
+  customer_name: string;
+  customer_phone: string;
+  delivery_address: string;
+  delivery_method: string;
+  items: unknown;
+  status: string;
+  total: number;
+  updated_at: string;
+  user_id: string | null;
+}
+
 const UserOrders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,9 +70,9 @@ const UserOrders = () => {
         
         if (result.success && result.orders) {
           // Format orders for display
-          const formattedOrders: Order[] = result.orders.map(order => ({
+          const formattedOrders: Order[] = result.orders.map((order: OrderFromDB) => ({
             id: order.id,
-            order_number: order.order_number || 0, // Include order number, default to 0 if missing
+            order_number: order.order_number || 0, // Use order number, default to 0 if missing
             date: order.created_at,
             status: order.status as Order["status"],
             // Cast the items to CartItem[] with type assertion
@@ -91,13 +108,14 @@ const UserOrders = () => {
         },
         (payload) => {
           // Update order status if it changes
-          const updatedOrder = payload.new as any;
+          const updatedOrder = payload.new as OrderFromDB;
           setOrders(currentOrders => 
             currentOrders.map(order => 
               order.id === updatedOrder.id 
                 ? { 
                     ...order, 
-                    status: updatedOrder.status as Order["status"]
+                    status: updatedOrder.status as Order["status"],
+                    order_number: updatedOrder.order_number || 0
                   } 
                 : order
             )
