@@ -1,10 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
-import { User, Session, Provider } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 
-// Типы, которые соответствуют нашей структуре базы данных
+// Типы для профиля пользователя
 export interface UserProfile {
   id: string;
   email: string;
@@ -17,6 +16,7 @@ export interface UserProfile {
   savedAddresses?: string[];
 }
 
+// Типы для контекста аутентификации
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
@@ -32,8 +32,10 @@ interface AuthContextType {
   hasRole: (role: 'admin' | 'editor' | 'user') => Promise<boolean>;
 }
 
+// Сооздание контекста аутентификации
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Хук для использования контекста аутентификации
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -42,6 +44,7 @@ export const useAuth = () => {
   return context;
 };
 
+// Провайдер аутентификации
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -53,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Функция для загрузки профиля пользователя
   const loadUserProfile = async (userId: string) => {
     try {
+      // Получаем данные профиля из базы
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -78,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const roles = rolesData.map(r => r.role);
       setUserRoles(roles);
 
-      // Cast the profile data to make TypeScript happy and ensure all fields are properly typed
+      // Приводим данные профиля к нужному формату
       const typedProfileData = profileData as {
         id: string;
         email: string | null;
@@ -86,10 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         phone: string | null;
         address: string | null;
         avatar_url: string | null;
-        preferredcontactmethod: string | null; // Note the lowercase in DB column
-        savedaddresses: any | null; // Note the lowercase in DB column
+        preferredcontactmethod: string | null; // Обратите внимание на lowercase в имени колонки БД
+        savedaddresses: any | null; // Обратите внимание на lowercase в имени колонки БД
       };
 
+      // Создаем объект профиля с типизацией
       const fullProfile: UserProfile = {
         id: typedProfileData.id,
         email: typedProfileData.email || '',
@@ -98,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         address: typedProfileData.address || undefined,
         avatar_url: typedProfileData.avatar_url || undefined,
         role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
-        // Map database column names to our camelCase interface properties
+        // Маппим имена колонок из БД в имена свойств в camelCase
         preferredContactMethod: (typedProfileData.preferredcontactmethod as 'phone' | 'telegram' | 'whatsapp') || 'phone',
         savedAddresses: Array.isArray(typedProfileData.savedaddresses) ? typedProfileData.savedaddresses : []
       };
@@ -119,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(!!currentSession);
         
         if (currentSession?.user) {
-          // Использ��в setTimeout для предотвращения блокировок
+          // Используем setTimeout для предотвращения блокировок
           setTimeout(() => {
             loadUserProfile(currentSession.user.id);
           }, 0);
@@ -130,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Проверяем текущую сессию
+    // Проверяем текущую сессию при загрузке
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -143,11 +148,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     });
 
+    // Отписываемся от событий при размонтировании
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
+  // Функция для входа пользователя
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       // Очистка предыдущего состояния авторизации
@@ -180,13 +187,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error: any) {
       console.error("Ошибка при входе:", error);
-      toast("Ошибк�� входа", {
+      toast("Ошибка входа", {
         description: error.message || "Произошла ошибка при входе в систему",
       });
       return false;
     }
   };
 
+  // Функция для регистрации пользователя
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
       // Очистка предыдущего состояния авторизации
@@ -224,6 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция для выхода из системы
   const logout = async () => {
     try {
       // Очистка состояния авторизации
@@ -246,6 +255,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция обновления профиля
   const updateProfile = async (userData: Partial<UserProfile>): Promise<boolean> => {
     if (!user || !profile) return false;
     
@@ -279,6 +289,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция для сброса пароля
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -306,6 +317,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция для обновления пароля
   const updatePassword = async (newPassword: string): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.updateUser({ 
@@ -333,6 +345,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция для обновления email
   const updateEmail = async (newEmail: string): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.updateUser({ 
@@ -360,6 +373,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Функция для проверки роли пользователя
   const hasRole = async (role: 'admin' | 'editor' | 'user'): Promise<boolean> => {
     // Если нет пользователя, то нет и ролей
     if (!user) return false;
@@ -392,6 +406,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Предоставляем значение контекста
   return (
     <AuthContext.Provider
       value={{ 
