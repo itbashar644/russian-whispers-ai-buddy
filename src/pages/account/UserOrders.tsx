@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { CartItem } from "@/types/product";
@@ -74,7 +73,7 @@ const UserOrders = () => {
             id: order.id,
             order_number: order.order_number || 0, // Use order number, default to 0 if missing
             date: order.created_at,
-            status: order.status as Order["status"],
+            status: validateOrderStatus(order.status), // Use helper function to validate status
             // Cast the items to CartItem[] with type assertion
             items: (order.items as unknown) as CartItem[],
             total: order.total,
@@ -114,14 +113,14 @@ const UserOrders = () => {
               order.id === updatedOrder.id 
                 ? { 
                     ...order, 
-                    status: updatedOrder.status as Order["status"],
+                    status: validateOrderStatus(updatedOrder.status),
                     order_number: updatedOrder.order_number || 0
                   } 
                 : order
             )
           );
 
-          toast.info(`Статус заказа №${updatedOrder.order_number || ''} изменен на "${getStatusText(updatedOrder.status)}"`);
+          toast.info(`Статус заказа №${updatedOrder.order_number || ''} изменен на "${getStatusText(validateOrderStatus(updatedOrder.status))}"`);
         }
       )
       .subscribe();
@@ -131,6 +130,14 @@ const UserOrders = () => {
       supabase.removeChannel(ordersSubscription);
     };
   }, [user]);
+
+  // Helper function to validate order status and provide type safety
+  const validateOrderStatus = (status: string): Order["status"] => {
+    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled"];
+    return validStatuses.includes(status as Order["status"]) 
+      ? (status as Order["status"]) 
+      : "new"; // Default to "new" if invalid status
+  };
 
   const getStatusColor = (status: Order["status"]) => {
     switch(status) {
