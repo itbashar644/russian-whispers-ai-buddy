@@ -70,6 +70,26 @@ export async function getUserOrders(userId: string) {
   return getOrdersByUserId(userId);
 }
 
+// Get the next order number by counting existing orders
+async function getNextOrderNumber() {
+  try {
+    const { count, error } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error('Error getting order count:', error);
+      return 1; // Default to 1 if there's an error
+    }
+    
+    // Return count + 1 for the next order number (starting from 1)
+    return (count || 0) + 1;
+  } catch (error) {
+    console.error('Unexpected error getting order count:', error);
+    return 1; // Default to 1 if there's an exception
+  }
+}
+
 // New function to place an order
 export async function placeOrder(orderData: {
   user_id?: string;
@@ -96,6 +116,9 @@ export async function placeOrder(orderData: {
       }
     }
 
+    // Get the next sequential order number
+    const orderNumber = await getNextOrderNumber();
+
     // Convert CartItem array to JSON-compatible format
     const jsonItems = JSON.parse(JSON.stringify(orderData.items));
     
@@ -107,6 +130,7 @@ export async function placeOrder(orderData: {
       .from('orders')
       .insert({
         id: orderId,
+        order_number: orderNumber, // Add the sequential order number
         user_id: orderData.user_id || null, // Ensure null for guest checkout
         items: jsonItems,
         total: orderData.total,

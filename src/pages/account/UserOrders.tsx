@@ -16,12 +16,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { getUserOrders } from "@/services/orderService";
 
 interface Order {
   id: string;
+  order_number: number;
   date: string;
   status: "new" | "processing" | "shipped" | "delivered" | "cancelled";
   items: CartItem[];
@@ -53,6 +55,7 @@ const UserOrders = () => {
           // Format orders for display
           const formattedOrders: Order[] = result.orders.map(order => ({
             id: order.id,
+            order_number: order.order_number || 0, // Include order number, default to 0 if missing
             date: order.created_at,
             status: order.status as Order["status"],
             // Cast the items to CartItem[] with type assertion
@@ -100,7 +103,7 @@ const UserOrders = () => {
             )
           );
 
-          toast.info(`Статус заказа ${updatedOrder.id} изменен на "${getStatusText(updatedOrder.status)}"`);
+          toast.info(`Статус заказа №${updatedOrder.order_number || ''} изменен на "${getStatusText(updatedOrder.status)}"`);
         }
       )
       .subscribe();
@@ -178,7 +181,7 @@ const UserOrders = () => {
               <AccordionTrigger className="hover:no-underline">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full">
                   <div>
-                    <span className="font-medium">{order.id}</span>
+                    <span className="font-medium">Заказ №{order.order_number}</span>
                     <span className="text-muted-foreground ml-4">{new Date(order.date).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-2 sm:mt-0">
@@ -194,18 +197,18 @@ const UserOrders = () => {
               <AccordionContent>
                 <div className="space-y-4 pt-2">
                   <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="p-3 text-left">Товар</th>
-                          <th className="p-3 text-center">Количество</th>
-                          <th className="p-3 text-right">Цена</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Товар</TableHead>
+                          <TableHead className="text-center">Количество</TableHead>
+                          <TableHead className="text-right">Цена</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {order.items.map((item, index) => (
-                          <tr key={index} className="border-t">
-                            <td className="p-3">
+                          <TableRow key={index}>
+                            <TableCell>
                               <div className="flex items-center gap-3">
                                 <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden">
                                   <img 
@@ -224,15 +227,15 @@ const UserOrders = () => {
                                   )}
                                 </div>
                               </div>
-                            </td>
-                            <td className="p-3 text-center">{item.quantity}</td>
-                            <td className="p-3 text-right">
+                            </TableCell>
+                            <TableCell className="text-center">{item.quantity}</TableCell>
+                            <TableCell className="text-right">
                               {(item.product.price * item.quantity).toLocaleString()} ₽
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
