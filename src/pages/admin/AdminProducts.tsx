@@ -5,16 +5,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { 
-  products, 
-  addOrUpdateProduct, 
-  removeProduct, 
-  getAllCategories, 
-  addCategory, 
-  archiveProduct,
-  restoreProduct,
-  getActiveProducts,
-  getArchivedProducts
-} from "@/data/products";
+  addOrUpdateProductInSupabase, 
+  removeProductFromSupabase, 
+  fetchCategoriesFromSupabase, 
+  addCategoryToSupabase, 
+  archiveProductInSupabase,
+  restoreProductInSupabase,
+  fetchProductsFromSupabase
+} from "@/data/products/supabaseApi";
 import { Product } from "@/types/product";
 import ProductImportExport from "@/components/admin/ProductImportExport";
 import ProductFilters from "@/components/admin/ProductFilters";
@@ -24,13 +22,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminProducts = () => {
-  const [productsList, setProductsList] = useState<Product[]>(products);
+  const [productsList, setProductsList] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<string>("active");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Default product state for new products
   const defaultProduct: Partial<Product> = {
@@ -51,28 +50,49 @@ const AdminProducts = () => {
     archived: false,
   };
 
-  // Load categories on mount
+  // Load categories and products on mount
   useEffect(() => {
-    setCategories(getAllCategories());
-  }, []);
-
-  // Update the productsList when the global products array or activeTab changes
-  useEffect(() => {
-    if (activeTab === "active") {
-      setProductsList(getActiveProducts());
-    } else {
-      setProductsList(getArchivedProducts());
-    }
-  }, [products, activeTab]);
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // Загружаем категории
+        const categoriesData = await fetchCategoriesFromSupabase();
+        setCategories(categoriesData.map(cat => cat.name));
+        
+        // Загружаем товары в зависимости от активной вкладки
+        await refreshProductsList();
+      } catch (error) {
+        console.error("Ошибка загрузки данных:", error);
+        toast.error("Не удалось загрузить данные", {
+          description: "Пожалуйста, попробуйте обновить страницу."
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [activeTab]);
 
   // Function to refresh products list
-  const refreshProductsList = () => {
-    if (activeTab === "active") {
-      setProductsList(getActiveProducts());
-    } else {
-      setProductsList(getArchivedProducts());
+  const refreshProductsList = async () => {
+    try {
+      const allProducts = await fetchProductsFromSupabase(true);
+      
+      if (activeTab === "active") {
+        const activeProducts = allProducts.filter(product => !product.archived);
+        setProductsList(activeProducts);
+      } else {
+        const archivedProducts = allProducts.filter(product => product.archived);
+        setProductsList(archivedProducts);
+      }
+      
+      // Refresh categories too
+      const categoriesData = await fetchCategoriesFromSupabase();
+      setCategories(categoriesData.map(cat => cat.name));
+    } catch (error) {
+      console.error("Ошибка обновления списка товаров:", error);
     }
-    setCategories(getAllCategories());
   };
 
   const handleEditProduct = (product: Product) => {
@@ -85,31 +105,49 @@ const AdminProducts = () => {
     setShowForm(true);
   };
 
-  const handleArchiveProduct = (productId: string) => {
-    archiveProduct(productId);
-    refreshProductsList();
+  const handleArchiveProduct = async (productId: string) => {
+    const success = await archiveProductInSupabase(productId);
     
-    toast.info("Товар архивирован", {
-      description: "Товар был перемещен в архив",
-    });
+    if (success) {
+      await refreshProductsList();
+      toast.info("Товар архивирован", {
+        description: "Товар был перемещен в архив",
+      });
+    } else {
+      toast.error("Ошибка архивации", {
+        description: "Не удалось архивировать товар",
+      });
+    }
   };
 
-  const handleRestoreProduct = (productId: string) => {
-    restoreProduct(productId);
-    refreshProductsList();
+  const handleRestoreProduct = async (productId: string) => {
+    const success = await restoreProductInSupabase(productId);
     
-    toast.success("Товар восстановлен", {
-      description: "Товар был возвращен из архива",
-    });
+    if (success) {
+      await refreshProductsList();
+      toast.success("Товар восстановлен", {
+        description: "Товар был возвращен из архива",
+      });
+    } else {
+      toast.error("Ошибка восстановления", {
+        description: "Не удалось восстановить товар",
+      });
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    removeProduct(productId);
-    refreshProductsList();
+  const handleDeleteProduct = async (productId: string) => {
+    const success = await removeProductFromSupabase(productId);
     
-    toast("Товар удален", {
-      description: "Товар был удален навсегда",
-    });
+    if (success) {
+      await refreshProductsList();
+      toast("Товар удален", {
+        description: "Товар был удален навсегда",
+      });
+    } else {
+      toast.error("Ошибка удаления", {
+        description: "Не удалось удалить товар",
+      });
+    }
   };
 
   const handleTabChange = (value: string) => {
@@ -118,7 +156,7 @@ const AdminProducts = () => {
     setCategoryFilter("all");
   };
 
-  const handleSaveProduct = (formData: Partial<Product>) => {
+  const handleSaveProduct = async (formData: Partial<Product>) => {
     if (editingProduct) {
       // Editing existing product
       const updatedProduct: Product = {
@@ -126,16 +164,22 @@ const AdminProducts = () => {
         ...formData,
       } as Product;
       
-      addOrUpdateProduct(updatedProduct);
-      refreshProductsList();
-
-      toast("Товар обновлен", {
-        description: `Товар "${updatedProduct.title}" был успешно обновлен`,
-      });
+      const success = await addOrUpdateProductInSupabase(updatedProduct);
+      
+      if (success) {
+        await refreshProductsList();
+        toast("Товар обновлен", {
+          description: `Товар "${updatedProduct.title}" был успешно обновлен`,
+        });
+      } else {
+        toast.error("Ошибка обновления", {
+          description: "Не удалось обновить товар",
+        });
+      }
     } else {
       // Adding new product
       const newProduct: Product = {
-        id: `${Date.now()}`,
+        id: `${Date.now()}`, // Временный ID, будет заменен на UUID от Supabase
         title: formData.title || "",
         description: formData.description || "",
         price: formData.price || 0,
@@ -162,12 +206,18 @@ const AdminProducts = () => {
         archived: false,
       };
 
-      addOrUpdateProduct(newProduct);
-      refreshProductsList();
-
-      toast("Товар добавлен", {
-        description: `Товар "${newProduct.title}" был успешно добавлен`,
-      });
+      const success = await addOrUpdateProductInSupabase(newProduct);
+      
+      if (success) {
+        await refreshProductsList();
+        toast("Товар добавлен", {
+          description: `Товар "${newProduct.title}" был успешно добавлен`,
+        });
+      } else {
+        toast.error("Ошибка добавления", {
+          description: "Не удалось добавить товар",
+        });
+      }
     }
 
     setEditingProduct(null);
@@ -175,8 +225,11 @@ const AdminProducts = () => {
 
     // Check if we need to add a new category
     if (formData.category && !categories.includes(formData.category)) {
-      addCategory(formData.category);
-      setCategories(getAllCategories());
+      const success = await addCategoryToSupabase(formData.category);
+      if (success) {
+        const categoriesData = await fetchCategoriesFromSupabase();
+        setCategories(categoriesData.map(cat => cat.name));
+      }
     }
   };
 
@@ -199,7 +252,7 @@ const AdminProducts = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Управление товарами</h2>
         
-        <Button onClick={handleAddNewProduct} disabled={activeTab === "archived"}>
+        <Button onClick={handleAddNewProduct} disabled={activeTab === "archived" || isLoading}>
           <Plus className="mr-2 h-4 w-4" />
           Добавить товар
         </Button>
@@ -236,14 +289,20 @@ const AdminProducts = () => {
             categories={categories}
           />
           
-          <ProductList
-            products={filteredProducts}
-            onEdit={handleEditProduct}
-            onDelete={handleArchiveProduct}
-            deleteButtonText="Архивировать"
-            deleteButtonColor="orange"
-            mode="active"
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ProductList
+              products={filteredProducts}
+              onEdit={handleEditProduct}
+              onDelete={handleArchiveProduct}
+              deleteButtonText="Архивировать"
+              deleteButtonColor="orange"
+              mode="active"
+            />
+          )}
         </TabsContent>
         <TabsContent value="archived">
           <ProductFilters
@@ -254,15 +313,21 @@ const AdminProducts = () => {
             categories={categories}
           />
           
-          <ProductList
-            products={filteredProducts}
-            onEdit={handleEditProduct}
-            onDelete={handleRestoreProduct}
-            deleteButtonText="Восстановить"
-            deleteButtonColor="green"
-            onPermanentDelete={handleDeleteProduct}
-            mode="archived"
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ProductList
+              products={filteredProducts}
+              onEdit={handleEditProduct}
+              onDelete={handleRestoreProduct}
+              deleteButtonText="Восстановить"
+              deleteButtonColor="green"
+              onPermanentDelete={handleDeleteProduct}
+              mode="archived"
+            />
+          )}
         </TabsContent>
       </Tabs>
 

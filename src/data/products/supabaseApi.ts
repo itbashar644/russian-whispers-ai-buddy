@@ -4,6 +4,72 @@ import { Category } from "./categoryData";
 import { Product, ColorVariant } from "@/types/product";
 import { getFromStorage } from "./utils";
 import { v4 as uuidv4 } from "uuid";
+import { Json } from "@/integrations/supabase/types";
+
+// Функция для преобразования типов данных для Supabase
+const transformProductToSupabase = (product: Product) => {
+  return {
+    title: product.title,
+    description: product.description,
+    price: product.price,
+    discount_price: product.discountPrice,
+    category: product.category,
+    image_url: product.imageUrl,
+    additional_images: product.additionalImages as unknown as Json,
+    rating: product.rating,
+    in_stock: product.inStock,
+    colors: product.colors as unknown as Json,
+    sizes: product.sizes as unknown as Json,
+    material: product.material,
+    country_of_origin: product.countryOfOrigin,
+    specifications: product.specifications as unknown as Json,
+    is_new: product.isNew,
+    is_bestseller: product.isBestseller,
+    article_number: product.articleNumber,
+    barcode: product.barcode,
+    ozon_url: product.ozonUrl,
+    wildberries_url: product.wildberriesUrl,
+    avito_url: product.avitoUrl,
+    archived: product.archived,
+    stock_quantity: product.stockQuantity,
+    color_variants: product.colorVariants as unknown as Json,
+    video_url: product.videoUrl,
+    video_type: product.videoType
+  };
+};
+
+// Функция для преобразования данных из Supabase в тип Product
+const transformSupabaseToProduct = (data: any): Product => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    price: data.price,
+    discountPrice: data.discount_price,
+    category: data.category,
+    imageUrl: data.image_url,
+    additionalImages: data.additional_images as string[] || [],
+    rating: data.rating,
+    inStock: data.in_stock,
+    colors: data.colors as string[] || [],
+    sizes: data.sizes as string[] || [],
+    material: data.material,
+    countryOfOrigin: data.country_of_origin,
+    specifications: data.specifications as Record<string, string> || {},
+    isNew: data.is_new,
+    isBestseller: data.is_bestseller,
+    articleNumber: data.article_number,
+    barcode: data.barcode,
+    ozonUrl: data.ozon_url,
+    wildberriesUrl: data.wildberries_url,
+    avitoUrl: data.avito_url,
+    archived: data.archived,
+    stockQuantity: data.stock_quantity,
+    colorVariants: data.color_variants as ColorVariant[] || [],
+    videoUrl: data.video_url,
+    videoType: data.video_type
+  };
+};
 
 // Функция для импорта всех категорий в Supabase
 export const importCategoriesIntoSupabase = async (categories: Category[]): Promise<boolean> => {
@@ -59,38 +125,12 @@ export const importProductsIntoSupabase = async (products: Product[]): Promise<b
     for (let i = 0; i < products.length; i += batchSize) {
       const batch = products.slice(i, i + batchSize);
       
+      // Преобразуем данные товаров в формат для Supabase
+      const transformedBatch = batch.map(product => transformProductToSupabase(product));
+      
       const { error } = await supabase
         .from("products")
-        .insert(
-          batch.map(product => ({
-            title: product.title,
-            description: product.description,
-            price: product.price,
-            discount_price: product.discountPrice,
-            category: product.category,
-            image_url: product.imageUrl,
-            additional_images: product.additionalImages,
-            rating: product.rating,
-            in_stock: product.inStock,
-            colors: product.colors,
-            sizes: product.sizes,
-            material: product.material,
-            country_of_origin: product.countryOfOrigin,
-            specifications: product.specifications,
-            is_new: product.isNew,
-            is_bestseller: product.isBestseller,
-            article_number: product.articleNumber,
-            barcode: product.barcode,
-            ozon_url: product.ozonUrl,
-            wildberries_url: product.wildberriesUrl,
-            avito_url: product.avitoUrl,
-            archived: product.archived,
-            stock_quantity: product.stockQuantity,
-            color_variants: product.colorVariants,
-            video_url: product.videoUrl,
-            video_type: product.videoType
-          }))
-        );
+        .insert(transformedBatch);
 
       if (error) {
         console.error("Ошибка при импорте товаров (партия", i/batchSize + 1, "):", error);
@@ -146,35 +186,8 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
       return [];
     }
 
-    return data.map(product => ({
-      id: product.id,
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      discountPrice: product.discount_price,
-      category: product.category,
-      imageUrl: product.image_url,
-      additionalImages: product.additional_images,
-      rating: product.rating,
-      inStock: product.in_stock,
-      colors: product.colors,
-      sizes: product.sizes,
-      material: product.material,
-      countryOfOrigin: product.country_of_origin,
-      specifications: product.specifications,
-      isNew: product.is_new,
-      isBestseller: product.is_bestseller,
-      articleNumber: product.article_number,
-      barcode: product.barcode,
-      ozonUrl: product.ozon_url,
-      wildberriesUrl: product.wildberries_url,
-      avitoUrl: product.avito_url,
-      archived: product.archived,
-      stockQuantity: product.stock_quantity,
-      colorVariants: product.color_variants,
-      videoUrl: product.video_url,
-      videoType: product.video_type
-    }));
+    // Преобразуем данные из Supabase в тип Product
+    return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров:", err);
     return [];
@@ -184,34 +197,8 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
 // Функция для создания или обновления товара
 export const addOrUpdateProductInSupabase = async (product: Product): Promise<boolean> => {
   try {
-    const productData = {
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      discount_price: product.discountPrice,
-      category: product.category,
-      image_url: product.imageUrl,
-      additional_images: product.additionalImages,
-      rating: product.rating,
-      in_stock: product.inStock,
-      colors: product.colors,
-      sizes: product.sizes,
-      material: product.material,
-      country_of_origin: product.countryOfOrigin,
-      specifications: product.specifications,
-      is_new: product.isNew,
-      is_bestseller: product.isBestseller,
-      article_number: product.articleNumber,
-      barcode: product.barcode,
-      ozon_url: product.ozonUrl,
-      wildberries_url: product.wildberriesUrl,
-      avito_url: product.avitoUrl,
-      archived: product.archived,
-      stock_quantity: product.stockQuantity,
-      color_variants: product.colorVariants,
-      video_url: product.videoUrl,
-      video_type: product.videoType
-    };
+    // Преобразуем данные товара в формат для Supabase
+    const productData = transformProductToSupabase(product);
 
     if (product.id && product.id.length > 10) { // предполагаем, что действительные UUID длиннее 10 символов
       // Обновляем существующий товар
@@ -228,9 +215,7 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
       // Добавляем новый товар
       const { error } = await supabase
         .from("products")
-        .insert({
-          ...productData,
-        });
+        .insert(productData);
 
       if (error) {
         console.error("Ошибка при добавлении нового товара:", error);
@@ -418,35 +403,8 @@ export const getProductsByCategoryFromSupabase = async (category: string): Promi
       return [];
     }
 
-    return data.map(product => ({
-      id: product.id,
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      discountPrice: product.discount_price,
-      category: product.category,
-      imageUrl: product.image_url,
-      additionalImages: product.additional_images,
-      rating: product.rating,
-      inStock: product.in_stock,
-      colors: product.colors,
-      sizes: product.sizes,
-      material: product.material,
-      countryOfOrigin: product.country_of_origin,
-      specifications: product.specifications,
-      isNew: product.is_new,
-      isBestseller: product.is_bestseller,
-      articleNumber: product.article_number,
-      barcode: product.barcode,
-      ozonUrl: product.ozon_url,
-      wildberriesUrl: product.wildberries_url,
-      avitoUrl: product.avito_url,
-      archived: product.archived,
-      stockQuantity: product.stock_quantity,
-      colorVariants: product.color_variants,
-      videoUrl: product.video_url,
-      videoType: product.video_type
-    }));
+    // Преобразуем данные из Supabase в тип Product
+    return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров по категории:", err);
     return [];
@@ -467,35 +425,8 @@ export const getProductByIdFromSupabase = async (id: string): Promise<Product | 
       return undefined;
     }
 
-    return {
-      id: data.id,
-      title: data.title,
-      description: data.description,
-      price: data.price,
-      discountPrice: data.discount_price,
-      category: data.category,
-      imageUrl: data.image_url,
-      additionalImages: data.additional_images,
-      rating: data.rating,
-      inStock: data.in_stock,
-      colors: data.colors,
-      sizes: data.sizes,
-      material: data.material,
-      countryOfOrigin: data.country_of_origin,
-      specifications: data.specifications,
-      isNew: data.is_new,
-      isBestseller: data.is_bestseller,
-      articleNumber: data.article_number,
-      barcode: data.barcode,
-      ozonUrl: data.ozon_url,
-      wildberriesUrl: data.wildberries_url,
-      avitoUrl: data.avito_url,
-      archived: data.archived,
-      stockQuantity: data.stock_quantity,
-      colorVariants: data.color_variants,
-      videoUrl: data.video_url,
-      videoType: data.video_type
-    };
+    // Преобразуем данные из Supabase в тип Product
+    return transformSupabaseToProduct(data);
   } catch (err) {
     console.error("Ошибка при загрузке товара по ID:", err);
     return undefined;

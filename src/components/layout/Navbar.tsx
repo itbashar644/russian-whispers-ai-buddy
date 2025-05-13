@@ -1,3 +1,4 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, Menu, User, Box, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
-import { products, getAllCategories } from "@/data/products";
+import { fetchCategoriesFromSupabase, fetchProductsFromSupabase } from "@/data/products/supabaseApi";
 import ProductGrid from "@/components/products/ProductGrid";
 
 const Navbar = () => {
@@ -42,35 +43,58 @@ const Navbar = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   
-  // Загрузка категорий из админки
+  // Загрузка категорий из Supabase
   useEffect(() => {
-    setAvailableCategories(getAllCategories());
+    const loadCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const categories = await fetchCategoriesFromSupabase();
+        // Извлекаем только имена категорий
+        const categoryNames = categories.map(cat => cat.name);
+        setAvailableCategories(categoryNames);
+      } catch (error) {
+        console.error("Ошибка при загрузке категорий:", error);
+        setAvailableCategories([]);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
     
-    // Добавляем интервал для периодической проверки обновлений категорий
-    const intervalId = setInterval(() => {
-      setAvailableCategories(getAllCategories());
-    }, 5000); // Проверка каждые 5 секунд
+    loadCategories();
     
-    return () => clearInterval(intervalId);
+    // Периодическая проверка обновлений категорий больше не нужна,
+    // так как данные всегда берутся из Supabase при загрузке страницы
   }, []);
 
   // Функция поиска товаров
   useEffect(() => {
     if (searchQuery.trim().length > 2) {
-      setIsSearching(true);
-      const query = searchQuery.toLowerCase();
+      const searchProducts = async () => {
+        setIsSearching(true);
+        try {
+          const allProducts = await fetchProductsFromSupabase(false);
+          const query = searchQuery.toLowerCase();
+          
+          const results = allProducts.filter(product => {
+            return (
+              product.title.toLowerCase().includes(query) ||
+              product.description.toLowerCase().includes(query) ||
+              product.category.toLowerCase().includes(query)
+            );
+          }).slice(0, 8); // Ограничиваем результаты
+          
+          setSearchResults(results);
+        } catch (error) {
+          console.error("Ошибка при поиске товаров:", error);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      };
       
-      const results = products.filter(product => {
-        return (
-          product.title.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-        );
-      }).slice(0, 8); // Ограничиваем результаты
-      
-      setSearchResults(results);
-      setIsSearching(false);
+      searchProducts();
     } else {
       setSearchResults([]);
     }
@@ -132,22 +156,32 @@ const Navbar = () => {
                 <NavigationMenuTrigger>Категории</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {availableCategories.map((category) => (
-                      <li key={category}>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to={`/catalog?category=${category}`}
-                            className={cn(
-                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                              "flex items-center"
-                            )}
-                          >
-                            {getCategoryIcon(category)}
-                            <div className="text-sm font-medium">{category}</div>
-                          </Link>
-                        </NavigationMenuLink>
+                    {isLoadingCategories ? (
+                      <li className="col-span-2 text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
                       </li>
-                    ))}
+                    ) : availableCategories.length > 0 ? (
+                      availableCategories.map((category) => (
+                        <li key={category}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to={`/catalog?category=${category}`}
+                              className={cn(
+                                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                "flex items-center"
+                              )}
+                            >
+                              {getCategoryIcon(category)}
+                              <div className="text-sm font-medium">{category}</div>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="col-span-2 text-center py-4">
+                        <p className="text-muted-foreground">Нет доступных категорий</p>
+                      </li>
+                    )}
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
