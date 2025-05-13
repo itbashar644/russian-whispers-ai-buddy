@@ -6,7 +6,7 @@ import { Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
 import { Product } from "@/types/product";
-import { downloadProductsExcel, excelToProducts } from "@/utils/excelUtils";
+import { downloadProductsExcel, excelToProducts, downloadImportTemplate } from "@/utils/excelUtils";
 
 interface ProductImportExportProps {
   products: Product[];
@@ -16,6 +16,7 @@ interface ProductImportExportProps {
 const ProductImportExport = ({ products, onImportComplete }: ProductImportExportProps) => {
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
   const handleExport = async () => {
     try {
@@ -89,6 +90,22 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      setDownloadingTemplate(true);
+      await downloadImportTemplate();
+      toast("Шаблон скачан", {
+        description: "Шаблон для импорта товаров успешно скачан",
+      });
+    } catch (error: any) {
+      toast("Ошибка скачивания", {
+        description: error.message || "Произошла ошибка при скачивании шаблона",
+      });
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4">
       <div className="flex-1 p-4 border rounded-md bg-muted/30">
@@ -96,14 +113,25 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         <p className="text-xs text-muted-foreground mb-4">
           Выгрузка всех товаров в Excel-файл для редактирования оффлайн
         </p>
-        <Button
-          variant="outline"
-          onClick={handleExport}
-          disabled={exporting || products.length === 0}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          {exporting ? "Экспортируем..." : "Экспортировать товары"}
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={exporting || products.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? "Экспортируем..." : "Экспортировать товары"}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleDownloadTemplate}
+            disabled={downloadingTemplate}
+            size="sm"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {downloadingTemplate ? "Скачиваем..." : "Скачать шаблон импорта"}
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 p-4 border rounded-md bg-muted/30">

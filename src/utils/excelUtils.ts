@@ -142,9 +142,9 @@ export const excelToProducts = (data: ArrayBuffer): Product[] => {
 };
 
 // Create template Excel file for importing products
-export const getImportTemplate = (): XLSX.WorkBook => {
+export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
   // Получаем все доступные категории
-  const categories = getAllCategories();
+  const categories = await getAllCategories();
   const categoriesString = categories.join(', ');
 
   const templateData = [{
@@ -232,8 +232,8 @@ export const getImportTemplate = (): XLSX.WorkBook => {
 };
 
 // Download template Excel file
-export const downloadImportTemplate = () => {
-  const workbook = getImportTemplate();
+export const downloadImportTemplate = async () => {
+  const workbook = await getImportTemplate();
   
   // Generate Excel file
   const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
