@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getProductsByCategory, products, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
+import { getProductsByCategory, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +17,16 @@ import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Box } from "lucide-react";
+import { Product } from "@/types/product";
+import { Category } from "@/data/products/categoryData";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: 0,
     max: 5000,
@@ -30,21 +35,34 @@ const Catalog = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState("default");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [categoryObjects, setCategoryObjects] = useState<Array<{ name: string; imageUrl: string }>>([]);
+  const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Обновляем категории при монтировании компонента и при каждом входе на страницу
+  // Загружаем данные при монтировании компонента
   useEffect(() => {
-    setAvailableCategories(getAllCategories());
-    setCategoryObjects(getCategoryObjects());
+    async function loadData() {
+      try {
+        setLoading(true);
+        
+        // Загружаем категории и продукты
+        const [categoriesData, categoryObjsData, productsData] = await Promise.all([
+          getAllCategories(),
+          getCategoryObjects(),
+          categoryParam ? getProductsByCategory(categoryParam) : getActiveProducts()
+        ]);
+        
+        setAvailableCategories(categoriesData);
+        setCategoryObjects(categoryObjsData);
+        setAllProducts(productsData);
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // Добавляем интервал для периодической проверки обновлений категорий
-    const intervalId = setInterval(() => {
-      setAvailableCategories(getAllCategories());
-      setCategoryObjects(getCategoryObjects());
-    }, 5000); // Проверка каждые 5 секунд
-    
-    return () => clearInterval(intervalId);
-  }, []);
+    loadData();
+  }, [categoryParam]);
 
   useEffect(() => {
     // Update searchTerm when searchParam changes
@@ -53,16 +71,13 @@ const Catalog = () => {
     }
   }, [searchParam]);
 
+  // Фильтруем и сортируем продукты при изменении параметров
   useEffect(() => {
-    // Start with active products only
-    let result = getActiveProducts();
+    if (loading) return;
     
-    // Filter by category
-    if (categoryParam) {
-      result = result.filter(p => p.category === categoryParam);
-    }
+    let result = [...allProducts];
     
-    // Filter by search term
+    // Фильтрация по поисковому запросу
     if (searchTerm) {
       result = result.filter(
         (p) => 
@@ -72,19 +87,19 @@ const Catalog = () => {
       );
     }
     
-    // Filter by price range
+    // Фильтрация по диапазону цен
     result = result.filter(
       (p) => 
         (p.discountPrice || p.price) >= priceRange.min && 
         (p.discountPrice || p.price) <= priceRange.max
     );
     
-    // Filter by stock
+    // Фильтрация по наличию
     if (inStockOnly) {
       result = result.filter((p) => p.inStock);
     }
     
-    // Sort results
+    // Сортировка результатов
     switch (sortBy) {
       case "price-asc":
         result.sort((a, b) => 
@@ -111,11 +126,7 @@ const Catalog = () => {
     }
     
     setFilteredProducts(result);
-  }, [categoryParam, priceRange, searchTerm, inStockOnly, sortBy, products]);
-
-  const getCategoryIcon = () => {
-    return <Box className="h-4 w-4 mr-2" />;
-  };
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -165,32 +176,41 @@ const Catalog = () => {
                   variant={!categoryParam ? "default" : "outline"}
                   className="w-full justify-start"
                   onClick={() => handleCategoryClick(null)}
+                  disabled={loading}
                 >
                   Все товары
                 </Button>
-                {availableCategories.map((category) => {
-                  const categoryObj = findCategoryByName(category);
-                  return (
-                    <Button
-                      key={category}
-                      variant={categoryParam === category ? "default" : "outline"}
-                      className="w-full justify-start flex items-center"
-                      onClick={() => handleCategoryClick(category)}
-                    >
-                      <span className="w-4 h-4 mr-2 overflow-hidden flex-shrink-0">
-                        <img 
-                          src={categoryObj.imageUrl} 
-                          className="w-full h-full object-cover" 
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
-                          }}
-                          alt=""
-                        />
-                      </span>
-                      <span>{category}</span>
-                    </Button>
-                  );
-                })}
+                {loading ? (
+                  // Заглушки при загрузке
+                  Array.from({length: 5}).map((_, i) => (
+                    <div key={i} className="h-10 bg-gray-200 animate-pulse rounded-md"></div>
+                  ))
+                ) : (
+                  // Список категорий
+                  availableCategories.map((category) => {
+                    const categoryObj = findCategoryByName(category);
+                    return (
+                      <Button
+                        key={category}
+                        variant={categoryParam === category ? "default" : "outline"}
+                        className="w-full justify-start flex items-center"
+                        onClick={() => handleCategoryClick(category)}
+                      >
+                        <span className="w-4 h-4 mr-2 overflow-hidden flex-shrink-0">
+                          <img 
+                            src={categoryObj.imageUrl} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            }}
+                            alt=""
+                          />
+                        </span>
+                        <span>{category}</span>
+                      </Button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -205,6 +225,7 @@ const Catalog = () => {
                     value={priceRange.min}
                     onChange={(e) => handlePriceChange("min", e.target.value)}
                     min={0}
+                    disabled={loading}
                   />
                 </div>
                 <div>
@@ -215,6 +236,7 @@ const Catalog = () => {
                     value={priceRange.max}
                     onChange={(e) => handlePriceChange("max", e.target.value)}
                     min={0}
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -227,6 +249,7 @@ const Catalog = () => {
                   id="in-stock" 
                   checked={inStockOnly} 
                   onCheckedChange={() => setInStockOnly(!inStockOnly)} 
+                  disabled={loading}
                 />
                 <label
                   htmlFor="in-stock"
@@ -254,12 +277,14 @@ const Catalog = () => {
                     value={searchTerm}
                     onChange={handleSearchChange}
                     className="min-w-[200px]"
+                    disabled={loading}
                   />
-                  <Button type="submit">Найти</Button>
+                  <Button type="submit" disabled={loading}>Найти</Button>
                 </form>
                 <Select 
                   value={sortBy}
                   onValueChange={setSortBy}
+                  disabled={loading}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Сортировать по" />
@@ -276,9 +301,19 @@ const Catalog = () => {
               </div>
             </div>
 
-            <ProductGrid products={filteredProducts} />
+            {loading ? (
+              // Заглушки при загрузке
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({length: 8}).map((_, i) => (
+                  <div key={i} className="h-[300px] bg-gray-200 animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              // Отображение товаров
+              <ProductGrid products={filteredProducts} />
+            )}
             
-            {filteredProducts.length === 0 && (
+            {!loading && filteredProducts.length === 0 && (
               <div className="py-8 text-center">
                 <h2 className="text-xl font-semibold mb-2">Товары не найдены</h2>
                 <p className="text-muted-foreground">

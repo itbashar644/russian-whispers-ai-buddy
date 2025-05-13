@@ -1,5 +1,318 @@
+
 import { Product, ColorVariant } from "@/types/product";
 import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
+import {
+  fetchProductsFromSupabase,
+  getProductByIdFromSupabase,
+  getProductsByCategoryFromSupabase,
+  addOrUpdateProductInSupabase,
+  archiveProductInSupabase,
+  restoreProductInSupabase,
+  removeProductFromSupabase,
+  migrateDataToSupabaseIfNeeded
+} from "./supabaseApi";
+
+// Временный кэш продуктов для улучшения производительности
+let productsCache: Product[] = [];
+let productsCacheLoaded = false;
+let lastCacheUpdateTime = 0;
+const CACHE_TTL = 60000; // 1 минута в миллисекундах
+
+// Функция для проверки и обновления кэша
+const refreshCacheIfNeeded = async (forceRefresh = false): Promise<void> => {
+  const now = Date.now();
+  
+  // Обновляем кэш, если он устарел или требуется принудительное обновление
+  if (forceRefresh || !productsCacheLoaded || now - lastCacheUpdateTime > CACHE_TTL) {
+    try {
+      // Проверяем, нужно ли импортировать данные из localStorage
+      await migrateDataToSupabaseIfNeeded();
+      
+      // Загружаем все активные продукты
+      productsCache = await fetchProductsFromSupabase(false);
+      productsCacheLoaded = true;
+      lastCacheUpdateTime = now;
+    } catch (error) {
+      console.error("Ошибка при обновлении кэша продуктов:", error);
+      // Используем localStorage в качестве запасного варианта
+      if (!productsCacheLoaded) {
+        productsCache = getInitialProducts();
+      }
+    }
+  }
+};
+
+// Функция для получения исходных продуктов из localStorage
+const getInitialProducts = (): Product[] => {
+  return getFromStorage<Product[]>('catalog_products', [...defaultProducts]);
+};
+
+// Экспортируем продукты через геттер для совместимости с существующим кодом
+export const getProducts = async (includeArchived = false): Promise<Product[]> => {
+  if (includeArchived) {
+    // Если нужны архивированные продукты, загружаем их напрямую из базы
+    return await fetchProductsFromSupabase(true);
+  }
+  
+  // Обновляем кэш, если нужно
+  await refreshCacheIfNeeded();
+  
+  return [...productsCache];
+};
+
+// Функция для добавления или обновления продукта
+export const addOrUpdateProduct = async (product: Product): Promise<void> => {
+  // Если рейтинг не указан, генерируем случайный в диапазоне от 4.7 до 4.9
+  if (!product.rating) {
+    product.rating = generateRandomRating();
+  }
+  
+  // Update inStock status based on stock quantity
+  if (product.stockQuantity !== undefined) {
+    product.inStock = product.stockQuantity > 0;
+  } else {
+    // Если stockQuantity не указано, считаем товар как отсутствующий в наличии
+    product.inStock = false;
+  }
+  
+  // Update colorVariants stock status
+  if (product.colorVariants && product.colorVariants.length > 0) {
+    // If we have color variants, check if at least one has stock
+    const hasColorStock = product.colorVariants.some(variant => 
+      variant.stockQuantity !== undefined && variant.stockQuantity > 0
+    );
+    
+    // If at least one color has stock, the product is in stock
+    if (hasColorStock) {
+      product.inStock = true;
+    }
+  }
+  
+  // Сохраняем продукт в Supabase
+  const success = await addOrUpdateProductInSupabase(product);
+  
+  if (success) {
+    // Принудительно обновляем кэш
+    await refreshCacheIfNeeded(true);
+  }
+};
+
+// Функция для архивирования продукта
+export const archiveProduct = async (productId: string): Promise<void> => {
+  const success = await archiveProductInSupabase(productId);
+  
+  if (success) {
+    // Обновляем локальный кэш
+    const index = productsCache.findIndex(p => p.id === productId);
+    if (index >= 0) {
+      productsCache[index].archived = true;
+    }
+  }
+};
+
+// Функция для восстановления продукта из архива
+export const restoreProduct = async (productId: string): Promise<void> => {
+  const success = await restoreProductInSupabase(productId);
+  
+  if (success) {
+    // Принудительно обновляем кэш
+    await refreshCacheIfNeeded(true);
+  }
+};
+
+// Функция для удаления продукта
+export const removeProduct = async (productId: string): Promise<void> => {
+  const success = await removeProductFromSupabase(productId);
+  
+  if (success) {
+    // Обновляем локальный кэш
+    productsCache = productsCache.filter(p => p.id !== productId);
+  }
+};
+
+// Функция для уменьшения количества товара при заказе
+export const decreaseProductStock = async (productId: string, quantity: number, colorSelected?: string): Promise<boolean> => {
+  try {
+    // Получаем текущий продукт из базы
+    const product = await getProductByIdFromSupabase(productId);
+    
+    if (!product) {
+      return false;
+    }
+    
+    // Если указан цвет и у продукта есть варианты по цвету, уменьшаем запас для конкретного варианта
+    if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+      const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+      
+      if (!colorVariant || colorVariant.stockQuantity === undefined || colorVariant.stockQuantity < quantity) {
+        return false; // Недостаточно запасов для этого цвета
+      }
+      
+      colorVariant.stockQuantity -= quantity;
+      
+      // Обновляем общий статус наличия продукта на основе его вариантов
+      const hasRemainingStock = product.colorVariants.some(v => 
+        v.stockQuantity !== undefined && v.stockQuantity > 0
+      );
+      
+      product.inStock = hasRemainingStock;
+      await addOrUpdateProduct(product);
+      return true;
+    }
+    
+    // Если цвет не указан или нет вариантов по цвету, уменьшаем основной запас
+    if (product.stockQuantity === undefined || product.stockQuantity < quantity) {
+      return false; // Недостаточно запасов
+    }
+    
+    product.stockQuantity -= quantity;
+    product.inStock = product.stockQuantity > 0;
+    await addOrUpdateProduct(product);
+    return true;
+  } catch (error) {
+    console.error("Ошибка при уменьшении запаса товара:", error);
+    return false;
+  }
+};
+
+// Функция для проверки наличия товара
+export const checkProductStock = async (productId: string, requestedQuantity: number, colorSelected?: string): Promise<boolean> => {
+  try {
+    const product = await getProductByIdFromSupabase(productId);
+    
+    if (!product) {
+      return false;
+    }
+    
+    // Если указан цвет и у продукта есть варианты по цвету, проверяем запас для конкретного варианта
+    if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+      const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+      
+      if (!colorVariant || colorVariant.stockQuantity === undefined) {
+        return false;
+      }
+      
+      return colorVariant.stockQuantity >= requestedQuantity;
+    }
+    
+    // Если цвет не указан или нет вариантов по цвету, проверяем основной запас
+    if (product.stockQuantity === undefined) {
+      return false;
+    }
+    
+    return product.stockQuantity >= requestedQuantity;
+  } catch (error) {
+    console.error("Ошибка при проверке наличия товара:", error);
+    return false;
+  }
+};
+
+// Функция для получения цены продукта с учетом вариантов по цвету
+export const getProductPrice = (product: Product, colorSelected?: string): number => {
+  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+    
+    if (colorVariant) {
+      return colorVariant.discountPrice || colorVariant.price;
+    }
+  }
+  
+  return product.discountPrice || product.price;
+};
+
+// Функция для получения продукта по ID
+export const getProductById = async (id: string): Promise<Product | undefined> => {
+  try {
+    return await getProductByIdFromSupabase(id);
+  } catch (error) {
+    console.error("Ошибка при получении товара по ID:", error);
+    return undefined;
+  }
+};
+
+// Функция для получения продуктов по категории
+export const getProductsByCategory = async (category: string): Promise<Product[]> => {
+  if (!category) {
+    // Возвращаем все активные продукты
+    await refreshCacheIfNeeded();
+    return [...productsCache];
+  }
+  
+  try {
+    return await getProductsByCategoryFromSupabase(category);
+  } catch (error) {
+    console.error("Ошибка при получении товаров по категории:", error);
+    return [];
+  }
+};
+
+// Функция для получения связанных продуктов
+export const getRelatedProducts = async (id: string, limit: number = 4): Promise<Product[]> => {
+  try {
+    const currentProduct = await getProductById(id);
+    if (!currentProduct) return [];
+    
+    // Получаем все продукты из той же категории
+    const sameCategory = await getProductsByCategory(currentProduct.category);
+    
+    // Фильтруем и возвращаем результат
+    return sameCategory
+      .filter(product => product.id !== id && !product.archived)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Ошибка при получении связанных товаров:", error);
+    return [];
+  }
+};
+
+// Функция для получения бестселлеров
+export const getBestsellers = async (limit: number = 4): Promise<Product[]> => {
+  await refreshCacheIfNeeded();
+  
+  return productsCache
+    .filter(product => product.isBestseller && !product.archived)
+    .slice(0, limit);
+};
+
+// Функция для получения новых продуктов
+export const getNewProducts = async (limit: number = 4): Promise<Product[]> => {
+  await refreshCacheIfNeeded();
+  
+  return productsCache
+    .filter(product => product.isNew && !product.archived)
+    .slice(0, limit);
+};
+
+// Функция для получения архивированных продуктов
+export const getArchivedProducts = async (): Promise<Product[]> => {
+  try {
+    // Загружаем архивированные продукты напрямую из базы
+    const all = await fetchProductsFromSupabase(true);
+    return all.filter(p => p.archived);
+  } catch (error) {
+    console.error("Ошибка при получении архивированных товаров:", error);
+    return [];
+  }
+};
+
+// Функция для получения активных продуктов
+export const getActiveProducts = async (): Promise<Product[]> => {
+  await refreshCacheIfNeeded();
+  return [...productsCache];
+};
+
+// Функция для получения варианта продукта по цвету
+export const getProductVariantByColor = async (productId: string, color: string): Promise<ColorVariant | undefined> => {
+  try {
+    const product = await getProductById(productId);
+    if (!product || !product.colorVariants) return undefined;
+    
+    return product.colorVariants.find(v => v.color === color);
+  } catch (error) {
+    console.error("Ошибка при получении варианта товара по цвету:", error);
+    return undefined;
+  }
+};
 
 // Default products to populate the catalog initially
 const defaultProducts: Product[] = [
@@ -69,207 +382,12 @@ const defaultProducts: Product[] = [
   }
 ];
 
-// Get products from localStorage or use default ones if not available
-const getInitialProducts = (): Product[] => {
-  return getFromStorage<Product[]>('catalog_products', [...defaultProducts]);
-};
+// Инициализируем кэш продуктов при импорте модуля
+refreshCacheIfNeeded();
 
-// Export products as a variable that can be modified by the admin panel
-export let products: Product[] = getInitialProducts();
-
-// Function to save products to localStorage
-const saveProductsToStorage = (): void => {
-  saveToStorage('catalog_products', products);
-};
-
-// Function to add or update products
-export const addOrUpdateProduct = (product: Product): void => {
-  // Если рейтинг не указан, генерируем случайный в диапазоне от 4.7 до 4.9
-  if (!product.rating) {
-    product.rating = generateRandomRating();
-  }
-  
-  // Update inStock status based on stock quantity
-  if (product.stockQuantity !== undefined) {
-    product.inStock = product.stockQuantity > 0;
-  } else {
-    // Если stockQuantity не указано, считаем товар как отсутствующий в наличии
-    product.inStock = false;
-  }
-  
-  // Update colorVariants stock status
-  if (product.colorVariants && product.colorVariants.length > 0) {
-    // If we have color variants, check if at least one has stock
-    const hasColorStock = product.colorVariants.some(variant => 
-      variant.stockQuantity !== undefined && variant.stockQuantity > 0
-    );
-    
-    // If at least one color has stock, the product is in stock
-    if (hasColorStock) {
-      product.inStock = true;
-    }
-  }
-  
-  const index = products.findIndex(p => p.id === product.id);
-  if (index >= 0) {
-    // Update existing product
-    products[index] = product;
-  } else {
-    // Add new product
-    products.push(product);
-  }
-  // Save to localStorage immediately after modifying the products array
-  saveProductsToStorage();
-};
-
-// Function to decrease stock quantity when products are ordered
-export const decreaseProductStock = (productId: string, quantity: number, colorSelected?: string): boolean => {
-  const product = products.find(p => p.id === productId);
-  
-  if (!product) {
-    return false;
-  }
-  
-  // If color is specified and we have color variants, decrease stock for that specific variant
-  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
-    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
-    
-    if (!colorVariant || colorVariant.stockQuantity === undefined || colorVariant.stockQuantity < quantity) {
-      return false; // Not enough stock for this color
-    }
-    
-    colorVariant.stockQuantity -= quantity;
-    
-    // Update the product's overall stock status based on its variants
-    const hasRemainingStock = product.colorVariants.some(v => 
-      v.stockQuantity !== undefined && v.stockQuantity > 0
-    );
-    
-    product.inStock = hasRemainingStock;
-    saveProductsToStorage();
-    return true;
-  }
-  
-  // If no color specified or no color variants, decrease from main stock
-  if (product.stockQuantity === undefined || product.stockQuantity < quantity) {
-    return false; // Not enough stock
-  }
-  
-  product.stockQuantity -= quantity;
-  product.inStock = product.stockQuantity > 0;
-  saveProductsToStorage();
-  return true;
-};
-
-// Function to archive a product
-export const archiveProduct = (productId: string): void => {
-  const product = products.find(p => p.id === productId);
-  if (product) {
-    product.archived = true;
-    saveProductsToStorage();
-  }
-};
-
-// Function to restore an archived product
-export const restoreProduct = (productId: string): void => {
-  const product = products.find(p => p.id === productId);
-  if (product) {
-    product.archived = false;
-    saveProductsToStorage();
-  }
-};
-
-// Original remove function (kept for compatibility)
-export const removeProduct = (productId: string): void => {
-  products = products.filter(p => p.id !== productId);
-  // Save to localStorage immediately after modifying the products array
-  saveProductsToStorage();
-};
-
-// Function to check if a product has enough stock
-export const checkProductStock = (productId: string, requestedQuantity: number, colorSelected?: string): boolean => {
-  const product = products.find(p => p.id === productId);
-  
-  if (!product) {
-    return false;
-  }
-  
-  // If color is specified and we have color variants, check stock for that specific variant
-  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
-    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
-    
-    if (!colorVariant || colorVariant.stockQuantity === undefined) {
-      return false;
-    }
-    
-    return colorVariant.stockQuantity >= requestedQuantity;
-  }
-  
-  // If no color specified or no color variants, check main stock
-  if (product.stockQuantity === undefined) {
-    return false;
-  }
-  
-  return product.stockQuantity >= requestedQuantity;
-};
-
-// Get price of the product, taking into account color variants
-export const getProductPrice = (product: Product, colorSelected?: string): number => {
-  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
-    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
-    
-    if (colorVariant) {
-      return colorVariant.discountPrice || colorVariant.price;
-    }
-  }
-  
-  return product.discountPrice || product.price;
-};
-
-export const getProductById = (id: string): Product | undefined => {
-  return products.find((product) => product.id === id);
-};
-
-export const getProductsByCategory = (category: string): Product[] => {
-  if (!category) return products.filter(p => !p.archived);
-  return products.filter((product) => product.category === category && !product.archived);
-};
-
-export const getRelatedProducts = (id: string, limit: number = 4): Product[] => {
-  const currentProduct = getProductById(id);
-  if (!currentProduct) return [];
-  
-  return products
-    .filter((product) => product.id !== id && product.category === currentProduct.category && !product.archived)
-    .slice(0, limit);
-};
-
-export const getBestsellers = (limit: number = 4): Product[] => {
-  return products
-    .filter((product) => product.isBestseller && !product.archived)
-    .slice(0, limit);
-};
-
-export const getNewProducts = (limit: number = 4): Product[] => {
-  return products
-    .filter((product) => product.isNew && !product.archived)
-    .slice(0, limit);
-};
-
-// Function to get all archived products
-export const getArchivedProducts = (): Product[] => {
-  return products.filter(p => p.archived);
-};
-
-// Function to get all active (non-archived) products
-export const getActiveProducts = (): Product[] => {
-  return products.filter(p => !p.archived);
-};
-
-// New function to get a product variant by color
-export const getProductVariantByColor = (productId: string, color: string): ColorVariant | undefined => {
-  const product = getProductById(productId);
-  if (!product || !product.colorVariants) return undefined;
-  
-  return product.colorVariants.find(v => v.color === color);
-};
+// Добавляем временную псевдо-переменную products для совместимости с существующим кодом
+// todo: удалить эту переменную после обновления всех импортов
+export let products: Product[] = [];
+(async () => {
+  products = await getProducts();
+})();

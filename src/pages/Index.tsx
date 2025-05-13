@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getBestsellers, getNewProducts, getAllCategories, getCategoryObjects } from "@/data/products";
@@ -7,12 +7,42 @@ import ProductGrid from "@/components/products/ProductGrid";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Box } from "lucide-react";
+import { Product } from "@/types/product";
+import { Category } from "@/data/products/categoryData";
 
 const Index = () => {
-  const bestsellers = getBestsellers();
-  const newProducts = getNewProducts();
-  const categories = getAllCategories();
-  const categoryObjects = getCategoryObjects();
+  const [bestsellers, setBestsellers] = useState<Product[]>([]);
+  const [newProducts, setNewProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        
+        // Загружаем все необходимые данные
+        const [bestSellersData, newProductsData, categoriesData, categoryObjectsData] = await Promise.all([
+          getBestsellers(),
+          getNewProducts(),
+          getAllCategories(),
+          getCategoryObjects()
+        ]);
+        
+        setBestsellers(bestSellersData);
+        setNewProducts(newProductsData);
+        setCategories(categoriesData);
+        setCategoryObjects(categoryObjectsData);
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadData();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -58,28 +88,36 @@ const Index = () => {
         <section className="py-12">
           <div className="container px-4 md:px-6">
             <h2 className="text-2xl font-bold mb-8">Категории</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {categoryObjects.map((category) => (
-                <Link
-                  key={category.name}
-                  to={`/catalog?category=${category.name}`}
-                  className="group relative aspect-square overflow-hidden rounded-lg"
-                >
-                  <img
-                    alt={category.name}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    src={category.imageUrl}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
-                    }}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/40">
-                    <Box className="h-8 w-8 mb-2" />
-                    <h3 className="text-xl font-bold text-white">{category.name}</h3>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="aspect-square bg-gray-200 animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {categoryObjects.map((category) => (
+                  <Link
+                    key={category.name}
+                    to={`/catalog?category=${category.name}`}
+                    className="group relative aspect-square overflow-hidden rounded-lg"
+                  >
+                    <img
+                      alt={category.name}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      src={category.imageUrl}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      }}
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/40">
+                      <Box className="h-8 w-8 mb-2" />
+                      <h3 className="text-xl font-bold text-white">{category.name}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -92,7 +130,15 @@ const Index = () => {
                 <Link to="/catalog">Смотреть все</Link>
               </Button>
             </div>
-            <ProductGrid products={bestsellers} />
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-[300px] bg-gray-200 animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <ProductGrid products={bestsellers} />
+            )}
           </div>
         </section>
 
@@ -105,7 +151,15 @@ const Index = () => {
                 <Link to="/catalog">Смотреть все</Link>
               </Button>
             </div>
-            <ProductGrid products={newProducts} />
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-[300px] bg-gray-200 animate-pulse rounded-lg"></div>
+                ))}
+              </div>
+            ) : (
+              <ProductGrid products={newProducts} />
+            )}
           </div>
         </section>
 

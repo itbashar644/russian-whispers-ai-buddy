@@ -3,3 +3,6 @@ project_id = "lpwvhyawvxibtuxfhitx"
 
 [functions.telegram-chat]
 verify_jwt = false
+
+[scripts.before_supabase_migrations]
+location = "./supabase/scripts/before-supabase-migrations.sql"

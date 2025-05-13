@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { 
   getAllCategories,
   getCategoryObjects, 
@@ -22,77 +23,128 @@ const CategoryManager = () => {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [targetCategory, setTargetCategory] = useState<string>("");
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadCategories();
   }, []);
 
-  const loadCategories = () => {
-    const allCategories = getAllCategories();
-    const categoryObjs = getCategoryObjects();
-    
-    setCategories(allCategories);
-    setCategoryObjects(categoryObjs);
-    
-    console.log("Loaded categories:", allCategories);
-    console.log("Category objects:", categoryObjs);
-  };
-
-  const handleAddCategory = (newCategory: string) => {
-    addCategory(newCategory);
-    loadCategories();
-    toast("Категория добавлена", {
-      description: `Категория "${newCategory}" была успешно добавлена`,
-    });
-  };
-
-  const handleUpdateCategoryImage = (categoryName: string, imageUrl: string) => {
-    updateCategoryImage(categoryName, imageUrl);
-    loadCategories();
-    toast("Изображение обновлено", {
-      description: `Изображение для категории "${categoryName}" было успешно обновлено`,
-    });
-  };
-
-  const handleDeleteAttempt = (category: string) => {
-    setCategoryToDelete(category);
-    
-    // Проверяем, есть ли продукты в этой категории
-    const productsInCategory = getCategoryProducts(category);
-    
-    if (productsInCategory.length > 0) {
-      // Если есть продукты, предложим переместить их в другую категорию
-      setShowMoveDialog(true);
-    } else {
-      // Если нет продуктов, удаляем категорию
-      const success = removeCategory(category);
-      if (success) {
-        toast("Категория удалена", {
-          description: `Категория "${category}" была успешно удалена`,
-        });
-      } else {
-        toast("Ошибка", {
-          description: "Не удалось удалить категорию",
-        });
-      }
-      setCategoryToDelete(null);
-      loadCategories();
+  const loadCategories = async () => {
+    try {
+      setIsLoading(true);
+      const allCategories = await getAllCategories();
+      const categoryObjs = await getCategoryObjects();
+      
+      setCategories(allCategories);
+      setCategoryObjects(categoryObjs);
+      
+      console.log("Loaded categories:", allCategories);
+      console.log("Category objects:", categoryObjs);
+    } catch (error) {
+      console.error("Ошибка при загрузке категорий:", error);
+      toast.error("Ошибка при загрузке категорий", {
+        description: "Пожалуйста, попробуйте позже"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleMoveProducts = () => {
-    if (categoryToDelete && targetCategory) {
-      // Перемещаем продукты из удаляемой категории в выбранную
-      updateProductsCategory(categoryToDelete, targetCategory);
-      
-      toast("Категория удалена", {
-        description: `Продукты перемещены в категорию "${targetCategory}" и категория "${categoryToDelete}" удалена`,
+  const handleAddCategory = async (newCategory: string) => {
+    try {
+      setIsLoading(true);
+      await addCategory(newCategory);
+      await loadCategories();
+      toast("Категория добавлена", {
+        description: `Категория "${newCategory}" была успешно добавлена`,
       });
+    } catch (error) {
+      console.error("Ошибка при добавлении категории:", error);
+      toast.error("Ошибка при добавлении категории", {
+        description: "Пожалуйста, попробуйте позже"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateCategoryImage = async (categoryName: string, imageUrl: string) => {
+    try {
+      setIsLoading(true);
+      await updateCategoryImage(categoryName, imageUrl);
+      await loadCategories();
+      toast("Изображение обновлено", {
+        description: `Изображение для категории "${categoryName}" было успешно обновлено`,
+      });
+    } catch (error) {
+      console.error("Ошибка при обновлении изображения категории:", error);
+      toast.error("Ошибка при обновлении изображения", {
+        description: "Пожалуйста, попробуйте позже"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAttempt = async (category: string) => {
+    setCategoryToDelete(category);
+    
+    try {
+      // Проверяем, есть ли продукты в этой категории
+      setIsLoading(true);
+      const productsInCategory = await getCategoryProducts(category);
+      setIsLoading(false);
       
-      setCategoryToDelete(null);
-      setShowMoveDialog(false);
-      setTargetCategory("");
-      loadCategories();
+      if (productsInCategory.length > 0) {
+        // Если есть продукты, предложим переместить их в другую категорию
+        setShowMoveDialog(true);
+      } else {
+        // Если нет продуктов, удаляем категорию
+        const success = await removeCategory(category);
+        if (success) {
+          toast("Категория удалена", {
+            description: `Категория "${category}" была успешно удалена`,
+          });
+        } else {
+          toast.error("Ошибка", {
+            description: "Не удалось удалить категорию",
+          });
+        }
+        setCategoryToDelete(null);
+        await loadCategories();
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении категории:", error);
+      setIsLoading(false);
+      toast.error("Ошибка при удалении категории", {
+        description: "Пожалуйста, попробуйте позже"
+      });
+    }
+  };
+
+  const handleMoveProducts = async () => {
+    if (categoryToDelete && targetCategory) {
+      try {
+        setIsLoading(true);
+        // Перемещаем продукты из удаляемой категории в выбранную
+        await updateProductsCategory(categoryToDelete, targetCategory);
+        
+        toast("Категория удалена", {
+          description: `Продукты перемещены в категорию "${targetCategory}" и категория "${categoryToDelete}" удалена`,
+        });
+        
+        setCategoryToDelete(null);
+        setShowMoveDialog(false);
+        setTargetCategory("");
+        await loadCategories();
+      } catch (error) {
+        console.error("Ошибка при перемещении продуктов:", error);
+        toast.error("Ошибка при перемещении продуктов", {
+          description: "Пожалуйста, попробуйте позже"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -101,6 +153,16 @@ const CategoryManager = () => {
     setCategoryToDelete(null);
     setTargetCategory("");
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6 flex justify-center items-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

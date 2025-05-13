@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           chat_id: string
@@ -121,6 +145,110 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      products: {
+        Row: {
+          additional_images: Json | null
+          archived: boolean | null
+          article_number: string | null
+          avito_url: string | null
+          barcode: string | null
+          category: string
+          color_variants: Json | null
+          colors: Json | null
+          country_of_origin: string
+          created_at: string
+          description: string
+          discount_price: number | null
+          id: string
+          image_url: string
+          in_stock: boolean
+          is_bestseller: boolean | null
+          is_new: boolean | null
+          material: string | null
+          ozon_url: string | null
+          price: number
+          rating: number
+          sizes: Json | null
+          specifications: Json | null
+          stock_quantity: number | null
+          title: string
+          updated_at: string
+          video_type: string | null
+          video_url: string | null
+          wildberries_url: string | null
+        }
+        Insert: {
+          additional_images?: Json | null
+          archived?: boolean | null
+          article_number?: string | null
+          avito_url?: string | null
+          barcode?: string | null
+          category: string
+          color_variants?: Json | null
+          colors?: Json | null
+          country_of_origin: string
+          created_at?: string
+          description: string
+          discount_price?: number | null
+          id?: string
+          image_url?: string
+          in_stock?: boolean
+          is_bestseller?: boolean | null
+          is_new?: boolean | null
+          material?: string | null
+          ozon_url?: string | null
+          price: number
+          rating?: number
+          sizes?: Json | null
+          specifications?: Json | null
+          stock_quantity?: number | null
+          title: string
+          updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
+          wildberries_url?: string | null
+        }
+        Update: {
+          additional_images?: Json | null
+          archived?: boolean | null
+          article_number?: string | null
+          avito_url?: string | null
+          barcode?: string | null
+          category?: string
+          color_variants?: Json | null
+          colors?: Json | null
+          country_of_origin?: string
+          created_at?: string
+          description?: string
+          discount_price?: number | null
+          id?: string
+          image_url?: string
+          in_stock?: boolean
+          is_bestseller?: boolean | null
+          is_new?: boolean | null
+          material?: string | null
+          ozon_url?: string | null
+          price?: number
+          rating?: number
+          sizes?: Json | null
+          specifications?: Json | null
+          stock_quantity?: number | null
+          title?: string
+          updated_at?: string
+          video_type?: string | null
+          video_url?: string | null
+          wildberries_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["name"]
+          },
+        ]
       }
       profiles: {
         Row: {

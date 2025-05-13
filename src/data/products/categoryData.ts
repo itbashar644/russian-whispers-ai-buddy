@@ -1,6 +1,15 @@
 
 import { getFromStorage, saveToStorage } from "./utils";
 import { products } from "./productData";
+import { 
+  fetchCategoriesFromSupabase, 
+  addCategoryToSupabase, 
+  removeCategoryFromSupabase, 
+  updateProductsCategoryInSupabase,
+  updateCategoryImageInSupabase,
+  getProductsByCategoryFromSupabase,
+  migrateDataToSupabaseIfNeeded
+} from "./supabaseApi";
 
 // Определяем интерфейс для категории
 export interface Category {
@@ -9,20 +18,56 @@ export interface Category {
 }
 
 // Хранение текущих категорий
-let categories: Category[] = getInitialCategories();
+let categories: Category[] = [];
+let categoriesLoaded = false;
 
 // Функция для получения всех уникальных категорий
-export const getAllCategories = (): string[] => {
+export const getAllCategories = async (): Promise<string[]> => {
+  // Убедимся, что категории загружены
+  if (!categoriesLoaded) {
+    await loadCategoriesFromSupabase();
+  }
+  
   // Возвращаем только имена категорий для совместимости с существующим кодом
   return categories.map(category => category.name);
 };
 
 // Функция для получения объектов категорий
-export const getCategoryObjects = (): Category[] => {
+export const getCategoryObjects = async (): Promise<Category[]> => {
+  // Убедимся, что категории загружены
+  if (!categoriesLoaded) {
+    await loadCategoriesFromSupabase();
+  }
+  
   return [...categories];
 };
 
+// Функция для загрузки категорий из Supabase
+async function loadCategoriesFromSupabase(): Promise<void> {
+  try {
+    // Проверяем, нужно ли импортировать данные
+    await migrateDataToSupabaseIfNeeded();
+    
+    // Загружаем категории из Supabase
+    const supabaseCategories = await fetchCategoriesFromSupabase();
+    
+    if (supabaseCategories.length > 0) {
+      categories = supabaseCategories;
+      categoriesLoaded = true;
+    } else {
+      console.error("Не удалось загрузить категории из базы данных");
+      // Возвращаемся к данным из localStorage в качестве запасного варианта
+      categories = getInitialCategories();
+    }
+  } catch (error) {
+    console.error("Ошибка при загрузке категорий из базы данных:", error);
+    // Возвращаемся к данным из localStorage в качестве запасного варианта
+    categories = getInitialCategories();
+  }
+}
+
 // Загружаем категории из localStorage или используем значения по умолчанию
+// Теперь используется только как запасной вариант
 function getInitialCategories(): Category[] {
   const defaultCategories = [
     { name: "Сумки и рюкзаки", imageUrl: "/placeholder.svg" },
@@ -49,60 +94,82 @@ function getInitialCategories(): Category[] {
   }
 }
 
-// Функция для сохранения категорий в localStorage
-const saveCategoriesToStorage = (): void => {
-  saveToStorage('catalog_categories', categories);
-};
-
 // Функция для добавления новой категории
-export const addCategory = (categoryName: string, imageUrl: string = "/placeholder.svg"): void => {
+export const addCategory = async (categoryName: string, imageUrl: string = "/placeholder.svg"): Promise<void> => {
+  // Загружаем свежие категории, если они еще не загружены
+  if (!categoriesLoaded) {
+    await loadCategoriesFromSupabase();
+  }
+  
   if (!categories.some(cat => cat.name === categoryName)) {
-    categories.push({ name: categoryName, imageUrl });
-    saveCategoriesToStorage();
+    // Добавляем категорию в Supabase
+    const added = await addCategoryToSupabase(categoryName, imageUrl);
+    
+    if (added) {
+      // Добавляем категорию в локальный кеш
+      categories.push({ name: categoryName, imageUrl });
+    }
   }
 };
 
 // Функция для обновления изображения категории
-export const updateCategoryImage = (categoryName: string, imageUrl: string): void => {
+export const updateCategoryImage = async (categoryName: string, imageUrl: string): Promise<void> => {
+  // Загружаем свежие категории, если они еще не загружены
+  if (!categoriesLoaded) {
+    await loadCategoriesFromSupabase();
+  }
+  
   const categoryIndex = categories.findIndex(cat => cat.name === categoryName);
   if (categoryIndex !== -1) {
-    categories[categoryIndex].imageUrl = imageUrl;
-    saveCategoriesToStorage();
+    // Обновляем изображение в Supabase
+    const updated = await updateCategoryImageInSupabase(categoryName, imageUrl);
+    
+    if (updated) {
+      // Обновляем изображение в локальном кеше
+      categories[categoryIndex].imageUrl = imageUrl;
+    }
   }
 };
 
 // Функция для удаления категории
-export const removeCategory = (categoryName: string): boolean => {
+export const removeCategory = async (categoryName: string): Promise<boolean> => {
+  // Загружаем свежие категории, если они еще не загружены
+  if (!categoriesLoaded) {
+    await loadCategoriesFromSupabase();
+  }
+  
   // Проверяем, используется ли категория в продуктах
-  const productsInCategory = products.filter(p => p.category === categoryName);
+  const productsInCategory = await getProductsByCategory(categoryName);
   
   if (productsInCategory.length === 0) {
     // Если категория не используется, удаляем ее
-    categories = categories.filter(cat => cat.name !== categoryName);
-    saveCategoriesToStorage();
-    return true;
+    const removed = await removeCategoryFromSupabase(categoryName);
+    
+    if (removed) {
+      // Удаляем категорию из локального кеша
+      categories = categories.filter(cat => cat.name !== categoryName);
+      return true;
+    }
   }
   
-  return false; // Если категория используется, возвращаем false
+  return false; // Если категория используется или не удалось удалить
 };
 
 // Функция для обновления продуктов при удалении категории
-export const updateProductsCategory = (oldCategory: string, newCategory: string): void => {
-  // Обновляем категорию для всех продуктов из старой категории
-  products.forEach(product => {
-    if (product.category === oldCategory) {
-      product.category = newCategory;
-    }
-  });
+export const updateProductsCategory = async (oldCategory: string, newCategory: string): Promise<void> => {
+  // Обновляем категорию для всех продуктов в Supabase
+  const updated = await updateProductsCategoryInSupabase(oldCategory, newCategory);
   
-  // Удаляем старую категорию
-  removeCategory(oldCategory);
-  
-  // Сохраняем обновленные продукты в localStorage
-  saveToStorage('catalog_products', products);
+  if (updated) {
+    // Удаляем старую категорию после обновления продуктов
+    await removeCategory(oldCategory);
+  }
 };
 
 // Функция для получения продуктов по категории
-export const getProductsByCategory = (category: string) => {
-  return products.filter(product => product.category === category);
+export const getProductsByCategory = async (category: string) => {
+  return await getProductsByCategoryFromSupabase(category);
 };
+
+// Инициируем загрузку категорий при импорте модуля
+loadCategoriesFromSupabase();
