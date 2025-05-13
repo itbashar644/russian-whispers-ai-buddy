@@ -26,6 +26,17 @@ export interface Product {
   avitoUrl?: string;
   archived?: boolean; // New field to mark archived products
   stockQuantity?: number; // New field to track inventory quantity
+  colorVariants?: ColorVariant[]; // New field to store color variants
+}
+
+export interface ColorVariant {
+  color: string;
+  price: number;
+  discountPrice?: number;
+  articleNumber?: string;
+  barcode?: string;
+  stockQuantity?: number;
+  imageUrl?: string;
 }
 
 export interface CartItem {
@@ -33,6 +44,7 @@ export interface CartItem {
   quantity: number;
   color?: string;
   size?: string;
+  selectedColorVariant?: ColorVariant;
 }
 
 export interface DeliveryMethod {

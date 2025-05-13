@@ -1,5 +1,5 @@
 
-import { Product } from "@/types/product";
+import { Product, ColorVariant } from "@/types/product";
 import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
 
 // Default products to populate the catalog initially
@@ -19,6 +19,26 @@ const defaultProducts: Product[] = [
     material: "Натуральная кожа",
     isBestseller: true,
     stockQuantity: 15,
+    colorVariants: [
+      {
+        color: "Черный",
+        price: 5990,
+        stockQuantity: 5,
+        articleNumber: "KB-1001-BLK"
+      },
+      {
+        color: "Коричневый",
+        price: 5990,
+        stockQuantity: 5,
+        articleNumber: "KB-1001-BRN"
+      },
+      {
+        color: "Бежевый",
+        price: 6490,
+        stockQuantity: 5,
+        articleNumber: "KB-1001-BGE"
+      }
+    ]
   },
   {
     id: "2",
@@ -78,6 +98,19 @@ export const addOrUpdateProduct = (product: Product): void => {
     product.inStock = false;
   }
   
+  // Update colorVariants stock status
+  if (product.colorVariants && product.colorVariants.length > 0) {
+    // If we have color variants, check if at least one has stock
+    const hasColorStock = product.colorVariants.some(variant => 
+      variant.stockQuantity !== undefined && variant.stockQuantity > 0
+    );
+    
+    // If at least one color has stock, the product is in stock
+    if (hasColorStock) {
+      product.inStock = true;
+    }
+  }
+  
   const index = products.findIndex(p => p.id === product.id);
   if (index >= 0) {
     // Update existing product
@@ -91,14 +124,35 @@ export const addOrUpdateProduct = (product: Product): void => {
 };
 
 // Function to decrease stock quantity when products are ordered
-export const decreaseProductStock = (productId: string, quantity: number): boolean => {
+export const decreaseProductStock = (productId: string, quantity: number, colorSelected?: string): boolean => {
   const product = products.find(p => p.id === productId);
   
-  if (!product || product.stockQuantity === undefined) {
+  if (!product) {
     return false;
   }
   
-  if (product.stockQuantity < quantity) {
+  // If color is specified and we have color variants, decrease stock for that specific variant
+  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+    
+    if (!colorVariant || colorVariant.stockQuantity === undefined || colorVariant.stockQuantity < quantity) {
+      return false; // Not enough stock for this color
+    }
+    
+    colorVariant.stockQuantity -= quantity;
+    
+    // Update the product's overall stock status based on its variants
+    const hasRemainingStock = product.colorVariants.some(v => 
+      v.stockQuantity !== undefined && v.stockQuantity > 0
+    );
+    
+    product.inStock = hasRemainingStock;
+    saveProductsToStorage();
+    return true;
+  }
+  
+  // If no color specified or no color variants, decrease from main stock
+  if (product.stockQuantity === undefined || product.stockQuantity < quantity) {
     return false; // Not enough stock
   }
   
@@ -134,12 +188,43 @@ export const removeProduct = (productId: string): void => {
 };
 
 // Function to check if a product has enough stock
-export const checkProductStock = (productId: string, requestedQuantity: number): boolean => {
+export const checkProductStock = (productId: string, requestedQuantity: number, colorSelected?: string): boolean => {
   const product = products.find(p => p.id === productId);
-  if (!product || product.stockQuantity === undefined) {
-    return false; // Если stockQuantity неопределен, считаем что товара нет в наличии
+  
+  if (!product) {
+    return false;
   }
+  
+  // If color is specified and we have color variants, check stock for that specific variant
+  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+    
+    if (!colorVariant || colorVariant.stockQuantity === undefined) {
+      return false;
+    }
+    
+    return colorVariant.stockQuantity >= requestedQuantity;
+  }
+  
+  // If no color specified or no color variants, check main stock
+  if (product.stockQuantity === undefined) {
+    return false;
+  }
+  
   return product.stockQuantity >= requestedQuantity;
+};
+
+// Get price of the product, taking into account color variants
+export const getProductPrice = (product: Product, colorSelected?: string): number => {
+  if (colorSelected && product.colorVariants && product.colorVariants.length > 0) {
+    const colorVariant = product.colorVariants.find(v => v.color === colorSelected);
+    
+    if (colorVariant) {
+      return colorVariant.discountPrice || colorVariant.price;
+    }
+  }
+  
+  return product.discountPrice || product.price;
 };
 
 export const getProductById = (id: string): Product | undefined => {
