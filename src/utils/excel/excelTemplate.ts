@@ -11,8 +11,8 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
 
   const templateData = [{
     id: '',
-    title: 'Название товара',
-    description: 'Описание товара',
+    title: 'Название товара*',
+    description: 'Описание товара*',
     price: 0,
     discountPrice: '',
     category: categories.length > 0 ? categories[0] : 'Другое',
@@ -23,23 +23,24 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     sizes: 'S, M, L',
     isNew: 'Да',
     isBestseller: 'Нет',
-    countryOfOrigin: 'Россия',
+    countryOfOrigin: 'Россия*',
     articleNumber: '',
     barcode: '',
     wildberriesUrl: '',
     ozonUrl: '',
     avitoUrl: '',
     stockQuantity: 10,
+    material: '',
   }];
 
   // Добавляем примечание по категориям
   const templateData2 = [{
     id: '',
-    title: 'ПРИМЕЧАНИЕ: Доступные категории',
-    description: categoriesString,
+    title: 'ПРИМЕЧАНИЕ: Поля со звездочкой (*) обязательны для заполнения',
+    description: 'Обязательные поля: title (название), description (описание), price (цена), category (категория), countryOfOrigin (страна)',
     price: '',
     discountPrice: '',
-    category: 'Вы можете использовать существующие категории или добавить новую',
+    category: categoriesString,
     imageUrl: '',
     rating: '',
     inStock: '',
@@ -54,6 +55,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     ozonUrl: '',
     avitoUrl: '',
     stockQuantity: '',
+    material: '',
   }];
   
   // Create worksheet from template data
@@ -84,6 +86,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     { wch: 30 }, // ozonUrl
     { wch: 30 }, // avitoUrl
     { wch: 10 }, // stockQuantity
+    { wch: 15 }, // material
   ];
   
   // Create workbook and add the worksheet
