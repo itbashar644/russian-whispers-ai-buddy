@@ -1,11 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
+import { Checkbox } from "@/components/ui/checkbox";
 import ContactMethodSelect from "./ContactMethodSelect";
 import TelegramNicknameInput from "./TelegramNicknameInput";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -23,6 +26,15 @@ interface OrderSummaryProps {
   hasStockIssues: boolean;
 }
 
+interface SavedCheckoutInfo {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  contactMethod: string;
+  telegramNickname?: string;
+}
+
 const OrderSummary = ({
   subtotal,
   total,
@@ -31,6 +43,7 @@ const OrderSummary = ({
   isSubmitting,
   hasStockIssues
 }: OrderSummaryProps) => {
+  const { profile, updateProfile } = useAuth();
   const [orderForm, setOrderForm] = useState({
     name: "",
     email: "",
@@ -39,6 +52,56 @@ const OrderSummary = ({
     contactMethod: "phone",
     telegramNickname: "",
   });
+  
+  const [saveInfo, setSaveInfo] = useState(false);
+  const [hasSavedInfo, setHasSavedInfo] = useState(false);
+  const [useSavedInfo, setUseSavedInfo] = useState(false);
+
+  // Load saved checkout information from localStorage on initial render
+  useEffect(() => {
+    const savedInfoString = localStorage.getItem("savedCheckoutInfo");
+    
+    if (savedInfoString) {
+      setHasSavedInfo(true);
+    }
+    
+    // Auto-populate with profile data if available
+    if (profile) {
+      setOrderForm(prev => ({
+        ...prev,
+        name: profile.name || prev.name,
+        email: profile.email || prev.email,
+        phone: profile.phone || prev.phone,
+        address: profile.address || prev.address,
+        contactMethod: profile.preferredContactMethod || prev.contactMethod,
+        telegramNickname: profile.telegramNickname || prev.telegramNickname
+      }));
+    }
+  }, [profile]);
+
+  // Handle loading saved checkout information
+  const handleUseSavedInfo = () => {
+    const savedInfoString = localStorage.getItem("savedCheckoutInfo");
+    
+    if (savedInfoString) {
+      try {
+        const savedInfo: SavedCheckoutInfo = JSON.parse(savedInfoString);
+        setOrderForm(savedInfo);
+        setUseSavedInfo(true);
+        toast({
+          title: "Информация загружена",
+          description: "Сохраненная информация о доставке загружена"
+        });
+      } catch (error) {
+        console.error("Failed to parse saved checkout info", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить сохраненную информацию",
+          variant: "destructive"
+        });
+      }
+    }
+  };
 
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -51,6 +114,33 @@ const OrderSummary = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Save checkout information if the user checked the option
+    if (saveInfo) {
+      try {
+        localStorage.setItem("savedCheckoutInfo", JSON.stringify(orderForm));
+        toast({
+          title: "Информация сохранена",
+          description: "Данные о доставке сохранены для будущих заказов"
+        });
+      } catch (error) {
+        console.error("Failed to save checkout info", error);
+      }
+      
+      // If the user is logged in, also update their profile with this information
+      if (profile) {
+        updateProfile({
+          name: orderForm.name,
+          phone: orderForm.phone,
+          address: orderForm.address,
+          preferredContactMethod: orderForm.contactMethod as any,
+          telegramNickname: orderForm.telegramNickname
+        }).catch(error => {
+          console.error("Failed to update profile with checkout info", error);
+        });
+      }
+    }
+    
     onSubmit(orderForm);
   };
   
@@ -73,6 +163,19 @@ const OrderSummary = ({
           <span>{total} ₽</span>
         </div>
       </div>
+      
+      {hasSavedInfo && !useSavedInfo && (
+        <div className="mb-4">
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={handleUseSavedInfo}
+            type="button"
+          >
+            Использовать сохраненную информацию
+          </Button>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -140,6 +243,20 @@ const OrderSummary = ({
             required
           />
         )}
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="saveInfo" 
+            checked={saveInfo}
+            onCheckedChange={(checked) => setSaveInfo(checked === true)} 
+          />
+          <label
+            htmlFor="saveInfo"
+            className="text-sm font-medium leading-none cursor-pointer"
+          >
+            Сохранить информацию для будущих заказов
+          </label>
+        </div>
         
         <Button 
           type="submit" 

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
@@ -35,12 +35,36 @@ const Cart = () => {
     item.product.stockQuantity !== undefined && 
     item.quantity > item.product.stockQuantity
   );
+
+  // Try to load saved delivery method on mount
+  useEffect(() => {
+    const savedDeliveryMethodId = localStorage.getItem("savedDeliveryMethodId");
+    
+    if (savedDeliveryMethodId) {
+      const method = deliveryMethods.find(m => m.id === savedDeliveryMethodId);
+      if (method) {
+        setDeliveryMethod(method);
+      }
+    }
+  }, [setDeliveryMethod]);
+  
+  const handleDeliveryMethodSelect = (method) => {
+    setDeliveryMethod(method);
+    try {
+      // Save the selected delivery method ID
+      localStorage.setItem("savedDeliveryMethodId", method.id);
+    } catch (error) {
+      console.error("Failed to save delivery method", error);
+    }
+  };
   
   const handleCheckout = async (formData: {
     name: string;
     email: string;
     phone: string;
     address: string;
+    contactMethod: string;
+    telegramNickname?: string;
   }) => {
     if (items.length === 0) {
       toast.error("Ваша корзина пуста. Добавьте товары перед оформлением заказа.");
@@ -134,7 +158,7 @@ const Cart = () => {
               <DeliveryMethodSelector
                 deliveryMethod={deliveryMethod}
                 deliveryMethods={deliveryMethods}
-                onSelectDelivery={setDeliveryMethod}
+                onSelectDelivery={handleDeliveryMethodSelect}
               />
             </div>
 
