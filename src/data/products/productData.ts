@@ -1,4 +1,3 @@
-
 import { Product, ColorVariant } from "@/types/product";
 import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
 
@@ -257,12 +256,20 @@ export const getNewProducts = (limit: number = 4): Product[] => {
     .slice(0, limit);
 };
 
-// New function to get all archived products
+// Function to get all archived products
 export const getArchivedProducts = (): Product[] => {
   return products.filter(p => p.archived);
 };
 
-// New function to get all active (non-archived) products
+// Function to get all active (non-archived) products
 export const getActiveProducts = (): Product[] => {
   return products.filter(p => !p.archived);
+};
+
+// New function to get a product variant by color
+export const getProductVariantByColor = (productId: string, color: string): ColorVariant | undefined => {
+  const product = getProductById(productId);
+  if (!product || !product.colorVariants) return undefined;
+  
+  return product.colorVariants.find(v => v.color === color);
 };

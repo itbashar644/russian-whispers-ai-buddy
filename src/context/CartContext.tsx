@@ -1,16 +1,15 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { CartItem, DeliveryMethod } from "../types/product";
+import { CartItem, DeliveryMethod, Product, ColorVariant } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
-import { toast } from "@/components/ui/sonner";
-import { checkProductStock } from "@/data/products";
+import { toast } from "@/components/ui/use-toast";
+import { checkProductStock, decreaseProductStock } from "@/data/products";
 
 interface CartContextType {
   items: CartItem[];
   deliveryMethod: DeliveryMethod | null;
   addItem: (item: CartItem) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  removeItem: (itemId: string, color?: string) => void;
+  updateQuantity: (itemId: string, quantity: number, color?: string) => void;
   clearCart: () => void;
   setDeliveryMethod: (method: DeliveryMethod) => void;
   totalItems: number;
@@ -79,22 +78,31 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [deliveryMethod]);
 
+  // Function to find an existing item with the same product ID and variant
+  const findExistingItemIndex = (newItem: CartItem): number => {
+    return items.findIndex(
+      (i) => 
+        i.product.id === newItem.product.id && 
+        i.color === newItem.color && 
+        i.size === newItem.size
+    );
+  };
+
   const addItem = (item: CartItem) => {
     setItems((prevItems) => {
-      const existingItemIndex = prevItems.findIndex(
-        (i) => 
-          i.product.id === item.product.id && 
-          i.color === item.color && 
-          i.size === item.size
-      );
+      const existingItemIndex = findExistingItemIndex(item);
 
       // Check if there's enough stock for the requested quantity
       const totalRequestedQuantity = existingItemIndex >= 0 
         ? prevItems[existingItemIndex].quantity + item.quantity 
         : item.quantity;
       
-      if (!checkProductStock(item.product.id, totalRequestedQuantity)) {
-        toast.error("Недостаточно товара на складе");
+      if (!checkProductStock(item.product.id, totalRequestedQuantity, item.color)) {
+        toast({
+          title: "Ошибка",
+          description: "Недостаточно товара на складе",
+          variant: "destructive",
+        });
         return prevItems; // Don't update cart if not enough stock
       }
 
@@ -112,47 +120,82 @@ export function CartProvider({ children }: CartProviderProps) {
       }
     });
     
-    toast.success("Товар добавлен в корзину");
+    toast({
+      title: "Товар добавлен в корзину",
+      description: `${item.product.title} - ${item.color || ""}`,
+    });
   };
 
-  const removeItem = (itemId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.product.id !== itemId));
-    toast.info("Товар удален из корзины");
+  const removeItem = (itemId: string, color?: string) => {
+    setItems((prevItems) => {
+      if (color) {
+        // If color is specified, only remove items with that color
+        return prevItems.filter(
+          (item) => !(item.product.id === itemId && item.color === color)
+        );
+      } else {
+        // Otherwise remove all items with the product ID
+        return prevItems.filter((item) => item.product.id !== itemId);
+      }
+    });
+    toast({
+      title: "Товар удален из корзины",
+    });
   };
 
-  const updateQuantity = (itemId: string, quantity: number) => {
+  const updateQuantity = (itemId: string, quantity: number, color?: string) => {
     if (quantity <= 0) {
-      removeItem(itemId);
+      removeItem(itemId, color);
       return;
     }
 
     setItems((prevItems) => {
-      const item = prevItems.find(item => item.product.id === itemId);
+      const itemIndex = color 
+        ? prevItems.findIndex(item => item.product.id === itemId && item.color === color)
+        : prevItems.findIndex(item => item.product.id === itemId);
+
+      if (itemIndex === -1) return prevItems;
+      
+      const item = prevItems[itemIndex];
       
       // Check if there's enough stock for the requested quantity
-      if (item && !checkProductStock(itemId, quantity)) {
-        toast.error("Недостаточно товара на складе");
+      if (!checkProductStock(itemId, quantity, item.color)) {
+        toast({
+          title: "Ошибка",
+          description: "Недостаточно товара на складе",
+          variant: "destructive",
+        });
         return prevItems; // Don't update if not enough stock
       }
       
-      return prevItems.map((item) =>
-        item.product.id === itemId ? { ...item, quantity } : item
-      );
+      const newItems = [...prevItems];
+      newItems[itemIndex] = { ...item, quantity };
+      return newItems;
     });
   };
 
   const clearCart = () => {
     setItems([]);
-    toast.info("Корзина очищена");
+    toast({
+      title: "Корзина очищена",
+    });
   };
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
-  const subtotal = items.reduce(
-    (total, item) => 
-      total + (item.product.discountPrice || item.product.price) * item.quantity, 
-    0
-  );
+  const subtotal = items.reduce((total, item) => {
+    // Get the price based on the selected color variant
+    let price = item.product.discountPrice || item.product.price;
+    
+    if (item.color && item.product.colorVariants) {
+      const variant = item.product.colorVariants.find(v => v.color === item.color);
+      if (variant) {
+        price = variant.discountPrice || variant.price;
+      }
+    }
+    
+    return total + (price * item.quantity);
+  }, 0);
 
   const total = subtotal + (deliveryMethod?.price || 0);
 

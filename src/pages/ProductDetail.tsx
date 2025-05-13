@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getProductById, getRelatedProducts } from "@/data/products";
+import { getProductById, getRelatedProducts, getProductPrice } from "@/data/products";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -25,20 +25,49 @@ const ProductDetail = () => {
   const [videoError, setVideoError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Check stock availability
-  const hasStock = product?.inStock && (product?.stockQuantity === undefined ? false : product?.stockQuantity > 0);
+  // Find the selected color variant if it exists
+  const selectedColorVariant = product?.colorVariants?.find(
+    v => v.color === selectedColor
+  );
+
+  // Check stock availability - now needs to check the specific variant
+  const hasStock = () => {
+    if (!product) return false;
+    
+    // If we have a selected color variant, check its stock
+    if (selectedColor && product.colorVariants?.length) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      return variant?.stockQuantity !== undefined && variant.stockQuantity > 0;
+    }
+    
+    // Otherwise check the main product stock
+    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
+  };
 
   // Get stock status text
   const getStockStatusText = () => {
-    if (!hasStock) {
+    if (!hasStock()) {
       return "Нет в наличии";
     }
     
-    if (product.stockQuantity !== undefined) {
+    // If there's a selected color variant, show its stock
+    if (selectedColor && product?.colorVariants?.length) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.stockQuantity !== undefined) {
+        if (variant.stockQuantity <= 3) {
+          return `Осталось всего ${variant.stockQuantity} шт.`;
+        } else {
+          return `В наличии: ${variant.stockQuantity} шт.`;
+        }
+      }
+    }
+    
+    // Otherwise show the main product stock
+    if (product?.stockQuantity !== undefined) {
       if (product.stockQuantity <= 3) {
         return `Осталось всего ${product.stockQuantity} шт.`;
       } else {
-        return `В наличи��: ${product.stockQuantity} шт.`;
+        return `В наличии: ${product.stockQuantity} шт.`;
       }
     }
     
@@ -47,11 +76,17 @@ const ProductDetail = () => {
   
   // Get stock status class
   const getStockStatusClass = () => {
-    if (!hasStock) {
+    if (!hasStock()) {
       return "text-red-500";
     }
     
-    if (product.stockQuantity !== undefined && product.stockQuantity <= 3) {
+    // If there's a selected color variant, check its stock
+    if (selectedColor && product?.colorVariants?.length) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.stockQuantity !== undefined && variant.stockQuantity <= 3) {
+        return "text-orange-500";
+      }
+    } else if (product?.stockQuantity !== undefined && product.stockQuantity <= 3) {
       return "text-orange-500";
     }
     
@@ -61,10 +96,29 @@ const ProductDetail = () => {
   // Update selected color when product changes
   useEffect(() => {
     if (product) {
-      setSelectedColor(product.colors ? product.colors[0] : undefined);
+      // Prioritize color variants if available, otherwise use simple colors array
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        setSelectedColor(product.colorVariants[0].color);
+      } else if (product.colors && product.colors.length > 0) {
+        setSelectedColor(product.colors[0]);
+      } else {
+        setSelectedColor(undefined);
+      }
       setCurrentImageIndex(0); // Reset image index when product changes
     }
   }, [product]);
+
+  // Effect to update image when color changes
+  useEffect(() => {
+    if (selectedColor && product?.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.imageUrl) {
+        // If the variant has an image, set it as the current image
+        setCurrentImageIndex(0);
+        setImageError(false);
+      }
+    }
+  }, [selectedColor, product]);
 
   // Force scroll to top when component mounts
   useEffect(() => {
@@ -89,7 +143,16 @@ const ProductDetail = () => {
 
   const handleQuantityChange = (value: number) => {
     if (value >= 1) {
-      // Don't exceed available stock
+      // Check against the selected color variant's stock if applicable
+      if (selectedColor && product.colorVariants?.length) {
+        const variant = product.colorVariants.find(v => v.color === selectedColor);
+        if (variant?.stockQuantity !== undefined && value > variant.stockQuantity) {
+          setQuantity(variant.stockQuantity);
+          return;
+        }
+      }
+      
+      // Otherwise check against the main product stock
       if (product.stockQuantity !== undefined && value > product.stockQuantity) {
         setQuantity(product.stockQuantity);
       } else {
@@ -99,21 +162,39 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (hasStock) {
+    if (hasStock()) {
       addItem({
         product,
         quantity,
-        color: selectedColor
+        color: selectedColor,
+        selectedColorVariant
       });
     }
   };
 
-  // Определяем отображаемую цену для кнопки
-  const displayPrice = product.discountPrice || product.price;
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    // Reset quantity to 1 when changing color
+    setQuantity(1);
+  };
+
+  // Определяем отображаемую цену для кнопки - now takes into account color variants
+  const displayPrice = getProductPrice(product, selectedColor);
+
+  // Get variant-specific image if available, otherwise use the main product image
+  const getVariantImage = () => {
+    if (selectedColor && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.imageUrl) {
+        return variant.imageUrl;
+      }
+    }
+    return product.imageUrl;
+  };
 
   // Get all available images (main image + additional images)
   const allImages = [
-    product.imageUrl,
+    getVariantImage(),
     ...(product.additionalImages || [])
   ].filter(Boolean);
 
@@ -122,7 +203,7 @@ const ProductDetail = () => {
 
   // Функция для обработки ошибок загрузки изображения
   const handleImageError = () => {
-    console.error("Ошибка загрузки изображения:", product.imageUrl);
+    console.error("Ошибка загрузки изображения:", currentImage);
     setImageError(true);
   };
 
@@ -175,6 +256,19 @@ const ProductDetail = () => {
         );
     }
   };
+
+  // Get article number to display - use variant-specific article number if available
+  const getArticleNumber = () => {
+    if (selectedColor && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.articleNumber) {
+        return variant.articleNumber;
+      }
+    }
+    return product.articleNumber;
+  };
+
+  const displayArticleNumber = getArticleNumber();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -234,6 +328,13 @@ const ProductDetail = () => {
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
               
+              {/* Display article number if available */}
+              {displayArticleNumber && (
+                <div className="text-sm text-muted-foreground mb-2">
+                  Артикул: {displayArticleNumber}
+                </div>
+              )}
+              
               {/* Add stock status indicator */}
               <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
                 {getStockStatusText()}
@@ -262,7 +363,20 @@ const ProductDetail = () => {
               </div>
 
               <div className="mb-6">
-                {product.discountPrice ? (
+                {/* Show variant-specific pricing */}
+                {selectedColorVariant?.discountPrice ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold">{selectedColorVariant.discountPrice} ₽</span>
+                    <span className="text-lg text-muted-foreground line-through">
+                      {selectedColorVariant.price} ₽
+                    </span>
+                    <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
+                      Скидка {Math.round(((selectedColorVariant.price - selectedColorVariant.discountPrice) / selectedColorVariant.price) * 100)}%
+                    </span>
+                  </div>
+                ) : selectedColorVariant ? (
+                  <span className="text-2xl font-bold">{selectedColorVariant.price} ₽</span>
+                ) : product.discountPrice ? (
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold">{product.discountPrice} ₽</span>
                     <span className="text-lg text-muted-foreground line-through">
@@ -344,11 +458,48 @@ const ProductDetail = () => {
             </div>
 
             <div className="space-y-4">
-              {product.colors && product.colors.length > 0 && (
+              {/* Color selection */}
+              {product.colorVariants && product.colorVariants.length > 0 ? (
                 <div>
                   <h3 className="font-medium mb-2">Цвет</h3>
                   <RadioGroup 
-                    value={selectedColor} 
+                    value={selectedColor || ''} 
+                    onValueChange={handleColorChange}
+                    className="flex flex-wrap gap-2"
+                  >
+                    {product.colorVariants.map((variant) => (
+                      <div key={variant.color} className="flex items-center">
+                        <RadioGroupItem 
+                          value={variant.color} 
+                          id={`color-${variant.color}`} 
+                          className="peer sr-only"
+                          disabled={variant.stockQuantity === 0}
+                        />
+                        <Label 
+                          htmlFor={`color-${variant.color}`}
+                          className={`px-3 py-1.5 border rounded-md text-sm cursor-pointer 
+                            peer-data-[state=checked]:bg-primary 
+                            peer-data-[state=checked]:text-primary-foreground 
+                            peer-data-[state=checked]:border-primary
+                            ${variant.stockQuantity === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                          `}
+                        >
+                          {variant.color}
+                          {variant.price !== product.price && (
+                            <span className="ml-1 text-xs">
+                              ({variant.price} ₽)
+                            </span>
+                          )}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              ) : product.colors && product.colors.length > 0 ? (
+                <div>
+                  <h3 className="font-medium mb-2">Цвет</h3>
+                  <RadioGroup 
+                    value={selectedColor || ''} 
                     onValueChange={setSelectedColor}
                     className="flex flex-wrap gap-2"
                   >
@@ -369,7 +520,7 @@ const ProductDetail = () => {
                     ))}
                   </RadioGroup>
                 </div>
-              )}
+              ) : null}
 
               <div>
                 <h3 className="font-medium mb-2">Количество</h3>
@@ -387,8 +538,13 @@ const ProductDetail = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => handleQuantityChange(quantity + 1)}
-                    // Disable incrementing if it would exceed available stock
-                    disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
+                    // Check against variant stock if applicable
+                    disabled={
+                      (selectedColorVariant?.stockQuantity !== undefined && 
+                       quantity >= selectedColorVariant.stockQuantity) ||
+                      (product.stockQuantity !== undefined && 
+                       quantity >= product.stockQuantity)
+                    }
                   >
                     +
                   </Button>
@@ -400,10 +556,10 @@ const ProductDetail = () => {
                   size="lg" 
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={!hasStock}
+                  disabled={!hasStock()}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  {hasStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
+                  {hasStock() ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
                 </Button>
               </div>
             </div>
