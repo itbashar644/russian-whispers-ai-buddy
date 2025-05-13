@@ -8,6 +8,12 @@ const TELEGRAM_ADMIN_CHAT_ID = Deno.env.get("TELEGRAM_ADMIN_CHAT_ID") || "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
+// Добавляем проверку токенов
+console.log(`Telegram Bot Token доступен: ${TELEGRAM_BOT_TOKEN ? "Да" : "Нет"}`);
+console.log(`Admin Chat ID доступен: ${TELEGRAM_ADMIN_CHAT_ID ? "Да" : "Нет"}`);
+console.log(`SUPABASE_URL доступен: ${SUPABASE_URL ? "Да" : "Нет"}`);
+console.log(`SUPABASE_SERVICE_ROLE_KEY доступен: ${SUPABASE_SERVICE_ROLE_KEY ? "Да" : "Нет"}`);
+
 // CORS заголовки
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,8 +26,18 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Отправка сообщения в Telegram
 async function sendTelegramMessage(chatId: string, text: string) {
   try {
+    console.log(`Отправка сообщения в Telegram: chatId=${chatId}, text длиной ${text.length}`);
+    
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.error("ОШИБКА: TELEGRAM_BOT_TOKEN не установлен");
+      return { ok: false, error: "TELEGRAM_BOT_TOKEN не установлен" };
+    }
+    
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    console.log(`Отправка запроса на URL: ${url}`);
+    
     const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+      url,
       {
         method: "POST",
         headers: {
@@ -34,7 +50,10 @@ async function sendTelegramMessage(chatId: string, text: string) {
         }),
       }
     );
-    return await response.json();
+    
+    const result = await response.json();
+    console.log(`Результат отправки сообщения:`, JSON.stringify(result));
+    return result;
   } catch (error) {
     console.error("Error sending telegram message:", error);
     return { ok: false, error };
@@ -130,10 +149,12 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const path = url.pathname.split("/").pop();
+    console.log(`Получен запрос: ${req.method} ${url.pathname}`);
 
     // Обработчик для веб-хука Telegram
     if (path === "webhook") {
       const update = await req.json();
+      console.log("Получен webhook от Telegram:", JSON.stringify(update));
       await processTelegramUpdate(update);
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -143,9 +164,12 @@ serve(async (req) => {
 
     // Обработчик для отправки сообщений клиентов
     if (path === "send") {
+      console.log("Получен запрос на отправку сообщения");
       const { chatId, name, email, message } = await req.json();
+      console.log(`Данные запроса: chatId=${chatId}, name=${name}, email=${email}, message длиной ${message?.length}`);
       
       if (!chatId || !message) {
+        console.error("Ошибка: отсутствуют обязательные параметры");
         return new Response(
           JSON.stringify({ error: "chatId и message обязательны" }),
           {
@@ -201,10 +225,31 @@ serve(async (req) => {
       }
 
       // Отправляем уведомление администратору в Telegram
+      if (!TELEGRAM_ADMIN_CHAT_ID) {
+        console.error("ОШИБКА: TELEGRAM_ADMIN_CHAT_ID не установлен");
+        return new Response(
+          JSON.stringify({ error: "TELEGRAM_ADMIN_CHAT_ID не установлен" }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          }
+        );
+      }
+      
       const customerInfo = `Клиент: ${name || "Гость"}${email ? ` (${email})` : ""}`;
       const telegramMessage = `📩 <b>Новое сообщение</b>\n${customerInfo}\nID чата: <code>${chatId}</code>\n\n<b>Сообщение:</b>\n${message}\n\n<b>Чтобы ответить, отправьте:</b>\n<code>REPLY:${chatId}:Ваш ответ</code>`;
       
-      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, telegramMessage);
+      const telegramResult = await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, telegramMessage);
+      if (!telegramResult.ok) {
+        console.error("Ошибка отправки в Telegram:", telegramResult);
+        return new Response(
+          JSON.stringify({ error: "Ошибка отправки уведомления в Telegram", details: telegramResult }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          }
+        );
+      }
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -217,9 +262,12 @@ serve(async (req) => {
 
     // Обработчик для получения истории сообщений
     if (path === "messages") {
+      console.log("Получен запрос на получение истории сообщений");
       const { chatId } = await req.json();
+      console.log(`Запрошены сообщения для чата: ${chatId}`);
       
       if (!chatId) {
+        console.error("Ошибка: отсутствует параметр chatId");
         return new Response(
           JSON.stringify({ error: "chatId обязателен" }),
           {
@@ -247,12 +295,15 @@ serve(async (req) => {
         );
       }
 
+      console.log(`Найдено ${messages?.length || 0} сообщений для чата ${chatId}`);
+
       // Помечаем сообщения от админа как прочитанные
       const unreadAdminMessages = messages
         .filter(msg => msg.is_from_admin && !msg.is_read)
         .map(msg => msg.id);
       
       if (unreadAdminMessages.length > 0) {
+        console.log(`Помечаем как прочитанные ${unreadAdminMessages.length} сообщений`);
         const { error: updateError } = await supabase
           .from("chat_messages")
           .update({ is_read: true })
@@ -273,6 +324,7 @@ serve(async (req) => {
     }
 
     // Если путь не соответствует ни одному обработчику
+    console.error(`Неизвестный путь: ${path}`);
     return new Response(
       JSON.stringify({ error: "Неверный путь" }),
       {
@@ -283,7 +335,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error processing request:", error);
     return new Response(
-      JSON.stringify({ error: "Внутренняя ошибка сервера" }),
+      JSON.stringify({ error: "Внутренняя ошибка сервера", details: error.message }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
