@@ -25,6 +25,7 @@ import Account from "./pages/account/Account";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AuthCallback from "./pages/auth/AuthCallback";
+import ChatWidget from "./components/chat/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,9 @@ const App = () => (
               {/* Маршрут "не найдено" */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            
+            {/* Чат виджет доступен на всех страницах, кроме админ-панели */}
+            <ChatWidget />
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>

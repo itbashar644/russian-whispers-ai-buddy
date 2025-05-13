@@ -1,8 +1,13 @@
 
-import React from "react";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import React, { useState } from "react";
+import { Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { sendMessage } from "@/services/chatService";
 
 const ContactItem = ({ 
   icon: Icon, 
@@ -25,6 +30,45 @@ const ContactItem = ({
 );
 
 const Contacts = () => {
+  const { profile } = useAuth();
+  const [name, setName] = useState(profile?.name || "");
+  const [email, setEmail] = useState(profile?.email || "");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!message.trim()) {
+      toast.error("Ошибка", { description: "Введите текст сообщения" });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const success = await sendMessage(message, name, email);
+      
+      if (success) {
+        toast.success("Сообщение отправлено", { 
+          description: "Мы свяжемся с вами в ближайшее время" 
+        });
+        setMessage("");
+      } else {
+        toast.error("Ошибка отправки", { 
+          description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже." 
+        });
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Ошибка", { 
+        description: "Произошла ошибка при отправке сообщения" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -58,6 +102,11 @@ const Contacts = () => {
                   <p>Пн-Пт: 9:00 - 19:00</p>
                   <p>Сб-Вс: 10:00 - 17:00</p>
                 </ContactItem>
+                
+                <ContactItem icon={MessageCircle} title="Онлайн-чат">
+                  <p>Воспользуйтесь онлайн-чатом на сайте</p>
+                  <p className="text-sm">Консультанты отвечают в рабочее время</p>
+                </ContactItem>
               </div>
             </div>
             
@@ -67,12 +116,14 @@ const Contacts = () => {
                 Заполните форму, и мы свяжемся с вами в ближайшее время
               </p>
               
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium mb-1">Ваше имя</label>
                   <input 
                     type="text" 
                     id="name" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
                     placeholder="Иван Иванов" 
                   />
@@ -83,6 +134,8 @@ const Contacts = () => {
                   <input 
                     type="email" 
                     id="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
                     placeholder="ivan@example.com" 
                   />
@@ -90,20 +143,24 @@ const Contacts = () => {
                 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium mb-1">Сообщение</label>
-                  <textarea 
+                  <Textarea 
                     id="message" 
                     rows={4} 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
                     placeholder="Напишите ваш вопрос или сообщение..."
-                  ></textarea>
+                    required
+                  />
                 </div>
                 
-                <button 
+                <Button 
                   type="submit" 
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
+                  className="w-full"
+                  disabled={loading}
                 >
-                  Отправить
-                </button>
+                  {loading ? "Отправляем..." : "Отправить"}
+                </Button>
               </form>
             </div>
           </div>
