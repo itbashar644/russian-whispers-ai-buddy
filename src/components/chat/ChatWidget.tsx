@@ -115,10 +115,12 @@ const ChatWidget: React.FC = () => {
     setIsSending(true);
     
     try {
-      const success = await sendMessage(message, {
+      const userInfo = {
         name: profile?.name || '',
-        email: profile?.email || '',
-      });
+        email: profile?.email || ''
+      };
+      
+      const success = await sendMessage(message, userInfo);
       
       if (success) {
         setMessage("");
@@ -178,7 +180,7 @@ const ChatWidget: React.FC = () => {
             messages.map(msg => (
               <ChatBubble 
                 key={msg.id}
-                message={msg.message}
+                message={msg}
                 isFromAdmin={msg.is_from_admin}
                 timestamp={new Date(msg.created_at)}
               />

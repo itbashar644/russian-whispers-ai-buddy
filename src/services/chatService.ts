@@ -17,15 +17,19 @@ export const getChatId = (): string => {
 // Отправка сообщения
 export const sendMessage = async (
   message: string,
-  name?: string,
-  email?: string
+  userInfo?: { name?: string; email?: string }
 ): Promise<boolean> => {
   try {
-    console.log("Отправка сообщения:", { message, name, email });
+    console.log("Отправка сообщения:", { message, userInfo });
     const chatId = getChatId();
     
     const response = await supabase.functions.invoke("telegram-chat/send", {
-      body: { chatId, message, name, email },
+      body: { 
+        chatId, 
+        message, 
+        name: userInfo?.name || '', 
+        email: userInfo?.email || '' 
+      },
     });
     
     if (response.error) {
@@ -71,6 +75,27 @@ export const getMessages = async (): Promise<ChatMessage[]> => {
   }
 };
 
+// Mark messages as read
+export const markMessagesAsRead = async (): Promise<boolean> => {
+  try {
+    const chatId = getChatId();
+    
+    const response = await supabase.functions.invoke("telegram-chat/mark-read", {
+      body: { chatId },
+    });
+    
+    if (response.error) {
+      console.error("Error marking messages as read:", response.error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in markMessagesAsRead:", error);
+    return false;
+  }
+};
+
 // Проверка состояния telegram-chat функции
 export const checkChatStatus = async (): Promise<{
   ok: boolean;
@@ -99,6 +124,23 @@ export const checkChatStatus = async (): Promise<{
   }
 };
 
+// Check Telegram webhook status
+export const checkTelegramWebhookStatus = async (): Promise<any> => {
+  try {
+    const response = await supabase.functions.invoke("telegram-chat/webhook-status", {});
+    
+    if (response.error) {
+      console.error("Error checking webhook status:", response.error);
+      return { ok: false };
+    }
+    
+    return response.data || {};
+  } catch (error) {
+    console.error("Error in checkTelegramWebhookStatus:", error);
+    return { ok: false };
+  }
+};
+
 // Проверка на наличие новых сообщений
 export const pollForNewMessages = async (
   lastMessageId: number | null,
@@ -119,7 +161,7 @@ export const pollForNewMessages = async (
   }
 };
 
-// Настройка webhook для Telegram (новая функция)
+// Настройка webhook для Telegram
 export const setupTelegramWebhook = async (url: string): Promise<boolean> => {
   try {
     const response = await supabase.functions.invoke("telegram-chat/setup-webhook", {

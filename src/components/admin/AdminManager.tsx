@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,11 @@ const AdminManager = () => {
     
     try {
       // First check if the user exists
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(searchEmail);
+      const { data: users, error: userError } = await supabase.auth.admin.listUsers({
+        filter: `email.eq.${searchEmail}`
+      });
       
-      if (userError || !userData) {
+      if (userError || !users || users.users.length === 0) {
         toast.error("User not found", {
           description: "No user found with this email address."
         });
@@ -65,11 +68,13 @@ const AdminManager = () => {
         return;
       }
       
+      const userData = users.users[0];
+      
       // Then check if they have admin role
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userData.user.id)
+        .eq('user_id', userData.id)
         .eq('role', 'admin');
       
       if (roleError) {
