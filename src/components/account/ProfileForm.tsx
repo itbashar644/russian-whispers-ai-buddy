@@ -1,3 +1,4 @@
+
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -6,8 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash, MessageCircle, Phone } from "lucide-react";
-import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 import { toast } from "sonner";
 import {
   Form,
@@ -17,14 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useAuth } from "@/context/AuthContext";
+import ContactMethodField from "./ContactMethodField";
+import TelegramNicknameField from "./TelegramNicknameField";
+import AddressList from "./AddressList";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
@@ -39,7 +35,6 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 const ProfileForm: React.FC = () => {
   const { profile, updateProfile } = useAuth();
   const [favoriteAddresses, setFavoriteAddresses] = React.useState<string[]>([]);
-  const [newAddress, setNewAddress] = React.useState("");
 
   // Initialize form with user profile data
   const form = useForm<ProfileFormValues>({
@@ -71,12 +66,8 @@ const ProfileForm: React.FC = () => {
     toast.success("Профиль успешно обновлен");
   };
 
-  const handleAddAddress = () => {
-    if (newAddress.trim() && !favoriteAddresses.includes(newAddress)) {
-      setFavoriteAddresses([...favoriteAddresses, newAddress]);
-      setNewAddress("");
-      toast.success("Адрес добавлен в избранное");
-    }
+  const handleAddAddress = (address: string) => {
+    setFavoriteAddresses([...favoriteAddresses, address]);
   };
 
   const handleRemoveAddress = (address: string) => {
@@ -138,114 +129,19 @@ const ProfileForm: React.FC = () => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="preferredContactMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Предпочтительный способ связи</FormLabel>
-                  <FormControl>
-                    <Select 
-                      value={field.value} 
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите способ связи" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="phone">
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 mr-2" />
-                            По телефону
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="telegram">
-                          <div className="flex items-center">
-                            <MessageCircle className="h-4 w-4 mr-2 text-[#1EAEDB]" />
-                            Telegram
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="whatsapp">
-                          <div className="flex items-center">
-                            <WhatsAppIcon size={16} className="mr-2" />
-                            WhatsApp
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <ContactMethodField form={form} />
             
             {/* Отображаем поле для ника Telegram только если выбран соответствующий способ связи */}
             {watchContactMethod === "telegram" && (
-              <FormField
-                control={form.control}
-                name="telegramNickname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ник в Telegram</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <span className="bg-[#1EAEDB] p-2 rounded-l-md">
-                          <MessageCircle className="h-5 w-5 text-white" />
-                        </span>
-                        <Input 
-                          placeholder="Введите ваш ник в Telegram" 
-                          className="rounded-l-none"
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <TelegramNicknameField form={form} />
             )}
             
             {/* Избранные адреса доставки */}
-            <div className="space-y-4">
-              <h3 className="text-md font-semibold">Избранные адреса доставки</h3>
-              
-              <div className="space-y-2">
-                {favoriteAddresses.length > 0 ? (
-                  favoriteAddresses.map((address, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 border rounded-md">
-                      <div className="flex-1">
-                        <p className="text-sm">{address}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => handleRemoveAddress(address)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">У вас пока нет избранных адресов</p>
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Новый адрес доставки" 
-                  value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
-                />
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={handleAddAddress}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Добавить
-                </Button>
-              </div>
-            </div>
+            <AddressList 
+              addresses={favoriteAddresses}
+              onAddAddress={handleAddAddress}
+              onRemoveAddress={handleRemoveAddress}
+            />
             
             <Button type="submit">
               Сохранить изменения

@@ -4,15 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
-import { MessageCircle, Phone } from "lucide-react";
-import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ContactMethodSelect from "./ContactMethodSelect";
+import TelegramNicknameInput from "./TelegramNicknameInput";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -133,55 +126,19 @@ const OrderSummary = ({
 
         <div>
           <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
-          <Select 
+          <ContactMethodSelect 
             value={orderForm.contactMethod} 
             onValueChange={handleContactMethodChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите способ связи" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="phone">
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2" />
-                  По телефону
-                </div>
-              </SelectItem>
-              <SelectItem value="telegram">
-                <div className="flex items-center">
-                  <MessageCircle className="h-4 w-4 mr-2 text-[#1EAEDB]" />
-                  Telegram
-                </div>
-              </SelectItem>
-              <SelectItem value="whatsapp">
-                <div className="flex items-center">
-                  <WhatsAppIcon size={16} className="mr-2" />
-                  WhatsApp
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          />
         </div>
         
         {/* Показываем поле для ника в Telegram если выбран этот способ связи */}
         {orderForm.contactMethod === "telegram" && (
-          <div>
-            <Label htmlFor="telegramNickname">Ник в Telegram</Label>
-            <div className="flex items-center">
-              <span className="bg-[#1EAEDB] p-2 rounded-l-md">
-                <MessageCircle className="h-5 w-5 text-white" />
-              </span>
-              <Input
-                id="telegramNickname"
-                name="telegramNickname"
-                placeholder="Ваш ник в Telegram"
-                value={orderForm.telegramNickname}
-                onChange={handleOrderFormChange}
-                className="rounded-l-none"
-                required
-              />
-            </div>
-          </div>
+          <TelegramNicknameInput
+            value={orderForm.telegramNickname}
+            onChange={handleOrderFormChange}
+            required
+          />
         )}
         
         <Button 
