@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -86,7 +85,17 @@ const OrderSummary = ({
     if (savedInfoString) {
       try {
         const savedInfo: SavedCheckoutInfo = JSON.parse(savedInfoString);
-        setOrderForm(savedInfo);
+        
+        // Fix: Make sure telegramNickname is provided even if it's not in the saved info
+        setOrderForm({
+          name: savedInfo.name,
+          email: savedInfo.email,
+          phone: savedInfo.phone,
+          address: savedInfo.address,
+          contactMethod: savedInfo.contactMethod,
+          telegramNickname: savedInfo.telegramNickname || "",
+        });
+        
         setUseSavedInfo(true);
         toast({
           title: "Информация загружена",
