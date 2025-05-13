@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Product } from "@/types/product";
 import { downloadProductsExcel, excelToProducts, downloadImportTemplate } from "@/utils/excelUtils";
-import { addOrUpdateProduct } from "@/data/products";
 
 interface ProductImportExportProps {
   products: Product[];
@@ -63,33 +62,36 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           if (event.target?.result) {
             console.log("File read successful, processing data...");
             const data = event.target.result;
-            const importedProducts = await excelToProducts(data as ArrayBuffer);
             
-            console.log("Import process completed, products count:", importedProducts.length);
-            
-            if (importedProducts && importedProducts.length > 0) {
+            try {
+              const importedProducts = await excelToProducts(data as ArrayBuffer);
+              
+              console.log("Import process completed, products count:", importedProducts.length);
+              
+              if (importedProducts && importedProducts.length > 0) {
+                toast({
+                  title: "Импорт выполнен",
+                  description: `Успешно импортировано ${importedProducts.length} товаров`,
+                });
+                onImportComplete();
+              } else {
+                setImportError("Не удалось импортировать товары. Проверьте лог для деталей.");
+                toast({
+                  title: "Импорт не удался",
+                  description: "Не удалось импортировать товары. Проверьте лог для деталей.",
+                  variant: "destructive",
+                });
+              }
+            } catch (error: any) {
+              console.error("Ошибка в процессе импорта:", error);
+              setImportError(error.message || "Произошла ошибка при импорте товаров");
               toast({
-                title: "Импорт выполнен",
-                description: `Успешно импортировано ${importedProducts.length} товаров`,
-              });
-              onImportComplete();
-            } else {
-              setImportError("Не удалось импортировать товары из файла. Проверьте формат и наличие обязательных полей: title, price, category, description, countryOfOrigin.");
-              toast({
-                title: "Импорт отменен",
-                description: "Не удалось импортировать товары из файла. Проверьте формат и обязательные поля.",
+                title: "Ошибка импорта",
+                description: error.message || "Произошла ошибка при импорте товаров",
                 variant: "destructive",
               });
             }
           }
-        } catch (error: any) {
-          console.error("Ошибка импорта:", error);
-          setImportError(error.message || "Произошла ошибка при обработке файла");
-          toast({
-            title: "Ошибка импорта",
-            description: error.message || "Произошла ошибка при обработке файла",
-            variant: "destructive",
-          });
         } finally {
           setImporting(false);
           // Clear the input value to allow re-importing the same file
@@ -169,7 +171,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         <div className="flex-1 p-4 border rounded-md bg-muted/30">
           <h3 className="text-sm font-semibold mb-3">Импорт товаров</h3>
           <p className="text-xs text-muted-foreground mb-4">
-            Загрузка товаров из Excel-файла в формате экспорта
+            Загрузка товаров из Excel-файла в формате шаблона
           </p>
           <div className="flex items-center gap-2">
             <Input

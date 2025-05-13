@@ -1,112 +1,109 @@
 
 import * as XLSX from 'xlsx';
-import { getAllCategories } from '@/data/products';
 import { workbookToBlob, downloadExcelFile } from './excelCore';
 
-// Create template Excel file for importing products
-export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
-  // Получаем все доступные категории
-  const categories = await getAllCategories();
-  const categoriesString = categories.join(', ');
+// Create and download a template for product import
+export const downloadImportTemplate = async (): Promise<void> => {
+  // Create a template with sample data and headers
+  const template = [
+    {
+      title: 'Пример товара', // ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+      description: 'Подробное описание товара', // ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+      price: 1000, // ОБЯЗАТЕЛЬНОЕ ПОЛЕ (число)
+      discountPrice: 800, // необязательное поле (число)
+      category: 'Сумки и рюкзаки', // ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+      imageUrl: '/placeholder.svg', // необязательное поле (URL изображения)
+      rating: 4.8, // необязательное поле (число от 0 до 5)
+      inStock: 'Да', // необязательное поле ('Да' или 'Нет')
+      colors: 'Красный, Синий, Зеленый', // необязательное поле (через запятую)
+      sizes: 'S, M, L, XL', // необязательное поле (через запятую)
+      countryOfOrigin: 'Россия', // ОБЯЗАТЕЛЬНОЕ ПОЛЕ
+      isNew: 'Да', // необязательное поле ('Да' или 'Нет')
+      isBestseller: 'Да', // необязательное поле ('Да' или 'Нет')
+      articleNumber: 'AP-12345', // необязательное поле
+      barcode: '4607001234567', // необязательное поле
+      wildberriesUrl: 'https://www.wildberries.ru/catalog/12345', // необязательное поле
+      ozonUrl: 'https://www.ozon.ru/context/detail/id/12345/', // необязательное поле
+      avitoUrl: 'https://www.avito.ru/item/12345', // необязательное поле
+      stockQuantity: 10, // необязательное поле (число)
+      material: 'Натуральная кожа' // необязательное поле
+    },
+    {
+      title: 'Второй пример товара', 
+      description: 'Еще одно описание', 
+      price: 2500,
+      category: 'Аксессуары',
+      countryOfOrigin: 'Италия'
+    }
+  ];
 
-  const templateData = [{
-    id: '', // Поле не обязательно, будет сгенерировано автоматически
-    title: 'Пример названия товара*',
-    description: 'Пример описания товара*',
-    price: 1000,
-    discountPrice: 900,
-    category: categories.length > 0 ? categories[0] : 'Другое',
-    imageUrl: '/placeholder.svg',
-    rating: 5,
-    inStock: 'Да',
-    colors: 'Черный, Белый',
-    sizes: 'S, M, L',
-    isNew: 'Да',
-    isBestseller: 'Нет',
-    countryOfOrigin: 'Россия*',
-    articleNumber: 'ART001',
-    barcode: '4607777777777',
-    wildberriesUrl: '',
-    ozonUrl: '',
-    avitoUrl: '',
-    stockQuantity: 10,
-    material: 'Хлопок',
-  }];
-
-  // Добавляем примечание по категориям и обязательным полям
-  const instructionsData = [{
-    id: '',
-    title: '*** ОБЯЗАТЕЛЬНЫЕ ПОЛЯ (отмечены звездочкой *) ***',
-    description: 'Заполните все поля, отмеченные звездочкой (*): title, description, price, category, countryOfOrigin',
-    price: '',
-    discountPrice: '',
-    category: `Доступные категории: ${categoriesString}`,
-    imageUrl: '',
-    rating: '',
-    inStock: 'Да или Нет',
-    colors: 'Перечислите через запятую',
-    sizes: 'Перечислите через запятую',
-    isNew: 'Да или Нет',
-    isBestseller: 'Да или Нет',
-    countryOfOrigin: '',
-    articleNumber: '',
-    barcode: '',
-    wildberriesUrl: '',
-    ozonUrl: '',
-    avitoUrl: '',
-    stockQuantity: '',
-    material: '',
-  }];
+  // Create a new workbook and add the template data
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(template);
   
-  // Create worksheet from template data
-  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  // Add comments to cells with instructions
+  const requiredHeaders = ['title', 'description', 'price', 'category', 'countryOfOrigin'];
+  const headerRow = XLSX.utils.decode_range(worksheet['!ref'] as string).s.r;
   
-  // Add instructions
-  XLSX.utils.sheet_add_json(worksheet, instructionsData, { skipHeader: true, origin: "A3" });
-  
-  // Add notes about fields
+  // Set column widths
   worksheet['!cols'] = [
-    { wch: 10 }, // id
-    { wch: 30 }, // title
-    { wch: 40 }, // description
+    { wch: 25 }, // title
+    { wch: 35 }, // description
     { wch: 10 }, // price
     { wch: 15 }, // discountPrice
     { wch: 20 }, // category
     { wch: 30 }, // imageUrl
-    { wch: 8 }, // rating
-    { wch: 8 }, // inStock
+    { wch: 8 },  // rating
+    { wch: 8 },  // inStock
     { wch: 20 }, // colors
     { wch: 15 }, // sizes
-    { wch: 8 }, // isNew
-    { wch: 12 }, // isBestseller
     { wch: 15 }, // countryOfOrigin
+    { wch: 8 },  // isNew
+    { wch: 8 },  // isBestseller
     { wch: 15 }, // articleNumber
     { wch: 15 }, // barcode
     { wch: 30 }, // wildberriesUrl
     { wch: 30 }, // ozonUrl
     { wch: 30 }, // avitoUrl
     { wch: 10 }, // stockQuantity
-    { wch: 15 }, // material
+    { wch: 20 }  // material
   ];
-  
-  // Add a comment to the title cell for clarity
-  if (!worksheet['!comments']) worksheet['!comments'] = {};
-  worksheet['!comments']['B1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: title (название товара)' };
-  worksheet['!comments']['C1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: description (описание товара)' };
-  worksheet['!comments']['D1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: price (цена товара)' };
-  worksheet['!comments']['F1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: category (категория товара)' };
-  worksheet['!comments']['O1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: countryOfOrigin (страна происхождения)' };
-  
-  // Create workbook and add the worksheet
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Шаблон импорта');
-  
-  return workbook;
-};
 
-// Download template Excel file
-export const downloadImportTemplate = async () => {
-  const workbook = await getImportTemplate();
+  // Add notes to the worksheet
+  const notes = {
+    A1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Название товара",
+    B1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Описание товара",
+    C1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Цена товара (число)",
+    D1: "Цена со скидкой (число, необязательно)",
+    E1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Категория товара",
+    F1: "URL изображения (необязательно)",
+    G1: "Рейтинг от 0 до 5 (необязательно)",
+    H1: "В наличии, укажите 'Да' или 'Нет' (необязательно)",
+    I1: "Цвета через запятую (необязательно)",
+    J1: "Размеры через запятую (необязательно)",
+    K1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Страна происхождения",
+    L1: "Новинка, укажите 'Да' или 'Нет' (необязательно)",
+    M1: "Бестселлер, укажите 'Да' или 'Нет' (необязательно)",
+    N1: "Артикул (необязательно)",
+    O1: "Штрихкод (необязательно)",
+    P1: "Ссылка на Wildberries (необязательно)",
+    Q1: "Ссылка на Ozon (необязательно)",
+    R1: "Ссылка на Avito (необязательно)",
+    S1: "Количество на складе (необязательно)",
+    T1: "Материал (необязательно)"
+  };
+  
+  if (!worksheet['!comments']) {
+    worksheet['!comments'] = {};
+  }
+  
+  for (const [cell, comment] of Object.entries(notes)) {
+    worksheet['!comments'][cell] = { t: comment };
+  }
+  
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Шаблон товаров');
+  
+  // Create a blob and download the file
   const blob = workbookToBlob(workbook);
-  downloadExcelFile(blob, `шаблон_импорта_товаров.xlsx`);
+  downloadExcelFile(blob, 'шаблон_импорта_товаров.xlsx');
 };

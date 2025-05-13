@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 // Convert Excel data to products array and save to Supabase
 export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => {
   try {
+    console.log("Starting Excel import process...");
+    
     // Read the Excel file
     const workbook = XLSX.read(data, { type: 'array' });
     
@@ -18,11 +20,11 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
     // Convert to JSON
     const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
     
-    console.log("Imported Excel data:", jsonData);
+    console.log("Parsed Excel data:", JSON.stringify(jsonData).substring(0, 500) + "...");
     
     if (!jsonData || jsonData.length === 0) {
       console.error("No data found in Excel file");
-      return [];
+      throw new Error("Файл не содержит данных. Проверьте формат файла и наличие информации.");
     }
     
     // Map to Product objects
@@ -31,16 +33,20 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
     // Получаем существующие категории для проверки
     const existingCategories = await getAllCategories();
     
-    // Отладочная информация для понимания проблемы
     console.log("Existing categories:", existingCategories);
+    console.log("Number of rows to process:", jsonData.length);
     
-    for (const row of jsonData) {
-      // Отладочная информация для каждой строки
-      console.log("Processing row:", row);
+    for (let i = 0; i < jsonData.length; i++) {
+      const row = jsonData[i];
       
-      // Skip rows that don't have required fields
-      if (!row.title || !row.category || row.price === undefined) {
-        console.warn("Skipping row due to missing required fields:", row);
+      // Отладочная информация для каждой строки
+      console.log(`Processing row ${i+1}:`, row);
+      
+      // Validate required fields
+      if (!row.title || row.price === undefined || !row.category || !row.description || !row.countryOfOrigin) {
+        console.warn(`Skipping row ${i+1} due to missing required fields:`, 
+          `title: ${row.title}, price: ${row.price}, category: ${row.category}, ` +
+          `description: ${row.description}, countryOfOrigin: ${row.countryOfOrigin}`);
         continue;
       }
       
@@ -53,12 +59,12 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
           price: Number(row.price) || 0,
           category: String(row.category || '') || 'Другое',
           imageUrl: String(row.imageUrl || '') || '/placeholder.svg',
-          rating: parseFloat(row.rating) || 5,
+          rating: parseFloat(String(row.rating)) || 5,
           inStock: row.inStock === 'Да' || row.inStock === true || row.inStock === 'true',
           countryOfOrigin: String(row.countryOfOrigin || '') || 'Россия'
         };
         
-        console.log("Created product base:", product);
+        console.log(`Created base product ${i+1}:`, product.title, product.price, product.category);
         
         // Add optional fields if they exist
         if (row.discountPrice !== undefined && row.discountPrice !== '') {
@@ -86,35 +92,42 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
         // Save to database immediately
         try {
           // Сначала проверяем, нужно ли добавить категорию
-          // Добавляем категорию в общий список категорий, если она новая и не пустая
-          if (product.category && typeof product.category === 'string' && 
+          if (product.category && 
+              typeof product.category === 'string' && 
               !existingCategories.includes(product.category)) {
             console.log("Adding new category:", product.category);
             await addCategory(product.category);
           }
           
-          console.log("Saving product to Supabase:", product);
+          console.log("Saving product to Supabase:", product.title);
           const success = await addOrUpdateProductInSupabase(product);
           
           if (success) {
-            console.log(`Product saved to Supabase: ${product.title}`);
+            console.log(`Product saved successfully: ${product.title}`);
             // Add to local array for return value
             products.push(product);
           } else {
-            console.error(`Failed to save product to Supabase: ${product.title}`);
+            console.error(`Failed to save product: ${product.title}`);
+            throw new Error(`Не удалось сохранить товар: ${product.title}`);
           }
         } catch (err) {
           console.error(`Error saving product to Supabase: ${product.title}`, err);
+          throw new Error(`Ошибка при сохранении товара ${product.title}: ${err}`);
         }
       } catch (err) {
-        console.error("Error processing row:", row, err);
+        console.error(`Error processing row ${i+1}:`, row, err);
       }
     }
 
     console.log(`Successfully processed ${products.length} products`);
+    
+    if (products.length === 0) {
+      throw new Error("Ни один товар не был успешно импортирован. Проверьте наличие обязательных полей: title, price, category, description, countryOfOrigin.");
+    }
+    
     return products;
   } catch (err) {
     console.error("Error processing Excel data:", err);
-    return [];
+    throw err;
   }
 };
