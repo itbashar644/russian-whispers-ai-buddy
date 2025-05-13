@@ -21,6 +21,7 @@ import AdminReports from "./AdminReports";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import AdminCategories from "./AdminCategories";
+import AdminSettings from "./AdminSettings";
 
 const AdminPanel = () => {
   const { logout } = useAuth();
@@ -62,6 +63,11 @@ const AdminPanel = () => {
       title: "Отчеты",
       href: "/admin/reports",
       icon: <BarChart3 className="h-4 w-4" />,
+    },
+    {
+      title: "Настройки",
+      href: "/admin/settings",
+      icon: <Settings className="h-4 w-4" />,
     },
   ];
 
@@ -139,6 +145,7 @@ const AdminPanel = () => {
             <Route path="/orders" element={<AdminOrders />} />
             <Route path="/customers" element={<AdminCustomers />} />
             <Route path="/reports" element={<AdminReports />} />
+            <Route path="/settings" element={<AdminSettings />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </div>
