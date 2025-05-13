@@ -1,8 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Category } from "../categoryData";
 import { Product } from "@/types/product";
 import { transformProductToSupabase } from "./productTransforms";
+
+// Using the same interface structure as in migrationApi.ts
+interface Category {
+  name: string;
+  imageUrl: string;
+  id?: string;
+}
 
 // Функция для импорта всех категорий в Supabase
 export const importCategoriesIntoSupabase = async (categories: Category[]): Promise<boolean> => {
@@ -23,7 +29,7 @@ export const importCategoriesIntoSupabase = async (categories: Category[]): Prom
       .insert(
         categories.map(cat => ({
           name: cat.name,
-          image_url: cat.imageUrl
+          image_url: cat.imageUrl // Using imageUrl from our interface to map to image_url in DB
         }))
       );
 

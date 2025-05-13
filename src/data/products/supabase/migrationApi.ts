@@ -7,8 +7,8 @@ import { importCategoriesIntoSupabase, importProductsIntoSupabase } from "./impo
 // Define the Category interface locally since it's not exported from types/product.ts
 interface Category {
   name: string;
+  imageUrl: string; // Changed from image_url to imageUrl to match categoryData.ts
   id?: string;
-  image_url?: string;
 }
 
 // Функция для миграции данных из localStorage при первом запуске
