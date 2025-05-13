@@ -14,12 +14,9 @@ import {
   fetchProductsFromSupabase
 } from "@/data/products/supabaseApi";
 import { Product } from "@/types/product";
-import ProductImportExport from "@/components/admin/ProductImportExport";
-import ProductFilters from "@/components/admin/ProductFilters";
-import ProductList from "@/components/admin/ProductList";
 import ProductForm from "@/components/admin/ProductForm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProductTabContent from "@/components/admin/products/ProductTabContent";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>([]);
@@ -263,71 +260,42 @@ const AdminProducts = () => {
           <TabsTrigger value="active">Активные товары</TabsTrigger>
           <TabsTrigger value="archived">Архив</TabsTrigger>
         </TabsList>
+        
         <TabsContent value="active">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Импорт/Экспорт</span>
-              </CardTitle>
-              <CardDescription>
-                Массовое управление товарами через Excel-файлы
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProductImportExport 
-                products={productsList} 
-                onImportComplete={refreshProductsList}
-              />
-            </CardContent>
-          </Card>
-
-          <ProductFilters
+          <ProductTabContent
+            products={filteredProducts}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             categoryFilter={categoryFilter}
             onCategoryChange={setCategoryFilter}
             categories={categories}
+            onEdit={handleEditProduct}
+            onDelete={handleArchiveProduct}
+            onImportComplete={refreshProductsList}
+            isLoading={isLoading}
+            mode="active"
+            deleteButtonText="Архивировать"
+            deleteButtonColor="orange"
           />
-          
-          {isLoading ? (
-            <div className="flex justify-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <ProductList
-              products={filteredProducts}
-              onEdit={handleEditProduct}
-              onDelete={handleArchiveProduct}
-              deleteButtonText="Архивировать"
-              deleteButtonColor="orange"
-              mode="active"
-            />
-          )}
         </TabsContent>
+        
         <TabsContent value="archived">
-          <ProductFilters
+          <ProductTabContent
+            products={filteredProducts}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             categoryFilter={categoryFilter}
             onCategoryChange={setCategoryFilter}
             categories={categories}
+            onEdit={handleEditProduct}
+            onDelete={handleRestoreProduct}
+            onPermanentDelete={handleDeleteProduct}
+            onImportComplete={refreshProductsList}
+            isLoading={isLoading}
+            mode="archived"
+            deleteButtonText="Восстановить"
+            deleteButtonColor="green"
           />
-          
-          {isLoading ? (
-            <div className="flex justify-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <ProductList
-              products={filteredProducts}
-              onEdit={handleEditProduct}
-              onDelete={handleRestoreProduct}
-              deleteButtonText="Восстановить"
-              deleteButtonColor="green"
-              onPermanentDelete={handleDeleteProduct}
-              mode="archived"
-            />
-          )}
         </TabsContent>
       </Tabs>
 
