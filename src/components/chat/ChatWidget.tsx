@@ -23,6 +23,22 @@ const ChatWidget = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, profile } = useAuth();
 
+  // Helper function to fetch messages
+  const fetchMessages = async () => {
+    try {
+      const msgs = await getMessages();
+      if (msgs && msgs.length > 0) {
+        setMessages(msgs);
+        
+        // Подсчитываем непрочитанные сообщения от админа
+        const newUnreadCount = msgs.filter(m => m.is_from_admin && !m.is_read).length;
+        setUnreadCount(newUnreadCount);
+      }
+    } catch (error) {
+      console.error("Ошибка при получении сообщений:", error);
+    }
+  };
+
   // Проверка статуса Edge Function и настройка webhook при первой загрузке
   useEffect(() => {
     const initChat = async () => {
@@ -67,21 +83,6 @@ const ChatWidget = () => {
 
   // Периодический опрос новых сообщений
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const msgs = await getMessages();
-        if (msgs && msgs.length > 0) {
-          setMessages(msgs);
-          
-          // Подсчитываем непрочитанные сообщения от админа
-          const newUnreadCount = msgs.filter(m => m.is_from_admin && !m.is_read).length;
-          setUnreadCount(newUnreadCount);
-        }
-      } catch (error) {
-        console.error("Ошибка при получении сообщений:", error);
-      }
-    };
-
     fetchMessages();
 
     // Устанавливаем интервал для проверки новых сообщений
@@ -144,8 +145,7 @@ const ChatWidget = () => {
       if (success) {
         setMessage("");
         // Обновляем сообщения после отправки
-        const newMessages = await getMessages();
-        setMessages(newMessages);
+        await fetchMessages();
       } else {
         toast.error("Ошибка отправки", {
           description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
