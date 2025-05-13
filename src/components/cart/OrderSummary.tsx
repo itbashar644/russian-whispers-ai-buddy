@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ContactMethodSelect from "./ContactMethodSelect";
 import TelegramNicknameInput from "./TelegramNicknameInput";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 interface OrderSummaryProps {
   subtotal: number;

@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -11,6 +12,8 @@ import {
 export function Toaster() {
   const { toasts } = useToast()
 
+  // The toasts array will always be empty since we're using Sonner
+  // This component is mainly here for compatibility with existing code
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {

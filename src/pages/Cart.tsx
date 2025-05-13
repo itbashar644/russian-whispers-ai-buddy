@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,16 +5,16 @@ import { useCart } from "@/context/CartContext";
 import { deliveryMethods } from "@/data/deliveryMethods";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { placeOrder } from "@/services/orderService";
 import CartTable from "@/components/cart/CartTable";
 import DeliveryMethodSelector from "@/components/cart/DeliveryMethodSelector";
 import OrderSummary from "@/components/cart/OrderSummary";
-import { useAuth } from "@/context/AuthContext"; // Добавляем импорт для получения данных о пользователе
+import { useAuth } from "@/context/AuthContext";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Получаем доступ к данным о пользователе
+  const { user } = useAuth();
   
   const { 
     items, 
@@ -80,7 +79,7 @@ const Cart = () => {
     
     // Create order data object
     const orderData = {
-      user_id: user?.id, // Добавляем ID пользователя, если он авторизован
+      user_id: user?.id,
       items,
       total,
       delivery_method: deliveryMethod.id,

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod, Product, ColorVariant } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { checkProductStock, decreaseProductStock } from "@/data/products";
 
 interface CartContextType {
@@ -101,7 +101,7 @@ export function CartProvider({ children }: CartProviderProps) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
-          variant: "destructive",
+          variant: "destructive"
         });
         return prevItems; // Don't update cart if not enough stock
       }
@@ -122,7 +122,7 @@ export function CartProvider({ children }: CartProviderProps) {
     
     toast({
       title: "Товар добавлен в корзину",
-      description: `${item.product.title} - ${item.color || ""}`,
+      description: `${item.product.title} - ${item.color || ""}`
     });
   };
 
@@ -139,7 +139,7 @@ export function CartProvider({ children }: CartProviderProps) {
       }
     });
     toast({
-      title: "Товар удален из корзины",
+      title: "Товар удален из корзины"
     });
   };
 
@@ -163,7 +163,7 @@ export function CartProvider({ children }: CartProviderProps) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
-          variant: "destructive",
+          variant: "destructive"
         });
         return prevItems; // Don't update if not enough stock
       }
@@ -177,7 +177,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const clearCart = () => {
     setItems([]);
     toast({
-      title: "Корзина очищена",
+      title: "Корзина очищена"
     });
   };
 
