@@ -81,14 +81,22 @@ async function sendTelegramMessage(chatId: string, text: string) {
 // Проверка новых сообщений из Telegram
 async function processTelegramUpdate(update: any) {
   try {
+    console.log("Обработка обновления от Telegram:", JSON.stringify(update));
+    
     // Обрабатываем только текстовые сообщения
-    if (!update.message || !update.message.text) return;
+    if (!update.message || !update.message.text) {
+      console.log("Обновление не содержит текстового сообщения, игнорируем");
+      return;
+    }
 
     const { message } = update;
     const chatId = message.chat.id.toString();
     
+    console.log(`Получено сообщение от chat_id=${chatId}, текст: ${message.text}`);
+    
     // Проверяем, является ли отправитель админом
     if (chatId !== TELEGRAM_ADMIN_CHAT_ID) {
+      console.log(`Сообщение от неадминистратора (${chatId}), отправляем информационное сообщение`);
       await sendTelegramMessage(chatId, "Извините, этот бот работает только для администраторов магазина.");
       return;
     }
@@ -97,12 +105,15 @@ async function processTelegramUpdate(update: any) {
     if (message.text.startsWith("REPLY:")) {
       const parts = message.text.split(":", 3);
       if (parts.length < 3) {
+        console.log("Неверный формат ответа, отправляем инструкцию");
         await sendTelegramMessage(chatId, "Неверный формат ответа. Используйте: REPLY:chat_id:сообщение");
         return;
       }
 
       const customerChatId = parts[1];
       const replyText = parts.slice(2).join(":");
+      
+      console.log(`Ответ клиенту: customerChatId=${customerChatId}, текст: ${replyText}`);
       
       // Сохраняем ответ в базе данных
       const { error: dbError } = await supabase.from("chat_messages").insert({
@@ -118,8 +129,10 @@ async function processTelegramUpdate(update: any) {
         return;
       }
 
+      console.log("Сообщение успешно сохранено в базе данных");
       await sendTelegramMessage(chatId, `✅ Сообщение отправлено клиенту (${customerChatId}).`);
     } else if (message.text === "/chats") {
+      console.log("Запрошен список активных чатов");
       // Получаем список активных чатов
       const { data: chats, error: chatsError } = await supabase
         .from("chat_sessions")
@@ -128,15 +141,18 @@ async function processTelegramUpdate(update: any) {
         .limit(10);
 
       if (chatsError) {
+        console.error("Error fetching chats:", chatsError);
         await sendTelegramMessage(chatId, `Ошибка при получении списка чатов: ${chatsError.message}`);
         return;
       }
 
       if (!chats || chats.length === 0) {
+        console.log("Активных чатов не найдено");
         await sendTelegramMessage(chatId, "Нет активных чатов.");
         return;
       }
 
+      console.log(`Найдено ${chats.length} активных чатов`);
       let chatsList = "📝 <b>Последние чаты:</b>\n\n";
       chats.forEach((chat, index) => {
         const date = new Date(chat.created_at).toLocaleString("ru");
@@ -146,6 +162,7 @@ async function processTelegramUpdate(update: any) {
 
       await sendTelegramMessage(chatId, chatsList);
     } else {
+      console.log("Получена неизвестная команда, отправляем справку");
       await sendTelegramMessage(
         chatId,
         "Доступные команды:\n" +
@@ -155,6 +172,35 @@ async function processTelegramUpdate(update: any) {
     }
   } catch (error) {
     console.error("Error processing Telegram update:", error);
+  }
+}
+
+// Настройка webhook для Telegram
+async function setupWebhook(url: string) {
+  try {
+    console.log(`Настройка webhook для Telegram на URL: ${url}`);
+    
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.error("TELEGRAM_BOT_TOKEN не установлен");
+      return { ok: false, error: "TELEGRAM_BOT_TOKEN не установлен" };
+    }
+    
+    const apiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook`;
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+    
+    const result = await response.json();
+    console.log(`Результат настройки webhook: ${JSON.stringify(result)}`);
+    
+    return result;
+  } catch (error) {
+    console.error("Error setting webhook:", error);
+    return { ok: false, error: error.toString() };
   }
 }
 
@@ -184,6 +230,40 @@ serve(async (req) => {
         console.error("Error processing webhook:", error);
         return new Response(
           JSON.stringify({ error: "Ошибка обработки webhook", details: error.message }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500,
+          }
+        );
+      }
+    }
+
+    // Обработчик для настройки webhook
+    if (path === "setup-webhook") {
+      try {
+        const { url } = await req.json();
+        if (!url) {
+          return new Response(
+            JSON.stringify({ error: "URL обязателен" }),
+            {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 400,
+            }
+          );
+        }
+
+        const result = await setupWebhook(url);
+        return new Response(
+          JSON.stringify(result),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: result.ok ? 200 : 500,
+          }
+        );
+      } catch (error) {
+        console.error("Error in setup-webhook handler:", error);
+        return new Response(
+          JSON.stringify({ error: "Ошибка настройки webhook", details: error.message }),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 500,

@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessage } from "@/types/chat";
+import { toast } from "@/components/ui/use-toast";
 
 // Получение или создание ID чата
 export const getChatId = (): string => {
@@ -115,5 +116,24 @@ export const pollForNewMessages = async (
     }
   } catch (error) {
     console.error("Error polling for messages:", error);
+  }
+};
+
+// Настройка webhook для Telegram (новая функция)
+export const setupTelegramWebhook = async (url: string): Promise<boolean> => {
+  try {
+    const response = await supabase.functions.invoke("telegram-chat/setup-webhook", {
+      body: { url },
+    });
+
+    if (response.error || (response.data && response.data.error)) {
+      console.error("Error setting up webhook:", response.error || response.data.error);
+      return false;
+    }
+
+    return !!response.data?.success;
+  } catch (error) {
+    console.error("Error in setupTelegramWebhook:", error);
+    return false;
   }
 };

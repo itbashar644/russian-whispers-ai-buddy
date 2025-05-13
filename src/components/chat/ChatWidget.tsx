@@ -9,7 +9,7 @@ import ChatBubble from "./ChatBubble";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/types/chat";
 import { useAuth } from "@/context/AuthContext";
-import { getMessages, sendMessage, pollForNewMessages, checkChatStatus } from "@/services/chatService";
+import { getMessages, sendMessage, pollForNewMessages, checkChatStatus, setupTelegramWebhook } from "@/services/chatService";
 import { toast } from "sonner";
 
 const ChatWidget = () => {
@@ -23,30 +23,63 @@ const ChatWidget = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, profile } = useAuth();
 
-  // Проверка статуса Edge Function при первой загрузке
+  // Проверка статуса Edge Function и настройка webhook при первой загрузке
   useEffect(() => {
-    const checkStatus = async () => {
+    const initChat = async () => {
+      // Проверка статуса Edge Function
       const status = await checkChatStatus();
       setConfigStatus(status.config);
       setStatusChecked(true);
       
       if (!status.ok) {
         console.error("Chat function status check failed:", status);
+        return;
       }
+
+      // Настройка веб-хука для получения ответов из Telegram
+      try {
+        // Получаем базовый URL текущего сайта
+        const baseUrl = window.location.origin;
+        // Формируем URL для вебхука
+        const webhookUrl = `${baseUrl}/api/telegram-webhook`;
+        
+        console.log(`Настройка webhook для Telegram: ${webhookUrl}`);
+        const webhookSetup = await setupTelegramWebhook(
+          // Используем URL функции Supabase вместо относительного пути
+          `https://lpwvhyawvxibtuxfhitx.supabase.co/functions/v1/telegram-chat/webhook`
+        );
+        
+        if (webhookSetup) {
+          console.log("Webhook для Telegram успешно настроен");
+        } else {
+          console.error("Не удалось настроить webhook для Telegram");
+        }
+      } catch (error) {
+        console.error("Ошибка при настройке webhook:", error);
+      }
+      
+      // Загружаем сообщения
+      await fetchMessages();
     };
     
-    checkStatus();
+    initChat();
   }, []);
 
   // Периодический опрос новых сообщений
   useEffect(() => {
     const fetchMessages = async () => {
-      const msgs = await getMessages();
-      setMessages(msgs);
-      
-      // Подсчитываем непрочитанные сообщения от админа
-      const newUnreadCount = msgs.filter(m => m.is_from_admin && !m.is_read).length;
-      setUnreadCount(newUnreadCount);
+      try {
+        const msgs = await getMessages();
+        if (msgs && msgs.length > 0) {
+          setMessages(msgs);
+          
+          // Подсчитываем непрочитанные сообщения от админа
+          const newUnreadCount = msgs.filter(m => m.is_from_admin && !m.is_read).length;
+          setUnreadCount(newUnreadCount);
+        }
+      } catch (error) {
+        console.error("Ошибка при получении сообщений:", error);
+      }
     };
 
     fetchMessages();
@@ -105,20 +138,27 @@ const ChatWidget = () => {
     const name = profile?.name || "Гость";
     const email = profile?.email;
     
-    const success = await sendMessage(message, name, email);
-    
-    if (success) {
-      setMessage("");
-      // Обновляем сообщения после отправки
-      const newMessages = await getMessages();
-      setMessages(newMessages);
-    } else {
+    try {
+      const success = await sendMessage(message, name, email);
+      
+      if (success) {
+        setMessage("");
+        // Обновляем сообщения после отправки
+        const newMessages = await getMessages();
+        setMessages(newMessages);
+      } else {
+        toast.error("Ошибка отправки", {
+          description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
+        });
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке сообщения:", error);
       toast.error("Ошибка отправки", {
-        description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
+        description: "Произошла ошибка при отправке сообщения"
       });
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
