@@ -135,6 +135,9 @@ export const checkChatStatus = async (): Promise<{
       ok: response.data?.status === "ok",
       config: response.data?.config 
     };
+  } catch (error) {
+    console.error("Error in checkChatStatus:", error);
+    return { ok: false };
   }
 };
 
