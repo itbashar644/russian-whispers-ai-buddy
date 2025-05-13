@@ -14,7 +14,6 @@ export interface Product {
   inStock: boolean;
   colors?: string[];
   sizes?: string[];
-  material?: string;
   countryOfOrigin: string;
   specifications?: Record<string, string>;
   isNew?: boolean;

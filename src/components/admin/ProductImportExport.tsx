@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
@@ -23,12 +23,15 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
     try {
       setExporting(true);
       downloadProductsExcel(products);
-      toast("Экспорт выполнен", {
+      toast({
+        title: "Экспорт выполнен",
         description: "Файл с товарами успешно экспортирован",
       });
     } catch (error: any) {
-      toast("Ошибка экспорта", {
+      toast({
+        title: "Ошибка экспорта",
         description: error.message || "Произошла ошибка при экспорте товаров",
+        variant: "destructive",
       });
     } finally {
       setExporting(false);
@@ -50,36 +53,29 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         try {
           if (event.target?.result) {
             const data = event.target.result;
-            const importedProducts = excelToProducts(data as ArrayBuffer);
+            const importedProducts = await excelToProducts(data as ArrayBuffer);
             
             if (importedProducts.length > 0) {
-              // Add each product to the database
-              const importPromises = importedProducts.map(async (product) => {
-                try {
-                  await addOrUpdateProduct(product);
-                  console.log(`Imported product: ${product.title}`);
-                  return true;
-                } catch (err) {
-                  console.error(`Failed to import product: ${product.title}`, err);
-                  return false;
-                }
-              });
-              
-              await Promise.all(importPromises);
-              
-              toast("Импорт выполнен", {
+              toast({
+                title: "Импорт выполнен",
                 description: `Успешно импортировано ${importedProducts.length} товаров`,
+                variant: "success",
               });
               onImportComplete();
             } else {
-              toast("Импорт отменен", {
+              toast({
+                title: "Импорт отменен",
                 description: "Не удалось импортировать товары из файла",
+                variant: "destructive",
               });
             }
           }
         } catch (error: any) {
-          toast("Ошибка импорта", {
+          console.error("Ошибка импорта:", error);
+          toast({
+            title: "Ошибка импорта",
             description: error.message || "Произошла ошибка при обработке файла",
+            variant: "destructive",
           });
         } finally {
           setImporting(false);
@@ -90,8 +86,10 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
       
       reader.readAsArrayBuffer(file);
     } catch (error: any) {
-      toast("Ошибка импорта", {
+      toast({
+        title: "Ошибка импорта",
         description: error.message || "Произошла ошибка при импорте товаров",
+        variant: "destructive",
       });
       setImporting(false);
       // Clear the input value
@@ -103,12 +101,15 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
     try {
       setDownloadingTemplate(true);
       await downloadImportTemplate();
-      toast("Шаблон скачан", {
+      toast({
+        title: "Шаблон скачан",
         description: "Шаблон для импорта товаров успешно скачан",
       });
     } catch (error: any) {
-      toast("Ошибка скачивания", {
+      toast({
+        title: "Ошибка скачивания",
         description: error.message || "Произошла ошибка при скачивании шаблона",
+        variant: "destructive",
       });
     } finally {
       setDownloadingTemplate(false);
@@ -157,15 +158,11 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
             onChange={handleImport}
             disabled={importing}
           />
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById("import-file")?.click()}
-            disabled={importing}
-            className="whitespace-nowrap"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            {importing ? "Импортируем..." : "Выбрать файл"}
-          </Button>
+        </div>
+        <div className="mt-2">
+          <p className="text-xs text-muted-foreground">
+            {importing ? "Импортируем..." : ""}
+          </p>
         </div>
       </div>
     </div>

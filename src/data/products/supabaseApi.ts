@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from "./categoryData";
 import { Product, ColorVariant } from "@/types/product";
@@ -20,7 +19,6 @@ const transformProductToSupabase = (product: Product) => {
     in_stock: product.inStock,
     colors: product.colors as unknown as Json,
     sizes: product.sizes as unknown as Json,
-    material: product.material,
     country_of_origin: product.countryOfOrigin,
     specifications: product.specifications as unknown as Json,
     is_new: product.isNew,
@@ -53,7 +51,6 @@ const transformSupabaseToProduct = (data: any): Product => {
     inStock: data.in_stock,
     colors: data.colors as string[] || [],
     sizes: data.sizes as string[] || [],
-    material: data.material,
     countryOfOrigin: data.country_of_origin,
     specifications: data.specifications as Record<string, string> || {},
     isNew: data.is_new,
@@ -102,7 +99,7 @@ export const importCategoriesIntoSupabase = async (categories: Category[]): Prom
     console.log("Категории успешно импортированы в базу данных");
     return true;
   } catch (err) {
-    console.error("Ошибка при импорте категорий:", err);
+    console.error("Ошибк�� при импорте категорий:", err);
     return false;
   }
 };
