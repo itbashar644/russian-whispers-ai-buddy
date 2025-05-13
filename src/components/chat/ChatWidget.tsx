@@ -3,13 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, AlertTriangle } from "lucide-react";
 import ChatButton from "./ChatButton";
 import ChatBubble from "./ChatBubble";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/types/chat";
 import { useAuth } from "@/context/AuthContext";
-import { getMessages, sendMessage, pollForNewMessages } from "@/services/chatService";
+import { getMessages, sendMessage, pollForNewMessages, checkChatStatus } from "@/services/chatService";
 import { toast } from "sonner";
 
 const ChatWidget = () => {
@@ -18,8 +18,25 @@ const ChatWidget = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [statusChecked, setStatusChecked] = useState(false);
+  const [configStatus, setConfigStatus] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, profile } = useAuth();
+
+  // Проверка статуса Edge Function при первой загрузке
+  useEffect(() => {
+    const checkStatus = async () => {
+      const status = await checkChatStatus();
+      setConfigStatus(status.config);
+      setStatusChecked(true);
+      
+      if (!status.ok) {
+        console.error("Chat function status check failed:", status);
+      }
+    };
+    
+    checkStatus();
+  }, []);
 
   // Периодический опрос новых сообщений
   useEffect(() => {
@@ -111,6 +128,10 @@ const ChatWidget = () => {
     }
   };
 
+  // Отображение предупреждения о конфигурации
+  const showConfigWarning = statusChecked && configStatus && 
+    (!configStatus.telegram_bot_token_set || !configStatus.telegram_admin_chat_id_set);
+
   return (
     <>
       <ChatButton 
@@ -131,6 +152,16 @@ const ChatWidget = () => {
           </CardHeader>
           
           <CardContent className="p-3 max-h-[400px] overflow-y-auto">
+            {showConfigWarning && (
+              <div className="mb-3 p-2 bg-yellow-100 text-yellow-800 rounded flex items-start gap-2">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-semibold">Внимание!</p>
+                  <p>Чат может работать некорректно из-за проблем с конфигурацией.</p>
+                </div>
+              </div>
+            )}
+            
             {messages.length === 0 ? (
               <div className="flex h-[300px] items-center justify-center text-center">
                 <div className="max-w-[70%] text-muted-foreground">

@@ -27,7 +27,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Отправка сообщения в Telegram
 async function sendTelegramMessage(chatId: string, text: string) {
   try {
-    console.log(`Отправка сообщения в Telegram: chatId=${chatId}, text=${text}`);
+    console.log(`Отправка сообщения в Telegram: chatId=${chatId}, text=${text.substring(0, 50)}...`);
     
     if (!TELEGRAM_BOT_TOKEN) {
       console.error("КРИТИЧЕСКАЯ ОШИБКА: TELEGRAM_BOT_TOKEN не установлен");
@@ -37,6 +37,14 @@ async function sendTelegramMessage(chatId: string, text: string) {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     console.log(`Отправка запроса на URL: ${url}`);
     
+    const body = JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: "HTML",
+    });
+    
+    console.log(`Тело запроса: ${body}`);
+    
     const response = await fetch(
       url,
       {
@@ -44,16 +52,20 @@ async function sendTelegramMessage(chatId: string, text: string) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: text,
-          parse_mode: "HTML",
-        }),
+        body,
       }
     );
     
-    const result = await response.json();
-    console.log(`Результат отправки сообщения:`, JSON.stringify(result));
+    const responseText = await response.text();
+    console.log(`Ответ от API Telegram (статус ${response.status}): ${responseText}`);
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error(`Ошибка при парсинге ответа: ${parseError}`);
+      return { ok: false, error: `Ошибка при парсинге ответа: ${responseText}` };
+    }
     
     if (!result.ok) {
       console.error(`ОШИБКА Telegram API: ${JSON.stringify(result)}`);
@@ -399,6 +411,25 @@ serve(async (req) => {
           }
         );
       }
+    }
+
+    // Простой обработчик для проверки статуса функции
+    if (path === "status") {
+      return new Response(
+        JSON.stringify({ 
+          status: "ok", 
+          config: {
+            telegram_bot_token_set: !!TELEGRAM_BOT_TOKEN,
+            telegram_admin_chat_id_set: !!TELEGRAM_ADMIN_CHAT_ID,
+            supabase_url_set: !!SUPABASE_URL,
+            supabase_service_role_key_set: !!SUPABASE_SERVICE_ROLE_KEY
+          }
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
     }
 
     // Если путь не соответствует ни одному обработчику

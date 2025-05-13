@@ -70,6 +70,34 @@ export const getMessages = async (): Promise<ChatMessage[]> => {
   }
 };
 
+// Проверка состояния telegram-chat функции
+export const checkChatStatus = async (): Promise<{
+  ok: boolean;
+  config?: {
+    telegram_bot_token_set: boolean;
+    telegram_admin_chat_id_set: boolean;
+    supabase_url_set: boolean;
+    supabase_service_role_key_set: boolean;
+  };
+}> => {
+  try {
+    const response = await supabase.functions.invoke("telegram-chat/status", {});
+    
+    if (response.error) {
+      console.error("Error checking chat status:", response.error);
+      return { ok: false };
+    }
+    
+    return { 
+      ok: response.data?.status === "ok",
+      config: response.data?.config 
+    };
+  } catch (error) {
+    console.error("Error in checkChatStatus:", error);
+    return { ok: false };
+  }
+};
+
 // Проверка на наличие новых сообщений
 export const pollForNewMessages = async (
   lastMessageId: number | null,
