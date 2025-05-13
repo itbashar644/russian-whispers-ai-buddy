@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash, MessageCircle, Phone } from "lucide-react";
+import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 import { toast } from "sonner";
 import {
   Form,
@@ -167,7 +167,7 @@ const ProfileForm: React.FC = () => {
                         </SelectItem>
                         <SelectItem value="whatsapp">
                           <div className="flex items-center">
-                            <MessageCircle className="h-4 w-4 mr-2 text-[#25D366]" />
+                            <WhatsAppIcon size={16} className="mr-2" />
                             WhatsApp
                           </div>
                         </SelectItem>

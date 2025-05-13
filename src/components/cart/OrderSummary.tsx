@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
 import { MessageCircle, Phone } from "lucide-react";
+import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 import {
   Select,
   SelectContent,
@@ -154,7 +155,7 @@ const OrderSummary = ({
               </SelectItem>
               <SelectItem value="whatsapp">
                 <div className="flex items-center">
-                  <MessageCircle className="h-4 w-4 mr-2 text-[#25D366]" />
+                  <WhatsAppIcon size={16} className="mr-2" />
                   WhatsApp
                 </div>
               </SelectItem>
