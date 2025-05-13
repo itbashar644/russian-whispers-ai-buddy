@@ -49,6 +49,11 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
       setImportError(null);
       const file = e.target.files[0];
       
+      toast({
+        title: "Импорт начат",
+        description: "Пожалуйста, подождите пока файл обрабатывается...",
+      });
+      
       // Read the file
       const reader = new FileReader();
       reader.onload = async (event) => {
@@ -57,7 +62,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
             const data = event.target.result;
             const importedProducts = await excelToProducts(data as ArrayBuffer);
             
-            if (importedProducts.length > 0) {
+            if (importedProducts && importedProducts.length > 0) {
               toast({
                 title: "Импорт выполнен",
                 description: `Успешно импортировано ${importedProducts.length} товаров`,
@@ -187,9 +192,9 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           <p className="text-sm">При импорте товаров обязательны к заполнению следующие поля:</p>
           <ul className="text-sm list-disc pl-5 mt-2">
             <li><strong>title</strong> - название товара</li>
-            <li><strong>description</strong> - описание товара</li>
             <li><strong>price</strong> - цена товара (число)</li>
             <li><strong>category</strong> - категория товара</li>
+            <li><strong>description</strong> - описание товара</li>
             <li><strong>countryOfOrigin</strong> - страна происхождения</li>
           </ul>
           <p className="text-sm mt-2">Остальные поля являются необязательными.</p>

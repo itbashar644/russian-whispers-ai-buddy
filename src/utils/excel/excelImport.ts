@@ -33,30 +33,39 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
     
     for (const row of jsonData) {
       // Skip rows that don't have required fields
-      if (!row.title || !row.category) {
+      if (!row.title || !row.category || row.price === undefined) {
         console.warn("Skipping row due to missing required fields:", row);
         continue;
       }
       
       // Create a base product object with a valid UUID
       const product: Product = {
-        id: row.id && row.id.length > 30 ? row.id : uuidv4(), // Используем UUID если ID не предоставлен или некорректен
-        title: row.title || 'Новый товар',
-        description: row.description || 'Описание товара',
+        id: uuidv4(), // Always generate a fresh UUID for imports
+        title: String(row.title) || 'Новый товар',
+        description: String(row.description || '') || 'Описание товара',
         price: Number(row.price) || 0,
-        category: row.category || 'Другое',
-        imageUrl: row.imageUrl || '/placeholder.svg',
-        rating: Number(row.rating) || 5,
-        inStock: row.inStock === 'Да' || row.inStock === true,
-        countryOfOrigin: row.countryOfOrigin || 'Россия'
+        category: String(row.category || '') || 'Другое',
+        imageUrl: String(row.imageUrl || '') || '/placeholder.svg',
+        rating: parseFloat(row.rating) || 5,
+        inStock: row.inStock === 'Да' || row.inStock === true || row.inStock === 'true',
+        countryOfOrigin: String(row.countryOfOrigin || '') || 'Россия'
       };
       
       // Add optional fields if they exist
-      if (row.discountPrice) product.discountPrice = Number(row.discountPrice);
-      if (row.colors) product.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
-      if (row.sizes) product.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-      if (row.isNew === 'Да' || row.isNew === true) product.isNew = true;
-      if (row.isBestseller === 'Да' || row.isBestseller === true) product.isBestseller = true;
+      if (row.discountPrice !== undefined && row.discountPrice !== '') {
+        product.discountPrice = Number(row.discountPrice);
+      }
+      
+      if (row.colors) {
+        product.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+      }
+      
+      if (row.sizes) {
+        product.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+      }
+      
+      if (row.isNew === 'Да' || row.isNew === true || row.isNew === 'true') product.isNew = true;
+      if (row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true') product.isBestseller = true;
       if (row.articleNumber) product.articleNumber = String(row.articleNumber);
       if (row.barcode) product.barcode = String(row.barcode);
       if (row.wildberriesUrl) product.wildberriesUrl = row.wildberriesUrl;

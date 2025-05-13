@@ -6,13 +6,18 @@ import './index.css'
 // Устанавливаем заголовок страницы
 document.title = 'The X Shop';
 
-// Проверяем, есть ли в нашей сборке информационный скрипт от Lovable
-// и если нет, то не выводим его
+// Удаляем скрипт Lovable, если он существует
 const lovableScript = document.querySelector('script[src="https://cdn.gpteng.co/gptengineer.js"]');
 if (lovableScript) {
-  console.log("Lovable script найден и загружен");
-} else {
-  console.log("Lovable script не найден в DOM");
+  lovableScript.remove();
+  console.log("Lovable script найден и удален");
+}
+
+// Удаляем iframe с баннером, если он существует
+const lovableIframe = document.querySelector('iframe[src^="https://cdn.gpteng.co/overlay"]');
+if (lovableIframe) {
+  lovableIframe.remove();
+  console.log("Lovable iframe найден и удален");
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

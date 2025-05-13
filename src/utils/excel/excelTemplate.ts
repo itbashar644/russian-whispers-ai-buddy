@@ -13,8 +13,8 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     id: '',
     title: 'Название товара*',
     description: 'Описание товара*',
-    price: 0,
-    discountPrice: '',
+    price: 1000,
+    discountPrice: 900,
     category: categories.length > 0 ? categories[0] : 'Другое',
     imageUrl: '/placeholder.svg',
     rating: 5,
@@ -24,13 +24,13 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     isNew: 'Да',
     isBestseller: 'Нет',
     countryOfOrigin: 'Россия*',
-    articleNumber: '',
-    barcode: '',
+    articleNumber: 'ART001',
+    barcode: '4607777777777',
     wildberriesUrl: '',
     ozonUrl: '',
     avitoUrl: '',
     stockQuantity: 10,
-    material: '',
+    material: 'Хлопок',
   }];
 
   // Добавляем примечание по категориям
@@ -40,14 +40,14 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     description: 'Обязательные поля: title (название), description (описание), price (цена), category (категория), countryOfOrigin (страна)',
     price: '',
     discountPrice: '',
-    category: categoriesString,
+    category: `Доступные категории: ${categoriesString}`,
     imageUrl: '',
     rating: '',
-    inStock: '',
-    colors: '',
-    sizes: '',
-    isNew: '',
-    isBestseller: '',
+    inStock: 'Да или Нет',
+    colors: 'Перечислите через запятую',
+    sizes: 'Перечислите через запятую',
+    isNew: 'Да или Нет',
+    isBestseller: 'Да или Нет',
     countryOfOrigin: '',
     articleNumber: '',
     barcode: '',
@@ -71,7 +71,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     { wch: 40 }, // description
     { wch: 10 }, // price
     { wch: 15 }, // discountPrice
-    { wch: 15 }, // category
+    { wch: 20 }, // category
     { wch: 30 }, // imageUrl
     { wch: 8 }, // rating
     { wch: 8 }, // inStock
