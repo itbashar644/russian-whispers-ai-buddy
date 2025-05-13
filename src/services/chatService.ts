@@ -20,6 +20,7 @@ export const sendMessage = async (
   email?: string
 ): Promise<boolean> => {
   try {
+    console.log("Отправка сообщения:", { message, name, email });
     const chatId = getChatId();
     
     const response = await supabase.functions.invoke("telegram-chat/send", {
@@ -28,6 +29,11 @@ export const sendMessage = async (
     
     if (response.error) {
       console.error("Error sending message:", response.error);
+      return false;
+    }
+    
+    if (response.data && response.data.error) {
+      console.error("Error from function:", response.data.error, response.data.details);
       return false;
     }
     
@@ -49,6 +55,11 @@ export const getMessages = async (): Promise<ChatMessage[]> => {
     
     if (response.error) {
       console.error("Error getting messages:", response.error);
+      return [];
+    }
+    
+    if (response.data && response.data.error) {
+      console.error("Error from function:", response.data.error);
       return [];
     }
     
