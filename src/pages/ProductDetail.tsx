@@ -10,20 +10,52 @@ import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { formatVideoUrl } from "@/lib/utils";
+import { Product } from "@/types/product";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = id ? getProductById(id) : undefined;
-  const relatedProducts = id ? getRelatedProducts(id, 4) : [];
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
   
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product?.colors ? product.colors[0] : undefined
-  );
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const productData = await getProductById(id);
+        setProduct(productData || null);
+        
+        if (productData) {
+          // Set default color when product is loaded
+          if (productData.colorVariants && productData.colorVariants.length > 0) {
+            setSelectedColor(productData.colorVariants[0].color);
+          } else if (productData.colors && productData.colors.length > 0) {
+            setSelectedColor(productData.colors[0]);
+          }
+          
+          // Load related products
+          const related = await getRelatedProducts(id, 4);
+          setRelatedProducts(related);
+        }
+      } catch (error) {
+        console.error("Error loading product:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProduct();
+  }, [id]);
 
   // Find the selected color variant if it exists
   const selectedColorVariant = product?.colorVariants?.find(
@@ -46,12 +78,14 @@ const ProductDetail = () => {
 
   // Get stock status text
   const getStockStatusText = () => {
+    if (!product) return "";
+    
     if (!hasStock()) {
       return "Нет в наличии";
     }
     
     // If there's a selected color variant, show its stock
-    if (selectedColor && product?.colorVariants?.length) {
+    if (selectedColor && product.colorVariants?.length) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
       if (variant?.stockQuantity !== undefined) {
         if (variant.stockQuantity <= 3) {
@@ -63,7 +97,7 @@ const ProductDetail = () => {
     }
     
     // Otherwise show the main product stock
-    if (product?.stockQuantity !== undefined) {
+    if (product.stockQuantity !== undefined) {
       if (product.stockQuantity <= 3) {
         return `Осталось всего ${product.stockQuantity} шт.`;
       } else {
@@ -76,37 +110,24 @@ const ProductDetail = () => {
   
   // Get stock status class
   const getStockStatusClass = () => {
+    if (!product) return "";
+    
     if (!hasStock()) {
       return "text-red-500";
     }
     
     // If there's a selected color variant, check its stock
-    if (selectedColor && product?.colorVariants?.length) {
+    if (selectedColor && product.colorVariants?.length) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
       if (variant?.stockQuantity !== undefined && variant.stockQuantity <= 3) {
         return "text-orange-500";
       }
-    } else if (product?.stockQuantity !== undefined && product.stockQuantity <= 3) {
+    } else if (product.stockQuantity !== undefined && product.stockQuantity <= 3) {
       return "text-orange-500";
     }
     
     return "text-green-600";
   };
-
-  // Update selected color when product changes
-  useEffect(() => {
-    if (product) {
-      // Prioritize color variants if available, otherwise use simple colors array
-      if (product.colorVariants && product.colorVariants.length > 0) {
-        setSelectedColor(product.colorVariants[0].color);
-      } else if (product.colors && product.colors.length > 0) {
-        setSelectedColor(product.colors[0]);
-      } else {
-        setSelectedColor(undefined);
-      }
-      setCurrentImageIndex(0); // Reset image index when product changes
-    }
-  }, [product]);
 
   // Effect to update image when color changes
   useEffect(() => {
@@ -124,6 +145,34 @@ const ProductDetail = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container px-4 py-8 md:px-6">
+          <div className="mb-6">
+            <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <div className="border rounded-lg overflow-hidden">
+                <div className="w-full aspect-square bg-gray-200 animate-pulse"></div>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <div className="h-10 w-3/4 bg-gray-200 rounded animate-pulse mb-4"></div>
+                <div className="h-6 w-1/4 bg-gray-200 rounded animate-pulse mb-4"></div>
+                <div className="h-6 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -177,9 +226,6 @@ const ProductDetail = () => {
     // Reset quantity to 1 when changing color
     setQuantity(1);
   };
-
-  // Определяем отображаемую цену для кнопки - now takes into account color variants
-  const displayPrice = getProductPrice(product, selectedColor);
 
   // Get variant-specific image if available, otherwise use the main product image
   const getVariantImage = () => {
@@ -269,6 +315,9 @@ const ProductDetail = () => {
   };
 
   const displayArticleNumber = getArticleNumber();
+  
+  // Get the price to display
+  const displayPrice = getProductPrice(product, selectedColor);
 
   return (
     <div className="flex flex-col min-h-screen">
