@@ -37,8 +37,9 @@ const ProductActionButtons = ({
       <Button 
         onClick={() => onDelete(product.id)} 
         size="sm" 
-        variant={deleteButtonColor === "green" ? "success" : "warning"}
-        className={deleteButtonColor === "orange" ? "bg-orange-500 hover:bg-orange-600" : ""}
+        variant={deleteButtonColor === "green" ? "secondary" : "default"}
+        className={deleteButtonColor === "orange" ? "bg-orange-500 hover:bg-orange-600" : 
+                   deleteButtonColor === "green" ? "bg-green-500 hover:bg-green-600" : ""}
       >
         {mode === 'active' ? (
           <Archive className="h-4 w-4 mr-1" />

@@ -21,7 +21,7 @@ interface ProductTabContentProps {
   isLoading: boolean;
   mode: 'active' | 'archived';
   deleteButtonText: string;
-  deleteButtonColor: string;
+  deleteButtonColor: "orange" | "green";
 }
 
 const ProductTabContent = ({

@@ -42,6 +42,21 @@ const GeneralInfoTab = ({
   handleMainImageUploaded,
   handleAdditionalImagesChange
 }: GeneralInfoTabProps) => {
+  // Create a helper function to handle stock quantity changes properly
+  const handleStockQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ? parseInt(e.target.value) : undefined;
+    
+    // Create a synthetic event that matches the expected interface
+    const syntheticEvent = {
+      target: {
+        name: "stockQuantity",
+        value: value !== undefined ? value.toString() : ""
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleInputChange(syntheticEvent);
+  };
+
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-4 items-center gap-4">
@@ -149,16 +164,7 @@ const GeneralInfoTab = ({
           name="stockQuantity"
           type="number"
           value={formData.stockQuantity !== undefined ? formData.stockQuantity : ""}
-          onChange={(e) => {
-            const value = e.target.value ? parseInt(e.target.value) : undefined;
-            handleInputChange({
-              ...e,
-              target: {
-                name: e.target.name,
-                value: value !== undefined ? value.toString() : ""
-              }
-            });
-          }}
+          onChange={handleStockQuantityChange}
           min="0"
           className="col-span-3"
         />

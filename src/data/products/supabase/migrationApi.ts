@@ -1,8 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Product, Category } from "@/types/product";
+import { Product } from "@/types/product";
 import { getFromStorage } from "../utils";
 import { importCategoriesIntoSupabase, importProductsIntoSupabase } from "./importApi";
+
+// Define the Category interface locally since it's not exported from types/product.ts
+interface Category {
+  name: string;
+  id?: string;
+  image_url?: string;
+}
 
 // Функция для миграции данных из localStorage при первом запуске
 export const migrateDataToSupabaseIfNeeded = async (): Promise<boolean> => {
