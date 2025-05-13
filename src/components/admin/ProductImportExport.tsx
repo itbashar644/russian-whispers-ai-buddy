@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
 import { Product } from "@/types/product";
 import { downloadProductsExcel, excelToProducts, downloadImportTemplate } from "@/utils/excelUtils";
+import { addOrUpdateProduct } from "@/data/products";
 
 interface ProductImportExportProps {
   products: Product[];
@@ -52,11 +53,19 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
             const importedProducts = excelToProducts(data as ArrayBuffer);
             
             if (importedProducts.length > 0) {
-              // Add each product to the store
-              importedProducts.forEach(product => {
-                // Add or update the product
-                // This will be handled by your existing data logic
+              // Add each product to the database
+              const importPromises = importedProducts.map(async (product) => {
+                try {
+                  await addOrUpdateProduct(product);
+                  console.log(`Imported product: ${product.title}`);
+                  return true;
+                } catch (err) {
+                  console.error(`Failed to import product: ${product.title}`, err);
+                  return false;
+                }
               });
+              
+              await Promise.all(importPromises);
               
               toast("Импорт выполнен", {
                 description: `Успешно импортировано ${importedProducts.length} товаров`,

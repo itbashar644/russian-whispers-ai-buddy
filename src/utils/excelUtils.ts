@@ -27,6 +27,7 @@ export const productsToExcel = (products: Product[]): XLSX.WorkBook => {
     wildberriesUrl: product.wildberriesUrl || '',
     ozonUrl: product.ozonUrl || '',
     avitoUrl: product.avitoUrl || '',
+    stockQuantity: product.stockQuantity || 0,
   }));
 
   // Create worksheet from data
@@ -58,6 +59,7 @@ export const productsToExcel = (products: Product[]): XLSX.WorkBook => {
     { wch: 30 }, // wildberriesUrl
     { wch: 30 }, // ozonUrl
     { wch: 30 }, // avitoUrl
+    { wch: 10 }, // stockQuantity
   ];
   
   // Create workbook and add the worksheet
@@ -129,6 +131,7 @@ export const excelToProducts = (data: ArrayBuffer): Product[] => {
     if (row.wildberriesUrl) product.wildberriesUrl = row.wildberriesUrl;
     if (row.ozonUrl) product.ozonUrl = row.ozonUrl;
     if (row.avitoUrl) product.avitoUrl = row.avitoUrl;
+    if (row.stockQuantity) product.stockQuantity = Number(row.stockQuantity);
 
     // Добавляем категорию в общий список категорий, если она новая
     if (row.category && typeof row.category === 'string') {
@@ -168,6 +171,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     wildberriesUrl: '',
     ozonUrl: '',
     avitoUrl: '',
+    stockQuantity: 10,
   }];
 
   // Добавляем примечание по категориям
@@ -192,6 +196,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     wildberriesUrl: '',
     ozonUrl: '',
     avitoUrl: '',
+    stockQuantity: '',
   }];
   
   // Create worksheet from template data
@@ -222,6 +227,7 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     { wch: 30 }, // wildberriesUrl
     { wch: 30 }, // ozonUrl
     { wch: 30 }, // avitoUrl
+    { wch: 10 }, // stockQuantity
   ];
   
   // Create workbook and add the worksheet
