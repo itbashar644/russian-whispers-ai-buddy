@@ -26,6 +26,7 @@ export interface Product {
   archived?: boolean; // New field to mark archived products
   stockQuantity?: number; // New field to track inventory quantity
   colorVariants?: ColorVariant[]; // New field to store color variants
+  material?: string; // Added back the material field
 }
 
 export interface ColorVariant {
