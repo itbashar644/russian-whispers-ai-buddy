@@ -20,4 +20,11 @@ if (lovableIframe) {
   console.log("Lovable iframe найден и удален");
 }
 
+// Проверяем, нет ли других элементов Lovable
+const allLovableElements = document.querySelectorAll('[class*="lovable"], [id*="lovable"], [class*="gpteng"], [id*="gpteng"]');
+allLovableElements.forEach(el => {
+  el.remove();
+  console.log("Дополнительный элемент Lovable удален:", el);
+});
+
 createRoot(document.getElementById("root")!).render(<App />);

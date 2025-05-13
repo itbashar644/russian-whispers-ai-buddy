@@ -10,9 +10,9 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
   const categoriesString = categories.join(', ');
 
   const templateData = [{
-    id: '',
-    title: 'Название товара*',
-    description: 'Описание товара*',
+    id: '', // Поле не обязательно, будет сгенерировано автоматически
+    title: 'Пример названия товара*',
+    description: 'Пример описания товара*',
     price: 1000,
     discountPrice: 900,
     category: categories.length > 0 ? categories[0] : 'Другое',
@@ -33,11 +33,11 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     material: 'Хлопок',
   }];
 
-  // Добавляем примечание по категориям
-  const templateData2 = [{
+  // Добавляем примечание по категориям и обязательным полям
+  const instructionsData = [{
     id: '',
-    title: 'ПРИМЕЧАНИЕ: Поля со звездочкой (*) обязательны для заполнения',
-    description: 'Обязательные поля: title (название), description (описание), price (цена), category (категория), countryOfOrigin (страна)',
+    title: '*** ОБЯЗАТЕЛЬНЫЕ ПОЛЯ (отмечены звездочкой *) ***',
+    description: 'Заполните все поля, отмеченные звездочкой (*): title, description, price, category, countryOfOrigin',
     price: '',
     discountPrice: '',
     category: `Доступные категории: ${categoriesString}`,
@@ -61,8 +61,8 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
   // Create worksheet from template data
   const worksheet = XLSX.utils.json_to_sheet(templateData);
   
-  // Add notes about categories on row 3
-  XLSX.utils.sheet_add_json(worksheet, templateData2, { skipHeader: true, origin: "A3" });
+  // Add instructions
+  XLSX.utils.sheet_add_json(worksheet, instructionsData, { skipHeader: true, origin: "A3" });
   
   // Add notes about fields
   worksheet['!cols'] = [
@@ -89,9 +89,17 @@ export const getImportTemplate = async (): Promise<XLSX.WorkBook> => {
     { wch: 15 }, // material
   ];
   
+  // Add a comment to the title cell for clarity
+  if (!worksheet['!comments']) worksheet['!comments'] = {};
+  worksheet['!comments']['B1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: title (название товара)' };
+  worksheet['!comments']['C1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: description (описание товара)' };
+  worksheet['!comments']['D1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: price (цена товара)' };
+  worksheet['!comments']['F1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: category (категория товара)' };
+  worksheet['!comments']['O1'] = { t: 'ОБЯЗАТЕЛЬНОЕ ПОЛЕ: countryOfOrigin (страна происхождения)' };
+  
   // Create workbook and add the worksheet
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Шаблон');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Шаблон импорта');
   
   return workbook;
 };

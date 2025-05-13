@@ -54,13 +54,18 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         description: "Пожалуйста, подождите пока файл обрабатывается...",
       });
       
+      console.log("Starting import of file:", file.name);
+      
       // Read the file
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
           if (event.target?.result) {
+            console.log("File read successful, processing data...");
             const data = event.target.result;
             const importedProducts = await excelToProducts(data as ArrayBuffer);
+            
+            console.log("Import process completed, products count:", importedProducts.length);
             
             if (importedProducts && importedProducts.length > 0) {
               toast({
@@ -69,10 +74,10 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
               });
               onImportComplete();
             } else {
-              setImportError("Не удалось импортировать товары из файла. Проверьте формат и наличие обязательных полей.");
+              setImportError("Не удалось импортировать товары из файла. Проверьте формат и наличие обязательных полей: title, price, category, description, countryOfOrigin.");
               toast({
                 title: "Импорт отменен",
-                description: "Не удалось импортировать товары из файла",
+                description: "Не удалось импортировать товары из файла. Проверьте формат и обязательные поля.",
                 variant: "destructive",
               });
             }
@@ -90,6 +95,13 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           // Clear the input value to allow re-importing the same file
           e.target.value = '';
         }
+      };
+      
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        setImportError("Ошибка чтения файла. Попробуйте другой файл.");
+        setImporting(false);
+        e.target.value = '';
       };
       
       reader.readAsArrayBuffer(file);
