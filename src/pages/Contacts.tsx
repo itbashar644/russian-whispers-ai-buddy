@@ -47,7 +47,12 @@ const Contacts = () => {
     setLoading(true);
     
     try {
-      const success = await sendMessage(message, name, email);
+      const userInfo = {
+        name: name,
+        email: email
+      };
+      
+      const success = await sendMessage(message, userInfo);
       
       if (success) {
         toast.success("Сообщение отправлено", { 

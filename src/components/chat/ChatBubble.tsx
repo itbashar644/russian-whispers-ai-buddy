@@ -6,13 +6,13 @@ import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 
 interface ChatBubbleProps {
-  message: ChatMessage | string;
+  message: ChatMessage;
   isFromAdmin: boolean;
   timestamp: Date;
 }
 
 const ChatBubble = ({ message, isFromAdmin, timestamp }: ChatBubbleProps) => {
-  const messageText = typeof message === 'string' ? message : message.message;
+  const messageText = message.message;
   
   const formattedTime = formatDistanceToNow(timestamp, { 
     addSuffix: true,

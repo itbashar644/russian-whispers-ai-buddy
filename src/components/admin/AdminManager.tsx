@@ -55,12 +55,14 @@ const AdminManager = () => {
     setSearchResult(null);
     
     try {
-      // First check if the user exists
-      const { data: users, error: userError } = await supabase.auth.admin.listUsers({
-        filter: `email.eq.${searchEmail}`
-      });
+      // First check if the user exists by their email
+      const { data: users, error: userError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('email', searchEmail)
+        .single();
       
-      if (userError || !users || users.users.length === 0) {
+      if (userError || !users) {
         toast.error("User not found", {
           description: "No user found with this email address."
         });
@@ -68,13 +70,13 @@ const AdminManager = () => {
         return;
       }
       
-      const userData = users.users[0];
+      const userId = users.id;
       
       // Then check if they have admin role
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userData.id)
+        .eq('user_id', userId)
         .eq('role', 'admin');
       
       if (roleError) {

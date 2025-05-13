@@ -96,6 +96,23 @@ export const markMessagesAsRead = async (): Promise<boolean> => {
   }
 };
 
+// Check Telegram webhook status
+export const checkTelegramWebhookStatus = async (): Promise<any> => {
+  try {
+    const response = await supabase.functions.invoke("telegram-chat/webhook-status", {});
+    
+    if (response.error) {
+      console.error("Error checking webhook status:", response.error);
+      return { ok: false };
+    }
+    
+    return response.data || {};
+  } catch (error) {
+    console.error("Error in checkTelegramWebhookStatus:", error);
+    return { ok: false };
+  }
+};
+
 // Проверка состояния telegram-chat функции
 export const checkChatStatus = async (): Promise<{
   ok: boolean;
@@ -118,26 +135,6 @@ export const checkChatStatus = async (): Promise<{
       ok: response.data?.status === "ok",
       config: response.data?.config 
     };
-  } catch (error) {
-    console.error("Error in checkChatStatus:", error);
-    return { ok: false };
-  }
-};
-
-// Check Telegram webhook status
-export const checkTelegramWebhookStatus = async (): Promise<any> => {
-  try {
-    const response = await supabase.functions.invoke("telegram-chat/webhook-status", {});
-    
-    if (response.error) {
-      console.error("Error checking webhook status:", response.error);
-      return { ok: false };
-    }
-    
-    return response.data || {};
-  } catch (error) {
-    console.error("Error in checkTelegramWebhookStatus:", error);
-    return { ok: false };
   }
 };
 
