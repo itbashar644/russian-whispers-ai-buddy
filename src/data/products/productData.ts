@@ -1,6 +1,6 @@
 
 import { Product, ColorVariant } from "@/types/product";
-import { generateRandomRating, getFromStorage, saveToStorage } from "./utils";
+import { generateRandomRating } from "./utils";
 import {
   fetchProductsFromSupabase,
   getProductByIdFromSupabase,
@@ -8,15 +8,14 @@ import {
   addOrUpdateProductInSupabase,
   archiveProductInSupabase,
   restoreProductInSupabase,
-  removeProductFromSupabase,
-  migrateDataToSupabaseIfNeeded
+  removeProductFromSupabase
 } from "./supabaseApi";
 
 // Временный кэш продуктов для улучшения производительности
 let productsCache: Product[] = [];
 let productsCacheLoaded = false;
 let lastCacheUpdateTime = 0;
-const CACHE_TTL = 60000; // 1 минута в миллисекундах
+const CACHE_TTL = 30000; // 30 секунд в миллисекундах
 
 // Функция для проверки и обновления кэша
 const refreshCacheIfNeeded = async (forceRefresh = false): Promise<void> => {
@@ -25,26 +24,16 @@ const refreshCacheIfNeeded = async (forceRefresh = false): Promise<void> => {
   // Обновляем кэш, если он устарел или требуется принудительное обновление
   if (forceRefresh || !productsCacheLoaded || now - lastCacheUpdateTime > CACHE_TTL) {
     try {
-      // Проверяем, нужно ли импортировать данные из localStorage
-      await migrateDataToSupabaseIfNeeded();
-      
       // Загружаем все активные продукты
       productsCache = await fetchProductsFromSupabase(false);
       productsCacheLoaded = true;
       lastCacheUpdateTime = now;
+      console.log("Кэш продуктов обновлен из Supabase:", productsCache.length, "товаров");
     } catch (error) {
       console.error("Ошибка при обновлении кэша продуктов:", error);
-      // Используем localStorage в качестве запасного варианта
-      if (!productsCacheLoaded) {
-        productsCache = getInitialProducts();
-      }
+      productsCache = [];
     }
   }
-};
-
-// Функция для получения исходных продуктов из localStorage
-const getInitialProducts = (): Product[] => {
-  return getFromStorage<Product[]>('catalog_products', [...defaultProducts]);
 };
 
 // Экспортируем продукты через геттер для совместимости с существующим кодом
@@ -54,8 +43,8 @@ export const getProducts = async (includeArchived = false): Promise<Product[]> =
     return await fetchProductsFromSupabase(true);
   }
   
-  // Обновляем кэш, если нужно
-  await refreshCacheIfNeeded();
+  // Всегда обновляем кэш при запросе продуктов
+  await refreshCacheIfNeeded(true);
   
   return [...productsCache];
 };
@@ -102,11 +91,8 @@ export const archiveProduct = async (productId: string): Promise<void> => {
   const success = await archiveProductInSupabase(productId);
   
   if (success) {
-    // Обновляем локальный кэш
-    const index = productsCache.findIndex(p => p.id === productId);
-    if (index >= 0) {
-      productsCache[index].archived = true;
-    }
+    // Принудительно обновляем кэш
+    await refreshCacheIfNeeded(true);
   }
 };
 
@@ -125,8 +111,8 @@ export const removeProduct = async (productId: string): Promise<void> => {
   const success = await removeProductFromSupabase(productId);
   
   if (success) {
-    // Обновляем локальный кэш
-    productsCache = productsCache.filter(p => p.id !== productId);
+    // Принудительно обновляем кэш
+    await refreshCacheIfNeeded(true);
   }
 };
 
@@ -234,7 +220,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   if (!category) {
     // Возвращаем все активные продукты
-    await refreshCacheIfNeeded();
+    await refreshCacheIfNeeded(true);
     return [...productsCache];
   }
   
@@ -267,7 +253,7 @@ export const getRelatedProducts = async (id: string, limit: number = 4): Promise
 
 // Функция для получения бестселлеров
 export const getBestsellers = async (limit: number = 4): Promise<Product[]> => {
-  await refreshCacheIfNeeded();
+  await refreshCacheIfNeeded(true);
   
   return productsCache
     .filter(product => product.isBestseller && !product.archived)
@@ -276,7 +262,7 @@ export const getBestsellers = async (limit: number = 4): Promise<Product[]> => {
 
 // Функция для получения новых продуктов
 export const getNewProducts = async (limit: number = 4): Promise<Product[]> => {
-  await refreshCacheIfNeeded();
+  await refreshCacheIfNeeded(true);
   
   return productsCache
     .filter(product => product.isNew && !product.archived)
@@ -297,7 +283,7 @@ export const getArchivedProducts = async (): Promise<Product[]> => {
 
 // Функция для получения активных продуктов
 export const getActiveProducts = async (): Promise<Product[]> => {
-  await refreshCacheIfNeeded();
+  await refreshCacheIfNeeded(true);
   return [...productsCache];
 };
 
@@ -314,79 +300,10 @@ export const getProductVariantByColor = async (productId: string, color: string)
   }
 };
 
-// Default products to populate the catalog initially
-const defaultProducts: Product[] = [
-  {
-    id: "1",
-    title: "Кожаная сумка через плечо",
-    description: "Стильная кожаная сумка через плечо ручной работы из натуральной кожи.",
-    price: 5990,
-    category: "Сумки и рюкзаки",
-    imageUrl: "/placeholder.svg",
-    additionalImages: ["/placeholder.svg", "/placeholder.svg"],
-    rating: 4.8,
-    inStock: true,
-    countryOfOrigin: "Россия",
-    colors: ["Черный", "Коричневый", "Бежевый"],
-    material: "Натуральная кожа",
-    isBestseller: true,
-    stockQuantity: 15,
-    colorVariants: [
-      {
-        color: "Черный",
-        price: 5990,
-        stockQuantity: 5,
-        articleNumber: "KB-1001-BLK"
-      },
-      {
-        color: "Коричневый",
-        price: 5990,
-        stockQuantity: 5,
-        articleNumber: "KB-1001-BRN"
-      },
-      {
-        color: "Бежевый",
-        price: 6490,
-        stockQuantity: 5,
-        articleNumber: "KB-1001-BGE"
-      }
-    ]
-  },
-  {
-    id: "2",
-    title: "Керамическая ваза ручной работы",
-    description: "Уникальная керамическая ваза ручной работы с авторским дизайном.",
-    price: 3500,
-    discountPrice: 2990,
-    category: "Для дома",
-    imageUrl: "/placeholder.svg",
-    rating: 4.9,
-    inStock: true,
-    countryOfOrigin: "Россия",
-    isNew: true,
-    stockQuantity: 8,
-  },
-  {
-    id: "3",
-    title: "Серебряное кольцо с малахитом",
-    description: "Элегантное серебряное кольцо с натуральным малахитом российского производства.",
-    price: 4500,
-    category: "Украшения",
-    imageUrl: "/placeholder.svg",
-    rating: 4.7,
-    inStock: true,
-    countryOfOrigin: "Россия",
-    material: "Серебро 925 пробы, малахит",
-    isBestseller: true,
-    stockQuantity: 20,
-  }
-];
-
 // Инициализируем кэш продуктов при импорте модуля
-refreshCacheIfNeeded();
+refreshCacheIfNeeded(true);
 
 // Добавляем временную псевдо-переменную products для совместимости с существующим кодом
-// todo: удалить эту переменную после обновления всех импортов
 export let products: Product[] = [];
 (async () => {
   products = await getProducts();
