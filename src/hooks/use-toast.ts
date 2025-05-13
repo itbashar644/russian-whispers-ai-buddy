@@ -6,6 +6,7 @@ type ToastProps = {
   description?: React.ReactNode;
   action?: React.ReactNode;
   variant?: "default" | "destructive" | "success";
+  duration?: number;
 };
 
 // Create a type that matches the expected props from toaster.tsx
@@ -26,14 +27,14 @@ export function toast(props: ToastProps | string) {
     return sonnerToast(props);
   }
   
-  const { title, description, variant, ...rest } = props;
+  const { title, description, variant, duration, ...rest } = props;
   
   if (variant === 'destructive') {
-    return sonnerToast.error(title as string, { description, ...rest });
+    return sonnerToast.error(title as string, { description, duration, ...rest });
   } else if (variant === 'success') {
-    return sonnerToast.success(title as string, { description, ...rest });
+    return sonnerToast.success(title as string, { description, duration, ...rest });
   } else {
-    return sonnerToast(title as string, { description, ...rest });
+    return sonnerToast(title as string, { description, duration, ...rest });
   }
 }
 
