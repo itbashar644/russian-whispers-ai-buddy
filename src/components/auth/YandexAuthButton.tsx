@@ -98,21 +98,15 @@ const YandexAuthButton = ({
     console.log("Initializing Yandex Auth button...");
     initialized.current = true;
 
-    // Используем фиксированный redirect URI как указано в требованиях
-    const redirectUri = "https://www.the-x.shop/auth/v1/yandex-callback";
-    const originUri = window.location.origin;
-    
-    console.log("Yandex button container:", buttonContainerRef.current);
-    console.log("Yandex button container ID:", buttonId);
-
     try {
+      // Используем корректный client_id и redirect URI
       window.YaAuthSuggest.init(
         {
-          client_id: '9bea57e906e74923bbec407783eb51b5',
+          client_id: 'c54c073e9e5e4f4f92e95db7ecf9f65b', // Обновленный client_id
           response_type: 'token',
-          redirect_uri: redirectUri
+          redirect_uri: `${window.location.origin}/auth/yandex-callback`
         },
-        originUri,
+        window.location.origin,
         {
           view: buttonView,
           parentId: buttonId,
@@ -138,8 +132,8 @@ const YandexAuthButton = ({
 
   // Обработчик нажатия на кнопку для случаев, когда автоматическая инициализация не удалась
   const handleManualAuth = () => {
-    // Предоставляем резервный URL для авторизации через Яндекс
-    window.open("https://oauth.yandex.ru/authorize?response_type=token&client_id=9bea57e906e74923bbec407783eb51b5&redirect_uri=https://www.the-x.shop/auth/v1/yandex-callback", "_blank");
+    // Предоставляем резервный URL для авторизации через Яндекс с обновленным client_id
+    window.open(`https://oauth.yandex.ru/authorize?response_type=token&client_id=c54c073e9e5e4f4f92e95db7ecf9f65b&redirect_uri=${encodeURIComponent(window.location.origin + "/auth/yandex-callback")}`, "_blank");
   };
   
   return (

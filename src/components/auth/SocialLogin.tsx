@@ -57,19 +57,37 @@ const SocialLogin = ({ isLoading, setIsLoading }: SocialLoginProps) => {
         variant="outline" 
         onClick={() => handleSocialLogin('apple')}
         disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2"
+        className="flex items-center justify-center gap-2"
       >
         <Apple className="h-4 w-4" />
         Войти через Apple
       </Button>
       
-      <YandexAuthButton 
-        buttonId="yandex-login-button"
-        onAuthSuccess={handleYandexAuth}
-        className="w-full h-10 cursor-pointer hover:bg-gray-50 transition-colors"
-      />
+      {/* Обновленная кнопка Яндекс */}
+      <Button
+        variant="outline"
+        className="flex items-center justify-center gap-2"
+        disabled={isLoading}
+        asChild
+      >
+        <div>
+          <YandexAuthButton 
+            buttonId="yandex-login-button"
+            onAuthSuccess={handleYandexAuth}
+            className="w-full h-full flex items-center justify-center gap-2"
+          />
+          <div className="flex items-center justify-center gap-2">
+            <img 
+              src="https://yastatic.net/s3/autofill/v2/_/icon.svg" 
+              alt="Яндекс" 
+              className="h-4 w-4"
+            />
+            <span>Войти через Яндекс</span>
+          </div>
+        </div>
+      </Button>
     </div>
   );
-};
+}
 
 export default SocialLogin;
