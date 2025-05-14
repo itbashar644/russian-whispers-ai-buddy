@@ -77,8 +77,11 @@ const YandexAuthButton = ({
 
     initialized.current = true;
 
+    // Используем window.location.origin для создания правильного redirect_uri
     const redirectUri = `${window.location.origin}/auth/yandex-callback`;
     const originUri = window.location.origin;
+    
+    console.log("Yandex redirect URI:", redirectUri);
 
     window.YaAuthSuggest.init(
       {

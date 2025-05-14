@@ -12,6 +12,7 @@ import { CartProvider } from '@/context/CartContext';
 import { Toaster } from "sonner";
 import { toast } from "@/hooks/use-toast";
 
+import Index from './pages/Index';
 import Home from './pages/Home';
 import About from './pages/About';
 import Login from './pages/auth/Login';
@@ -94,7 +95,8 @@ const AppContent = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Index />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/account" element={isAuthenticated ? <Account /> : <Login />} />
