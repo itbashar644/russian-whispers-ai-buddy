@@ -1,5 +1,7 @@
 
-import { useToast } from "@/hooks/use-toast"
+import {
+  useToast
+} from "@/hooks/use-toast"
 import {
   Toast,
   ToastClose,
@@ -12,13 +14,11 @@ import {
 export function Toaster() {
   const { toasts } = useToast()
 
-  // The toasts array will always be empty since we're using Sonner
-  // This component is mainly here for compatibility with existing code
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
+      {toasts.map(function ({ id, title, description, action, variant, className, ...props }) {
         return (
-          <Toast key={id} {...props} variant={variant}>
+          <Toast key={id} {...props} variant={variant} className={className}>
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (

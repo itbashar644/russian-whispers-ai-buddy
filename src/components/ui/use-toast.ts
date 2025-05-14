@@ -1,21 +1,19 @@
 
 import * as React from "react";
-import {
-  Toast,
-  ToastProps,
-} from "@/components/ui/toast";
+import type { ToastProps as ToastPrimitiveProps } from "@/components/ui/toast";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 
 const TOAST_LIMIT = 100;
 const TOAST_REMOVE_DELAY = 1000000;
 
-type ToasterToast = {
+export type ToasterToast = {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "success" | "info" | "warning";
   className?: string;
+  open?: boolean;
 };
 
 const actionTypes = {
@@ -131,16 +129,23 @@ function dispatch(action: Action) {
   });
 }
 
-type Toast = Omit<ToasterToast, "id">;
+export type Toast = Omit<ToasterToast, "id">;
 
-function toast({ ...props }: Toast) {
+interface ToastReturn {
+  id: string;
+  dismiss: () => void;
+  update: (props: ToasterToast) => void;
+}
+
+// Define a toast function that returns a ToastReturn object
+export function toast(props: Toast | string): ToastReturn {
   const id = genId();
 
-  const update = (props: ToasterToast) =>
+  const update = (updatedProps: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       id,
-      toast: props,
+      toast: updatedProps,
     });
 
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", id });
@@ -148,7 +153,7 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: "ADD_TOAST",
     toast: {
-      ...props,
+      ...typeof props === "string" ? { description: props } : props,
       id,
       open: true,
     },
@@ -160,6 +165,38 @@ function toast({ ...props }: Toast) {
     update,
   };
 }
+
+// Add variants to the toast function for direct calling
+toast.success = (props: Toast | string): ToastReturn => {
+  return toast({
+    ...typeof props === "string" ? { description: props } : props,
+    variant: "success",
+    className: "bg-green-50 border-green-200 text-green-800",
+  });
+};
+
+toast.error = (props: Toast | string): ToastReturn => {
+  return toast({
+    ...typeof props === "string" ? { description: props } : props,
+    variant: "destructive",
+  });
+};
+
+toast.info = (props: Toast | string): ToastReturn => {
+  return toast({
+    ...typeof props === "string" ? { description: props } : props,
+    variant: "info",
+    className: "bg-blue-50 border-blue-200 text-blue-800",
+  });
+};
+
+toast.warning = (props: Toast | string): ToastReturn => {
+  return toast({
+    ...typeof props === "string" ? { description: props } : props,
+    variant: "warning",
+    className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+  });
+};
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
@@ -181,4 +218,4 @@ function useToast() {
   };
 }
 
-export { useToast, toast };
+export { useToast };
