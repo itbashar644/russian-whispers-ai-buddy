@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -107,10 +108,7 @@ const AppContent = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
-      {
-        path: "/auth/yandex-callback",
-        element: <YandexCallback />
-      }
+      <Route path="/auth/yandex-callback" element={<YandexCallback />} />
     </Routes>
   );
 };
