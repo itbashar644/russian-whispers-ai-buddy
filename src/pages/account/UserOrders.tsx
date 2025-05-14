@@ -12,7 +12,7 @@ import {
   Accordion
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { getUserOrders } from "@/services/orderService";
 import OrderAccordionItem from "@/components/orders/OrderAccordionItem";
 

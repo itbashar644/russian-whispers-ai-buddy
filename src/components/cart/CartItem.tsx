@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CartItem as CartItemType } from "@/types/product";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 
 interface CartItemProps {

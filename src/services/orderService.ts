@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CartItem } from "@/types/product";
 import { decreaseProductStock } from "@/data/products";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 
 export async function getAllOrders() {

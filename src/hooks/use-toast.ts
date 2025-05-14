@@ -3,19 +3,15 @@ import * as React from "react";
 import { 
   useToast as useToastOriginal, 
   toast as toastOriginal,
-  ToasterToast as BaseToasterToast,
+  ToasterToast,
   type Toast as BaseToast
 } from "@/components/ui/use-toast";
 
-export interface ToasterToast extends BaseToasterToast {
-  duration?: number;
-}
-
-export type Toast = Omit<ToasterToast, "id">;
+export interface Toast extends Omit<ToasterToast, "id"> {}
 
 // Re-export the enhanced toast hook
 export function useToast() {
-  // Just return the original hook as it already has the variant methods
+  // Return the original hook as it already has the variant methods
   return useToastOriginal();
 }
 
