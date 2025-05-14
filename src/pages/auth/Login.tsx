@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -216,8 +217,11 @@ const Login = () => {
                 Войти через Apple
               </Button>
               
-              <div className="w-full h-10 flex items-center justify-center">
-                <YandexAuthButton className="w-full" />
+              <div className="w-full h-10 border border-input rounded-md overflow-hidden">
+                <YandexAuthButton 
+                  buttonId="yandex-login-button" 
+                  className="w-full h-full" 
+                />
               </div>
             </div>
           </CardContent>

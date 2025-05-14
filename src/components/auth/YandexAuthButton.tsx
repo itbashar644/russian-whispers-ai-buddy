@@ -70,7 +70,7 @@ const YandexAuthButton = ({
         console.error('Ошибка при загрузке скрипта Яндекс Авторизации:', error);
         if (document.getElementById('yandex-auth-script')) {
           document.getElementById('yandex-auth-script')!.remove();
-          console.info('Lovable script найден и удален');
+          console.info('Яндекс скрипт найден и удален');
         }
       }
     };
@@ -100,6 +100,7 @@ const YandexAuthButton = ({
     const originUri = window.location.origin;
     
     console.log("Yandex redirect URI:", redirectUri);
+    console.log("Yandex container ID:", buttonContainerRef.current.id);
 
     window.YaAuthSuggest.init(
       {
@@ -130,7 +131,7 @@ const YandexAuthButton = ({
     <div 
       id={buttonId || "yandex-auth-container"} 
       ref={buttonContainerRef} 
-      className={className}
+      className={`min-h-10 flex items-center justify-center ${className}`}
     ></div>
   );
 };
