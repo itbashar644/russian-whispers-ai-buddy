@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
+import { Provider } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,11 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import YandexAuthButton from "@/components/auth/YandexAuthButton";
+import { supabase } from "@/integrations/supabase/client";
+import Apple from "@/components/ui/Apple";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),

@@ -1,5 +1,5 @@
 
-import { type SupabaseClient } from '@supabase/supabase-js';
+import { type SupabaseClient, Provider } from '@supabase/supabase-js';
 
 declare module '@supabase/supabase-js' {
   interface SupabaseAuthClient {
@@ -10,6 +10,13 @@ declare module '@supabase/supabase-js' {
       data: { user: User | null; session: Session | null };
       error: Error | null;
     }>;
+  }
+}
+
+// Add 'oauth' as a valid Provider type
+declare module '@supabase/supabase-js' {
+  interface Provider {
+    'oauth': 'oauth';
   }
 }
 

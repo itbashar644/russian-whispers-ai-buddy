@@ -18,6 +18,14 @@ const AuthCallback = () => {
         }
         
         if (data.user) {
+          // Получаем и логируем метаданные пользователя для диагностики
+          console.log('Данные пользователя:', {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name,
+            avatar: data.user.user_metadata?.avatar_url,
+          });
+          
           toast({
             title: "Успешная авторизация",
             description: "Вы успешно вошли в систему",
