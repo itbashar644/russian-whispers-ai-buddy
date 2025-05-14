@@ -8,8 +8,10 @@ import {
 } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { AuthProvider } from '@/context/AuthContext';
-import { toast } from "sonner";
+import { CartProvider } from '@/context/CartContext';
+import { Toaster } from "sonner";
 
+import Home from './pages/Home';
 import About from './pages/About';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -20,14 +22,15 @@ import YandexCallback from './pages/auth/YandexCallback';
 import Cart from './pages/Cart';
 import NotFound from './pages/NotFound';
 import Delivery from './pages/Delivery';
-import Home from './pages/Home';
 
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <CartProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CartProvider>
     </AuthProvider>
   );
 };
