@@ -22,6 +22,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
   const [newCategory, setNewCategory] = useState("");
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setFormData(product);
@@ -114,30 +115,42 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     return true;
   };
 
-  const handleSubmit = () => {
-    let finalFormData = { ...formData };
-    
-    // Use the new category if provided
-    if (showNewCategoryInput && newCategory.trim()) {
-      finalFormData.category = newCategory.trim();
-    }
-    
-    if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
-      toast("Ошибка", {
-        description: "Пожалуйста, заполните все обязательные поля",
-      });
-      return;
-    }
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      let finalFormData = { ...formData };
+      
+      // Use the new category if provided
+      if (showNewCategoryInput && newCategory.trim()) {
+        finalFormData.category = newCategory.trim();
+      }
+      
+      if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
+        toast.error("Ошибка", {
+          description: "Пожалуйста, заполните все обязательные поля",
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
-    // Validate image URLs
-    if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
-      toast("Ошибка URL изображений", {
-        description: "Пожалуйста, укажите корректные URL изображений",
-      });
-      return;
-    }
+      // Validate image URLs
+      if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
+        toast.error("Ошибка URL изображений", {
+          description: "Пожалуйста, укажите корректные URL изображений",
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
-    onSave(finalFormData);
+      await onSave(finalFormData);
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Error submitting product form:", error);
+      toast.error("Не удалось сохранить товар", {
+        description: "Произошла ошибка при сохранении товара"
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -183,11 +196,11 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
       </Tabs>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Отмена
         </Button>
-        <Button onClick={handleSubmit}>
-          {product.id ? "Сохранить изменения" : "Добавить товар"}
+        <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? "Сохранение..." : (product.id ? "Сохранить изменения" : "Добавить товар")}
         </Button>
       </div>
     </div>

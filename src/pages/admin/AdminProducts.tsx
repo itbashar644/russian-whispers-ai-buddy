@@ -153,79 +153,87 @@ const AdminProducts = () => {
   };
 
   const handleSaveProduct = async (formData: Partial<Product>) => {
-    if (editingProduct) {
-      // Editing existing product
-      const updatedProduct: Product = {
-        ...editingProduct,
-        ...formData,
-      } as Product;
-      
-      const success = await addOrUpdateProductInSupabase(updatedProduct);
-      
-      if (success) {
-        await refreshProductsList();
-        toast("Товар обновлен", {
-          description: `Товар "${updatedProduct.title}" был успешно обновлен`,
-        });
+    try {
+      if (editingProduct) {
+        // Editing existing product
+        const updatedProduct: Product = {
+          ...editingProduct,
+          ...formData,
+        } as Product;
+        
+        const success = await addOrUpdateProductInSupabase(updatedProduct);
+        
+        if (success) {
+          await refreshProductsList();
+          toast.success("Товар обновлен", {
+            description: `Товар "${updatedProduct.title}" был успешно обновлен`,
+          });
+          setShowForm(false); // Close the form after successful save
+        } else {
+          toast.error("Ошибка обновления", {
+            description: "Не удалось обновить товар",
+          });
+        }
       } else {
-        toast.error("Ошибка обновления", {
-          description: "Не удалось обновить товар",
-        });
-      }
-    } else {
-      // Adding new product
-      const newProduct: Product = {
-        id: `${Date.now()}`, // Временный ID, будет заменен на UUID от Supabase
-        title: formData.title || "",
-        description: formData.description || "",
-        price: formData.price || 0,
-        discountPrice: formData.discountPrice,
-        category: formData.category || "",
-        imageUrl: formData.imageUrl || "/placeholder.svg",
-        additionalImages: formData.additionalImages,
-        rating: formData.rating || 5,
-        inStock: formData.inStock !== undefined ? formData.inStock : true,
-        colors: formData.colors,
-        sizes: formData.sizes,
-        material: formData.material,
-        isNew: formData.isNew,
-        isBestseller: formData.isBestseller,
-        countryOfOrigin: formData.countryOfOrigin || "Россия",
-        specifications: formData.specifications,
-        articleNumber: formData.articleNumber || "",
-        barcode: formData.barcode || "",
-        ozonUrl: formData.ozonUrl || undefined,
-        wildberriesUrl: formData.wildberriesUrl || undefined,
-        avitoUrl: formData.avitoUrl || undefined,
-        videoUrl: formData.videoUrl || undefined,
-        videoType: formData.videoUrl ? formData.videoType : undefined,
-        archived: false,
-      };
+        // Adding new product
+        const newProduct: Product = {
+          id: `${Date.now()}`, // Временный ID, будет заменен на UUID от Supabase
+          title: formData.title || "",
+          description: formData.description || "",
+          price: formData.price || 0,
+          discountPrice: formData.discountPrice,
+          category: formData.category || "",
+          imageUrl: formData.imageUrl || "/placeholder.svg",
+          additionalImages: formData.additionalImages,
+          rating: formData.rating || 5,
+          inStock: formData.inStock !== undefined ? formData.inStock : true,
+          colors: formData.colors,
+          sizes: formData.sizes,
+          material: formData.material,
+          isNew: formData.isNew,
+          isBestseller: formData.isBestseller,
+          countryOfOrigin: formData.countryOfOrigin || "Россия",
+          specifications: formData.specifications,
+          articleNumber: formData.articleNumber || "",
+          barcode: formData.barcode || "",
+          ozonUrl: formData.ozonUrl || undefined,
+          wildberriesUrl: formData.wildberriesUrl || undefined,
+          avitoUrl: formData.avitoUrl || undefined,
+          videoUrl: formData.videoUrl || undefined,
+          videoType: formData.videoUrl ? formData.videoType : undefined,
+          archived: false,
+        };
 
-      const success = await addOrUpdateProductInSupabase(newProduct);
-      
-      if (success) {
-        await refreshProductsList();
-        toast("Товар добавлен", {
-          description: `Товар "${newProduct.title}" был успешно добавлен`,
-        });
-      } else {
-        toast.error("Ошибка добавления", {
-          description: "Не удалось добавить товар",
-        });
+        const success = await addOrUpdateProductInSupabase(newProduct);
+        
+        if (success) {
+          await refreshProductsList();
+          toast.success("Товар добавлен", {
+            description: `Товар "${newProduct.title}" был успешно добавлен`,
+          });
+          setShowForm(false); // Close the form after successful save
+        } else {
+          toast.error("Ошибка добавления", {
+            description: "Не удалось добавить товар",
+          });
+        }
       }
-    }
 
-    setEditingProduct(null);
-    setShowForm(false);
+      setEditingProduct(null);
 
-    // Check if we need to add a new category
-    if (formData.category && !categories.includes(formData.category)) {
-      const success = await addCategoryToSupabase(formData.category);
-      if (success) {
-        const categoriesData = await fetchCategoriesFromSupabase();
-        setCategories(categoriesData.map(cat => cat.name));
+      // Check if we need to add a new category
+      if (formData.category && !categories.includes(formData.category)) {
+        const success = await addCategoryToSupabase(formData.category);
+        if (success) {
+          const categoriesData = await fetchCategoriesFromSupabase();
+          setCategories(categoriesData.map(cat => cat.name));
+        }
       }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      toast.error("Ошибка", {
+        description: "Произошла ошибка при сохранении товара",
+      });
     }
   };
 

@@ -1,237 +1,168 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Key } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { resetPassword, updatePassword } from "@/utils/auth/methods";
+import { toast } from "sonner";
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Пароли не совпадают",
-  path: ["confirmPassword"],
-});
-
-type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
-
-const ResetPassword = () => {
+const ResetPassword: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(true);
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [validToken, setValidToken] = useState(false);
 
   useEffect(() => {
-    const handleRecoveryToken = async () => {
-      const hash = window.location.hash;
+    // Check if we have a recovery token in the URL
+    const checkForRecoveryToken = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
       
-      if (hash && hash.includes('type=recovery')) {
+      if (accessToken && refreshToken) {
         try {
-          const { data, error } = await supabase.auth.getSession();
-          
+          setLoading(true);
+          // If we have a token, we're in password update mode
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
           if (error) {
-            toast({
-              title: "Ошибка",
-              description: "Неверный или устаревший токен сброса пароля",
-              variant: "destructive",
+            throw error;
+          }
+
+          if (data.user) {
+            setIsRecoveryMode(false);
+            toast.info("Введите новый пароль", {
+              description: "Вы можете установить новый пароль для своего аккаунта"
             });
-            navigate('/login');
-            return;
           }
-          
-          if (data.session) {
-            setValidToken(true);
-          }
-        } catch (error) {
-          console.error("Ошибка при проверке токена:", error);
-          navigate('/login');
+        } catch (error: any) {
+          toast.error("Ошибка проверки токена", {
+            description: error.message || "Не удалось проверить токен восстановления"
+          });
+        } finally {
+          setLoading(false);
         }
-      } else {
-        toast({
-          title: "Ошибка",
-          description: "Недопустимая ссылка для сброса пароля",
-          variant: "destructive",
-        });
-        navigate('/login');
       }
     };
 
-    handleRecoveryToken();
-  }, [navigate]);
+    checkForRecoveryToken();
+  }, []);
 
-  const form = useForm<ResetPasswordFormValues>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const onSubmit = async (data: ResetPasswordFormValues) => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ 
-        password: data.password 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error("Укажите email", {
+        description: "Для сброса пароля необходимо указать email"
       });
-
-      if (error) {
-        toast({
-          title: "Ошибка",
-          description: error.message || "Не удалось обновить пароль",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Успешно",
-          description: "Ваш пароль успешно обновлен",
-        });
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      }
-    } catch (error: any) {
-      console.error("Ошибка при сбросе пароля:", error);
-      toast({
-        title: "Ошибка",
-        description: error.message || "Произошла ошибка при сбросе пароля",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    setLoading(true);
+    await resetPassword(email);
+    setLoading(false);
   };
 
-  if (!validToken) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Проверка токена...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) {
+      toast.error("Пароль слишком короткий", {
+        description: "Пароль должен содержать не менее 6 символов"
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Пароли не совпадают", {
+        description: "Пароль и подтверждение должны совпадать"
+      });
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await updatePassword(password);
+    if (!error) {
+      setTimeout(() => navigate("/auth/login"), 2000);
+    }
+    setLoading(false);
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
-      <div className="flex-grow container max-w-md mx-auto px-4 py-8">
-        <Card>
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Создание нового пароля</CardTitle>
-            <CardDescription>
-              Введите новый пароль для вашей учетной записи
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Новый пароль</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Введите новый пароль"
-                            className="pl-10"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                            onClick={() => setShowPassword(!showPassword)}
-                            disabled={isLoading}
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Подтверждение пароля</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Подтвердите пароль"
-                            className="pl-10"
-                            disabled={isLoading}
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            disabled={isLoading}
-                          >
-                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Сохранение..." : "Сохранить новый пароль"}
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{isRecoveryMode ? "Восстановление пароля" : "Установка нового пароля"}</CardTitle>
+          <CardDescription>
+            {isRecoveryMode
+              ? "Введите email для получения инструкций по восстановлению пароля"
+              : "Придумайте новый пароль для вашего аккаунта"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isRecoveryMode ? (
+            <form onSubmit={handleResetPassword}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Введите ваш email"
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Отправка..." : "Отправить инструкции по восстановлению"}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Footer />
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleUpdatePassword}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Новый пароль</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Введите новый пароль"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Подтверждение пароля</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Повторите новый пароль"
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Обновление..." : "Обновить пароль"}
+                </Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <Button variant="link" onClick={() => navigate("/auth/login")}>
+            Вернуться на страницу входа
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

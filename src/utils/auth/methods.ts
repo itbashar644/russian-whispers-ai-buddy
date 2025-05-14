@@ -1,331 +1,97 @@
 
-import { toast } from "@/hooks/use-toast";
-import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
-import { User } from '@supabase/supabase-js';
-import { UserProfile } from "@/types/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Функция для входа пользователя
-const login = async (email: string, password: string): Promise<boolean> => {
+export async function signInWithEmail(email: string, password: string) {
   try {
-    // Очистка предыдущего состояния авторизации
-    cleanupAuthState();
-    
-    // Попытка глобального выхода
-    try {
-      await supabase.auth.signOut({ scope: 'global' });
-    } catch (err) {
-      // Продолжаем даже при ошибке
-    }
-    
-    // Вход по email/паролю
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
-    if (error) {
-      toast({
-        title: "Ошибка входа",
-        description: error.message || "Неверный email или пароль",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Успешный вход",
-      description: "Вы успешно вошли в систему",
-    });
-    
-    return true;
-  } catch (error: any) {
-    console.error("Ошибка при входе:", error);
-    toast({
-      title: "Ошибка входа",
-      description: error.message || "Произошла ошибка при входе в систему",
-      variant: "destructive",
-    });
-    return false;
-  }
-};
 
-// Функция для регистрации пользователя
-const register = async (email: string, password: string, name: string): Promise<boolean> => {
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error: any) {
+    toast.error("Ошибка входа", {
+      description: error.message,
+    });
+    return { data: null, error };
+  }
+}
+
+export async function signUpWithEmail(email: string, password: string) {
   try {
-    // Очистка предыдущего состояния авторизации
-    cleanupAuthState();
-    
-    // Регистрация нового пользователя
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          name
-        }
-      }
     });
-    
-    if (error) {
-      toast({
-        title: "Ошибка регистрации",
-        description: error.message || "Не удалось создать аккаунт",
-        variant: "destructive",
-      });
-      return false;
-    }
 
-    toast({
-      title: "Успешная регистрация",
-      description: "Аккаунт успешно создан",
+    if (error) throw error;
+    
+    toast.success("Регистрация выполнена", {
+      description: "Проверьте почту для подтверждения аккаунта",
     });
     
-    return true;
+    return { data, error: null };
   } catch (error: any) {
-    console.error("Ошибка при регистрации:", error);
-    toast({
-      title: "Ошибка регистрации",
-      description: error.message || "Произошла ошибка при создании аккаунта",
-      variant: "destructive",
+    toast.error("Ошибка регистрации", {
+      description: error.message,
     });
-    return false;
+    return { data: null, error };
   }
-};
+}
 
-// Функция для выхода из системы
-const logout = async () => {
+export async function signOut() {
   try {
-    // Очистка состояния авторизации
-    cleanupAuthState();
-    
-    // Попытка глобального выхода
-    await supabase.auth.signOut({ scope: 'global' });
-    
-    toast({
-      title: "Выход из системы",
-      description: "Вы успешно вышли из системы",
-    });
-    
-    // Принудительное обновление страницы для очистки состояния
-    window.location.href = '/';
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    return { error: null };
   } catch (error: any) {
-    console.error("Ошибка при выходе:", error);
-    toast({
-      title: "Ошибка",
-      description: error.message || "Произошла ошибка при выходе из системы",
-      variant: "destructive",
+    toast.error("Ошибка выхода", {
+      description: error.message,
     });
+    return { error };
   }
-};
+}
 
-// Функция обновления профиля
-const updateProfile = async (
-  userData: Partial<UserProfile>,
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>,
-  profile: UserProfile | null
-): Promise<boolean> => {
-  if (!profile) return false;
-  
-  try {
-    // Преобразуем camelCase в snake_case для БД
-    const dbData: any = {
-      ...userData
-    };
-    
-    // Специальное преобразование для полей, которые имеют разные имена в БД
-    if (userData.preferredContactMethod) {
-      dbData.preferredcontactmethod = userData.preferredContactMethod;
-      delete dbData.preferredContactMethod;
-    }
-    
-    if (userData.savedAddresses) {
-      dbData.savedaddresses = userData.savedAddresses;
-      delete dbData.savedAddresses;
-    }
-    
-    if (userData.telegramNickname) {
-      dbData.telegramnickname = userData.telegramNickname;
-      delete dbData.telegramNickname;
-    }
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update(dbData)
-      .eq('id', profile.id);
-    
-    if (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить профиль",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    // Обновляем локальное состояние
-    setProfile({ ...profile, ...userData });
-    
-    toast({
-      title: "Профиль обновлен",
-      description: "Данные профиля успешно обновлены",
-    });
-    
-    return true;
-  } catch (error: any) {
-    console.error("Ошибка при обновлении профиля:", error);
-    toast({
-      title: "Ошибка",
-      description: error.message || "Произошла ошибка при обновлении профиля",
-      variant: "destructive",
-    });
-    return false;
-  }
-};
-
-// Функция для сброса пароля
-const resetPassword = async (email: string): Promise<boolean> => {
+export async function resetPassword(email: string) {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+
+    if (error) throw error;
+    
+    toast.success("Письмо отправлено", {
+      description: "Проверьте почту для сброса пароля",
     });
     
-    if (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось отправить инструкции",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Инструкции отправлены",
-      description: "Проверьте вашу электронную почту для сброса пароля",
-    });
-    
-    return true;
+    return { error: null };
   } catch (error: any) {
-    console.error("Ошибка при сбросе пароля:", error);
-    toast({
-      title: "Ошибка",
-      description: error.message || "Произошла ошибка при сбросе пароля",
-      variant: "destructive",
+    toast.error("Ошибка сброса пароля", {
+      description: error.message,
     });
-    return false;
+    return { error };
   }
-};
+}
 
-// Функция для обновления пароля
-const updatePassword = async (newPassword: string): Promise<boolean> => {
+export async function updatePassword(password: string) {
   try {
-    const { error } = await supabase.auth.updateUser({ 
-      password: newPassword
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) throw error;
+    
+    toast.success("Пароль обновлен", {
+      description: "Вы можете использовать новый пароль для входа",
     });
     
-    if (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить пароль",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Пароль обновлен",
-      description: "Ваш пароль успешно изменен",
-    });
-    
-    return true;
+    return { error: null };
   } catch (error: any) {
-    console.error("Ошибка при обновлении пароля:", error);
-    toast({
-      title: "Ошибка",
-      description: error.message || "Произошла ошибка при обновлении пароля",
-      variant: "destructive",
+    toast.error("Ошибка обновления пароля", {
+      description: error.message,
     });
-    return false;
+    return { error };
   }
-};
-
-// Функция для обновления email
-const updateEmail = async (newEmail: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase.auth.updateUser({ 
-      email: newEmail
-    });
-    
-    if (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить email",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    toast({
-      title: "Email обновлен",
-      description: "На новый адрес email отправлено письмо для подтверждения",
-    });
-    
-    return true;
-  } catch (error: any) {
-    console.error("Ошибка при обновлении email:", error);
-    toast({
-      title: "Ошибка",
-      description: error.message || "Произошла ошибка при обновлении email",
-      variant: "destructive",
-    });
-    return false;
-  }
-};
-
-// Функция для проверки роли пользователя
-const hasRole = async (
-  role: 'admin' | 'editor' | 'user',
-  user: User | null,
-  userRoles: string[],
-  setUserRoles: React.Dispatch<React.SetStateAction<string[]>>
-): Promise<boolean> => {
-  // Если нет пользователя, то нет и ролей
-  if (!user) return false;
-  
-  // Если у нас уже есть кэшированные роли, используем их
-  if (userRoles.length > 0) {
-    return userRoles.includes(role);
-  }
-  
-  // Если ролей еще нет, загружаем их из базы данных
-  try {
-    const { data: rolesData, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id);
-    
-    if (error) {
-      console.error('Ошибка при проверке ролей:', error);
-      return false;
-    }
-    
-    const roles = rolesData.map(r => r.role);
-    // Кэшируем роли для будущих проверок
-    setUserRoles(roles);
-    
-    return roles.includes(role);
-  } catch (error) {
-    console.error('Ошибка при проверке ролей:', error);
-    return false;
-  }
-};
-
-export const authMethods = {
-  login,
-  register,
-  logout,
-  updateProfile,
-  resetPassword,
-  updatePassword,
-  updateEmail,
-  hasRole
-};
+}
