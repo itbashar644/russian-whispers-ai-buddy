@@ -1,14 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Product, ColorVariant } from "@/types/product";
+import { Product } from "@/types/product";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Import the refactored tab components
 import GeneralInfoTab from "./product-form/GeneralInfoTab";
 import ColorsTab from "./product-form/ColorsTab";
 import AdditionalInfoTab from "./product-form/AdditionalInfoTab";
+import { useProductForm } from "@/hooks/useProductForm";
 
 interface ProductFormProps {
   product: Partial<Product>;
@@ -18,147 +17,24 @@ interface ProductFormProps {
 }
 
 const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps) => {
-  const [formData, setFormData] = useState<Partial<Product>>(product);
-  const [newCategory, setNewCategory] = useState("");
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    setFormData(product);
-  }, [product]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === "price" || name === "discountPrice" || name === "rating" || name === "stockQuantity"
-        ? parseFloat(value)
-        : value,
-    });
-  };
-
-  const handleCheckboxChange = (checked: boolean, name: string) => {
-    setFormData({
-      ...formData,
-      [name]: checked,
-    });
-  };
-
-  const handleSelectChange = (value: string, name: string) => {
-    if (name === "category" && value === "new") {
-      // Show input for new category
-      setShowNewCategoryInput(true);
-      setNewCategory("");
-      return;
-    }
-    
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleRemoveColor = (colorToRemove: string) => {
-    setFormData({
-      ...formData,
-      colors: formData.colors?.filter(color => color !== colorToRemove),
-    });
-  };
-
-  const handleMainImageUploaded = (url: string) => {
-    setFormData({
-      ...formData,
-      imageUrl: url,
-    });
-  };
-
-  const handleAdditionalImagesChange = (urls: string[]) => {
-    setFormData({
-      ...formData,
-      additionalImages: urls,
-    });
-  };
-
-  const handleColorVariantsChange = (variants: ColorVariant[]) => {
-    setFormData({
-      ...formData,
-      colorVariants: variants
-    });
-  };
-
-  const validateImageUrl = (url: string): boolean => {
-    if (!url) return true; // Empty URL is considered valid (will use default)
-    
-    // Basic URL validation
-    try {
-      new URL(url);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const validateAllImageUrls = (mainImageUrl: string, additionalImages: string[] = []): boolean => {
-    if (mainImageUrl && mainImageUrl !== "/placeholder.svg" && !validateImageUrl(mainImageUrl)) {
-      return false;
-    }
-    
-    if (additionalImages && additionalImages.length > 0) {
-      for (const url of additionalImages) {
-        if (!validateImageUrl(url)) {
-          return false;
-        }
-      }
-    }
-    
-    return true;
-  };
-
-  const handleSubmit = async () => {
-    try {
-      setIsSubmitting(true);
-      let finalFormData = { ...formData };
-      
-      // Use the new category if provided
-      if (showNewCategoryInput && newCategory.trim()) {
-        finalFormData.category = newCategory.trim();
-      }
-      
-      if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
-        toast.error("Ошибка", {
-          description: "Пожалуйста, заполните все обязательные поля",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Validate image URLs
-      if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
-        toast.error("Ошибка URL изображений", {
-          description: "Пожалуйста, укажите корректные URL изображений",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("Form submission - data being sent to parent:", finalFormData);
-      await onSave(finalFormData);
-      
-      // Only reset submission state if we're still mounted
-      // The form might be closed by the parent after successful save
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 500);
-      
-    } catch (error) {
-      console.error("Error submitting product form:", error);
-      toast.error("Не удалось сохранить товар", {
-        description: error instanceof Error ? error.message : "Произошла ошибка при сохранении товара"
-      });
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    formData,
+    newCategory,
+    showNewCategoryInput,
+    activeTab,
+    isSubmitting,
+    setActiveTab,
+    handleInputChange,
+    handleCheckboxChange,
+    handleSelectChange,
+    handleMainImageUploaded,
+    handleAdditionalImagesChange,
+    handleColorVariantsChange,
+    handleRemoveColor,
+    validateAndSubmitForm,
+    setNewCategory,
+    setShowNewCategoryInput
+  } = useProductForm({ product, onSave });
 
   return (
     <div className="space-y-4">
@@ -206,7 +82,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Отмена
         </Button>
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
+        <Button onClick={validateAndSubmitForm} disabled={isSubmitting}>
           {isSubmitting ? "Сохранение..." : (product.id ? "Сохранить изменения" : "Добавить товар")}
         </Button>
       </div>

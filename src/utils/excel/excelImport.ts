@@ -71,41 +71,33 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
         
         // Create product object
         const product: Product = {
-          id: uuidv4(),
+          id: "", // Empty ID so Supabase will generate a proper UUID
           title: String(row.title).trim(),
           description: String(row.description || '').trim(),
           price: Number(row.price),
+          discountPrice: row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice)) 
+            ? Number(row.discountPrice) 
+            : undefined,
           category: String(row.category).trim(),
           imageUrl: String(row.imageUrl || '').trim() || '/placeholder.svg',
           rating: parseFloat(String(row.rating || 5)),
           inStock: row.inStock === 'Да' || row.inStock === true || row.inStock === 'true',
-          countryOfOrigin: String(row.countryOfOrigin).trim()
+          countryOfOrigin: String(row.countryOfOrigin).trim(),
+          colors: row.colors ? String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0) : [],
+          sizes: row.sizes ? String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0) : [],
+          isNew: row.isNew === 'Да' || row.isNew === true || row.isNew === 'true',
+          isBestseller: row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true',
+          articleNumber: row.articleNumber ? String(row.articleNumber) : undefined,
+          barcode: row.barcode ? String(row.barcode) : undefined,
+          wildberriesUrl: row.wildberriesUrl ? String(row.wildberriesUrl) : undefined,
+          ozonUrl: row.ozonUrl ? String(row.ozonUrl) : undefined,
+          avitoUrl: row.avitoUrl ? String(row.avitoUrl) : undefined,
+          stockQuantity: row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity)) 
+            ? Number(row.stockQuantity) 
+            : 0,
+          material: row.material ? String(row.material) : undefined,
+          archived: false
         };
-        
-        // Add optional fields
-        if (row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice))) {
-          product.discountPrice = Number(row.discountPrice);
-        }
-        
-        if (row.colors) {
-          product.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
-        }
-        
-        if (row.sizes) {
-          product.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-        }
-        
-        if (row.isNew === 'Да' || row.isNew === true || row.isNew === 'true') product.isNew = true;
-        if (row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true') product.isBestseller = true;
-        if (row.articleNumber) product.articleNumber = String(row.articleNumber);
-        if (row.barcode) product.barcode = String(row.barcode);
-        if (row.wildberriesUrl) product.wildberriesUrl = String(row.wildberriesUrl);
-        if (row.ozonUrl) product.ozonUrl = String(row.ozonUrl);
-        if (row.avitoUrl) product.avitoUrl = String(row.avitoUrl);
-        if (row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity))) {
-          product.stockQuantity = Number(row.stockQuantity);
-        }
-        if (row.material) product.material = String(row.material);
         
         products.push(product);
         
@@ -144,13 +136,13 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
       for (const product of batch) {
         try {
           console.log(`Saving product: ${product.title}`);
-          const success = await addOrUpdateProductInSupabase(product);
+          const result = await addOrUpdateProductInSupabase(product);
           
-          if (success) {
+          if (result.success) {
             console.log(`Successfully saved product: ${product.title}`);
             savedProducts.push(product);
           } else {
-            console.error(`Failed to save product: ${product.title}`);
+            console.error(`Failed to save product: ${product.title}`, result.error);
           }
         } catch (err) {
           console.error(`Error saving product ${product.title}:`, err);
