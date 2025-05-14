@@ -1,286 +1,168 @@
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import { Download, Upload, AlertCircle, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Product } from "@/types/product";
-import { downloadProductsExcel, excelToProducts, downloadImportTemplate } from "@/utils/excelUtils";
+import { toast } from "sonner";
+import { Download, FileUp } from "lucide-react";
+import { exportProductsToExcel, createProductTemplate } from "@/utils/excelUtils";
+import { excelToProducts } from "@/utils/excel/excelImport";
+import { fetchProductsFromSupabase } from '@/data/products/supabase/productApi';
 import { Progress } from "@/components/ui/progress";
 
 interface ProductImportExportProps {
-  products: Product[];
   onImportComplete: () => void;
 }
 
-const ProductImportExport = ({ products, onImportComplete }: ProductImportExportProps) => {
-  const [importing, setImporting] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
+const ProductImportExport = ({ onImportComplete }: ProductImportExportProps) => {
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleExport = async () => {
+  
+  const handleExportProductsClick = async () => {
     try {
-      setExporting(true);
-      downloadProductsExcel(products);
-      toast({
-        title: "Экспорт выполнен",
-        description: "Файл с товарами успешно экспортирован",
-      });
-    } catch (error: any) {
-      console.error("Ошибка экспорта:", error);
-      toast({
-        title: "Ошибка экспорта",
-        description: error.message || "Произошла ошибка при экспорте товаров",
-        variant: "destructive",
-      });
+      setIsExporting(true);
+      const products = await fetchProductsFromSupabase(true);
+      
+      if (!products || products.length === 0) {
+        toast.error("Нет товаров для экспорта");
+        return;
+      }
+      
+      await exportProductsToExcel(products);
+      toast.success("Экспорт успешно завершен");
+    } catch (error) {
+      console.error("Ошибка экспорта товаров:", error);
+      toast.error("Ошибка экспорта товаров");
     } finally {
-      setExporting(false);
+      setIsExporting(false);
     }
   };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
-
+  
+  const handleExportTemplateClick = async () => {
     try {
-      setImporting(true);
-      setImportError(null);
+      await createProductTemplate();
+      toast.success("Шаблон успешно создан");
+    } catch (error) {
+      console.error("Ошибка создания шаблона:", error);
+      toast.error("Ошибка создания шаблона");
+    }
+  };
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setIsImporting(true);
       setImportProgress(10);
       
-      const file = e.target.files[0];
-      
-      toast({
-        title: "Импорт начат",
-        description: "Пожалуйста, подождите пока файл обрабатывается...",
-      });
-      
-      console.log("Starting import of file:", file.name);
-      
-      // Read the file
       const reader = new FileReader();
       
-      reader.onload = async (event) => {
+      reader.onload = async (e) => {
         try {
           setImportProgress(30);
+          const data = e.target?.result as ArrayBuffer;
           
-          if (event.target?.result) {
-            console.log("File read successful, processing data...");
-            const data = event.target.result;
-            
-            setImportProgress(50);
-            
-            try {
-              const importedProducts = await excelToProducts(data as ArrayBuffer);
-              
-              setImportProgress(90);
-              
-              console.log("Import process completed, products count:", importedProducts.length);
-              
-              if (importedProducts && importedProducts.length > 0) {
-                toast({
-                  title: "Импорт выполнен",
-                  description: `Успешно импортировано ${importedProducts.length} товаров`,
-                });
-                
-                setImportProgress(100);
-                
-                // Call the callback to refresh products list
-                onImportComplete();
-              } else {
-                setImportError("Не удалось импортировать товары");
-                toast({
-                  title: "Импорт не удался",
-                  description: "Не удалось импортировать товары",
-                  variant: "destructive",
-                });
-              }
-            } catch (error: any) {
-              console.error("Ошибка в процессе импорта:", error);
-              setImportError(error.message || "Произошла ошибка при импорте товаров");
-              toast({
-                title: "Ошибка импорта",
-                description: error.message || "Произошла ошибка при импорте товаров",
-                variant: "destructive",
-              });
+          setImportProgress(50);
+          const products = await excelToProducts(data);
+          
+          setImportProgress(90);
+          
+          if (products && products.length > 0) {
+            toast.success(`Импортировано ${products.length} товаров`);
+            if (onImportComplete) {
+              onImportComplete();
             }
           }
+          
+          setImportProgress(100);
+          // Reset the input value so the same file can be uploaded again
+          event.target.value = '';
+          
+        } catch (error: any) {
+          console.error("Ошибка импорта товаров:", error);
+          toast.error(`Ошибка импорта: ${error.message || 'Неизвестная ошибка'}`);
+          // Reset the input value
+          event.target.value = '';
         } finally {
-          setImporting(false);
+          setIsImporting(false);
           setImportProgress(0);
-          // Clear the input value to allow re-importing the same file
-          if (fileInputRef.current) fileInputRef.current.value = '';
         }
       };
       
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        setImportError("Ошибка чтения файла. Попробуйте другой файл.");
-        setImporting(false);
-        setImportProgress(0);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      };
-      
       reader.readAsArrayBuffer(file);
+      
     } catch (error: any) {
-      console.error("Общая ошибка импорта:", error);
-      setImportError(error.message || "Произошла ошибка при импорте товаров");
-      toast({
-        title: "Ошибка импорта",
-        description: error.message || "Произошла ошибка при импорте товаров",
-        variant: "destructive",
-      });
-      setImporting(false);
+      console.error("Ошибка чтения файла:", error);
+      toast.error(`Ошибка чтения файла: ${error.message || 'Неизвестная ошибка'}`);
+      setIsImporting(false);
       setImportProgress(0);
-      // Clear the input value
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDownloadTemplate = async () => {
-    try {
-      setDownloadingTemplate(true);
-      await downloadImportTemplate();
-      toast({
-        title: "Шаблон скачан",
-        description: "Шаблон для импорта товаров успешно скачан",
-      });
-    } catch (error: any) {
-      console.error("Ошибка скачивания шаблона:", error);
-      toast({
-        title: "Ошибка скачивания",
-        description: error.message || "Произошла ошибка при скачивании шаблона",
-        variant: "destructive",
-      });
-    } finally {
-      setDownloadingTemplate(false);
+      // Reset the input value
+      event.target.value = '';
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 p-4 border rounded-md bg-card">
-          <h3 className="text-sm font-semibold mb-3">Экспорт товаров</h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            Выгрузка всех товаров в Excel-файл для редактирования оффлайн
-          </p>
+    <div className="space-y-4 p-4 border rounded-md">
+      <h3 className="text-lg font-medium">Импорт и экспорт товаров</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Импорт товаров</h4>
           <div className="flex flex-col gap-2">
             <Button
               variant="outline"
-              onClick={handleExport}
-              disabled={exporting || products.length === 0}
-              className="w-full md:w-auto"
+              onClick={handleExportTemplateClick}
+              className="w-full justify-start"
             >
-              {exporting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Экспортируем...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Экспортировать товары
-                </>
-              )}
+              <Download className="mr-2 h-4 w-4" />
+              Скачать шаблон
             </Button>
-            <Button
-              variant="ghost"
-              onClick={handleDownloadTemplate}
-              disabled={downloadingTemplate}
-              size="sm"
-              className="w-full md:w-auto"
-            >
-              {downloadingTemplate ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Скачиваем...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Скачать шаблон импорта
-                </>
-              )}
-            </Button>
+            
+            <div className="relative">
+              <input 
+                id="import-file" 
+                type="file" 
+                accept=".xlsx, .xls" 
+                onChange={handleFileChange}
+                disabled={isImporting}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+              <Button 
+                variant="outline" 
+                disabled={isImporting}
+                className="w-full justify-start"
+              >
+                <FileUp className="mr-2 h-4 w-4" />
+                {isImporting ? "Импорт..." : "Загрузить Excel файл"}
+              </Button>
+            </div>
+            
+            {isImporting && (
+              <Progress value={importProgress} className="h-2" />
+            )}
+            
+            <p className="text-xs text-muted-foreground">
+              Поддерживаются файлы Excel (.xlsx, .xls)
+            </p>
           </div>
         </div>
-
-        <div className="flex-1 p-4 border rounded-md bg-card">
-          <h3 className="text-sm font-semibold mb-3">Импорт товаров</h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            Загрузка товаров из Excel-файла в формате шаблона
+        
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Экспорт товаров</h4>
+          <Button 
+            variant="outline"
+            onClick={handleExportProductsClick}
+            disabled={isExporting}
+            className="w-full justify-start"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {isExporting ? "Экспорт..." : "Экспорт всех товаров в Excel"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Экспортирует все товары, включая архивные
           </p>
-          
-          <div className="flex flex-col gap-2">
-            <Input
-              ref={fileInputRef}
-              id="import-file"
-              type="file"
-              accept=".xlsx"
-              className="mb-2"
-              onChange={handleImport}
-              disabled={importing}
-            />
-            
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById("import-file")?.click()}
-              disabled={importing}
-              className="w-full"
-            >
-              {importing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Импортируем...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Выберите файл для импорта
-                </>
-              )}
-            </Button>
-          </div>
-          
-          {importing && (
-            <div className="mt-4">
-              <Progress value={importProgress} className="h-2" />
-              <p className="mt-2 text-xs text-muted-foreground text-center">
-                Импортируем товары ({importProgress}%)
-              </p>
-            </div>
-          )}
         </div>
       </div>
-      
-      {importError && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Ошибка импорта</AlertTitle>
-          <AlertDescription>{importError}</AlertDescription>
-        </Alert>
-      )}
-      
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Обязательные поля для импорта</AlertTitle>
-        <AlertDescription>
-          <p className="text-sm">При импорте товаров обязательны к заполнению следующие поля:</p>
-          <ul className="text-sm list-disc pl-5 mt-2">
-            <li><strong>title</strong> - название товара</li>
-            <li><strong>price</strong> - цена товара (число)</li>
-            <li><strong>category</strong> - категория товара</li>
-            <li><strong>description</strong> - описание товара</li>
-            <li><strong>countryOfOrigin</strong> - страна происхождения</li>
-          </ul>
-          <p className="text-sm mt-2">Остальные поля являются необязательными.</p>
-        </AlertDescription>
-      </Alert>
     </div>
   );
 };

@@ -1,8 +1,8 @@
 
 import * as XLSX from 'xlsx';
 import { Product } from '@/types/product';
-import { addCategory, getAllCategories } from '@/data/products';
-import { addOrUpdateProductInSupabase } from '@/data/products/supabaseApi';
+import { getAllCategories, addCategory } from '@/data/products';
+import { addOrUpdateProductInSupabase } from '@/data/products/supabase/productApi';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ExcelProductData {

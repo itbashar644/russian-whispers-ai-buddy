@@ -5,6 +5,7 @@ import { Json } from "@/integrations/supabase/types";
 // Функция для преобразования типов данных для Supabase
 export const transformProductToSupabase = (product: Product) => {
   return {
+    id: product.id, // Ensure ID is included when updating
     title: product.title,
     description: product.description,
     price: product.price,
