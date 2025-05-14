@@ -20,81 +20,7 @@ import YandexCallback from './pages/auth/YandexCallback';
 import Cart from './pages/Cart';
 import NotFound from './pages/NotFound';
 import Delivery from './pages/Delivery';
-
-// Create placeholder components for missing pages
-const Home = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Главная страница</h1>
-    <p>Добро пожаловать в The X Shop!</p>
-  </div>
-);
-
-const Account = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-  
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Личный кабинет</h1>
-      <p>Содержимое личного кабинета будет здесь.</p>
-    </div>
-  );
-};
-
-const AdminPanel = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Админ-панель</h1>
-    <p>Панель администратора будет здесь.</p>
-  </div>
-);
-
-const Products = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Товары</h1>
-    <p>Список товаров будет здесь.</p>
-  </div>
-);
-
-const ProductDetails = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Детали товара</h1>
-    <p>Информация о товаре будет здесь.</p>
-  </div>
-);
-
-const Checkout = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Оформление заказа</h1>
-    <p>Форма оформления заказа будет здесь.</p>
-  </div>
-);
-
-const OrderConfirmation = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Подтверждение заказа</h1>
-    <p>Информация о подтверждении заказа будет здесь.</p>
-  </div>
-);
-
-const Contact = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Контакты</h1>
-    <p>Контактная информация будет здесь.</p>
-  </div>
-);
-
-const Chat = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Чат</h1>
-    <p>Чат с поддержкой будет здесь.</p>
-  </div>
-);
+import Home from './pages/Home';
 
 const App = () => {
   return (
@@ -184,5 +110,73 @@ const AppContent = () => {
     </Routes>
   );
 };
+
+// Create placeholder components for missing pages
+const Account = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Личный кабинет</h1>
+      <p>Содержимое личного кабинета будет здесь.</p>
+    </div>
+  );
+};
+
+const AdminPanel = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Админ-панель</h1>
+    <p>Панель администратора будет здесь.</p>
+  </div>
+);
+
+const Products = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Товары</h1>
+    <p>Список товаров будет здесь.</p>
+  </div>
+);
+
+const ProductDetails = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Детали товара</h1>
+    <p>Информация о товаре будет здесь.</p>
+  </div>
+);
+
+const Checkout = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Оформление заказа</h1>
+    <p>Форма оформления заказа будет здесь.</p>
+  </div>
+);
+
+const OrderConfirmation = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Подтверждение заказа</h1>
+    <p>Информация о подтверждении заказа будет здесь.</p>
+  </div>
+);
+
+const Contact = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Контакты</h1>
+    <p>Контактная информация будет здесь.</p>
+  </div>
+);
+
+const Chat = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Чат</h1>
+    <p>Чат с поддержкой будет здесь.</p>
+  </div>
+);
 
 export default App;

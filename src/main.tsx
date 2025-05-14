@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { Toaster } from "sonner";
 
 // Устанавливаем заголовок страницы
 document.title = 'The X Shop';
@@ -27,4 +28,11 @@ allLovableElements.forEach(el => {
   console.log("Дополнительный элемент Lovable удален:", el);
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
+  <>
+    <App />
+    <Toaster />
+  </>
+);
