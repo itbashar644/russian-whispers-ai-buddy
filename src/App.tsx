@@ -9,23 +9,91 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { toast } from "sonner";
 
-import Home from './pages/Home';
+import About from './pages/About';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Account from './pages/Account';
-import AdminPanel from './pages/AdminPanel';
 import AuthCallback from './pages/auth/AuthCallback';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
-import Products from './pages/Products';
-import ProductDetails from './pages/ProductDetails';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import OrderConfirmation from './pages/OrderConfirmation';
-import Contact from './pages/Contact';
-import About from './pages/About';
-import Chat from './pages/Chat';
 import YandexCallback from './pages/auth/YandexCallback';
+import Cart from './pages/Cart';
+import NotFound from './pages/NotFound';
+import Delivery from './pages/Delivery';
+
+// Create placeholder components for missing pages
+const Home = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Главная страница</h1>
+    <p>Добро пожаловать в The X Shop!</p>
+  </div>
+);
+
+const Account = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Личный кабинет</h1>
+      <p>Содержимое личного кабинета будет здесь.</p>
+    </div>
+  );
+};
+
+const AdminPanel = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Админ-панель</h1>
+    <p>Панель администратора будет здесь.</p>
+  </div>
+);
+
+const Products = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Товары</h1>
+    <p>Список товаров будет здесь.</p>
+  </div>
+);
+
+const ProductDetails = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Детали товара</h1>
+    <p>Информация о товаре будет здесь.</p>
+  </div>
+);
+
+const Checkout = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Оформление заказа</h1>
+    <p>Форма оформления заказа будет здесь.</p>
+  </div>
+);
+
+const OrderConfirmation = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Подтверждение заказа</h1>
+    <p>Информация о подтверждении заказа будет здесь.</p>
+  </div>
+);
+
+const Contact = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Контакты</h1>
+    <p>Контактная информация будет здесь.</p>
+  </div>
+);
+
+const Chat = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Чат</h1>
+    <p>Чат с поддержкой будет здесь.</p>
+  </div>
+);
 
 const App = () => {
   return (
@@ -103,12 +171,14 @@ const AppContent = () => {
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
+      <Route path="/delivery" element={<Delivery />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
       <Route path="/auth/yandex-callback" element={<YandexCallback />} />
+      {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
