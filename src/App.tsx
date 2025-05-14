@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { Toaster } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 import Home from './pages/Home';
 import About from './pages/About';
@@ -70,8 +71,10 @@ const AppContent = () => {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && window.location.pathname === '/account') {
-      toast.error("Требуется авторизация", {
+      toast({
+        title: "Требуется авторизация",
         description: "Пожалуйста, войдите или зарегистрируйтесь, чтобы получить доступ к аккаунту.",
+        variant: "destructive"
       });
       navigate('/login');
     }
