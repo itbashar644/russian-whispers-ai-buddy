@@ -7,6 +7,7 @@ interface YandexAuthButtonProps {
   buttonTheme?: "light" | "dark";
   buttonView?: "main" | "icon";
   className?: string;
+  buttonId?: string; // Added buttonId prop
 }
 
 const YandexAuthButton = ({
@@ -14,7 +15,8 @@ const YandexAuthButton = ({
   buttonSize = "l",
   buttonTheme = "light",
   buttonView = "main",
-  className = ""
+  className = "",
+  buttonId // Added buttonId to destructuring
 }: YandexAuthButtonProps) => {
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
@@ -108,6 +110,7 @@ const YandexAuthButton = ({
       originUri,
       {
         view: buttonView,
+        // Use buttonId if provided, otherwise use default id
         parentId: buttonContainerRef.current.id,
         buttonView: buttonView,
         buttonTheme: buttonTheme,
@@ -125,7 +128,7 @@ const YandexAuthButton = ({
   
   return (
     <div 
-      id="yandex-auth-container" 
+      id={buttonId || "yandex-auth-container"} 
       ref={buttonContainerRef} 
       className={className}
     ></div>
