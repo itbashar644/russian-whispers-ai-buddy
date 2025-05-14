@@ -50,7 +50,7 @@ interface ExtendedToast {
 export function useToast() {
   const { toast: originalToast, ...rest } = useToastFromUI();
 
-  // Базовая toast функция
+  // Base toast function
   const toast = ((props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
     if (typeof props === "string") {
       return originalToast({ description: props });
@@ -58,7 +58,7 @@ export function useToast() {
     return originalToast(props);
   }) as ExtendedToast;
 
-  // Создаем функцию для toast.success
+  // Create function for toast.success
   toast.success = (props) => {
     if (typeof props === "string") {
       return originalToast({ 
@@ -74,7 +74,7 @@ export function useToast() {
     });
   };
 
-  // Создаем функцию для toast.error
+  // Create function for toast.error
   toast.error = (props) => {
     if (typeof props === "string") {
       return originalToast({ 
@@ -88,7 +88,7 @@ export function useToast() {
     });
   };
 
-  // Создаем функцию для toast.info
+  // Create function for toast.info
   toast.info = (props) => {
     if (typeof props === "string") {
       return originalToast({ 
@@ -104,7 +104,7 @@ export function useToast() {
     });
   };
 
-  // Создаем функцию для toast.warning
+  // Create function for toast.warning
   toast.warning = (props) => {
     if (typeof props === "string") {
       return originalToast({ 
@@ -126,8 +126,81 @@ export function useToast() {
   };
 }
 
-// Create a singleton instance of the toast function for direct import
-const { toast } = useToast();
-
-// Export both the hook and the singleton toast function
-export { toast };
+// Export a wrapper function for direct import instead of creating a singleton instance
+// This prevents the recursive call that was causing the stack overflow
+export const toast = {
+  // Base toast function
+  default: (props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
+    const { toast } = useToastFromUI();
+    if (typeof props === "string") {
+      return toast({ description: props });
+    }
+    return toast(props);
+  },
+  
+  // Success variant
+  success: (props: { title?: string; description?: string; duration?: number } | string) => {
+    const { toast } = useToastFromUI();
+    if (typeof props === "string") {
+      return toast({ 
+        description: props,
+        variant: "default",
+        className: "bg-green-50 border-green-200 text-green-800",
+      });
+    }
+    return toast({
+      ...props,
+      variant: "default",
+      className: "bg-green-50 border-green-200 text-green-800",
+    });
+  },
+  
+  // Error variant
+  error: (props: { title?: string; description?: string; duration?: number } | string) => {
+    const { toast } = useToastFromUI();
+    if (typeof props === "string") {
+      return toast({ 
+        description: props,
+        variant: "destructive"
+      });
+    }
+    return toast({
+      ...props,
+      variant: "destructive"
+    });
+  },
+  
+  // Info variant
+  info: (props: { title?: string; description?: string; duration?: number } | string) => {
+    const { toast } = useToastFromUI();
+    if (typeof props === "string") {
+      return toast({ 
+        description: props,
+        variant: "default",
+        className: "bg-blue-50 border-blue-200 text-blue-800",
+      });
+    }
+    return toast({
+      ...props,
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  },
+  
+  // Warning variant
+  warning: (props: { title?: string; description?: string; duration?: number } | string) => {
+    const { toast } = useToastFromUI();
+    if (typeof props === "string") {
+      return toast({ 
+        description: props,
+        variant: "default",
+        className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+      });
+    }
+    return toast({
+      ...props,
+      variant: "default",
+      className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    });
+  }
+};
