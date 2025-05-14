@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export async function resetPassword(email: string) {
+export async function resetPassword(email: string): Promise<boolean> {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
@@ -14,16 +14,16 @@ export async function resetPassword(email: string) {
       description: "Проверьте почту для сброса пароля",
     });
     
-    return { error: null };
+    return true;
   } catch (error: any) {
     toast("Ошибка сброса пароля", {
       description: error.message,
     });
-    return { error };
+    return false;
   }
 }
 
-export async function updatePassword(password: string) {
+export async function updatePassword(password: string): Promise<boolean> {
   try {
     const { error } = await supabase.auth.updateUser({
       password,
@@ -35,16 +35,16 @@ export async function updatePassword(password: string) {
       description: "Вы можете использовать новый пароль для входа",
     });
     
-    return { error: null };
+    return true;
   } catch (error: any) {
     toast("Ошибка обновления пароля", {
       description: error.message,
     });
-    return { error };
+    return false;
   }
 }
 
-export async function updateEmail(newEmail: string) {
+export async function updateEmail(newEmail: string): Promise<boolean> {
   try {
     const { error } = await supabase.auth.updateUser({
       email: newEmail,
@@ -56,11 +56,11 @@ export async function updateEmail(newEmail: string) {
       description: "Проверьте новый email для подтверждения",
     });
     
-    return { error: null };
+    return true;
   } catch (error: any) {
     toast("Ошибка обновления email", {
       description: error.message,
     });
-    return { error };
+    return false;
   }
 }
