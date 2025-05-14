@@ -15,9 +15,31 @@ declare module '@supabase/supabase-js' {
 
 // Add 'oauth' as a valid Provider type
 declare module '@supabase/supabase-js' {
-  interface Provider {
-    'oauth': 'oauth';
+  export interface AuthOptions {
+    authorizationUrl?: string;
   }
+
+  // Extend Provider type with 'oauth'
+  export type Provider = 
+    | 'apple' 
+    | 'azure' 
+    | 'bitbucket' 
+    | 'discord' 
+    | 'facebook' 
+    | 'github' 
+    | 'gitlab' 
+    | 'google' 
+    | 'keycloak' 
+    | 'linkedin' 
+    | 'notion' 
+    | 'slack' 
+    | 'spotify' 
+    | 'twitch' 
+    | 'twitter' 
+    | 'workos'
+    | 'zoom'
+    | 'oauth'
+    | 'yandex';
 }
 
 export {};

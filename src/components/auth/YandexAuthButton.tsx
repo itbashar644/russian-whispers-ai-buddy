@@ -14,22 +14,23 @@ const YandexAuthButton = ({
   className = "", 
   onSuccess 
 }: YandexAuthButtonProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Handle Yandex authentication
   const handleYandexAuth = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'oauth',
+        provider: 'oauth' as any, // Type assertion until type is properly recognized
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           scopes: 'login:email login:info login:avatar',
           queryParams: {
             client_id: 'ce0d8b75155845439152fe2694d3d330', // Your Yandex ClientID
             response_type: 'code',
-          },
-          authorizationUrl: 'https://oauth.yandex.ru/authorize'
-        },
+          } as any,
+          // Add authorizationUrl as part of options (using type assertion)
+          authorizationUrl: 'https://oauth.yandex.ru/authorize' as any
+        } as any,
       });
 
       if (error) {
@@ -64,7 +65,7 @@ const YandexAuthButton = ({
     <div className={className}>
       <button 
         id={buttonId} 
-        ref={containerRef}
+        ref={buttonRef}
         onClick={handleYandexAuth}
         className="flex items-center justify-center gap-2 h-10 w-full px-4 py-2 bg-[#fc3f1d] hover:bg-[#e0381a] text-white rounded-md transition-colors"
       >

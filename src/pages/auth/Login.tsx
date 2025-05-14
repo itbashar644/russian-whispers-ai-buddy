@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, Key, Mail, ArrowRight, 
   ChevronRight, Apple 
 } from "lucide-react";
-import { type Provider } from "@supabase/supabase-js";
+import { Provider } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,7 +194,7 @@ const Login = () => {
             <div className="grid grid-cols-1 gap-4">
               <Button 
                 variant="outline" 
-                onClick={() => handleSocialLogin('google')}
+                onClick={() => handleSocialLogin('google' as Provider)}
                 disabled={isLoading}
                 className="flex items-center justify-center gap-2"
               >
@@ -209,7 +209,7 @@ const Login = () => {
               
               <Button 
                 variant="outline" 
-                onClick={() => handleSocialLogin('apple')}
+                onClick={() => handleSocialLogin('apple' as Provider)}
                 disabled={isLoading}
                 className="w-full flex items-center justify-center gap-2"
               >
