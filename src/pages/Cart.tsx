@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { deliveryMethods } from "@/data/deliveryMethods";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { placeOrder } from "@/services/orderService";
 import CartTable from "@/components/cart/CartTable";
 import DeliveryMethodSelector from "@/components/cart/DeliveryMethodSelector";
@@ -16,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 const Cart = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   const { 
     items, 
@@ -101,10 +101,7 @@ const Cart = () => {
         
         // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
         if (user) {
-          toast.info({
-            title: "Вы можете отслеживать статус заказа в личном кабинете",
-            duration: 5000
-          });
+          toast.info("Вы можете отслеживать статус заказа в личном кабинете");
           // Перенаправляем после небольшой задержки для чтения сообщения
           setTimeout(() => {
             navigate("/account");
@@ -116,16 +113,10 @@ const Cart = () => {
           }, 2000);
         }
       } else {
-        toast.error({
-          title: "Ошибка при оформлении заказа",
-          description: result.error?.message || "Пожалуйста, попробуйте снова позже."
-        });
+        toast.error(result.error?.message || "Пожалуйста, попробуйте снова позже.");
       }
     } catch (error) {
-      toast.error({
-        title: "Произошла неожиданная ошибка",
-        description: "Пожалуйста, попробуйте снова позже."
-      });
+      toast.error("Пожалуйста, попробуйте снова позже.");
       console.error("Order placement error:", error);
     } finally {
       setIsSubmitting(false);

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ContactMethodSelect from "./ContactMethodSelect";
 import TelegramNicknameInput from "./TelegramNicknameInput";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -43,6 +43,8 @@ const OrderSummary = ({
   hasStockIssues
 }: OrderSummaryProps) => {
   const { profile, updateProfile } = useAuth();
+  const { toast } = useToast();
+  
   const [orderForm, setOrderForm] = useState({
     name: "",
     email: "",

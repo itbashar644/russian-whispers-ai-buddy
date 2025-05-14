@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { CartItem, DeliveryMethod, Product, ColorVariant } from "../types/product";
 import { deliveryMethods } from "../data/deliveryMethods";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { checkProductStock, decreaseProductStock } from "@/data/products";
 
 interface CartContextType {
@@ -36,6 +36,7 @@ export function CartProvider({ children }: CartProviderProps) {
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(
     deliveryMethods[0]
   );
+  const { toast } = useToast();
 
   // Load cart from localStorage on initial load
   useEffect(() => {

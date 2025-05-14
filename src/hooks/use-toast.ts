@@ -2,29 +2,27 @@
 import * as React from "react";
 import {
   Toast,
-  ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast";
 
 import {
   useToast as useToastFromUI,
-  type ToastActionElement as UIToastActionElement,
 } from "@/components/ui/use-toast";
 
-export interface ToasterToast extends ToastProps {
+export interface ToasterToast extends Omit<ToastProps, "title" | "description" | "action"> {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactElement;
   duration?: number;
 }
 
-// Расширяем типы
+// Extending the types for the toast function
 interface ExtendedToast {
   (props: {
     title?: React.ReactNode;
     description?: React.ReactNode;
-    action?: UIToastActionElement;
+    action?: React.ReactElement;
     variant?: "default" | "destructive";
   } | string): {
     id: string;
@@ -127,3 +125,9 @@ export function useToast() {
     ...rest,
   };
 }
+
+// Create a singleton instance of the toast function for direct import
+const { toast } = useToast();
+
+// Export both the hook and the singleton toast function
+export { toast };
