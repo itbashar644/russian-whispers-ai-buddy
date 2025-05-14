@@ -7,7 +7,7 @@ interface YandexAuthButtonProps {
   buttonTheme?: "light" | "dark";
   buttonView?: "main" | "icon";
   className?: string;
-  buttonId?: string; // Added buttonId prop
+  buttonId?: string;
 }
 
 const YandexAuthButton = ({
@@ -16,7 +16,7 @@ const YandexAuthButton = ({
   buttonTheme = "light",
   buttonView = "main",
   className = "",
-  buttonId // Added buttonId to destructuring
+  buttonId
 }: YandexAuthButtonProps) => {
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
@@ -101,30 +101,35 @@ const YandexAuthButton = ({
     
     console.log("Yandex redirect URI:", redirectUri);
     console.log("Yandex container ID:", buttonContainerRef.current.id);
+    console.log("Yandex init attempt with container:", buttonContainerRef.current);
 
-    window.YaAuthSuggest.init(
-      {
-        client_id: '9bea57e906e74923bbec407783eb51b5',
-        response_type: 'token',
-        redirect_uri: redirectUri
-      },
-      originUri,
-      {
-        view: buttonView,
-        // Use buttonId if provided, otherwise use default id
-        parentId: buttonContainerRef.current.id,
-        buttonView: buttonView,
-        buttonTheme: buttonTheme,
-        buttonSize: buttonSize,
-        buttonBorderRadius: 8
-      }
-    )
-      .then(({ handler }) => {
-        handler();
-      })
-      .catch(error => {
-        console.error('Ошибка инициализации YaAuthSuggest:', error);
-      });
+    try {
+      window.YaAuthSuggest.init(
+        {
+          client_id: '9bea57e906e74923bbec407783eb51b5',
+          response_type: 'token',
+          redirect_uri: redirectUri
+        },
+        originUri,
+        {
+          view: buttonView,
+          parentId: buttonContainerRef.current.id,
+          buttonView: buttonView,
+          buttonTheme: buttonTheme,
+          buttonSize: buttonSize,
+          buttonBorderRadius: 8
+        }
+      )
+        .then(({ handler }) => {
+          console.log("Yandex auth handler created successfully");
+          handler();
+        })
+        .catch(error => {
+          console.error('Ошибка инициализации YaAuthSuggest:', error);
+        });
+    } catch (error) {
+      console.error('Exception during YaAuthSuggest init:', error);
+    }
   };
   
   return (
@@ -132,6 +137,7 @@ const YandexAuthButton = ({
       id={buttonId || "yandex-auth-container"} 
       ref={buttonContainerRef} 
       className={`min-h-10 flex items-center justify-center ${className}`}
+      style={{ minHeight: '40px' }}
     ></div>
   );
 };
