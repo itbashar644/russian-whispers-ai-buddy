@@ -129,3 +129,6 @@ export const downloadImportTemplate = async (): Promise<void> => {
   const blob = workbookToBlob(workbook);
   downloadExcelFile(blob, 'шаблон_импорта_товаров.xlsx');
 };
+
+// Export the template download function with the expected name for compatibility
+export const createProductTemplate = downloadImportTemplate;

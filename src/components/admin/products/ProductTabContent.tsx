@@ -91,10 +91,7 @@ const ProductTabContent = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProductImportExport 
-              products={products} 
-              onImportComplete={onImportComplete}
-            />
+            <ProductImportExport onImportComplete={onImportComplete} />
           </CardContent>
         </Card>
       )}

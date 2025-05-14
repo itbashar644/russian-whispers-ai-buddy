@@ -3,8 +3,8 @@ import * as XLSX from 'xlsx';
 import { Product } from '@/types/product';
 import { productsToExcel, workbookToBlob, downloadExcelFile } from './excelCore';
 
-// Download Excel file with products data
-export const downloadProductsExcel = (products: Product[]) => {
+// Export products to Excel and download the file
+export const exportProductsToExcel = async (products: Product[]) => {
   console.log("Starting Excel export process with products:", products.length);
   
   // Create the Excel workbook from products
@@ -19,3 +19,6 @@ export const downloadProductsExcel = (products: Product[]) => {
   
   console.log("Excel export completed");
 };
+
+// Alias for downloadProductsExcel for backward compatibility
+export const downloadProductsExcel = exportProductsToExcel;
