@@ -20,6 +20,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState(0);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
     try {
@@ -30,6 +31,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         description: "Файл с товарами успешно экспортирован",
       });
     } catch (error: any) {
+      console.error("Ошибка экспорта:", error);
       toast({
         title: "Ошибка экспорта",
         description: error.message || "Произошла ошибка при экспорте товаров",
@@ -111,7 +113,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           setImporting(false);
           setImportProgress(0);
           // Clear the input value to allow re-importing the same file
-          e.target.value = '';
+          if (fileInputRef.current) fileInputRef.current.value = '';
         }
       };
       
@@ -120,11 +122,12 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         setImportError("Ошибка чтения файла. Попробуйте другой файл.");
         setImporting(false);
         setImportProgress(0);
-        e.target.value = '';
+        if (fileInputRef.current) fileInputRef.current.value = '';
       };
       
       reader.readAsArrayBuffer(file);
     } catch (error: any) {
+      console.error("Общая ошибка импорта:", error);
       setImportError(error.message || "Произошла ошибка при импорте товаров");
       toast({
         title: "Ошибка импорта",
@@ -134,7 +137,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
       setImporting(false);
       setImportProgress(0);
       // Clear the input value
-      e.target.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -147,6 +150,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         description: "Шаблон для импорта товаров успешно скачан",
       });
     } catch (error: any) {
+      console.error("Ошибка скачивания шаблона:", error);
       toast({
         title: "Ошибка скачивания",
         description: error.message || "Произошла ошибка при скачивании шаблона",
@@ -214,6 +218,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           
           <div className="flex flex-col gap-2">
             <Input
+              ref={fileInputRef}
               id="import-file"
               type="file"
               accept=".xlsx"

@@ -32,7 +32,7 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
     // Convert to JSON
     const jsonData = XLSX.utils.sheet_to_json<ExcelProductData>(worksheet);
     
-    console.log(`Прочитано ${jsonData.length} строк из Excel файла`);
+    console.log(`Прочитано ${jsonData.length} строк из Excel файла`, jsonData);
     
     if (!jsonData || jsonData.length === 0) {
       throw new Error("Файл не содержит данных. Проверьте формат файла и наличие информации.");
@@ -102,7 +102,9 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
         if (row.wildberriesUrl) product.wildberriesUrl = String(row.wildberriesUrl);
         if (row.ozonUrl) product.ozonUrl = String(row.ozonUrl);
         if (row.avitoUrl) product.avitoUrl = String(row.avitoUrl);
-        if (row.stockQuantity !== undefined) product.stockQuantity = Number(row.stockQuantity);
+        if (row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity))) {
+          product.stockQuantity = Number(row.stockQuantity);
+        }
         if (row.material) product.material = String(row.material);
         
         products.push(product);
@@ -145,6 +147,7 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
           const success = await addOrUpdateProductInSupabase(product);
           
           if (success) {
+            console.log(`Successfully saved product: ${product.title}`);
             savedProducts.push(product);
           } else {
             console.error(`Failed to save product: ${product.title}`);

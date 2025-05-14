@@ -62,7 +62,7 @@ const OrderRow: React.FC<OrderRowProps> = ({
     <>
       <TableRow className={order.status === 'archived' ? 'opacity-60' : ''}>
         <TableCell className="font-medium">{order.orderNumber}</TableCell>
-        <TableCell className="font-medium">{order.id}</TableCell>
+        <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
         <TableCell>
           <div className="font-medium">{order.customerName}</div>
           <div className="text-sm text-muted-foreground">

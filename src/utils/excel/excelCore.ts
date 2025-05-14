@@ -4,6 +4,8 @@ import { Product } from '@/types/product';
 
 // Convert products array to Excel workbook
 export const productsToExcel = (products: Product[]): XLSX.WorkBook => {
+  console.log("Converting products to Excel format...", products.length);
+  
   // Create a simplified array for export (excluding complex nested properties)
   const exportData = products.map(product => ({
     id: product.id,
@@ -51,8 +53,7 @@ export const productsToExcel = (products: Product[]): XLSX.WorkBook => {
     { wch: 15 }, // countryOfOrigin
     { wch: 8 }, // isNew
     { wch: 8 }, // isBestseller
-    { wch: 15 }, // countryOfOrigin
-    { wch: 12 }, // articleNumber
+    { wch: 15 }, // articleNumber 
     { wch: 15 }, // barcode
     { wch: 30 }, // wildberriesUrl
     { wch: 30 }, // ozonUrl
@@ -75,6 +76,8 @@ export const workbookToBlob = (workbook: XLSX.WorkBook): Blob => {
 
 // Helper to download an Excel file
 export const downloadExcelFile = (blob: Blob, filename: string): void => {
+  console.log("Downloading Excel file:", filename);
+  
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -85,4 +88,6 @@ export const downloadExcelFile = (blob: Blob, filename: string): void => {
   // Clean up
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  
+  console.log("Excel file download initiated");
 };

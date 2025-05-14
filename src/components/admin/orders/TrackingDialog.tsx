@@ -48,7 +48,7 @@ const TrackingDialog: React.FC<TrackingDialogProps> = ({
       </Button>
       
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md bg-background">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Информация о трекинге</DialogTitle>
           </DialogHeader>
