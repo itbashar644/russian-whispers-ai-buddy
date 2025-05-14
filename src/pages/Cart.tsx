@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -100,7 +101,8 @@ const Cart = () => {
         
         // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
         if (user) {
-          toast.info("Вы можете отслеживать статус заказа в личном кабинете", {
+          toast.info({
+            title: "Вы можете отслеживать статус заказа в личном кабинете",
             duration: 5000
           });
           // Перенаправляем после небольшой задержки для чтения сообщения
@@ -114,12 +116,14 @@ const Cart = () => {
           }, 2000);
         }
       } else {
-        toast.error("Ошибка при оформлении заказа", {
+        toast.error({
+          title: "Ошибка при оформлении заказа",
           description: result.error?.message || "Пожалуйста, попробуйте снова позже."
         });
       }
     } catch (error) {
-      toast.error("Произошла неожиданная ошибка", {
+      toast.error({
+        title: "Произошла неожиданная ошибка",
         description: "Пожалуйста, попробуйте снова позже."
       });
       console.error("Order placement error:", error);
