@@ -18,6 +18,11 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
 
     if (error) {
       console.error("Ошибка при загрузке товаров:", error);
+      throw error;
+    }
+
+    if (!data || !Array.isArray(data)) {
+      console.warn("Данные товаров не получены или не являются массивом");
       return [];
     }
 
@@ -25,7 +30,7 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
     return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров:", err);
-    return [];
+    throw err; // Пробрасываем ошибку дальше для обработки на уровне UI
   }
 };
 
@@ -44,24 +49,30 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
 
       if (error) {
         console.error("Ошибка при обновлении товара:", error);
-        return false;
+        throw error;
       }
     } else {
-      // Добавляем новый товар
-      const { error } = await supabase
+      // Добавляем новый товар, удаляем id, чтобы Supabase сгенерировал новый
+      const newProductData = { ...productData };
+      delete newProductData.id;
+      
+      const { error, data } = await supabase
         .from("products")
-        .insert(productData);
+        .insert(newProductData)
+        .select();
 
       if (error) {
         console.error("Ошибка при добавлении нового товара:", error);
-        return false;
+        throw error;
       }
+      
+      console.log("Товар успешно добавлен:", data);
     }
     
     return true;
   } catch (err) {
     console.error("Ошибка при сохранении товара:", err);
-    return false;
+    throw err;
   }
 };
 
@@ -75,13 +86,13 @@ export const archiveProductInSupabase = async (productId: string): Promise<boole
 
     if (error) {
       console.error("Ошибка при архивировании товара:", error);
-      return false;
+      throw error;
     }
     
     return true;
   } catch (err) {
     console.error("Ошибка при архивировании товара:", err);
-    return false;
+    throw err;
   }
 };
 
@@ -95,13 +106,13 @@ export const restoreProductInSupabase = async (productId: string): Promise<boole
 
     if (error) {
       console.error("Ошибка при восстановлении товара из архива:", error);
-      return false;
+      throw error;
     }
     
     return true;
   } catch (err) {
     console.error("Ошибка при восстановлении товара из архива:", err);
-    return false;
+    throw err;
   }
 };
 
@@ -115,13 +126,13 @@ export const removeProductFromSupabase = async (productId: string): Promise<bool
 
     if (error) {
       console.error("Ошибка при удалении товара:", error);
-      return false;
+      throw error;
     }
     
     return true;
   } catch (err) {
     console.error("Ошибка при удалении товара:", err);
-    return false;
+    throw err;
   }
 };
 
@@ -136,14 +147,14 @@ export const getProductByIdFromSupabase = async (id: string): Promise<Product | 
 
     if (error) {
       console.error("Ошибка при загрузке товара по ID:", error);
-      return undefined;
+      throw error;
     }
 
     // Преобразуем данные из Supabase в тип Product
     return transformSupabaseToProduct(data);
   } catch (err) {
     console.error("Ошибка при загрузке товара по ID:", err);
-    return undefined;
+    throw err;
   }
 };
 
@@ -158,13 +169,13 @@ export const getProductsByCategoryFromSupabase = async (category: string): Promi
 
     if (error) {
       console.error("Ошибка при загрузке товаров по категории:", error);
-      return [];
+      throw error;
     }
 
     // Преобразуем данные из Supabase в тип Product
     return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров по категории:", err);
-    return [];
+    throw err;
   }
 };

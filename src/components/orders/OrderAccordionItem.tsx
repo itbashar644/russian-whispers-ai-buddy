@@ -51,8 +51,8 @@ const OrderAccordionItem: React.FC<OrderAccordionItemProps> = ({
     console.error("Error formatting date:", e);
   }
   
-  // Безопасное отображение ID заказа (вместо номера заказа)
-  const displayOrderId = id || "ID не указан";
+  // Безопасное отображение номера заказа
+  const displayOrderNumber = order_number || "Номер не указан";
   
   // Безопасное отображение суммы
   const safeTotal = typeof total === 'number' && !isNaN(total) ? total : 0;
@@ -62,7 +62,7 @@ const OrderAccordionItem: React.FC<OrderAccordionItemProps> = ({
       <AccordionTrigger className="hover:no-underline">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full">
           <div>
-            <span className="font-medium">ID заказа: {displayOrderId.substring(0, 8)}</span>
+            <span className="font-medium">Заказ #{displayOrderNumber}</span>
             <span className="text-muted-foreground ml-4">{displayDate}</span>
           </div>
           <div className="flex items-center gap-3 mt-2 sm:mt-0">

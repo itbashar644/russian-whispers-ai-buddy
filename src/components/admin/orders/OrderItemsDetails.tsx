@@ -20,7 +20,8 @@ interface OrderItemsDetailsProps {
 }
 
 const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
-  if (!items || !items.length) {
+  // Если items не определены или пусты, показываем сообщение
+  if (!items || !Array.isArray(items) || items.length === 0) {
     return <p className="text-sm text-muted-foreground">Информация о товарах недоступна</p>;
   }
 
@@ -40,10 +41,11 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
         </TableHeader>
         <TableBody>
           {items.map((item, index) => {
-            // В зависимости от формата данных, используем product.title или productName
+            // Безопасно извлекаем данные, обрабатывая различные форматы
             const productName = item.product?.title || item.productName || 'Товар';
             const productImage = item.product?.imageUrl || '';
-            const itemPrice = item.price;
+            const itemPrice = typeof item.price === 'number' ? item.price : 0;
+            const itemQuantity = typeof item.quantity === 'number' ? item.quantity : 1;
             
             return (
               <TableRow key={index}>
@@ -72,9 +74,9 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
                   </div>
                 </TableCell>
                 <TableCell>{itemPrice.toLocaleString()} ₽</TableCell>
-                <TableCell className="text-center">{item.quantity}</TableCell>
+                <TableCell className="text-center">{itemQuantity}</TableCell>
                 <TableCell className="text-right font-medium">
-                  {(itemPrice * item.quantity).toLocaleString()} ₽
+                  {(itemPrice * itemQuantity).toLocaleString()} ₽
                 </TableCell>
               </TableRow>
             );

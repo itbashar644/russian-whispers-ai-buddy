@@ -37,33 +37,37 @@ export const transformProductToSupabase = (product: Product) => {
 
 // Функция для преобразования данных из Supabase в тип Product
 export const transformSupabaseToProduct = (data: any): Product => {
+  if (!data) {
+    throw new Error("No data received from Supabase");
+  }
+  
   return {
     id: data.id,
-    title: data.title,
-    description: data.description,
-    price: data.price,
+    title: data.title || "",
+    description: data.description || "",
+    price: data.price || 0,
     discountPrice: data.discount_price,
-    category: data.category,
-    imageUrl: data.image_url,
+    category: data.category || "",
+    imageUrl: data.image_url || "/placeholder.svg",
     additionalImages: data.additional_images as string[] || [],
-    rating: data.rating,
-    inStock: data.in_stock,
+    rating: data.rating || 5,
+    inStock: data.in_stock !== undefined ? data.in_stock : true,
     colors: data.colors as string[] || [],
     sizes: data.sizes as string[] || [],
-    countryOfOrigin: data.country_of_origin,
+    countryOfOrigin: data.country_of_origin || "",
     specifications: data.specifications as Record<string, string> || {},
-    isNew: data.is_new,
-    isBestseller: data.is_bestseller,
-    articleNumber: data.article_number,
-    barcode: data.barcode,
+    isNew: data.is_new || false,
+    isBestseller: data.is_bestseller || false,
+    articleNumber: data.article_number || "",
+    barcode: data.barcode || "",
     ozonUrl: data.ozon_url,
     wildberriesUrl: data.wildberries_url,
     avitoUrl: data.avito_url,
-    archived: data.archived,
+    archived: data.archived || false,
     stockQuantity: data.stock_quantity,
     colorVariants: data.color_variants as ColorVariant[] || [],
     videoUrl: data.video_url,
     videoType: data.video_type,
-    material: data.material
+    material: data.material || ""
   };
 };
