@@ -19,7 +19,7 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
   // Проверка структуры данных
   const hasValidItems = items.some(item => 
     item && (typeof item === 'object') && 
-    item.product && (typeof item.product === 'object')
+    (item.product || item.productName)
   );
 
   if (!hasValidItems) {
@@ -46,8 +46,13 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
               // Безопасное получение данных о товаре
               const product = item?.product || {};
               const quantity = item?.quantity || 1;
-              const price = product?.price || 0;
-              const title = product?.title || "Товар";
+              
+              // Get price from multiple possible locations
+              const itemPrice = item?.price || 0;
+              const productPrice = product?.price || 0;
+              const price = itemPrice > 0 ? itemPrice : productPrice;
+              
+              const title = product?.title || item?.productName || "Товар";
               const imageUrl = product?.imageUrl || "";
               const color = item?.color || null;
               const size = item?.size || null;

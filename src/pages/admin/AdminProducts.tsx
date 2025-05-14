@@ -161,6 +161,7 @@ const AdminProducts = () => {
           ...formData,
         } as Product;
         
+        console.log("Saving updated product:", updatedProduct);
         const success = await addOrUpdateProductInSupabase(updatedProduct);
         
         if (success) {
@@ -170,9 +171,7 @@ const AdminProducts = () => {
           });
           setShowForm(false); // Close the form after successful save
         } else {
-          toast.error("Ошибка обновления", {
-            description: "Не удалось обновить товар",
-          });
+          throw new Error("Failed to update product");
         }
       } else {
         // Adding new product
@@ -184,16 +183,16 @@ const AdminProducts = () => {
           discountPrice: formData.discountPrice,
           category: formData.category || "",
           imageUrl: formData.imageUrl || "/placeholder.svg",
-          additionalImages: formData.additionalImages,
+          additionalImages: formData.additionalImages || [],
           rating: formData.rating || 5,
           inStock: formData.inStock !== undefined ? formData.inStock : true,
-          colors: formData.colors,
-          sizes: formData.sizes,
-          material: formData.material,
-          isNew: formData.isNew,
-          isBestseller: formData.isBestseller,
+          colors: formData.colors || [],
+          sizes: formData.sizes || [],
+          material: formData.material || "",
+          isNew: formData.isNew || false,
+          isBestseller: formData.isBestseller || false,
           countryOfOrigin: formData.countryOfOrigin || "Россия",
-          specifications: formData.specifications,
+          specifications: formData.specifications || {},
           articleNumber: formData.articleNumber || "",
           barcode: formData.barcode || "",
           ozonUrl: formData.ozonUrl || undefined,
@@ -202,8 +201,11 @@ const AdminProducts = () => {
           videoUrl: formData.videoUrl || undefined,
           videoType: formData.videoUrl ? formData.videoType : undefined,
           archived: false,
+          stockQuantity: formData.stockQuantity || 0,
+          colorVariants: formData.colorVariants || [],
         };
 
+        console.log("Saving new product:", newProduct);
         const success = await addOrUpdateProductInSupabase(newProduct);
         
         if (success) {
@@ -213,9 +215,7 @@ const AdminProducts = () => {
           });
           setShowForm(false); // Close the form after successful save
         } else {
-          toast.error("Ошибка добавления", {
-            description: "Не удалось добавить товар",
-          });
+          throw new Error("Failed to add product");
         }
       }
 
@@ -232,7 +232,7 @@ const AdminProducts = () => {
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Ошибка", {
-        description: "Произошла ошибка при сохранении товара",
+        description: "Произошла ошибка при сохранении товара: " + (error instanceof Error ? error.message : "Неизвестная ошибка"),
       });
     }
   };

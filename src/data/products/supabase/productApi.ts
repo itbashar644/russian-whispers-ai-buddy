@@ -39,22 +39,28 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
   try {
     // Преобразуем данные товара в формат для Supabase
     const productData = transformProductToSupabase(product);
+    console.log("Transformed product data for Supabase:", productData);
 
     if (product.id && product.id.length > 10) { // предполагаем, что действительные UUID длиннее 10 символов
       // Обновляем существующий товар
-      const { error } = await supabase
+      console.log("Updating existing product with ID:", product.id);
+      const { error, data } = await supabase
         .from("products")
         .update(productData)
-        .eq("id", product.id);
+        .eq("id", product.id)
+        .select();
 
       if (error) {
         console.error("Ошибка при обновлении товара:", error);
         throw error;
       }
+      
+      console.log("Product update response:", data);
     } else {
       // Добавляем новый товар, удаляем id, чтобы Supabase сгенерировал новый
       const newProductData = { ...productData };
       delete newProductData.id;
+      console.log("Adding new product, data:", newProductData);
       
       const { error, data } = await supabase
         .from("products")
@@ -66,7 +72,7 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
         throw error;
       }
       
-      console.log("Товар успешно добавлен:", data);
+      console.log("Product insert response:", data);
     }
     
     return true;

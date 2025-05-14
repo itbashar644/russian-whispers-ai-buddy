@@ -12,6 +12,7 @@ interface OrderItem {
   product?: {
     title?: string;
     imageUrl?: string;
+    price?: number;
   };
 }
 
@@ -44,7 +45,12 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
             // Безопасно извлекаем данные, обрабатывая различные форматы
             const productName = item.product?.title || item.productName || 'Товар';
             const productImage = item.product?.imageUrl || '';
-            const itemPrice = typeof item.price === 'number' ? item.price : 0;
+            
+            // Get price from either direct property or from product object
+            const itemPrice = typeof item.price === 'number' && item.price > 0
+              ? item.price
+              : (item.product?.price && typeof item.product.price === 'number' ? item.product.price : 0);
+              
             const itemQuantity = typeof item.quantity === 'number' ? item.quantity : 1;
             
             return (
