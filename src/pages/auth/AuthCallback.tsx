@@ -18,7 +18,8 @@ const AuthCallback = () => {
         }
         
         if (data.user) {
-          toast("Успешная авторизация", {
+          toast({
+            title: "Успешная авторизация",
             description: "Вы успешно вошли в систему",
           });
           navigate('/account');
@@ -27,8 +28,10 @@ const AuthCallback = () => {
         }
       } catch (error: any) {
         console.error("Ошибка при аутентификации:", error);
-        toast("Ошибка авторизации", {
+        toast({
+          title: "Ошибка авторизации",
           description: error.message || "Произошла ошибка при входе в систему",
+          variant: "destructive",
         });
         navigate('/login');
       }

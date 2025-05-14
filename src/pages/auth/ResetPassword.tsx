@@ -54,8 +54,10 @@ const ResetPassword = () => {
           const { data, error } = await supabase.auth.getSession();
           
           if (error) {
-            toast("Ошибка", {
+            toast({
+              title: "Ошибка",
               description: "Неверный или устаревший токен сброса пароля",
+              variant: "destructive",
             });
             navigate('/login');
             return;
@@ -69,8 +71,10 @@ const ResetPassword = () => {
           navigate('/login');
         }
       } else {
-        toast("Ошибка", {
+        toast({
+          title: "Ошибка",
           description: "Недопустимая ссылка для сброса пароля",
+          variant: "destructive",
         });
         navigate('/login');
       }
@@ -95,11 +99,14 @@ const ResetPassword = () => {
       });
 
       if (error) {
-        toast("Ошибка", {
+        toast({
+          title: "Ошибка",
           description: error.message || "Не удалось обновить пароль",
+          variant: "destructive",
         });
       } else {
-        toast("Успешно", {
+        toast({
+          title: "Успешно",
           description: "Ваш пароль успешно обновлен",
         });
         setTimeout(() => {
@@ -108,8 +115,10 @@ const ResetPassword = () => {
       }
     } catch (error: any) {
       console.error("Ошибка при сбросе пароля:", error);
-      toast("Ошибка", {
+      toast({
+        title: "Ошибка",
         description: error.message || "Произошла ошибка при сбросе пароля",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

@@ -1,5 +1,5 @@
 
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { User } from '@supabase/supabase-js';
 import { UserProfile } from "@/types/auth";
@@ -24,21 +24,26 @@ const login = async (email: string, password: string): Promise<boolean> => {
     });
     
     if (error) {
-      toast("Ошибка входа", {
+      toast({
+        title: "Ошибка входа",
         description: error.message || "Неверный email или пароль",
+        variant: "destructive",
       });
       return false;
     }
     
-    toast("Успешный вход", {
+    toast({
+      title: "Успешный вход",
       description: "Вы успешно вошли в систему",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при входе:", error);
-    toast("Ошибка входа", {
+    toast({
+      title: "Ошибка входа",
       description: error.message || "Произошла ошибка при входе в систему",
+      variant: "destructive",
     });
     return false;
   }
@@ -62,21 +67,26 @@ const register = async (email: string, password: string, name: string): Promise<
     });
     
     if (error) {
-      toast("Ошибка регистрации", {
+      toast({
+        title: "Ошибка регистрации",
         description: error.message || "Не удалось создать аккаунт",
+        variant: "destructive",
       });
       return false;
     }
 
-    toast("Успешная регистрация", {
+    toast({
+      title: "Успешная регистрация",
       description: "Аккаунт успешно создан",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при регистрации:", error);
-    toast("Ошибка регистрации", {
+    toast({
+      title: "Ошибка регистрации",
       description: error.message || "Произошла ошибка при создании аккаунта",
+      variant: "destructive",
     });
     return false;
   }
@@ -91,7 +101,8 @@ const logout = async () => {
     // Попытка глобального выхода
     await supabase.auth.signOut({ scope: 'global' });
     
-    toast("Выход из системы", {
+    toast({
+      title: "Выход из системы",
       description: "Вы успешно вышли из системы",
     });
     
@@ -99,8 +110,10 @@ const logout = async () => {
     window.location.href = '/';
   } catch (error: any) {
     console.error("Ошибка при выходе:", error);
-    toast("Ошибка", {
+    toast({
+      title: "Ошибка",
       description: error.message || "Произошла ошибка при выходе из системы",
+      variant: "destructive",
     });
   }
 };
@@ -141,8 +154,10 @@ const updateProfile = async (
       .eq('id', profile.id);
     
     if (error) {
-      toast("Ошибка", {
+      toast({
+        title: "Ошибка",
         description: error.message || "Не удалось обновить профиль",
+        variant: "destructive",
       });
       return false;
     }
@@ -150,15 +165,18 @@ const updateProfile = async (
     // Обновляем локальное состояние
     setProfile({ ...profile, ...userData });
     
-    toast("Профиль обновлен", {
+    toast({
+      title: "Профиль обновлен",
       description: "Данные профиля успешно обновлены",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при обновлении профиля:", error);
-    toast("Ошибка", {
+    toast({
+      title: "Ошибка",
       description: error.message || "Произошла ошибка при обновлении профиля",
+      variant: "destructive",
     });
     return false;
   }
@@ -172,21 +190,26 @@ const resetPassword = async (email: string): Promise<boolean> => {
     });
     
     if (error) {
-      toast("Ошибка", {
+      toast({
+        title: "Ошибка",
         description: error.message || "Не удалось отправить инструкции",
+        variant: "destructive",
       });
       return false;
     }
     
-    toast("Инструкции отправлены", {
+    toast({
+      title: "Инструкции отправлены",
       description: "Проверьте вашу электронную почту для сброса пароля",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при сбросе пароля:", error);
-    toast("Ошибка", {
+    toast({
+      title: "Ошибка",
       description: error.message || "Произошла ошибка при сбросе пароля",
+      variant: "destructive",
     });
     return false;
   }
@@ -200,21 +223,26 @@ const updatePassword = async (newPassword: string): Promise<boolean> => {
     });
     
     if (error) {
-      toast("Ошибка", {
+      toast({
+        title: "Ошибка",
         description: error.message || "Не удалось обновить пароль",
+        variant: "destructive",
       });
       return false;
     }
     
-    toast("Пароль обновлен", {
+    toast({
+      title: "Пароль обновлен",
       description: "Ваш пароль успешно изменен",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при обновлении пароля:", error);
-    toast("Ошибка", {
+    toast({
+      title: "Ошибка",
       description: error.message || "Произошла ошибка при обновлении пароля",
+      variant: "destructive",
     });
     return false;
   }
@@ -228,21 +256,26 @@ const updateEmail = async (newEmail: string): Promise<boolean> => {
     });
     
     if (error) {
-      toast("Ошибка", {
+      toast({
+        title: "Ошибка",
         description: error.message || "Не удалось обновить email",
+        variant: "destructive",
       });
       return false;
     }
     
-    toast("Email обновлен", {
+    toast({
+      title: "Email обновлен",
       description: "На новый адрес email отправлено письмо для подтверждения",
     });
     
     return true;
   } catch (error: any) {
     console.error("Ошибка при обновлении email:", error);
-    toast("Ошибка", {
+    toast({
+      title: "Ошибка",
       description: error.message || "Произошла ошибка при обновлении email",
+      variant: "destructive",
     });
     return false;
   }
