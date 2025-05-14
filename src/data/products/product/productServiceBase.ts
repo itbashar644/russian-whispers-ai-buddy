@@ -61,14 +61,14 @@ export const addOrUpdateProduct = async (product: Product): Promise<boolean> => 
     }
     
     // Сохраняем продукт в Supabase
-    const success = await addOrUpdateProductInSupabase(product);
+    const result = await addOrUpdateProductInSupabase(product);
     
-    if (success) {
+    if (result.success) {
       // Принудительно обновляем кэш
       await refreshCacheIfNeeded(true);
     }
     
-    return success;
+    return result.success;
   } catch (error) {
     console.error("Ошибка при добавлении/обновлении товара:", error);
     return false;
@@ -104,7 +104,7 @@ export const restoreProduct = async (productId: string): Promise<boolean> => {
     
     return success;
   } catch (error) {
-    console.error("Ошибка при восстановлении товара:", error);
+    console.error("Ошибка при восстановлении товара из архива:", error);
     return false;
   }
 };
