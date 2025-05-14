@@ -26,6 +26,7 @@ import Account from "./pages/account/Account";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AuthCallback from "./pages/auth/AuthCallback";
+import YandexCallback from "./pages/auth/YandexCallback";
 import ChatWidget from "./components/chat/ChatWidget";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/auth/yandex-callback" element={<YandexCallback />} />
                 
                 {/* Маршруты личного кабинета */}
                 <Route path="/account" element={

@@ -33,6 +33,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import YandexAuthButton from "@/components/auth/YandexAuthButton";
 
 const loginSchema = z.object({
   email: z.string().email("Введите корректный email"),
@@ -215,6 +216,10 @@ const Login = () => {
                 <Apple className="h-4 w-4" />
                 Войти через Apple
               </Button>
+              
+              <div className="w-full h-10 flex items-center justify-center">
+                <YandexAuthButton buttonId="yandex-login-button" className="w-full" />
+              </div>
             </div>
           </CardContent>
           
