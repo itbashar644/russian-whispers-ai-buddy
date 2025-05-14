@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { toast } from "sonner";
 
 import About from './pages/About';
@@ -97,9 +98,11 @@ const Chat = () => (
 
 const App = () => {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 };
 
@@ -138,8 +141,7 @@ const AppContent = () => {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && window.location.pathname === '/account') {
-      toast({
-        title: "Требуется авторизация",
+      toast.error("Требуется авторизация", {
         description: "Пожалуйста, войдите или зарегистрируйтесь, чтобы получить доступ к аккаунту.",
       });
       navigate('/login');
