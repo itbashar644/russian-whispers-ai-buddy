@@ -245,7 +245,7 @@ const Register = () => {
               
               {/* Добавляем кнопку Яндекса */}
               <div className="w-full h-10 flex items-center justify-center">
-                <YandexAuthButton buttonId="yandex-register-button" className="w-full" />
+                <YandexAuthButton className="w-full" />
               </div>
             </div>
           </CardContent>

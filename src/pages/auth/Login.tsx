@@ -217,7 +217,7 @@ const Login = () => {
               </Button>
               
               <div className="w-full h-10 flex items-center justify-center">
-                <YandexAuthButton buttonId="yandex-login-button" className="w-full" />
+                <YandexAuthButton className="w-full" />
               </div>
             </div>
           </CardContent>
