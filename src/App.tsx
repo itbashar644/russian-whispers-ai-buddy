@@ -28,6 +28,7 @@ import Contact from './pages/Contact';
 import Catalog from './pages/Catalog';
 import Products from './pages/Products';
 import ScrollToTop from './components/layout/ScrollToTop';
+import AccountPage from './pages/account/Account'; // Import the full implementation
 
 const App = () => {
   return (
@@ -104,7 +105,7 @@ const AppContent = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/account" element={isAuthenticated ? <Account /> : <Login />} />
+      <Route path="/account" element={isAuthenticated ? <AccountPage /> : <Login />} />
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/products" element={<Products />} />
       <Route path="/products/:id" element={<ProductDetails />} />
@@ -127,31 +128,6 @@ const AppContent = () => {
 };
 
 // Create placeholder components for missing pages
-const Account = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-  
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Личный кабинет</h1>
-      <p>Содержимое личного кабинета будет здесь.</p>
-    </div>
-  );
-};
-
-const AdminPanel = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Админ-панель</h1>
-    <p>Панель администратора будет здесь.</p>
-  </div>
-);
-
 const ProductDetails = () => (
   <div className="container mx-auto py-8">
     <h1 className="text-3xl font-bold mb-6">Детали товара</h1>
@@ -177,6 +153,13 @@ const Chat = () => (
   <div className="container mx-auto py-8">
     <h1 className="text-3xl font-bold mb-6">Чат</h1>
     <p>Чат с поддержкой будет здесь.</p>
+  </div>
+);
+
+const AdminPanel = () => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-3xl font-bold mb-6">Админ-панель</h1>
+    <p>Панель администратора будет здесь.</p>
   </div>
 );
 
