@@ -99,10 +99,10 @@ const YandexAuthButton = ({
     initialized.current = true;
 
     try {
-      // Используем корректный client_id и redirect URI
+      // Используем переданный client_id
       window.YaAuthSuggest.init(
         {
-          client_id: 'c54c073e9e5e4f4f92e95db7ecf9f65b', // Обновленный client_id
+          client_id: 'ce0d8b75155845439152fe2694d3d330', // Обновленный client_id
           response_type: 'token',
           redirect_uri: `${window.location.origin}/auth/yandex-callback`
         },
@@ -133,7 +133,7 @@ const YandexAuthButton = ({
   // Обработчик нажатия на кнопку для случаев, когда автоматическая инициализация не удалась
   const handleManualAuth = () => {
     // Предоставляем резервный URL для авторизации через Яндекс с обновленным client_id
-    window.open(`https://oauth.yandex.ru/authorize?response_type=token&client_id=c54c073e9e5e4f4f92e95db7ecf9f65b&redirect_uri=${encodeURIComponent(window.location.origin + "/auth/yandex-callback")}`, "_blank");
+    window.open(`https://oauth.yandex.ru/authorize?response_type=token&client_id=ce0d8b75155845439152fe2694d3d330&redirect_uri=${encodeURIComponent(window.location.origin + "/auth/yandex-callback")}`, "_blank");
   };
   
   return (
