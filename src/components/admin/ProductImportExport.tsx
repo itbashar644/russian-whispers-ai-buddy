@@ -1,12 +1,13 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import { Download, Upload, AlertCircle } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Download, Upload, AlertCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Product } from "@/types/product";
 import { downloadProductsExcel, excelToProducts, downloadImportTemplate } from "@/utils/excelUtils";
+import { Progress } from "@/components/ui/progress";
 
 interface ProductImportExportProps {
   products: Product[];
@@ -18,6 +19,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
   const [exporting, setExporting] = useState(false);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [importProgress, setImportProgress] = useState(0);
 
   const handleExport = async () => {
     try {
@@ -46,6 +48,8 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
     try {
       setImporting(true);
       setImportError(null);
+      setImportProgress(10);
+      
       const file = e.target.files[0];
       
       toast({
@@ -57,14 +61,21 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
       
       // Read the file
       const reader = new FileReader();
+      
       reader.onload = async (event) => {
         try {
+          setImportProgress(30);
+          
           if (event.target?.result) {
             console.log("File read successful, processing data...");
             const data = event.target.result;
             
+            setImportProgress(50);
+            
             try {
               const importedProducts = await excelToProducts(data as ArrayBuffer);
+              
+              setImportProgress(90);
               
               console.log("Import process completed, products count:", importedProducts.length);
               
@@ -73,12 +84,16 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
                   title: "Импорт выполнен",
                   description: `Успешно импортировано ${importedProducts.length} товаров`,
                 });
+                
+                setImportProgress(100);
+                
+                // Call the callback to refresh products list
                 onImportComplete();
               } else {
-                setImportError("Не удалось импортировать товары. Проверьте лог для деталей.");
+                setImportError("Не удалось импортировать товары");
                 toast({
                   title: "Импорт не удался",
-                  description: "Не удалось импортировать товары. Проверьте лог для деталей.",
+                  description: "Не удалось импортировать товары",
                   variant: "destructive",
                 });
               }
@@ -94,6 +109,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
           }
         } finally {
           setImporting(false);
+          setImportProgress(0);
           // Clear the input value to allow re-importing the same file
           e.target.value = '';
         }
@@ -103,6 +119,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         console.error("Error reading file:", error);
         setImportError("Ошибка чтения файла. Попробуйте другой файл.");
         setImporting(false);
+        setImportProgress(0);
         e.target.value = '';
       };
       
@@ -115,6 +132,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
         variant: "destructive",
       });
       setImporting(false);
+      setImportProgress(0);
       // Clear the input value
       e.target.value = '';
     }
@@ -142,7 +160,7 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 p-4 border rounded-md bg-muted/30">
+        <div className="flex-1 p-4 border rounded-md bg-card">
           <h3 className="text-sm font-semibold mb-3">Экспорт товаров</h3>
           <p className="text-xs text-muted-foreground mb-4">
             Выгрузка всех товаров в Excel-файл для редактирования оффлайн
@@ -152,41 +170,85 @@ const ProductImportExport = ({ products, onImportComplete }: ProductImportExport
               variant="outline"
               onClick={handleExport}
               disabled={exporting || products.length === 0}
+              className="w-full md:w-auto"
             >
-              <Download className="mr-2 h-4 w-4" />
-              {exporting ? "Экспортируем..." : "Экспортировать товары"}
+              {exporting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Экспортируем...
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Экспортировать товары
+                </>
+              )}
             </Button>
             <Button
               variant="ghost"
               onClick={handleDownloadTemplate}
               disabled={downloadingTemplate}
               size="sm"
+              className="w-full md:w-auto"
             >
-              <Download className="mr-2 h-4 w-4" />
-              {downloadingTemplate ? "Скачиваем..." : "Скачать шаблон импорта"}
+              {downloadingTemplate ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Скачиваем...
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Скачать шаблон импорта
+                </>
+              )}
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 p-4 border rounded-md bg-muted/30">
+        <div className="flex-1 p-4 border rounded-md bg-card">
           <h3 className="text-sm font-semibold mb-3">Импорт товаров</h3>
           <p className="text-xs text-muted-foreground mb-4">
             Загрузка товаров из Excel-файла в формате шаблона
           </p>
-          <div className="flex items-center gap-2">
+          
+          <div className="flex flex-col gap-2">
             <Input
               id="import-file"
               type="file"
               accept=".xlsx"
-              className="max-w-60"
+              className="mb-2"
               onChange={handleImport}
               disabled={importing}
             />
+            
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById("import-file")?.click()}
+              disabled={importing}
+              className="w-full"
+            >
+              {importing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Импортируем...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Выберите файл для импорта
+                </>
+              )}
+            </Button>
           </div>
+          
           {importing && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Импортируем товары, пожалуйста, подождите...
-            </p>
+            <div className="mt-4">
+              <Progress value={importProgress} className="h-2" />
+              <p className="mt-2 text-xs text-muted-foreground text-center">
+                Импортируем товары ({importProgress}%)
+              </p>
+            </div>
           )}
         </div>
       </div>

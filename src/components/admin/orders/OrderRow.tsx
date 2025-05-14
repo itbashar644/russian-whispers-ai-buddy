@@ -145,13 +145,15 @@ const OrderRow: React.FC<OrderRowProps> = ({
       </TableRow>
       
       {isExpanded && (
-        <TableRow>
-          <TableCell colSpan={9} className="px-4 py-2 bg-gray-50">
-            <OrderItemsDetails items={order.items} />
-            
-            <div className="mt-4">
-              <h4 className="text-sm font-medium mb-1">Адрес доставки:</h4>
-              <p className="text-sm text-muted-foreground">{order.address}</p>
+        <TableRow className="bg-slate-50">
+          <TableCell colSpan={9} className="p-4">
+            <div className="rounded-md overflow-hidden">
+              <OrderItemsDetails items={order.items} />
+              
+              <div className="mt-4 bg-white p-4 border rounded-md">
+                <h4 className="text-sm font-medium mb-1">Адрес доставки:</h4>
+                <p className="text-sm text-muted-foreground">{order.address}</p>
+              </div>
             </div>
           </TableCell>
         </TableRow>

@@ -1,3 +1,3 @@
 
-// Правильный реэкспорт хука и компонентов из нового местоположения
+// Reexport toast hook and components from the new location
 export * from "@/hooks/use-toast";

@@ -5,6 +5,10 @@ import { addCategory, getAllCategories } from '@/data/products';
 import { addOrUpdateProductInSupabase } from '@/data/products/supabaseApi';
 import { v4 as uuidv4 } from 'uuid';
 
+interface ExcelProductData {
+  [key: string]: any;
+}
+
 // Convert Excel data to products array and save to Supabase
 export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => {
   try {
@@ -13,61 +17,73 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
     // Read the Excel file
     const workbook = XLSX.read(data, { type: 'array' });
     
+    if (!workbook.SheetNames.length) {
+      throw new Error("Файл Excel не содержит листов");
+    }
+    
     // Get the first worksheet
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
-    // Convert to JSON
-    const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+    if (!worksheet) {
+      throw new Error("Не удалось прочитать лист из файла Excel");
+    }
     
-    console.log("Parsed Excel data:", JSON.stringify(jsonData).substring(0, 500) + "...");
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json<ExcelProductData>(worksheet);
+    
+    console.log(`Прочитано ${jsonData.length} строк из Excel файла`);
     
     if (!jsonData || jsonData.length === 0) {
-      console.error("No data found in Excel file");
       throw new Error("Файл не содержит данных. Проверьте формат файла и наличие информации.");
     }
     
-    // Map to Product objects
-    const products: Product[] = [];
-    
-    // Получаем существующие категории для проверки
+    // Get existing categories
     const existingCategories = await getAllCategories();
-    
     console.log("Existing categories:", existingCategories);
-    console.log("Number of rows to process:", jsonData.length);
+    
+    // Required fields for products
+    const requiredFields = ['title', 'price', 'category', 'description', 'countryOfOrigin'];
+    
+    // Process rows and convert to Product objects
+    const products: Product[] = [];
+    const errors: string[] = [];
     
     for (let i = 0; i < jsonData.length; i++) {
       const row = jsonData[i];
+      const rowNum = i + 2; // +2 because Excel is 1-indexed and we have headers
       
-      // Отладочная информация для каждой строки
-      console.log(`Processing row ${i+1}:`, row);
+      // Check for required fields
+      const missingFields = requiredFields.filter(field => 
+        row[field] === undefined || row[field] === null || row[field] === '');
       
-      // Validate required fields
-      if (!row.title || row.price === undefined || !row.category || !row.description || !row.countryOfOrigin) {
-        console.warn(`Skipping row ${i+1} due to missing required fields:`, 
-          `title: ${row.title}, price: ${row.price}, category: ${row.category}, ` +
-          `description: ${row.description}, countryOfOrigin: ${row.countryOfOrigin}`);
+      if (missingFields.length > 0) {
+        errors.push(`Строка ${rowNum}: отсутствуют обязательные поля: ${missingFields.join(', ')}`);
         continue;
       }
       
       try {
-        // Create a base product object with a valid UUID
+        // Validate numeric fields
+        if (isNaN(Number(row.price))) {
+          errors.push(`Строка ${rowNum}: цена должна быть числом`);
+          continue;
+        }
+        
+        // Create product object
         const product: Product = {
-          id: uuidv4(), // Always generate a fresh UUID for imports
-          title: String(row.title || '') || 'Новый товар',
-          description: String(row.description || '') || 'Описание товара',
-          price: Number(row.price) || 0,
-          category: String(row.category || '') || 'Другое',
-          imageUrl: String(row.imageUrl || '') || '/placeholder.svg',
-          rating: parseFloat(String(row.rating)) || 5,
+          id: uuidv4(),
+          title: String(row.title).trim(),
+          description: String(row.description || '').trim(),
+          price: Number(row.price),
+          category: String(row.category).trim(),
+          imageUrl: String(row.imageUrl || '').trim() || '/placeholder.svg',
+          rating: parseFloat(String(row.rating || 5)),
           inStock: row.inStock === 'Да' || row.inStock === true || row.inStock === 'true',
-          countryOfOrigin: String(row.countryOfOrigin || '') || 'Россия'
+          countryOfOrigin: String(row.countryOfOrigin).trim()
         };
         
-        console.log(`Created base product ${i+1}:`, product.title, product.price, product.category);
-        
-        // Add optional fields if they exist
-        if (row.discountPrice !== undefined && row.discountPrice !== '') {
+        // Add optional fields
+        if (row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice))) {
           product.discountPrice = Number(row.discountPrice);
         }
         
@@ -89,43 +105,64 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
         if (row.stockQuantity !== undefined) product.stockQuantity = Number(row.stockQuantity);
         if (row.material) product.material = String(row.material);
         
-        // Save to database immediately
-        try {
-          // Сначала проверяем, нужно ли добавить категорию
-          if (product.category && 
-              typeof product.category === 'string' && 
-              !existingCategories.includes(product.category)) {
-            console.log("Adding new category:", product.category);
-            await addCategory(product.category);
-          }
-          
-          console.log("Saving product to Supabase:", product.title);
-          const success = await addOrUpdateProductInSupabase(product);
-          
-          if (success) {
-            console.log(`Product saved successfully: ${product.title}`);
-            // Add to local array for return value
-            products.push(product);
-          } else {
-            console.error(`Failed to save product: ${product.title}`);
-            throw new Error(`Не удалось сохранить товар: ${product.title}`);
-          }
-        } catch (err) {
-          console.error(`Error saving product to Supabase: ${product.title}`, err);
-          throw new Error(`Ошибка при сохранении товара ${product.title}: ${err}`);
+        products.push(product);
+        
+        // Add new category if needed
+        if (product.category && !existingCategories.includes(product.category)) {
+          console.log(`Adding new category: ${product.category}`);
+          await addCategory(product.category);
+          existingCategories.push(product.category); // Update our local cache
         }
       } catch (err) {
-        console.error(`Error processing row ${i+1}:`, row, err);
+        console.error(`Error processing row ${rowNum}:`, err);
+        errors.push(`Строка ${rowNum}: ошибка обработки данных`);
       }
     }
-
+    
     console.log(`Successfully processed ${products.length} products`);
     
     if (products.length === 0) {
-      throw new Error("Ни один товар не был успешно импортирован. Проверьте наличие обязательных полей: title, price, category, description, countryOfOrigin.");
+      throw new Error(errors.length > 0 
+        ? `Ни один товар не был успешно импортирован. Ошибки: ${errors.join('; ')}`
+        : "Ни один товар не был успешно импортирован. Проверьте наличие обязательных полей."
+      );
     }
     
-    return products;
+    // Save products to database
+    console.log("Saving products to database...");
+    
+    const savedProducts: Product[] = [];
+    
+    // Save in batches to avoid overloading the database
+    const batchSize = 10;
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
+      
+      // Process each product in the batch
+      for (const product of batch) {
+        try {
+          console.log(`Saving product: ${product.title}`);
+          const success = await addOrUpdateProductInSupabase(product);
+          
+          if (success) {
+            savedProducts.push(product);
+          } else {
+            console.error(`Failed to save product: ${product.title}`);
+          }
+        } catch (err) {
+          console.error(`Error saving product ${product.title}:`, err);
+        }
+      }
+    }
+    
+    console.log(`${savedProducts.length} of ${products.length} products saved to database`);
+    
+    if (savedProducts.length === 0) {
+      throw new Error("Не удалось сохранить товары в базу данных");
+    }
+    
+    // Return the saved products
+    return savedProducts;
   } catch (err) {
     console.error("Error processing Excel data:", err);
     throw err;

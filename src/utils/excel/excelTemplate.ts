@@ -41,10 +41,6 @@ export const downloadImportTemplate = async (): Promise<void> => {
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.json_to_sheet(template);
   
-  // Add comments to cells with instructions
-  const requiredHeaders = ['title', 'description', 'price', 'category', 'countryOfOrigin'];
-  const headerRow = XLSX.utils.decode_range(worksheet['!ref'] as string).s.r;
-  
   // Set column widths
   worksheet['!cols'] = [
     { wch: 25 }, // title
@@ -68,40 +64,66 @@ export const downloadImportTemplate = async (): Promise<void> => {
     { wch: 10 }, // stockQuantity
     { wch: 20 }  // material
   ];
-
-  // Add notes to the worksheet
-  const notes = {
-    A1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Название товара",
-    B1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Описание товара",
-    C1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Цена товара (число)",
-    D1: "Цена со скидкой (число, необязательно)",
-    E1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Категория товара",
-    F1: "URL изображения (необязательно)",
-    G1: "Рейтинг от 0 до 5 (необязательно)",
-    H1: "В наличии, укажите 'Да' или 'Нет' (необязательно)",
-    I1: "Цвета через запятую (необязательно)",
-    J1: "Размеры через запятую (необязательно)",
-    K1: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Страна происхождения",
-    L1: "Новинка, укажите 'Да' или 'Нет' (необязательно)",
-    M1: "Бестселлер, укажите 'Да' или 'Нет' (необязательно)",
-    N1: "Артикул (необязательно)",
-    O1: "Штрихкод (необязательно)",
-    P1: "Ссылка на Wildberries (необязательно)",
-    Q1: "Ссылка на Ozon (необязательно)",
-    R1: "Ссылка на Avito (необязательно)",
-    S1: "Количество на складе (необязательно)",
-    T1: "Материал (необязательно)"
-  };
   
+  // Apply styling to header row
+  const range = XLSX.utils.decode_range(worksheet['!ref'] as string);
+  const headerRow = range.s.r;
+  
+  // Add comments/notes to headers for helping users understand requirements
   if (!worksheet['!comments']) {
     worksheet['!comments'] = {};
   }
   
-  for (const [cell, comment] of Object.entries(notes)) {
-    worksheet['!comments'][cell] = { t: comment };
-  }
+  const comments = {
+    A1: { t: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Название товара" },
+    B1: { t: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Описание товара" },
+    C1: { t: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Цена товара (число)" },
+    D1: { t: "Цена со скидкой (число, необязательно)" },
+    E1: { t: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Категория товара" },
+    F1: { t: "URL изображения (необязательно)" },
+    G1: { t: "Рейтинг от 0 до 5 (необязательно)" },
+    H1: { t: "В наличии, укажите 'Да' или 'Нет' (необязательно)" },
+    I1: { t: "Цвета через запятую (необязательно)" },
+    J1: { t: "Размеры через запятую (необязательно)" },
+    K1: { t: "ОБЯЗАТЕЛЬНОЕ ПОЛЕ: Страна происхождения" },
+    L1: { t: "Новинка, укажите 'Да' или 'Нет' (необязательно)" },
+    M1: { t: "Бестселлер, укажите 'Да' или 'Нет' (необязательно)" },
+    N1: { t: "Артикул (необязательно)" },
+    O1: { t: "Штрихкод (необязательно)" },
+    P1: { t: "Ссылка на Wildberries (необязательно)" },
+    Q1: { t: "Ссылка на Ozon (необязательно)" },
+    R1: { t: "Ссылка на Avito (необязательно)" },
+    S1: { t: "Количество на складе (необязательно)" },
+    T1: { t: "Материал (необязательно)" }
+  };
   
+  Object.assign(worksheet['!comments'], comments);
+  
+  // Add sheet to workbook
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Шаблон товаров');
+  
+  // Add instructions sheet
+  const instructionsData = [
+    ["Инструкция по импорту товаров"],
+    [""],
+    ["1. Не изменяйте названия столбцов в шаблоне."],
+    ["2. Обязательные поля должны быть заполнены для каждого товара:"],
+    ["   - title (название товара)"],
+    ["   - price (цена)"],
+    ["   - category (категория)"],
+    ["   - description (описание)"],
+    ["   - countryOfOrigin (страна происхождения)"],
+    [""],
+    ["3. Числовые поля должны содержать только числа без пробелов и специальных символов."],
+    ["4. Для полей с вариантами 'Да'/'Нет' используйте только эти значения."],
+    ["5. Поля со списками значений (colors, sizes) должны быть разделены запятой."],
+    [""]
+  ];
+  
+  const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData);
+  instructionsSheet['!cols'] = [{ wch: 70 }]; // Set column width
+  
+  XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Инструкция');
   
   // Create a blob and download the file
   const blob = workbookToBlob(workbook);
