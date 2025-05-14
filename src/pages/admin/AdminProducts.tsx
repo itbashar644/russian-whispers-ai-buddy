@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -177,9 +178,9 @@ const AdminProducts = () => {
           throw new Error(result.error || "Не удалось обновить товар");
         }
       } else {
-        // Adding new product
+        // Adding new product - don't include ID field, let Supabase generate it
         const newProduct: Product = {
-          id: `${Date.now()}`, // Временный ID, будет заменен на UUID от Supabase
+          id: "", // Empty ID, will be replaced by Supabase with a proper UUID
           title: formData.title || "",
           description: formData.description || "",
           price: formData.price || 0,

@@ -41,8 +41,13 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<{ 
     const productData = transformProductToSupabase(product);
     console.log("Transformed product data for Supabase:", productData);
 
-    if (product.id && product.id.length > 10) { // предполагаем, что действительные UUID длиннее 10 символов
-      // Обновляем существующий товар
+    // Проверяем, является ли ID временным (числовым) или действительным UUID
+    const isTemporaryId = !product.id || 
+                          product.id.toString().includes(Date.now().toString().slice(0, 5)) ||
+                          !isValidUUID(product.id);
+    
+    if (!isTemporaryId) {
+      // Обновляем существующий товар с действительным UUID
       console.log("Updating existing product with ID:", product.id);
       const { error, data } = await supabase
         .from("products")
@@ -82,6 +87,12 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<{ 
     return { success: false, error: errorMessage };
   }
 };
+
+// Вспомогательная функция для проверки действительности UUID
+function isValidUUID(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+}
 
 // Функция для архивирования товара
 export const archiveProductInSupabase = async (productId: string): Promise<boolean> => {
