@@ -11,50 +11,20 @@ export interface ToasterToast extends Omit<ToastProps, "title" | "description" |
   duration?: number;
 }
 
-// Extending the types for the toast function
-interface ExtendedToast {
-  (props: {
-    title?: React.ReactNode;
-    description?: React.ReactNode;
-    action?: React.ReactElement;
-    variant?: "default" | "destructive";
-  } | string): {
-    id: string;
-    dismiss: () => void;
-    update: (props: ToasterToast) => void;
-  };
-  success: (props: { title?: string; description?: string; duration?: number } | string) => {
-    id: string;
-    dismiss: () => void;
-  };
-  error: (props: { title?: string; description?: string; duration?: number } | string) => {
-    id: string;
-    dismiss: () => void;
-  };
-  info: (props: { title?: string; description?: string; duration?: number } | string) => {
-    id: string;
-    dismiss: () => void;
-  };
-  warning: (props: { title?: string; description?: string; duration?: number } | string) => {
-    id: string;
-    dismiss: () => void;
-  };
-}
-
 // Create the enhanced useToast hook
 export function useToast() {
   const { toast: originalToast, ...rest } = useToastOriginal();
 
   // Base toast function
-  const toast = ((props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
+  const enhancedToast = ((props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
     if (typeof props === "string") {
       return originalToast({ description: props });
     }
     return originalToast(props);
-  }) as ExtendedToast;
+  });
 
-  // Create function for toast.success
-  toast.success = (props) => {
+  // Add variant methods to the enhanced toast
+  enhancedToast.success = (props: { title?: string; description?: string; duration?: number } | string) => {
     if (typeof props === "string") {
       return originalToast({ 
         description: props,
@@ -70,7 +40,7 @@ export function useToast() {
   };
 
   // Create function for toast.error
-  toast.error = (props) => {
+  enhancedToast.error = (props: { title?: string; description?: string; duration?: number } | string) => {
     if (typeof props === "string") {
       return originalToast({ 
         description: props,
@@ -84,7 +54,7 @@ export function useToast() {
   };
 
   // Create function for toast.info
-  toast.info = (props) => {
+  enhancedToast.info = (props: { title?: string; description?: string; duration?: number } | string) => {
     if (typeof props === "string") {
       return originalToast({ 
         description: props,
@@ -100,7 +70,7 @@ export function useToast() {
   };
 
   // Create function for toast.warning
-  toast.warning = (props) => {
+  enhancedToast.warning = (props: { title?: string; description?: string; duration?: number } | string) => {
     if (typeof props === "string") {
       return originalToast({ 
         description: props,
@@ -116,80 +86,81 @@ export function useToast() {
   };
 
   return {
-    toast,
     ...rest,
+    toast: enhancedToast,
   };
 }
 
-// Export a standalone toast object for direct import
-export const toast = {
-  // Default toast function
-  (props: { title?: React.ReactNode; description?: React.ReactNode } | string) {
-    if (typeof props === "string") {
-      return toastOriginal({ description: props });
-    }
-    return toastOriginal(props);
-  },
-  
-  // Success variant
-  success: (props: { title?: string; description?: string; duration?: number } | string) => {
-    if (typeof props === "string") {
-      return toastOriginal({ 
-        description: props,
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800",
-      });
-    }
+// Helper functions for standalone toast object
+const createStandaloneToast = (props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
+  if (typeof props === "string") {
+    return toastOriginal({ description: props });
+  }
+  return toastOriginal(props);
+};
+
+const successToast = (props: { title?: string; description?: string; duration?: number } | string) => {
+  if (typeof props === "string") {
     return toastOriginal({
-      ...props,
+      description: props,
       variant: "default",
       className: "bg-green-50 border-green-200 text-green-800",
     });
-  },
-  
-  // Error variant
-  error: (props: { title?: string; description?: string; duration?: number } | string) => {
-    if (typeof props === "string") {
-      return toastOriginal({ 
-        description: props,
-        variant: "destructive"
-      });
-    }
+  }
+  return toastOriginal({
+    ...props,
+    variant: "default",
+    className: "bg-green-50 border-green-200 text-green-800",
+  });
+};
+
+const errorToast = (props: { title?: string; description?: string; duration?: number } | string) => {
+  if (typeof props === "string") {
     return toastOriginal({
-      ...props,
+      description: props,
       variant: "destructive"
     });
-  },
-  
-  // Info variant
-  info: (props: { title?: string; description?: string; duration?: number } | string) => {
-    if (typeof props === "string") {
-      return toastOriginal({ 
-        description: props,
-        variant: "default",
-        className: "bg-blue-50 border-blue-200 text-blue-800",
-      });
-    }
+  }
+  return toastOriginal({
+    ...props,
+    variant: "destructive"
+  });
+};
+
+const infoToast = (props: { title?: string; description?: string; duration?: number } | string) => {
+  if (typeof props === "string") {
     return toastOriginal({
-      ...props,
+      description: props,
       variant: "default",
       className: "bg-blue-50 border-blue-200 text-blue-800",
     });
-  },
-  
-  // Warning variant
-  warning: (props: { title?: string; description?: string; duration?: number } | string) => {
-    if (typeof props === "string") {
-      return toastOriginal({ 
-        description: props,
-        variant: "default",
-        className: "bg-yellow-50 border-yellow-200 text-yellow-800",
-      });
-    }
+  }
+  return toastOriginal({
+    ...props,
+    variant: "default",
+    className: "bg-blue-50 border-blue-200 text-blue-800",
+  });
+};
+
+const warningToast = (props: { title?: string; description?: string; duration?: number } | string) => {
+  if (typeof props === "string") {
     return toastOriginal({
-      ...props,
+      description: props,
       variant: "default",
       className: "bg-yellow-50 border-yellow-200 text-yellow-800",
     });
   }
-} as const;
+  return toastOriginal({
+    ...props,
+    variant: "default",
+    className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+  });
+};
+
+// Export a standalone toast object with all methods
+export const toast = Object.assign(createStandaloneToast, {
+  success: successToast,
+  error: errorToast,
+  info: infoToast,
+  warning: warningToast
+});
