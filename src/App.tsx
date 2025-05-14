@@ -24,12 +24,17 @@ import YandexCallback from './pages/auth/YandexCallback';
 import Cart from './pages/Cart';
 import NotFound from './pages/NotFound';
 import Delivery from './pages/Delivery';
+import Contact from './pages/Contact';
+import Catalog from './pages/Catalog';
+import Products from './pages/Products';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 const App = () => {
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
+          <ScrollToTop />
           <AppContent />
         </Router>
       </CartProvider>
@@ -100,6 +105,7 @@ const AppContent = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/account" element={isAuthenticated ? <Account /> : <Login />} />
+      <Route path="/catalog" element={<Catalog />} />
       <Route path="/products" element={<Products />} />
       <Route path="/products/:id" element={<ProductDetails />} />
       <Route path="/cart" element={<Cart />} />
@@ -113,6 +119,7 @@ const AppContent = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/auth/yandex-callback" element={<YandexCallback />} />
+      <Route path="/auth/v1/yandex-callback" element={<YandexCallback />} />
       {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -145,13 +152,6 @@ const AdminPanel = () => (
   </div>
 );
 
-const Products = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Товары</h1>
-    <p>Список товаров будет здесь.</p>
-  </div>
-);
-
 const ProductDetails = () => (
   <div className="container mx-auto py-8">
     <h1 className="text-3xl font-bold mb-6">Детали товара</h1>
@@ -170,13 +170,6 @@ const OrderConfirmation = () => (
   <div className="container mx-auto py-8">
     <h1 className="text-3xl font-bold mb-6">Подтверждение заказа</h1>
     <p>Информация о подтверждении заказа будет здесь.</p>
-  </div>
-);
-
-const Contact = () => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-3xl font-bold mb-6">Контакты</h1>
-    <p>Контактная информация будет здесь.</p>
   </div>
 );
 

@@ -1,119 +1,134 @@
 
-import { useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 
 interface YandexAuthButtonProps {
-  buttonId?: string;
+  onAuthSuccess?: (token: string) => void;
+  buttonSize?: "l" | "m" | "s";
+  buttonTheme?: "light" | "dark";
+  buttonView?: "main" | "icon";
   className?: string;
-  onSuccess?: (token: string) => void;
 }
 
-declare global {
-  interface Window {
-    YaAuthSuggest?: any;
-    handleYandexToken?: (token: string) => void;
-  }
-}
-
-const YandexAuthButton = ({ 
-  buttonId = "yandex-auth-container", 
-  className = "", 
-  onSuccess 
+const YandexAuthButton = ({
+  onAuthSuccess,
+  buttonSize = "l",
+  buttonTheme = "light",
+  buttonView = "main",
+  className = ""
 }: YandexAuthButtonProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonContainerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
-
+  
+  // Обработчик для токена Яндекс
   useEffect(() => {
-    // Load Yandex SDK if not already loaded
-    if (!document.getElementById('yandex-auth-sdk')) {
-      const script = document.createElement('script');
-      script.id = 'yandex-auth-sdk';
-      script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
-      script.async = true;
-      script.onload = initYandexAuth;
-      document.head.appendChild(script);
-    } else if (window.YaAuthSuggest && !initialized.current) {
-      initYandexAuth();
-    }
-
-    // Define global handler for the token
-    window.handleYandexToken = async (token) => {
-      try {
-        if (token) {
-          // Exchange Yandex token for Supabase session
-          const { data, error } = await supabase.auth.signInWithIdToken({
-            provider: 'yandex',
-            token,
-          });
-
-          if (error) throw error;
-
-          toast("Успешная авторизация через Яндекс");
-          
-          if (onSuccess) {
-            onSuccess(token);
-          }
-          
-          // Redirect to account page
-          window.location.href = '/account';
-        }
-      } catch (error: any) {
-        console.error("Ошибка авторизации через Яндекс:", error);
-        toast("Ошибка при авторизации через Яндекс", {
-          description: error.message,
-        });
+    // Определяем глобальный обработчик, который будет вызван из окна обратного вызова
+    window.handleYandexToken = (token: string) => {
+      if (onAuthSuccess && token) {
+        onAuthSuccess(token);
       }
     };
-
+    
+    // Очищаем обработчик при размонтировании
     return () => {
-      // Cleanup
+      // @ts-ignore
       window.handleYandexToken = undefined;
     };
-  }, [onSuccess]);
-
-  const initYandexAuth = () => {
-    if (!window.YaAuthSuggest || !containerRef.current || initialized.current) return;
-
+  }, [onAuthSuccess]);
+  
+  // Инициализация кнопки входа через Яндекс
+  useEffect(() => {
+    // Проверяем, доступен ли Яндекс API и есть ли контейнер для кнопки
+    if (
+      typeof window.YaAuthSuggest === "undefined" || 
+      !buttonContainerRef.current || 
+      initialized.current
+    ) {
+      return;
+    }
+    
+    // Загружаем скрипт Яндекс SDK
+    const loadYandexScript = async () => {
+      const script = document.createElement('script');
+      script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
+      script.id = 'yandex-auth-script';
+      script.async = true;
+      
+      // Ждем загрузки скрипта
+      const scriptPromise = new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+      });
+      
+      document.head.appendChild(script);
+      
+      try {
+        await scriptPromise;
+        initYandexButton();
+      } catch (error) {
+        console.error('Ошибка при загрузке скрипта Яндекс Авторизации:', error);
+        if (document.getElementById('yandex-auth-script')) {
+          document.getElementById('yandex-auth-script')!.remove();
+          console.info('Lovable script найден и удален');
+        }
+      }
+    };
+    
+    if (!document.getElementById('yandex-auth-script')) {
+      loadYandexScript();
+    } else {
+      initYandexButton();
+    }
+    
+    return () => {
+      initialized.current = false;
+    };
+  }, [buttonContainerRef.current]);
+  
+  // Инициализация кнопки после загрузки скрипта
+  const initYandexButton = () => {
+    if (!window.YaAuthSuggest || !buttonContainerRef.current) {
+      console.error('Не удалось инициализировать кнопку Яндекс Авторизации');
+      return;
+    }
+    
     initialized.current = true;
 
-    // Используем window.location.origin для создания правильного redirect_uri
-    const redirectUri = `${window.location.origin}/auth/yandex-callback`;
+    // Используем фиксированный redirect URI как указано в требованиях
+    const redirectUri = "https://www.the-x.shop/auth/v1/yandex-callback";
     const originUri = window.location.origin;
     
     console.log("Yandex redirect URI:", redirectUri);
 
     window.YaAuthSuggest.init(
       {
-        client_id: 'ce0d8b75155845439152fe2694d3d330', // Ваш client_id
+        client_id: '9bea57e906e74923bbec407783eb51b5',
         response_type: 'token',
         redirect_uri: redirectUri
       },
       originUri,
       {
-        view: 'button',
-        parentId: buttonId,
-        buttonView: 'main',
-        buttonTheme: 'light',
-        buttonSize: 'm',
-        buttonBorderRadius: 4
+        view: buttonView,
+        parentId: buttonContainerRef.current.id,
+        buttonView: buttonView,
+        buttonTheme: buttonTheme,
+        buttonSize: buttonSize,
+        buttonBorderRadius: 8
       }
     )
-    .then((result: any) => {
-      return result.handler();
-    })
-    .catch((error: any) => {
-      console.error("Ошибка инициализации Яндекс авторизации:", error);
-      toast("Ошибка инициализации авторизации через Яндекс", {
-        description: error.message,
+      .then(({ handler }) => {
+        handler();
+      })
+      .catch(error => {
+        console.error('Ошибка инициализации YaAuthSuggest:', error);
       });
-    });
   };
-
+  
   return (
-    <div className={className}>
-      <div id={buttonId} ref={containerRef}></div>
-    </div>
+    <div 
+      id="yandex-auth-container" 
+      ref={buttonContainerRef} 
+      className={className}
+    ></div>
   );
 };
 

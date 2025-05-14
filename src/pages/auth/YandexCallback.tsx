@@ -20,6 +20,7 @@ const YandexCallback = () => {
       }
 
       try {
+        console.log("YandexCallback: Обработка токена, origin:", window.location.origin);
         // Send token back to the main window
         window.YaSendSuggestToken(
           window.location.origin, 
