@@ -6,7 +6,8 @@ import {
 } from "@/components/ui/toast";
 
 import {
-  useToast as useToastOriginal,
+  useToastBase,
+  toast as toastBase
 } from "@/components/ui/use-toast";
 
 export interface ToasterToast extends Omit<ToastProps, "title" | "description" | "action"> {
@@ -47,9 +48,9 @@ interface ExtendedToast {
   };
 }
 
-// Create a fixed useToast hook function
+// Create the enhanced useToast hook
 export function useToast() {
-  const { toast: originalToast, ...rest } = useToastOriginal();
+  const { toast: originalToast, ...rest } = useToastBase();
 
   // Base toast function
   const toast = ((props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
@@ -128,28 +129,25 @@ export function useToast() {
 }
 
 // Export a standalone toast object for direct import
-// This is completely separate from the useToast hook to prevent recursive calls
 export const toast = {
   // Default toast function
   default: (props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
-    const { toast } = useToastOriginal();
     if (typeof props === "string") {
-      return toast({ description: props });
+      return toastBase({ description: props });
     }
-    return toast(props);
+    return toastBase(props);
   },
   
   // Success variant
   success: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastOriginal();
     if (typeof props === "string") {
-      return toast({ 
+      return toastBase({ 
         description: props,
         variant: "default",
         className: "bg-green-50 border-green-200 text-green-800",
       });
     }
-    return toast({
+    return toastBase({
       ...props,
       variant: "default",
       className: "bg-green-50 border-green-200 text-green-800",
@@ -158,14 +156,13 @@ export const toast = {
   
   // Error variant
   error: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastOriginal();
     if (typeof props === "string") {
-      return toast({ 
+      return toastBase({ 
         description: props,
         variant: "destructive"
       });
     }
-    return toast({
+    return toastBase({
       ...props,
       variant: "destructive"
     });
@@ -173,15 +170,14 @@ export const toast = {
   
   // Info variant
   info: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastOriginal();
     if (typeof props === "string") {
-      return toast({ 
+      return toastBase({ 
         description: props,
         variant: "default",
         className: "bg-blue-50 border-blue-200 text-blue-800",
       });
     }
-    return toast({
+    return toastBase({
       ...props,
       variant: "default",
       className: "bg-blue-50 border-blue-200 text-blue-800",
@@ -190,15 +186,14 @@ export const toast = {
   
   // Warning variant
   warning: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastOriginal();
     if (typeof props === "string") {
-      return toast({ 
+      return toastBase({ 
         description: props,
         variant: "default",
         className: "bg-yellow-50 border-yellow-200 text-yellow-800",
       });
     }
-    return toast({
+    return toastBase({
       ...props,
       variant: "default",
       className: "bg-yellow-50 border-yellow-200 text-yellow-800",
