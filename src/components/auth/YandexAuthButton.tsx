@@ -82,7 +82,7 @@ const YandexAuthButton = ({
 
     window.YaAuthSuggest.init(
       {
-        client_id: 'c46f0c53093440c39f12eff95a9f2f93', // Замените на ваш client_id
+        client_id: 'ce0d8b75155845439152fe2694d3d330', // Ваш client_id
         response_type: 'token',
         redirect_uri: redirectUri
       },
