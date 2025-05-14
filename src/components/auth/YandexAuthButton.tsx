@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface YandexAuthButtonProps {
   onAuthSuccess?: (token: string) => void;
@@ -20,6 +20,7 @@ const YandexAuthButton = ({
 }: YandexAuthButtonProps) => {
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  const [initFailed, setInitFailed] = useState(false);
   
   // Обработчик для токена Яндекс
   useEffect(() => {
@@ -67,6 +68,7 @@ const YandexAuthButton = ({
           initYandexButton();
         } catch (error) {
           console.error('Ошибка при загрузке скрипта Яндекс Авторизации:', error);
+          setInitFailed(true);
           if (document.getElementById('yandex-auth-script')) {
             document.getElementById('yandex-auth-script')!.remove();
             console.info('Яндекс скрипт найден и удален');
@@ -89,6 +91,7 @@ const YandexAuthButton = ({
   const initYandexButton = () => {
     if (!window.YaAuthSuggest || !buttonContainerRef.current) {
       console.error('Не удалось инициализировать кнопку Яндекс Авторизации');
+      setInitFailed(true);
       return;
     }
     
@@ -125,20 +128,43 @@ const YandexAuthButton = ({
         })
         .catch(error => {
           console.error('Ошибка инициализации YaAuthSuggest:', error);
+          setInitFailed(true);
         });
     } catch (error) {
       console.error('Exception during YaAuthSuggest init:', error);
+      setInitFailed(true);
     }
+  };
+
+  // Обработчик нажатия на кнопку для случаев, когда автоматическая инициализация не удалась
+  const handleManualAuth = () => {
+    // Предоставляем резервный URL для авторизации через Яндекс
+    window.open("https://oauth.yandex.ru/authorize?response_type=token&client_id=9bea57e906e74923bbec407783eb51b5&redirect_uri=https://www.the-x.shop/auth/v1/yandex-callback", "_blank");
   };
   
   return (
     <div 
       id={buttonId} 
       ref={buttonContainerRef} 
-      className={`min-h-10 flex items-center justify-center ${className}`}
-      style={{ minHeight: '40px', border: '1px solid #e2e8f0', borderRadius: '0.375rem' }}
+      className={`min-h-10 flex items-center justify-center cursor-pointer rounded-md ${className}`}
+      style={{ 
+        minHeight: '40px', 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '0.375rem',
+        background: initFailed ? '#FFFFFF' : 'transparent' 
+      }}
+      onClick={initFailed ? handleManualAuth : undefined}
     >
-      <div className="text-sm text-gray-500 py-2 px-4">Яндекс</div>
+      {initFailed && (
+        <div className="flex items-center justify-center gap-2 w-full h-full px-4 py-2">
+          <img 
+            src="https://yastatic.net/s3/autofill/v2/_/icon.svg" 
+            alt="Яндекс" 
+            className="h-5 w-5"
+          />
+          <span className="text-sm font-medium">Войти через Яндекс</span>
+        </div>
+      )}
     </div>
   );
 };

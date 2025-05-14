@@ -31,6 +31,11 @@ const SocialLogin = ({ isLoading, setIsLoading }: SocialLoginProps) => {
     }
   };
 
+  const handleYandexAuth = (token: string) => {
+    console.log("Получен токен от Яндекса:", token);
+    // Здесь должна быть логика для обмена токена на сессию через ваш бэкенд
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <Button 
@@ -60,6 +65,7 @@ const SocialLogin = ({ isLoading, setIsLoading }: SocialLoginProps) => {
       
       <YandexAuthButton 
         buttonId="yandex-login-button"
+        onAuthSuccess={handleYandexAuth}
         className="w-full h-10 cursor-pointer hover:bg-gray-50 transition-colors"
       />
     </div>
