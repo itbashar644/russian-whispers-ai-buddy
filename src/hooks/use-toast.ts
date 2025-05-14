@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import {
   Toast,
@@ -139,7 +140,8 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">;
 
-function toast({ ...props }: Toast) {
+// Enhanced toast function with variant methods
+function createToast({ ...props }: Toast) {
   const id = genId();
 
   const update = (props: ToasterToast) =>
@@ -147,6 +149,7 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     });
+    
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
   dispatch({
@@ -167,6 +170,39 @@ function toast({ ...props }: Toast) {
     update,
   };
 }
+
+// Base toast function
+const toast = Object.assign(
+  createToast,
+  {
+    // Add variant methods
+    error: (props: string | Omit<Toast, "variant">) => {
+      if (typeof props === "string") {
+        return createToast({ title: props, variant: "destructive" });
+      }
+      return createToast({ ...props, variant: "destructive" });
+    },
+    success: (props: string | Omit<Toast, "variant">) => {
+      if (typeof props === "string") {
+        return createToast({ title: props, variant: "success" });
+      }
+      return createToast({ ...props, variant: "success" });
+    },
+    info: (props: string | Omit<Toast, "variant">) => {
+      if (typeof props === "string") {
+        return createToast({ title: props });
+      }
+      return createToast({ ...props });
+    },
+    warning: (props: string | Omit<Toast, "variant">) => {
+      if (typeof props === "string") {
+        return createToast({ title: props, variant: "destructive" });
+      }
+      return createToast({ ...props, variant: "destructive" });
+    },
+    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+  }
+);
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
