@@ -16,7 +16,7 @@ const YandexAuthButton = ({
   buttonTheme = "light",
   buttonView = "main",
   className = "",
-  buttonId
+  buttonId = "yandex-auth-container"
 }: YandexAuthButtonProps) => {
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
@@ -40,46 +40,45 @@ const YandexAuthButton = ({
   // Инициализация кнопки входа через Яндекс
   useEffect(() => {
     // Проверяем, доступен ли Яндекс API и есть ли контейнер для кнопки
-    if (
-      typeof window.YaAuthSuggest === "undefined" || 
-      !buttonContainerRef.current || 
-      initialized.current
-    ) {
+    if (!buttonContainerRef.current || initialized.current) {
       return;
     }
     
-    // Загружаем скрипт Яндекс SDK
+    // Загружаем скрипт Яндекс SDK если не загружен
     const loadYandexScript = async () => {
-      const script = document.createElement('script');
-      script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
-      script.id = 'yandex-auth-script';
-      script.async = true;
-      
-      // Ждем загрузки скрипта
-      const scriptPromise = new Promise((resolve, reject) => {
-        script.onload = resolve;
-        script.onerror = reject;
-      });
-      
-      document.head.appendChild(script);
-      
-      try {
-        await scriptPromise;
-        initYandexButton();
-      } catch (error) {
-        console.error('Ошибка при загрузке скрипта Яндекс Авторизации:', error);
-        if (document.getElementById('yandex-auth-script')) {
-          document.getElementById('yandex-auth-script')!.remove();
-          console.info('Яндекс скрипт найден и удален');
+      if (typeof window.YaAuthSuggest === "undefined") {
+        console.log("Loading Yandex Auth script...");
+        const script = document.createElement('script');
+        script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
+        script.id = 'yandex-auth-script';
+        script.async = true;
+        
+        // Ждем загрузки скрипта
+        const scriptPromise = new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+        
+        document.head.appendChild(script);
+        
+        try {
+          await scriptPromise;
+          console.log("Yandex Auth script loaded successfully");
+          initYandexButton();
+        } catch (error) {
+          console.error('Ошибка при загрузке скрипта Яндекс Авторизации:', error);
+          if (document.getElementById('yandex-auth-script')) {
+            document.getElementById('yandex-auth-script')!.remove();
+            console.info('Яндекс скрипт найден и удален');
+          }
         }
+      } else {
+        console.log("Yandex Auth script already loaded");
+        initYandexButton();
       }
     };
     
-    if (!document.getElementById('yandex-auth-script')) {
-      loadYandexScript();
-    } else {
-      initYandexButton();
-    }
+    loadYandexScript();
     
     return () => {
       initialized.current = false;
@@ -93,15 +92,15 @@ const YandexAuthButton = ({
       return;
     }
     
+    console.log("Initializing Yandex Auth button...");
     initialized.current = true;
 
     // Используем фиксированный redirect URI как указано в требованиях
     const redirectUri = "https://www.the-x.shop/auth/v1/yandex-callback";
     const originUri = window.location.origin;
     
-    console.log("Yandex redirect URI:", redirectUri);
-    console.log("Yandex container ID:", buttonContainerRef.current.id);
-    console.log("Yandex init attempt with container:", buttonContainerRef.current);
+    console.log("Yandex button container:", buttonContainerRef.current);
+    console.log("Yandex button container ID:", buttonId);
 
     try {
       window.YaAuthSuggest.init(
@@ -113,7 +112,7 @@ const YandexAuthButton = ({
         originUri,
         {
           view: buttonView,
-          parentId: buttonContainerRef.current.id,
+          parentId: buttonId,
           buttonView: buttonView,
           buttonTheme: buttonTheme,
           buttonSize: buttonSize,
@@ -134,11 +133,13 @@ const YandexAuthButton = ({
   
   return (
     <div 
-      id={buttonId || "yandex-auth-container"} 
+      id={buttonId} 
       ref={buttonContainerRef} 
       className={`min-h-10 flex items-center justify-center ${className}`}
-      style={{ minHeight: '40px' }}
-    ></div>
+      style={{ minHeight: '40px', border: '1px solid #e2e8f0', borderRadius: '0.375rem' }}
+    >
+      <div className="text-sm text-gray-500 py-2 px-4">Яндекс</div>
+    </div>
   );
 };
 

@@ -58,12 +58,10 @@ const SocialLogin = ({ isLoading, setIsLoading }: SocialLoginProps) => {
         Войти через Apple
       </Button>
       
-      <div className="w-full h-10 border border-input rounded-md overflow-hidden">
-        <YandexAuthButton 
-          buttonId="yandex-login-button" 
-          className="w-full h-full" 
-        />
-      </div>
+      <YandexAuthButton 
+        buttonId="yandex-login-button"
+        className="w-full h-10 cursor-pointer hover:bg-gray-50 transition-colors"
+      />
     </div>
   );
 };
