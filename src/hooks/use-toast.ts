@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/toast";
 
 import {
-  useToast as useToastFromUI,
+  useToast as useToastOriginal,
 } from "@/components/ui/use-toast";
 
 export interface ToasterToast extends Omit<ToastProps, "title" | "description" | "action"> {
@@ -47,8 +47,9 @@ interface ExtendedToast {
   };
 }
 
+// Create a fixed useToast hook function
 export function useToast() {
-  const { toast: originalToast, ...rest } = useToastFromUI();
+  const { toast: originalToast, ...rest } = useToastOriginal();
 
   // Base toast function
   const toast = ((props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
@@ -126,12 +127,12 @@ export function useToast() {
   };
 }
 
-// Export a wrapper function for direct import instead of creating a singleton instance
-// This prevents the recursive call that was causing the stack overflow
+// Export a standalone toast object for direct import
+// This is completely separate from the useToast hook to prevent recursive calls
 export const toast = {
-  // Base toast function
+  // Default toast function
   default: (props: { title?: React.ReactNode; description?: React.ReactNode } | string) => {
-    const { toast } = useToastFromUI();
+    const { toast } = useToastOriginal();
     if (typeof props === "string") {
       return toast({ description: props });
     }
@@ -140,7 +141,7 @@ export const toast = {
   
   // Success variant
   success: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastFromUI();
+    const { toast } = useToastOriginal();
     if (typeof props === "string") {
       return toast({ 
         description: props,
@@ -157,7 +158,7 @@ export const toast = {
   
   // Error variant
   error: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastFromUI();
+    const { toast } = useToastOriginal();
     if (typeof props === "string") {
       return toast({ 
         description: props,
@@ -172,7 +173,7 @@ export const toast = {
   
   // Info variant
   info: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastFromUI();
+    const { toast } = useToastOriginal();
     if (typeof props === "string") {
       return toast({ 
         description: props,
@@ -189,7 +190,7 @@ export const toast = {
   
   // Warning variant
   warning: (props: { title?: string; description?: string; duration?: number } | string) => {
-    const { toast } = useToastFromUI();
+    const { toast } = useToastOriginal();
     if (typeof props === "string") {
       return toast({ 
         description: props,

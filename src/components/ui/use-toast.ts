@@ -1,3 +1,3 @@
 
 // Reexport toast hook and components from the new location
-export * from "@/hooks/use-toast";
+export { useToast, toast } from "@/hooks/use-toast";
