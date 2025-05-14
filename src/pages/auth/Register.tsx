@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -18,10 +19,8 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
-import Card from "@/components/ui/Card";
-import CardContent from "@/components/ui/CardContent";
-import Separator from "@/components/ui/Separator";
-import Apple from "@/components/ui/Apple";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import YandexAuthButton from "@/components/auth/YandexAuthButton";
 
 const registerSchema = z.object({
@@ -66,6 +65,22 @@ const Register = () => {
       if (success) {
         navigate("/account");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add the missing handleSocialLogin function
+  const handleSocialLogin = (provider: string) => {
+    setIsLoading(true);
+    try {
+      // This function will be implemented to handle social logins
+      // For now, it just logs the provider and does nothing
+      console.log(`Attempting to sign in with ${provider}`);
+      // In a real implementation, you would call the appropriate auth method
+      // For example: auth.signInWithGoogle(), etc.
+    } catch (error) {
+      console.error(`Error signing in with ${provider}:`, error);
     } finally {
       setIsLoading(false);
     }
@@ -222,7 +237,10 @@ const Register = () => {
                 disabled={isLoading}
                 className="flex items-center justify-center gap-2"
               >
-                <Apple className="h-4 w-4" />
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42z" fill="currentColor"/>
+                  <path d="M17.46 18.03c.4-.64.86-1.69.86-2.81 0-2.19-1.31-3.24-2.62-3.24-.87 0-1.69.45-2.18.45-.56 0-1.35-.45-2.32-.45-1.82 0-3.65 1.42-3.65 4.01 0 1.6.57 3.28 1.3 4.38.65.96 1.23 1.64 2.1 1.64.79 0 1.28-.45 2.14-.45.87 0 1.32.45 2.18.45.85 0 1.47-.73 2.07-1.63a10.88 10.88 0 0 0 .9-1.9l-.02-.02a.636.636 0 0 0-.1-.02c-1.19-.53-1.77-1.59-1.77-2.78 0-.95.52-1.85 1.11-2.29z" fill="currentColor"/>
+                </svg>
                 Войти через Apple
               </Button>
               
