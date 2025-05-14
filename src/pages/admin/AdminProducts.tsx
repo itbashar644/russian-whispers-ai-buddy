@@ -88,6 +88,9 @@ const AdminProducts = () => {
       setCategories(categoriesData.map(cat => cat.name));
     } catch (error) {
       console.error("Ошибка обновления списка товаров:", error);
+      toast.error("Ошибка загрузки данных", {
+        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
     }
   };
 
@@ -162,16 +165,16 @@ const AdminProducts = () => {
         } as Product;
         
         console.log("Saving updated product:", updatedProduct);
-        const success = await addOrUpdateProductInSupabase(updatedProduct);
+        const result = await addOrUpdateProductInSupabase(updatedProduct);
         
-        if (success) {
+        if (result.success) {
           await refreshProductsList();
           toast.success("Товар обновлен", {
             description: `Товар "${updatedProduct.title}" был успешно обновлен`,
           });
           setShowForm(false); // Close the form after successful save
         } else {
-          throw new Error("Failed to update product");
+          throw new Error(result.error || "Не удалось обновить товар");
         }
       } else {
         // Adding new product
@@ -206,16 +209,16 @@ const AdminProducts = () => {
         };
 
         console.log("Saving new product:", newProduct);
-        const success = await addOrUpdateProductInSupabase(newProduct);
+        const result = await addOrUpdateProductInSupabase(newProduct);
         
-        if (success) {
+        if (result.success) {
           await refreshProductsList();
           toast.success("Товар добавлен", {
             description: `Товар "${newProduct.title}" был успешно добавлен`,
           });
           setShowForm(false); // Close the form after successful save
         } else {
-          throw new Error("Failed to add product");
+          throw new Error(result.error || "Не удалось добавить товар");
         }
       }
 

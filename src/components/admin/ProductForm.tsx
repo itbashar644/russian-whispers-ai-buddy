@@ -142,12 +142,19 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
         return;
       }
 
+      console.log("Form submission - data being sent to parent:", finalFormData);
       await onSave(finalFormData);
-      setIsSubmitting(false);
+      
+      // Only reset submission state if we're still mounted
+      // The form might be closed by the parent after successful save
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 500);
+      
     } catch (error) {
       console.error("Error submitting product form:", error);
       toast.error("Не удалось сохранить товар", {
-        description: "Произошла ошибка при сохранении товара"
+        description: error instanceof Error ? error.message : "Произошла ошибка при сохранении товара"
       });
       setIsSubmitting(false);
     }

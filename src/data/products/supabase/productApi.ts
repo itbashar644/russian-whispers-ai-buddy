@@ -18,7 +18,7 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
 
     if (error) {
       console.error("Ошибка при загрузке товаров:", error);
-      throw error;
+      throw new Error(`Ошибка при загрузке товаров: ${error.message}`);
     }
 
     if (!data || !Array.isArray(data)) {
@@ -35,7 +35,7 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
 };
 
 // Функция для создания или обновления товара
-export const addOrUpdateProductInSupabase = async (product: Product): Promise<boolean> => {
+export const addOrUpdateProductInSupabase = async (product: Product): Promise<{ success: boolean, data?: any, error?: string }> => {
   try {
     // Преобразуем данные товара в формат для Supabase
     const productData = transformProductToSupabase(product);
@@ -52,10 +52,11 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
 
       if (error) {
         console.error("Ошибка при обновлении товара:", error);
-        throw error;
+        return { success: false, error: `Ошибка при обновлении товара: ${error.message}` };
       }
       
       console.log("Product update response:", data);
+      return { success: true, data };
     } else {
       // Добавляем новый товар, удаляем id, чтобы Supabase сгенерировал новый
       const newProductData = { ...productData };
@@ -69,16 +70,16 @@ export const addOrUpdateProductInSupabase = async (product: Product): Promise<bo
 
       if (error) {
         console.error("Ошибка при добавлении нового товара:", error);
-        throw error;
+        return { success: false, error: `Ошибка при добавлении товара: ${error.message}` };
       }
       
       console.log("Product insert response:", data);
+      return { success: true, data };
     }
-    
-    return true;
   } catch (err) {
     console.error("Ошибка при сохранении товара:", err);
-    throw err;
+    const errorMessage = err instanceof Error ? err.message : "Неизвестная ошибка";
+    return { success: false, error: errorMessage };
   }
 };
 
