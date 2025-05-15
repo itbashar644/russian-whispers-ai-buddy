@@ -1,6 +1,7 @@
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { ColorVariant, Product } from "@/types/product";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -15,6 +16,19 @@ export function formatPrice(price: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(price);
+}
+
+/**
+ * Gets the price for a product, accounting for color variants
+ */
+export function getProductPrice(product: Product, selectedColor?: string): number {
+  if (selectedColor && product.colorVariants) {
+    const variant = product.colorVariants.find(v => v.color === selectedColor);
+    if (variant) {
+      return variant.discountPrice || variant.price;
+    }
+  }
+  return product.discountPrice || product.price;
 }
 
 /**
