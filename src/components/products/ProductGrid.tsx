@@ -26,7 +26,7 @@ const ProductGrid = ({ products, title, showAsColorVariants = false }: ProductGr
           <ProductCard 
             key={product.id} 
             product={product} 
-            isColorVariant={showAsColorVariants && product.isColorVariant}
+            isColorVariant={showAsColorVariants && !!product.isColorVariant}
           />
         ))}
       </div>

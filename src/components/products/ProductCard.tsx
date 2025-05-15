@@ -14,16 +14,17 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
-import { useCartContext } from "@/context/CartContext";
+import { useCart } from "@/context/CartContext";
 import ProductColorOptions from "./ProductColorOptions";
 
 interface ProductCardProps {
   product: Product;
   variant?: "default" | "compact";
+  isColorVariant?: boolean;
 }
 
-const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
-  const { addToCart } = useCartContext();
+const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
+  const { addItem } = useCart();
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
   );
@@ -46,14 +47,14 @@ const ProductCard = ({ product, variant = "default" }: ProductCardProps) => {
 
   const handleAddToCart = () => {
     if (selectedVariant) {
-      addToCart({
+      addItem({
         product, 
         quantity: 1, 
         color: selectedColor,
         selectedColorVariant: selectedVariant
       });
     } else {
-      addToCart({ product, quantity: 1, color: selectedColor });
+      addItem({ product, quantity: 1, color: selectedColor });
     }
   };
 

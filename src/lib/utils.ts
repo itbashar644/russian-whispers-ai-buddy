@@ -7,6 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Formats a price in Russian rubles
+ */
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price);
+}
+
+/**
  * Formats embedded video URLs based on their type
  */
 export function formatVideoUrl(url: string, type: 'vk' | 'youtube' | 'mp4'): string {
