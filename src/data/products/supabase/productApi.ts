@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
@@ -195,5 +194,35 @@ export const getProductsByCategoryFromSupabase = async (category: string): Promi
   } catch (err) {
     console.error("Ошибка при загрузке товаров по категории:", err);
     throw err;
+  }
+};
+
+// Let's extend the API with a function to find related products by model name
+export const findRelatedProductsByModel = async (modelName: string, currentProductId?: string): Promise<Product[]> => {
+  if (!modelName) return [];
+  
+  try {
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('modelName', modelName)
+      .eq('archived', false);
+    
+    // Exclude current product if ID is provided
+    if (currentProductId) {
+      query = query.neq('id', currentProductId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching related products by model:', error);
+      return [];
+    }
+    
+    return data as Product[];
+  } catch (error) {
+    console.error('Error in findRelatedProductsByModel:', error);
+    return [];
   }
 };

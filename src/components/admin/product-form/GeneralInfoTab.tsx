@@ -14,6 +14,7 @@ import {
 import { Product } from "@/types/product";
 import ImageUploader from "@/components/admin/ImageUploader";
 import MultipleImageUploader from "@/components/admin/MultipleImageUploader";
+import { Separator } from "@/components/ui/separator";
 
 interface GeneralInfoTabProps {
   formData: Partial<Product>;
@@ -71,6 +72,50 @@ const GeneralInfoTab = ({
           className="col-span-3"
         />
       </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="modelName" className="text-right">
+          Модель (для объединения)
+        </Label>
+        <Input
+          id="modelName"
+          name="modelName"
+          value={formData.modelName || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+          placeholder="Введите название модели для группировки товаров"
+        />
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="variableCharacteristicName" className="text-right">
+          Переменная характеристика
+        </Label>
+        <Input
+          id="variableCharacteristicName"
+          name="variableCharacteristicName"
+          value={formData.variableCharacteristicName || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+          placeholder="Например: Память, Размер, Объем"
+        />
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="variableCharacteristicValue" className="text-right">
+          Значение характеристики
+        </Label>
+        <Input
+          id="variableCharacteristicValue"
+          name="variableCharacteristicValue"
+          value={formData.variableCharacteristicValue || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+          placeholder="Например: 32 ГБ, XL, 2 литра"
+        />
+      </div>
+      
+      <Separator className="my-2" />
       
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="articleNumber" className="text-right">

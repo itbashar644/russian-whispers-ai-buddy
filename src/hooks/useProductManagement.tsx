@@ -23,6 +23,8 @@ export function useProductManagement({
   setEditingProduct
 }: ProductManagementProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [productsToMerge, setProductsToMerge] = useState<Product[]>([]);
 
   // Handle saving a product (new or updated)
   const handleSaveProduct = async (formData: Partial<Product>) => {
@@ -67,6 +69,9 @@ export function useProductManagement({
           archived: false,
           stockQuantity: formData.stockQuantity || 0,
           colorVariants: formData.colorVariants || [],
+          modelName: formData.modelName || undefined,
+          variableCharacteristicName: formData.variableCharacteristicName || undefined,
+          variableCharacteristicValue: formData.variableCharacteristicValue || undefined,
         };
       }
 
@@ -166,12 +171,127 @@ export function useProductManagement({
       });
     }
   };
+  
+  // Handle batch delete (archive) products
+  const handleBatchDeleteProducts = async (productIds: string[]) => {
+    if (!productIds.length) return;
+    
+    try {
+      setIsSubmitting(true);
+      let successCount = 0;
+      
+      for (const id of productIds) {
+        const success = await archiveProductInSupabase(id);
+        if (success) successCount++;
+      }
+      
+      await refreshProductsList();
+      
+      if (successCount === productIds.length) {
+        toast.success(`Архивировано ${successCount} товаров`, {
+          description: "Товары были успешно перемещены в архив"
+        });
+      } else {
+        toast.warning(`Архивировано частично`, {
+          description: `Успешно архивировано ${successCount} из ${productIds.length} товаров`
+        });
+      }
+    } catch (error) {
+      console.error("Error batch deleting products:", error);
+      toast.error("Ошибка при массовом архивировании", {
+        description: "Произошла ошибка при архивировании товаров"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Initialize merge products dialog
+  const handleInitMergeProducts = async (productIds: string[]) => {
+    if (productIds.length < 2) {
+      toast.error("Выберите минимум два товара для объединения");
+      return;
+    }
+    
+    try {
+      // Fetch product details for all selected IDs
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', productIds);
+      
+      if (error) throw error;
+      
+      if (!products || products.length < 2) {
+        toast.error("Не удалось получить информацию о выбранных товарах");
+        return;
+      }
+      
+      setProductsToMerge(products as Product[]);
+      setShowMergeDialog(true);
+    } catch (error) {
+      console.error("Error fetching products for merge:", error);
+      toast.error("Ошибка при подготовке к объединению", {
+        description: "Не удалось получить информацию о выбранных товарах"
+      });
+    }
+  };
+  
+  // Complete product merging
+  const handleMergeProducts = async (modelName: string, groupBy: 'color' | 'variableCharacteristic') => {
+    if (!productsToMerge.length || productsToMerge.length < 2) return;
+    
+    try {
+      setIsSubmitting(true);
+      let updatedCount = 0;
+      
+      for (const product of productsToMerge) {
+        // Update each product with the model name
+        const updatedProduct: Product = {
+          ...product,
+          modelName: modelName
+        };
+        
+        const result = await addOrUpdateProductInSupabase(updatedProduct);
+        if (result.success) updatedCount++;
+      }
+      
+      await refreshProductsList();
+      
+      if (updatedCount === productsToMerge.length) {
+        toast.success(`Объединено ${updatedCount} товаров`, {
+          description: `Товары успешно объединены в модель "${modelName}"`
+        });
+      } else {
+        toast.warning(`Объединено частично`, {
+          description: `Успешно объединено ${updatedCount} из ${productsToMerge.length} товаров`
+        });
+      }
+      
+      // Reset state
+      setProductsToMerge([]);
+      setShowMergeDialog(false);
+    } catch (error) {
+      console.error("Error merging products:", error);
+      toast.error("Ошибка при объединении товаров", {
+        description: "Произошла ошибка при объединении товаров"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return {
     handleSaveProduct,
     handleArchiveProduct,
     handleRestoreProduct,
     handleDeleteProduct,
+    handleBatchDeleteProducts,
+    handleInitMergeProducts,
+    handleMergeProducts,
+    showMergeDialog,
+    setShowMergeDialog,
+    productsToMerge,
     isSubmitting
   };
 }

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +24,7 @@ import {
 import { Pencil, Trash, RefreshCcw, ArchiveX } from "lucide-react";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import BatchOperations from "./products/BatchOperations";
 
 interface ProductListProps {
   products: Product[];
@@ -32,6 +34,8 @@ interface ProductListProps {
   deleteButtonColor?: "red" | "green" | "orange";
   onPermanentDelete?: (productId: string) => void;
   mode?: "active" | "archived";
+  onBatchDelete?: (productIds: string[]) => void;
+  onBatchMerge?: (productIds: string[]) => void;
 }
 
 const ProductList = ({ 
@@ -41,8 +45,42 @@ const ProductList = ({
   deleteButtonText = "Удалить",
   deleteButtonColor = "red",
   onPermanentDelete,
-  mode = "active"
+  mode = "active",
+  onBatchDelete,
+  onBatchMerge
 }: ProductListProps) => {
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  
+  const handleSelectProduct = (productId: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedProducts([...selectedProducts, productId]);
+    } else {
+      setSelectedProducts(selectedProducts.filter(id => id !== productId));
+    }
+  };
+  
+  const handleSelectAll = (isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedProducts(products.map(p => p.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+  
+  const handleBatchDelete = () => {
+    if (onBatchDelete && selectedProducts.length > 0) {
+      onBatchDelete(selectedProducts);
+      setSelectedProducts([]);
+    }
+  };
+  
+  const handleBatchMerge = () => {
+    if (onBatchMerge && selectedProducts.length >= 2) {
+      onBatchMerge(selectedProducts);
+      setSelectedProducts([]);
+    }
+  };
+  
   const getDeleteButtonClasses = () => {
     switch (deleteButtonColor) {
       case "green":
@@ -76,14 +114,33 @@ const ProductList = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="border rounded-md">
+        {mode === "active" && (
+          <BatchOperations
+            selectedCount={selectedProducts.length}
+            onBatchDelete={handleBatchDelete}
+            onBatchMerge={handleBatchMerge}
+            disabled={!onBatchDelete || !onBatchMerge}
+          />
+        )}
+        
+        <div className="border rounded-md mt-4">
           <Table>
             <TableHeader>
               <TableRow>
+                {mode === "active" && (
+                  <TableHead className="w-[50px]">
+                    <Checkbox 
+                      checked={selectedProducts.length === products.length && products.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Выбрать все"
+                    />
+                  </TableHead>
+                )}
                 <TableHead>ID</TableHead>
                 <TableHead>Артикул</TableHead>
                 <TableHead>Название</TableHead>
                 <TableHead>Категория</TableHead>
+                <TableHead>Модель</TableHead>
                 <TableHead>Цена (₽)</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead className="text-right">Действия</TableHead>
@@ -92,13 +149,22 @@ const ProductList = ({
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
+                  <TableCell colSpan={mode === "active" ? 9 : 8} className="text-center py-4">
                     {mode === "active" ? "Товары не найдены" : "Архив пуст"}
                   </TableCell>
                 </TableRow>
               ) : (
                 products.map((product) => (
                   <TableRow key={product.id}>
+                    {mode === "active" && (
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedProducts.includes(product.id)}
+                          onCheckedChange={(checked) => handleSelectProduct(product.id, !!checked)}
+                          aria-label={`Выбрать товар ${product.title}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="font-medium">{product.id}</TableCell>
                     <TableCell>{product.articleNumber || "-"}</TableCell>
                     <TableCell>
@@ -108,6 +174,7 @@ const ProductList = ({
                       </div>
                     </TableCell>
                     <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.modelName || "-"}</TableCell>
                     <TableCell>
                       {product.discountPrice ? (
                         <div>
