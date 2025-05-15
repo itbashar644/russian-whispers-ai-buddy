@@ -7,7 +7,10 @@ import { Plus } from "lucide-react";
 import { 
   fetchProductsFromSupabase, 
   fetchCategoriesFromSupabase, 
-  addCategoryToSupabase 
+  addCategoryToSupabase,
+  bulkDeleteProducts,
+  bulkArchiveProducts,
+  mergeProductsByModelName
 } from "@/data/products/supabaseApi";
 import { Product } from "@/types/product";
 import ProductForm from "@/components/admin/ProductForm";
@@ -54,6 +57,7 @@ const AdminProducts = () => {
     videoUrl: "",
     videoType: "mp4",
     archived: false,
+    modelName: "", // Add modelName field to default product
   };
 
   // Load categories and products on mount
@@ -120,6 +124,79 @@ const AdminProducts = () => {
     setCategoryFilter("all");
   };
 
+  // Bulk action handlers
+  const handleBulkDelete = async (productIds: string[]) => {
+    setIsLoading(true);
+    try {
+      const success = await bulkDeleteProducts(productIds);
+      if (success) {
+        toast.success("Товары удалены", {
+          description: `${productIds.length} товаров было успешно удалено`
+        });
+        await refreshProductsList();
+      } else {
+        toast.error("Ошибка при удалении товаров");
+      }
+    } catch (error) {
+      console.error("Ошибка при массовом удалении:", error);
+      toast.error("Ошибка при удалении товаров", {
+        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkArchive = async (productIds: string[]) => {
+    setIsLoading(true);
+    try {
+      const archive = activeTab === "active"; // Archive if on active tab, restore if on archive tab
+      const success = await bulkArchiveProducts(productIds, archive);
+      if (success) {
+        toast.success(archive ? "Товары архивированы" : "Товары восстановлены", {
+          description: `${productIds.length} товаров было успешно ${archive ? "архивировано" : "восстановлено"}`
+        });
+        await refreshProductsList();
+      } else {
+        toast.error(`Ошибка при ${archive ? "архивации" : "восстановлении"} товаров`);
+      }
+    } catch (error) {
+      console.error(`Ошибка при массовом ${activeTab === "active" ? "архивировании" : "восстановлении"}:`, error);
+      toast.error(`Ошибка при ${activeTab === "active" ? "архивировании" : "восстановлении"} товаров`, {
+        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkMerge = async (productIds: string[]) => {
+    if (productIds.length < 2) {
+      toast.error("Для объединения нужно выбрать минимум два товара");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await mergeProductsByModelName(productIds);
+      if (success) {
+        toast.success("Товары объединены", {
+          description: `${productIds.length} товаров было успешно объединено в одну модель`
+        });
+        await refreshProductsList();
+      } else {
+        toast.error("Ошибка при объединении товаров");
+      }
+    } catch (error) {
+      console.error("Ошибка при объединении товаров:", error);
+      toast.error("Ошибка при объединении товаров", {
+        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Filter products based on search term and category
   const filteredProducts = productsList.filter((product) => {
     const matchesSearch = 
@@ -127,7 +204,8 @@ const AdminProducts = () => {
       product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.articleNumber && product.articleNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()));
+      (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.modelName && product.modelName.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
 
@@ -166,6 +244,9 @@ const AdminProducts = () => {
             mode="active"
             deleteButtonText="Архивировать"
             deleteButtonColor="orange"
+            onBulkDelete={handleBulkDelete}
+            onBulkArchive={handleBulkArchive}
+            onBulkMerge={handleBulkMerge}
           />
         </TabsContent>
         
@@ -185,6 +266,8 @@ const AdminProducts = () => {
             mode="archived"
             deleteButtonText="Восстановить"
             deleteButtonColor="green"
+            onBulkDelete={handleBulkDelete}
+            onBulkArchive={handleBulkArchive}
           />
         </TabsContent>
       </Tabs>

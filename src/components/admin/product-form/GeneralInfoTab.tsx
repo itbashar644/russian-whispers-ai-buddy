@@ -73,6 +73,20 @@ const GeneralInfoTab = ({
       </div>
       
       <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="modelName" className="text-right">
+          Модель (для объединения)
+        </Label>
+        <Input
+          id="modelName"
+          name="modelName"
+          value={formData.modelName || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+          placeholder="Введите название модели для объединения товаров"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="articleNumber" className="text-right">
           Артикул
         </Label>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash, RefreshCcw, ArchiveX } from "lucide-react";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,9 @@ interface ProductListProps {
   deleteButtonColor?: "red" | "green" | "orange";
   onPermanentDelete?: (productId: string) => void;
   mode?: "active" | "archived";
+  selectedProducts?: string[];
+  onSelectProduct?: (productId: string, selected: boolean) => void;
+  onSelectAll?: (selected: boolean) => void;
 }
 
 const ProductList = ({ 
@@ -41,7 +45,10 @@ const ProductList = ({
   deleteButtonText = "Удалить",
   deleteButtonColor = "red",
   onPermanentDelete,
-  mode = "active"
+  mode = "active",
+  selectedProducts = [],
+  onSelectProduct,
+  onSelectAll
 }: ProductListProps) => {
   const getDeleteButtonClasses = () => {
     switch (deleteButtonColor) {
@@ -65,6 +72,24 @@ const ProductList = ({
     }
   };
 
+  // Calculate if all products are selected
+  const allSelected = products.length > 0 && selectedProducts?.length === products.length;
+  const someSelected = selectedProducts && selectedProducts.length > 0 && selectedProducts.length < products.length;
+
+  // Handle select all checkbox change
+  const handleSelectAllChange = (checked: boolean) => {
+    if (onSelectAll) {
+      onSelectAll(checked);
+    }
+  };
+
+  // Handle individual product selection
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    if (onSelectProduct) {
+      onSelectProduct(productId, checked);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -73,6 +98,9 @@ const ProductList = ({
         </CardTitle>
         <CardDescription>
           Всего товаров: {products.length}
+          {selectedProducts && selectedProducts.length > 0 && (
+            <span className="ml-2">| Выбрано: {selectedProducts.length}</span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,9 +108,20 @@ const ProductList = ({
           <Table>
             <TableHeader>
               <TableRow>
+                {onSelectProduct && (
+                  <TableHead className="w-12">
+                    <Checkbox 
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onCheckedChange={handleSelectAllChange}
+                      aria-label="Выбрать все товары"
+                    />
+                  </TableHead>
+                )}
                 <TableHead>ID</TableHead>
                 <TableHead>Артикул</TableHead>
                 <TableHead>Название</TableHead>
+                <TableHead>Модель</TableHead>
                 <TableHead>Категория</TableHead>
                 <TableHead>Цена (₽)</TableHead>
                 <TableHead>Статус</TableHead>
@@ -92,13 +131,22 @@ const ProductList = ({
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
+                  <TableCell colSpan={onSelectProduct ? 9 : 8} className="text-center py-4">
                     {mode === "active" ? "Товары не найдены" : "Архив пуст"}
                   </TableCell>
                 </TableRow>
               ) : (
                 products.map((product) => (
                   <TableRow key={product.id}>
+                    {onSelectProduct && (
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedProducts?.includes(product.id)}
+                          onCheckedChange={(checked) => handleSelectProduct(product.id, !!checked)}
+                          aria-label={`Выбрать товар ${product.title}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="font-medium">{product.id}</TableCell>
                     <TableCell>{product.articleNumber || "-"}</TableCell>
                     <TableCell>
@@ -107,6 +155,7 @@ const ProductList = ({
                         {product.description}
                       </div>
                     </TableCell>
+                    <TableCell>{product.modelName || "-"}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>
                       {product.discountPrice ? (
