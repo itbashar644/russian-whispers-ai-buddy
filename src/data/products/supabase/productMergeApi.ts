@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
-import { transformProductToSupabase } from "./productTransforms";
+import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
+import { Json } from "@/integrations/supabase/types";
 
 /**
  * Merges products by model name by keeping the first product as the main one
@@ -82,7 +83,8 @@ export const getProductsByModelName = async (modelName: string): Promise<Product
       throw error;
     }
 
-    return data || [];
+    // Transform the raw database data to Product type using our transformer
+    return (data || []).map(item => transformSupabaseToProduct(item));
   } catch (err) {
     console.error("Ошибка при получении товаров по модели:", err);
     throw err;
