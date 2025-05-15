@@ -222,7 +222,14 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     }
     
     // Use the transform function to ensure data is in the correct format
-    return data ? data.map(item => transformSupabaseToProduct(item)) : [];
+    if (!data) return [];
+    
+    const products: Product[] = [];
+    for (const item of data) {
+      products.push(transformSupabaseToProduct(item));
+    }
+    
+    return products;
   } catch (error) {
     console.error('Error in findRelatedProductsByModel:', error);
     return [];

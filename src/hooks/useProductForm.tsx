@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -161,30 +162,10 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleMainImageUploaded: (url: string) => {
-      setFormData({
-        ...formData,
-        imageUrl: url,
-      });
-    },
-    handleAdditionalImagesChange: (urls: string[]) => {
-      setFormData({
-        ...formData,
-        additionalImages: urls,
-      });
-    },
-    handleColorVariantsChange: (variants: ColorVariant[]) => {
-      setFormData({
-        ...formData,
-        colorVariants: variants
-      });
-    },
-    handleRemoveColor: (colorToRemove: string) => {
-      setFormData({
-        ...formData,
-        colors: formData.colors?.filter(color => color !== colorToRemove),
-      });
-    },
+    handleMainImageUploaded,
+    handleAdditionalImagesChange,
+    handleColorVariantsChange,
+    handleRemoveColor,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
