@@ -1,11 +1,12 @@
 
 import { Link } from "react-router-dom";
+import { NewsletterSignup } from "../marketing/NewsletterSignup";
 
 const Footer = () => {
   return (
     <footer className="bg-gray-100 border-t">
       <div className="container px-4 py-8 md:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h3 className="font-bold text-lg mb-3">The X Shop</h3>
             <p className="text-muted-foreground text-sm">
@@ -20,9 +21,6 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/delivery" className="hover:underline">Доставка</Link>
-              </li>
-              <li>
-                <Link to="/contacts" className="hover:underline">Контакты</Link>
               </li>
             </ul>
           </div>
@@ -57,6 +55,9 @@ const Footer = () => {
                 <Link to="/catalog?category=other" className="hover:underline">Другое</Link>
               </li>
             </ul>
+          </div>
+          <div>
+            <NewsletterSignup />
           </div>
         </div>
         <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">

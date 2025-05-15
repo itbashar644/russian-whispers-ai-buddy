@@ -27,6 +27,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AuthCallback from "./pages/auth/AuthCallback";
 import ChatWidget from "./components/chat/ChatWidget";
+import { CookieConsent } from "./components/ui/cookie-consent";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,9 @@ const App = () => (
               
               {/* Chat widget available on all pages except admin panel */}
               <ChatWidget />
+              
+              {/* Cookie consent banner */}
+              <CookieConsent />
             </BrowserRouter>
           </HelmetProvider>
         </CartProvider>

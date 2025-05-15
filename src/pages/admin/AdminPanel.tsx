@@ -1,156 +1,99 @@
 
-import { Routes, Route, NavLink, Navigate, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  Users,
-  BarChart3,
-  LogOut,
-  Settings,
-  List,
-  Home
-} from "lucide-react";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
+import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import AdminCustomers from "./AdminCustomers";
 import AdminReports from "./AdminReports";
-import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
-import AdminCategories from "./AdminCategories";
 import AdminSettings from "./AdminSettings";
+import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
 
 const AdminPanel = () => {
-  const { logout } = useAuth();
-
-  const handleSignOut = async () => {
-    await logout();
-    toast("Выход выполнен", {
-      description: "Вы вышли из административной панели",
-    });
-  };
-
-  const navigation = [
-    {
-      title: "Панель управления",
-      href: "/admin",
-      icon: <LayoutDashboard className="h-4 w-4" />,
-    },
-    {
-      title: "Товары",
-      href: "/admin/products",
-      icon: <Package className="h-4 w-4" />,
-    },
-    {
-      title: "Категории",
-      href: "/admin/categories",
-      icon: <List className="h-4 w-4" />,
-    },
-    {
-      title: "Заказы",
-      href: "/admin/orders",
-      icon: <ShoppingCart className="h-4 w-4" />,
-    },
-    {
-      title: "Пользователи",
-      href: "/admin/customers",
-      icon: <Users className="h-4 w-4" />,
-    },
-    {
-      title: "Отчеты",
-      href: "/admin/reports",
-      icon: <BarChart3 className="h-4 w-4" />,
-    },
-    {
-      title: "Настройки",
-      href: "/admin/settings",
-      icon: <Settings className="h-4 w-4" />,
-    },
-  ];
-
+  const location = useLocation();
+  
   return (
-    <div className="flex min-h-screen bg-muted/20">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col border-r bg-background">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold">Админ панель</h2>
-          <p className="text-sm text-muted-foreground">Управление магазином</p>
+      <aside className="w-64 hidden md:block bg-white shadow-sm pt-6">
+        <div className="px-6 pb-6 mb-6 border-b">
+          <h2 className="text-xl font-bold">Админ панель</h2>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              end={item.href === "/admin"}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center py-2 px-3 rounded-md text-sm font-medium",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )
-              }
-            >
-              {item.icon}
-              <span className="ml-3">{item.title}</span>
-            </NavLink>
-          ))}
+        
+        <nav className="px-3">
+          <NavItem to="/admin" end path={location.pathname}>
+            Дашборд
+          </NavItem>
+          <NavItem to="/admin/products" path={location.pathname}>
+            Товары
+          </NavItem>
+          <NavItem to="/admin/categories" path={location.pathname}>
+            Категории
+          </NavItem>
+          <NavItem to="/admin/orders" path={location.pathname}>
+            Заказы
+          </NavItem>
+          <NavItem to="/admin/customers" path={location.pathname}>
+            Клиенты
+          </NavItem>
+          <NavItem to="/admin/marketing" path={location.pathname}>
+            Рассылки
+          </NavItem>
+          <NavItem to="/admin/reports" path={location.pathname}>
+            Отчеты
+          </NavItem>
+          <NavItem to="/admin/settings" path={location.pathname}>
+            Настройки
+          </NavItem>
         </nav>
-        <div className="p-4 border-t space-y-2">
-          <Link to="/">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-            >
-              <Home className="h-4 w-4 mr-2" />
-              На сайт
-            </Button>
-          </Link>
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Выйти
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile sidebar */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b bg-background">
-        <h2 className="text-xl font-bold">Админ панель</h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon" asChild>
-            <Link to="/">
-              <Home className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-6 flex-1">
-          <Routes>
-            <Route path="/" element={<AdminDashboard />} />
-            <Route path="/products" element={<AdminProducts />} />
-            <Route path="/categories" element={<AdminCategories />} />
-            <Route path="/orders" element={<AdminOrders />} />
-            <Route path="/customers" element={<AdminCustomers />} />
-            <Route path="/reports" element={<AdminReports />} />
-            <Route path="/settings" element={<AdminSettings />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
-          </Routes>
-        </div>
-      </div>
+      </aside>
+      
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8">
+        <Routes>
+          <Route path="/" element={<AdminDashboard />} />
+          <Route path="/products/*" element={<AdminProducts />} />
+          <Route path="/categories/*" element={<AdminCategories />} />
+          <Route path="/orders/*" element={<AdminOrders />} />
+          <Route path="/customers/*" element={<AdminCustomers />} />
+          <Route path="/marketing" element={<NewsletterManager />} />
+          <Route path="/reports/*" element={<AdminReports />} />
+          <Route path="/settings/*" element={<AdminSettings />} />
+        </Routes>
+      </main>
     </div>
+  );
+};
+
+const NavItem = ({ 
+  children, 
+  to, 
+  path, 
+  end = false 
+}: { 
+  children: React.ReactNode; 
+  to: string; 
+  path: string;
+  end?: boolean;
+}) => {
+  const isActive = end 
+    ? path === to 
+    : path.startsWith(to);
+  
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={cn(
+        "flex items-center px-3 py-2 my-1 text-sm font-medium rounded-md",
+        isActive 
+          ? "bg-gray-100 text-gray-900" 
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      )}
+    >
+      {children}
+    </NavLink>
   );
 };
 
