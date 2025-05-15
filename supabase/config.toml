@@ -6,3 +6,8 @@ verify_jwt = false
 
 [scripts.before_supabase_migrations]
 location = "./supabase/scripts/before-supabase-migrations.sql"
+
+# Add site URL configuration
+[auth]
+site_url = "https://the-x.shop"
+additional_redirect_urls = ["https://the-x.shop/auth/callback", "https://the-x.shop/auth/reset-password", "http://localhost:5173/auth/callback", "http://localhost:5173/auth/reset-password"]

@@ -1,5 +1,8 @@
-import { useLocation } from "react-router-dom";
+
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -7,18 +10,55 @@ const NotFound = () => {
   useEffect(() => {
     console.error(
       "404 Error: User attempted to access non-existent route:",
-      location.pathname
+      location.pathname,
+      "with search params:",
+      location.search,
+      "and hash:",
+      location.hash
     );
-  }, [location.pathname]);
+  }, [location.pathname, location.search, location.hash]);
+
+  // Check if this might be a failed password reset
+  const isLikelyPasswordReset = location.pathname.includes("reset") || 
+                               location.pathname.includes("password") || 
+                               location.hash.includes("access_token");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
+      <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+        <p className="text-xl text-gray-600 mb-4">Страница не найдена</p>
+        
+        {isLikelyPasswordReset && (
+          <div className="mb-6">
+            <p className="text-amber-600 mb-4">
+              Похоже, вы перешли по ссылке для сброса пароля.
+            </p>
+            <p className="text-gray-600 mb-4">
+              Если вы пытаетесь сбросить пароль, пожалуйста, перейдите на страницу сброса пароля.
+            </p>
+            <Button asChild className="mb-4">
+              <Link to="/auth/reset-password">
+                Перейти к сбросу пароля
+              </Link>
+            </Button>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          <Button asChild variant="default">
+            <Link to="/" className="flex items-center justify-center">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Вернуться на главную
+            </Link>
+          </Button>
+          
+          <Button asChild variant="outline">
+            <Link to="/login" className="flex items-center justify-center">
+              Перейти на страницу входа
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

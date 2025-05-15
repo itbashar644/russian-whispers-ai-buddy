@@ -49,21 +49,22 @@ const App = () => (
                 <Route path="/delivery" element={<Delivery />} />
                 <Route path="/contacts" element={<Contacts />} />
                 
-                {/* Маршруты аутентификации */}
+                {/* Authentication routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/auth/reset-password" element={<ResetPassword />} /> {/* Add this route to catch Supabase reset links */}
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 
-                {/* Маршруты личного кабинета */}
+                {/* Account routes */}
                 <Route path="/account" element={
                   <UserAuth>
                     <Account />
                   </UserAuth>
                 } />
                 
-                {/* Маршруты админ-панели */}
+                {/* Admin panel routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/*" element={
                   <AdminAuth>
@@ -71,11 +72,11 @@ const App = () => (
                   </AdminAuth>
                 } />
                 
-                {/* Маршрут "не найдено" */}
+                {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
-              {/* Чат виджет доступен на всех страницах, кроме админ-панели */}
+              {/* Chat widget available on all pages except admin panel */}
               <ChatWidget />
             </BrowserRouter>
           </HelmetProvider>

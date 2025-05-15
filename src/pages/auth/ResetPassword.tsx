@@ -1,33 +1,39 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { resetPassword, updatePassword } from "@/utils/auth/methods";
+import { updatePassword } from "@/utils/auth/methods";
 import { toast } from "sonner";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const ResetPassword: React.FC = () => {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isRecoveryMode, setIsRecoveryMode] = useState(true);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Check if we have a recovery token in the URL
+    // Check if we have a recovery token in the URL (either in hash or query params)
     const checkForRecoveryToken = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      
-      if (accessToken && refreshToken) {
-        try {
-          setLoading(true);
-          // If we have a token, we're in password update mode
+      try {
+        setLoading(true);
+        
+        // Check for hash params (Supabase default method)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const type = hashParams.get("type");
+        
+        // If we have tokens in the hash
+        if (accessToken && refreshToken) {
+          console.log("Found tokens in hash");
+          
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -38,37 +44,47 @@ const ResetPassword: React.FC = () => {
           }
 
           if (data.user) {
-            setIsRecoveryMode(false);
+            setIsRecoveryMode(true);
             toast.info("Введите новый пароль", {
               description: "Вы можете установить новый пароль для своего аккаунта"
             });
           }
-        } catch (error: any) {
-          toast.error("Ошибка проверки токена", {
-            description: error.message || "Не удалось проверить токен восстановления"
-          });
-        } finally {
-          setLoading(false);
+          
+        } 
+        // Otherwise try to get the current session
+        else {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            setIsRecoveryMode(true);
+            toast.info("Введите новый пароль", {
+              description: "Вы можете установить новый пароль для своего аккаунта"
+            });
+          } else {
+            // No recovery token and no session
+            setIsRecoveryMode(false);
+            toast.warning("Ссылка для сброса пароля не действительна", {
+              description: "Пожалуйста, запросите новую ссылку для сброса пароля"
+            });
+            
+            // If we're on the /auth/reset-password path but don't have a token, redirect to the forgot password page
+            if (location.pathname === '/auth/reset-password') {
+              setTimeout(() => navigate("/forgot-password"), 2000);
+            }
+          }
         }
+      } catch (error: any) {
+        console.error("Error checking recovery token:", error);
+        toast.error("Ошибка проверки токена", {
+          description: error.message || "Не удалось проверить токен восстановления"
+        });
+        setIsRecoveryMode(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     checkForRecoveryToken();
-  }, []);
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      toast.error("Укажите email", {
-        description: "Для сброса пароля необходимо указать email"
-      });
-      return;
-    }
-
-    setLoading(true);
-    await resetPassword(email);
-    setLoading(false);
-  };
+  }, [navigate, location.pathname]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,47 +103,46 @@ const ResetPassword: React.FC = () => {
     }
 
     setLoading(true);
-    const { error } = await updatePassword(password);
-    if (!error) {
-      setTimeout(() => navigate("/auth/login"), 2000);
+    try {
+      const { error } = await updatePassword(password);
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Пароль успешно обновлен", {
+        description: "Вы можете войти с новым паролем"
+      });
+      
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (error: any) {
+      toast.error("Ошибка обновления пароля", {
+        description: error.message || "Не удалось обновить пароль"
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleRequestPasswordReset = () => {
+    navigate("/forgot-password");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{isRecoveryMode ? "Восстановление пароля" : "Установка нового пароля"}</CardTitle>
-          <CardDescription>
-            {isRecoveryMode
-              ? "Введите email для получения инструкций по восстановлению пароля"
-              : "Придумайте новый пароль для вашего аккаунта"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isRecoveryMode ? (
-            <form onSubmit={handleResetPassword}>
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Введите ваш email"
-                    required
-                  />
-                </div>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Отправка..." : "Отправить инструкции по восстановлению"}
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleUpdatePassword}>
-              <div className="grid gap-4">
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>{isRecoveryMode ? "Установка нового пароля" : "Сброс пароля"}</CardTitle>
+            <CardDescription>
+              {isRecoveryMode
+                ? "Придумайте новый пароль для вашего аккаунта"
+                : "Запросите ссылку для сброса пароля"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isRecoveryMode ? (
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="password">Новый пароль</Label>
                   <Input
@@ -137,6 +152,7 @@ const ResetPassword: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Введите новый пароль"
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -148,21 +164,32 @@ const ResetPassword: React.FC = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Повторите новый пароль"
                     required
+                    disabled={loading}
                   />
                 </div>
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Обновление..." : "Обновить пароль"}
                 </Button>
+              </form>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground mb-4">
+                  Ссылка для сброса пароля недействительна или срок её действия истек.
+                </p>
+                <Button onClick={handleRequestPasswordReset}>
+                  Запросить новую ссылку
+                </Button>
               </div>
-            </form>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button variant="link" onClick={() => navigate("/auth/login")}>
-            Вернуться на страницу входа
-          </Button>
-        </CardFooter>
-      </Card>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button variant="link" onClick={() => navigate("/login")}>
+              Вернуться на страницу входа
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      <Footer />
     </div>
   );
 };
