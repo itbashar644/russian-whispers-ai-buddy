@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProductsByCategory, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
@@ -16,7 +15,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Color } from "lucide-react";
+import { Palette } from "lucide-react";
 import { Product } from "@/types/product";
 import { Category } from "@/data/products/categoryData";
 
@@ -387,7 +386,7 @@ const Catalog = () => {
                   htmlFor="show-colors"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
                 >
-                  <Color className="h-4 w-4 mr-1.5" />
+                  <Palette className="h-4 w-4 mr-1.5" />
                   Показывать цвета отдельно
                 </label>
               </div>

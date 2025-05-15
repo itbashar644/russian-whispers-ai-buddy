@@ -3,7 +3,7 @@ import React from 'react';
 import { Product } from '@/types/product';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Color } from 'lucide-react';
+import { Palette } from 'lucide-react';
 
 interface ColorVariantsGridProps {
   currentProduct: Product;
@@ -32,7 +32,7 @@ const ColorVariantsGrid: React.FC<ColorVariantsGridProps> = ({
   return (
     <div className="mb-6">
       <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-        <Color className="h-5 w-5" />
+        <Palette className="h-5 w-5" />
         Доступные цвета
       </h3>
       

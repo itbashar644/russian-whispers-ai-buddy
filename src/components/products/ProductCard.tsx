@@ -1,9 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Color } from "lucide-react";
+import { ShoppingCart, Palette } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { getProductPrice } from "@/data/products";
@@ -94,7 +93,7 @@ const ProductCard = ({ product, isColorVariant = false }: ProductCardProps) => {
     <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md relative">
       {colorTag && (
         <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs shadow-sm border">
-          <Color className="h-3 w-3" />
+          <Palette className="h-3 w-3" />
           <span>{colorTag}</span>
         </div>
       )}
@@ -169,7 +168,7 @@ const ProductCard = ({ product, isColorVariant = false }: ProductCardProps) => {
           {/* Display color variants count if not a color variant itself */}
           {!isColorVariant && product.colorVariants && product.colorVariants.length > 1 && (
             <div className="flex items-center gap-1 mt-1">
-              <Color className="h-3 w-3 text-muted-foreground" />
+              <Palette className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
                 {product.colorVariants.length} {product.colorVariants.length > 1 ? 'цвета' : 'цвет'}
               </span>

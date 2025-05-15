@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts, getRelatedColorProducts } from "@/data/products";
 import { Product as ProductType, ColorVariant } from "@/types/product";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ChevronRight, Color } from "lucide-react";
+import { ShoppingCart, ChevronRight, Palette } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -304,7 +303,7 @@ const Product = () => {
             {product.colorVariants && product.colorVariants.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Color className="h-5 w-5" />
+                  <Palette className="h-5 w-5" />
                   <span className="font-medium">Цвет: {selectedColorVariant?.color || product.colorVariants[0].color}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
