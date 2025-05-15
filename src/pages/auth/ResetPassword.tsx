@@ -66,7 +66,7 @@ const ResetPassword: React.FC = () => {
     }
 
     setLoading(true);
-    const success = await resetPassword(email);
+    await resetPassword(email);
     setLoading(false);
   };
 
@@ -87,8 +87,8 @@ const ResetPassword: React.FC = () => {
     }
 
     setLoading(true);
-    const success = await updatePassword(password);
-    if (success) {
+    const { error } = await updatePassword(password);
+    if (!error) {
       setTimeout(() => navigate("/auth/login"), 2000);
     }
     setLoading(false);
