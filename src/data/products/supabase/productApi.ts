@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
@@ -221,7 +220,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
       return [];
     }
     
-    // Use the transform function to ensure data is in the correct format
+    // Fix the infinite type instantiation by using a more direct approach
     if (!data) return [];
     
     const products: Product[] = [];
