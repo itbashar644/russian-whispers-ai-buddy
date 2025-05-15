@@ -18,8 +18,6 @@ interface ProductTabContentProps {
   onDelete: (productId: string) => void;
   onPermanentDelete?: (productId: string) => void;
   onImportComplete: () => Promise<void>;
-  onBatchDelete?: (productIds: string[]) => void;
-  onBatchMerge?: (productIds: string[]) => void;
   isLoading: boolean;
   mode: 'active' | 'archived';
   deleteButtonText: string;
@@ -37,8 +35,6 @@ const ProductTabContent = ({
   onDelete,
   onPermanentDelete,
   onImportComplete,
-  onBatchDelete,
-  onBatchMerge,
   isLoading,
   mode,
   deleteButtonText,
@@ -121,8 +117,6 @@ const ProductTabContent = ({
           deleteButtonColor={deleteButtonColor}
           mode={mode}
           onPermanentDelete={mode === 'archived' ? handlePermanentDeleteClick : undefined}
-          onBatchDelete={onBatchDelete}
-          onBatchMerge={onBatchMerge}
         />
       )}
       

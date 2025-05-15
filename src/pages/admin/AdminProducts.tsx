@@ -14,7 +14,6 @@ import ProductForm from "@/components/admin/ProductForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductTabContent from "@/components/admin/products/ProductTabContent";
 import { useProductManagement } from "@/hooks/useProductManagement";
-import MergeProductsDialog from "@/components/admin/products/MergeProductsDialog";
 
 const AdminProducts = () => {
   const [productsList, setProductsList] = useState<Product[]>([]);
@@ -31,14 +30,7 @@ const AdminProducts = () => {
     handleSaveProduct,
     handleArchiveProduct,
     handleRestoreProduct,
-    handleDeleteProduct,
-    handleBatchDeleteProducts,
-    handleInitMergeProducts,
-    handleMergeProducts,
-    showMergeDialog,
-    setShowMergeDialog,
-    productsToMerge,
-    isSubmitting
+    handleDeleteProduct
   } = useProductManagement({
     refreshProductsList,
     setShowForm,
@@ -62,9 +54,6 @@ const AdminProducts = () => {
     videoUrl: "",
     videoType: "mp4",
     archived: false,
-    modelName: "",
-    variableCharacteristicName: "",
-    variableCharacteristicValue: ""
   };
 
   // Load categories and products on mount
@@ -177,8 +166,6 @@ const AdminProducts = () => {
             mode="active"
             deleteButtonText="Архивировать"
             deleteButtonColor="orange"
-            onBatchDelete={handleBatchDeleteProducts}
-            onBatchMerge={handleInitMergeProducts}
           />
         </TabsContent>
         
@@ -202,7 +189,6 @@ const AdminProducts = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Product Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -222,14 +208,6 @@ const AdminProducts = () => {
           />
         </DialogContent>
       </Dialog>
-      
-      {/* Product Merge Dialog */}
-      <MergeProductsDialog
-        isOpen={showMergeDialog}
-        onClose={() => setShowMergeDialog(false)}
-        selectedProducts={productsToMerge}
-        onMerge={handleMergeProducts}
-      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
@@ -26,7 +27,7 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
     }
 
     // Преобразуем данные из Supabase в тип Product
-    return data.map(item => transformSupabaseToProduct(item));
+    return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров:", err);
     throw err; // Пробрасываем ошибку дальше для обработки на уровне UI
@@ -190,12 +191,9 @@ export const getProductsByCategoryFromSupabase = async (category: string): Promi
     }
 
     // Преобразуем данные из Supabase в тип Product
-    return data.map(item => transformSupabaseToProduct(item));
+    return data.map(product => transformSupabaseToProduct(product));
   } catch (err) {
     console.error("Ошибка при загрузке товаров по категории:", err);
     throw err;
   }
 };
-
-// Import findRelatedProductsByModel from the dedicated file
-export { findRelatedProductsByModel } from "./relatedProductsApi";

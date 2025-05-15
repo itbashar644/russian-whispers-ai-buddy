@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -29,7 +30,6 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
-  // Fixed parameter order to match what GeneralInfoTab expects - (checked: boolean, name: string)
   const handleCheckboxChange = (checked: boolean, name: string) => {
     setFormData({
       ...formData,

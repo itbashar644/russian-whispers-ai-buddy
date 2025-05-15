@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/product";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralInfoTab from "./product-form/GeneralInfoTab";
+import ColorsTab from "./product-form/ColorsTab";
 import AdditionalInfoTab from "./product-form/AdditionalInfoTab";
 import { useProductForm } from "@/hooks/useProductForm";
 
@@ -27,6 +28,9 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     handleSelectChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,
+    handleColorVariantsChange,
+    handleRemoveColor,
+    handleRelatedColorProductsChange,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
@@ -37,6 +41,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full">
           <TabsTrigger value="general" className="flex-1">Основная информация</TabsTrigger>
+          <TabsTrigger value="colors" className="flex-1">Цветовые варианты</TabsTrigger>
           <TabsTrigger value="additional" className="flex-1">Дополнительно</TabsTrigger>
         </TabsList>
 
@@ -49,10 +54,19 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             setNewCategory={setNewCategory}
             setShowNewCategoryInput={setShowNewCategoryInput}
             handleInputChange={handleInputChange}
-            handleCheckboxChange={handleCheckboxChange}
             handleSelectChange={handleSelectChange}
+            handleCheckboxChange={(checked, name) => handleCheckboxChange(name, checked)}
             handleMainImageUploaded={handleMainImageUploaded}
             handleAdditionalImagesChange={handleAdditionalImagesChange}
+          />
+        </TabsContent>
+
+        <TabsContent value="colors" className="pt-4">
+          <ColorsTab
+            formData={formData}
+            handleColorVariantsChange={handleColorVariantsChange}
+            handleRemoveColor={handleRemoveColor}
+            handleRelatedColorProductsChange={handleRelatedColorProductsChange}
           />
         </TabsContent>
 
