@@ -6,7 +6,7 @@ import { Json } from "@/integrations/supabase/types";
 
 /**
  * Merges products by model name by keeping the first product as the main one
- * and archiving the rest
+ * and updating the other products to have the same model name without archiving them
  */
 export const mergeProductsByModelName = async (productIds: string[]): Promise<boolean> => {
   try {
@@ -48,15 +48,15 @@ export const mergeProductsByModelName = async (productIds: string[]): Promise<bo
       }
     }
 
-    // Update all other products with the same model name and archive them
+    // Update all other products with the same model name WITHOUT archiving them
     const otherProductIds = productIds.slice(1);
-    const { error: archiveError } = await supabase
+    const { error: updateError } = await supabase
       .from("products")
-      .update({ model_name: modelName, archived: true })
+      .update({ model_name: modelName })
       .in("id", otherProductIds);
 
-    if (archiveError) {
-      console.error("Ошибка при архивировании объединяемых товаров:", archiveError);
+    if (updateError) {
+      console.error("Ошибка при обновлении объединяемых товаров:", updateError);
       return false;
     }
 
