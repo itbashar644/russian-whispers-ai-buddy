@@ -15,16 +15,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
   email: z.string().email("Введите корректный email"),
   password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
   confirmPassword: z.string(),
+  newsletterConsent: z.boolean().optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Пароли не совпадают",
   path: ["confirmPassword"],
@@ -52,6 +56,7 @@ const Register = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      newsletterConsent: false,
     },
   });
 
@@ -60,6 +65,15 @@ const Register = () => {
     try {
       const success = await register(data.email, data.password, data.name);
       if (success) {
+        // If user opted in for newsletter, add them to newsletter_subscriptions
+        if (data.newsletterConsent) {
+          await supabase.from("newsletter_subscriptions").insert({
+            email: data.email,
+            name: data.name,
+            user_id: (await supabase.auth.getUser()).data.user?.id
+          });
+        }
+        
         navigate("/account");
       }
     } finally {
@@ -162,6 +176,27 @@ const Register = () => {
                     </div>
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="newsletterConsent"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Подписка на рассылку</FormLabel>
+                    <FormDescription>
+                      Получайте информацию о новых товарах, скидках и акциях
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />

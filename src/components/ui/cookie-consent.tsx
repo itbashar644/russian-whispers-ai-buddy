@@ -4,10 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 
 export function CookieConsent() {
@@ -33,25 +30,18 @@ export function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-50 mx-auto max-w-md px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Использование cookies</CardTitle>
-          <CardDescription>
-            Мы используем файлы cookies для улучшения работы сайта
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Продолжая пользоваться сайтом, вы соглашаетесь с использованием файлов cookies. Они помогают нам улучшать 
-            качество обслуживания и предоставлять персонализированный контент.
+    <div className="fixed bottom-4 left-0 right-0 z-50 mx-auto max-w-sm px-4">
+      <Card className="shadow-lg">
+        <CardContent className="pt-4">
+          <p className="text-sm">
+            Мы используем cookies для улучшения работы сайта и персонализации контента.
           </p>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => setIsVisible(false)}>
+        <CardFooter className="flex justify-end gap-2 pb-3 pt-0">
+          <Button variant="outline" size="sm" onClick={() => setIsVisible(false)}>
             Отклонить
           </Button>
-          <Button onClick={acceptCookies}>
+          <Button size="sm" onClick={acceptCookies}>
             Принять
           </Button>
         </CardFooter>

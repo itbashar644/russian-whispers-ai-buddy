@@ -92,6 +92,30 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscriptions: {
+        Row: {
+          email: string
+          id: string
+          name: string | null
+          subscribed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          name?: string | null
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string | null
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string

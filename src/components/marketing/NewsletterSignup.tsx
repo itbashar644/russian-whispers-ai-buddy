@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   email: z.string().email("Введите корректный email адрес"),
@@ -39,21 +40,21 @@ export function NewsletterSignup() {
     setIsLoading(true);
     
     try {
-      // In a real app, this would call an API endpoint to save the subscription
-      console.log("Subscribed to newsletter:", data);
+      // Save subscription to Supabase database
+      const { error } = await supabase
+        .from("newsletter_subscriptions")
+        .insert([{ email: data.email }]);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (error) {
+        if (error.code === "23505") { // Unique violation error code
+          toast.info("Вы уже подписаны на рассылку!");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Вы успешно подписались на рассылку!");
+      }
       
-      // Store subscription in localStorage for demo purposes
-      const subscriptions = JSON.parse(localStorage.getItem("newsletterSubscriptions") || "[]");
-      subscriptions.push({
-        email: data.email,
-        timestamp: new Date().toISOString(),
-      });
-      localStorage.setItem("newsletterSubscriptions", JSON.stringify(subscriptions));
-      
-      toast.success("Вы успешно подписались на рассылку!");
       form.reset();
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
