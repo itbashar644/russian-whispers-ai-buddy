@@ -41,7 +41,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     const results: Product[] = [];
     
     // Process each item individually to avoid type recursion
-    for (const item of data as ProductRow[]) {
+    for (const item of data) {
       try {
         // Manually map the essential properties to break any type recursion
         const product: Product = {
@@ -59,7 +59,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
           isBestseller: item.is_bestseller || false,
           archived: item.archived || false,
           // The database column is model_name but our Product type expects modelName
-          modelName: (item as any).model_name || "",
+          modelName: item.model_name || "",
           colors: Array.isArray(item.colors) ? 
             item.colors.map(c => String(c)) : [],
           sizes: Array.isArray(item.sizes) ? 
