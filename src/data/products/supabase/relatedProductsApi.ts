@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import type { Database } from "@/integrations/supabase/types";
+import { Json } from "@/integrations/supabase/types";
 
 // Define what fields we expect from the products table
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -42,8 +43,11 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     const results: Product[] = [];
     
     // Process each item individually to avoid type recursion
-    for (const item of data as ProductRow[]) {
+    for (const item of data) {
       try {
+        // Explicitly get the model_name from the database row
+        const modelName = item.model_name as string || "";
+        
         // Manually map the essential properties to break any type recursion
         const product: Product = {
           id: item.id,
@@ -60,7 +64,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
           isBestseller: item.is_bestseller || false,
           archived: item.archived || false,
           // The database column is model_name but our Product type expects modelName
-          modelName: item.model_name || "",
+          modelName: modelName,
           colors: Array.isArray(item.colors) ? 
             item.colors.map(c => String(c)) : [],
           sizes: Array.isArray(item.sizes) ? 
