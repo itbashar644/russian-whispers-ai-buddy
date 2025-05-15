@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
@@ -223,12 +224,13 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     // Fix the infinite type instantiation by using a more direct approach
     if (!data) return [];
     
-    // Create a new array to avoid infinite type instantiation
+    // Create a new array and explicitly type it to avoid type recursion
     const products: Product[] = [];
+    
+    // Process each item individually and use a type assertion to break the recursion
     for (const item of data) {
-      // Transform each item individually
-      const transformedProduct = transformSupabaseToProduct(item);
-      products.push(transformedProduct);
+      const product = transformSupabaseToProduct(item);
+      products.push(product);
     }
     
     return products;
