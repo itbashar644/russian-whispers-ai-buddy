@@ -1,6 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
+import type { Database } from "@/integrations/supabase/types";
+
+type ProductRow = Database['public']['Tables']['products']['Row'];
 
 /**
  * Finds products that are related by model name
@@ -15,7 +18,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     let query = supabase
       .from('products')
       .select('*')
-      .eq('modelName', modelName)
+      .eq('model_name', modelName)
       .eq('archived', false);
     
     // Exclude current product if ID is provided
@@ -38,7 +41,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     const results: Product[] = [];
     
     // Process each item individually to avoid type recursion
-    for (const item of data) {
+    for (const item of data as ProductRow[]) {
       try {
         // Manually map the essential properties to break any type recursion
         const product: Product = {
@@ -55,11 +58,11 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
           isNew: item.is_new || false,
           isBestseller: item.is_bestseller || false,
           archived: item.archived || false,
-          modelName: item.modelName || "",
+          modelName: item.model_name as string || "",
           colors: Array.isArray(item.colors) ? 
-            (item.colors as any[]).map(c => String(c)) : [],
+            item.colors.map(c => String(c)) : [],
           sizes: Array.isArray(item.sizes) ? 
-            (item.sizes as any[]).map(s => String(s)) : [],
+            item.sizes.map(s => String(s)) : [],
           specifications: (typeof item.specifications === 'object' && item.specifications) 
             ? Object.entries(item.specifications as Record<string, any>).reduce((acc, [key, value]) => {
                 acc[key] = String(value);
@@ -67,7 +70,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
               }, {} as Record<string, string>)
             : {},
           additionalImages: Array.isArray(item.additional_images) 
-            ? (item.additional_images as any[]).map(img => String(img)) 
+            ? item.additional_images.map(img => String(img)) 
             : []
         };
         
