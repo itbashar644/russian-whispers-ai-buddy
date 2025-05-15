@@ -225,16 +225,42 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
       return [];
     }
     
-    // Break the type recursion by creating a new array and transforming each item individually
-    const products: Product[] = [];
+    // Create a simple array to store our results
+    const results: Product[] = [];
     
-    for (let i = 0; i < data.length; i++) {
-      // Transform each item from Supabase format to our Product type
-      const transformedProduct = transformSupabaseToProduct(data[i]);
-      products.push(transformedProduct);
+    // Process each item individually to avoid type recursion
+    for (const item of data) {
+      try {
+        // Manually map the essential properties to break any type recursion
+        const product: Product = {
+          id: item.id,
+          title: item.title || "",
+          description: item.description || "",
+          price: item.price || 0,
+          discountPrice: item.discount_price,
+          category: item.category || "",
+          imageUrl: item.image_url || "/placeholder.svg",
+          rating: item.rating || 5,
+          inStock: item.in_stock !== undefined ? item.in_stock : true,
+          countryOfOrigin: item.country_of_origin || "",
+          isNew: item.is_new || false,
+          isBestseller: item.is_bestseller || false,
+          archived: item.archived || false,
+          modelName: item.modelName,
+          colors: Array.isArray(item.colors) ? item.colors : [],
+          sizes: Array.isArray(item.sizes) ? item.sizes : [],
+          specifications: typeof item.specifications === 'object' ? item.specifications : {},
+          additionalImages: Array.isArray(item.additional_images) ? item.additional_images : []
+        };
+        
+        results.push(product);
+      } catch (err) {
+        console.error('Error transforming product:', err);
+        // Continue with the next item even if one fails
+      }
     }
     
-    return products;
+    return results;
   } catch (error) {
     console.error('Error in findRelatedProductsByModel:', error);
     return [];
