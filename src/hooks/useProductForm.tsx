@@ -30,6 +30,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
+  // Fixed parameter order to match what GeneralInfoTab expects
   const handleCheckboxChange = (checked: boolean, name: string) => {
     setFormData({
       ...formData,
