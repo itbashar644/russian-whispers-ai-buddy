@@ -58,7 +58,8 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
           isNew: item.is_new || false,
           isBestseller: item.is_bestseller || false,
           archived: item.archived || false,
-          modelName: item.model_name as string || "",
+          // The database column is model_name but our Product type expects modelName
+          modelName: (item as any).model_name || "",
           colors: Array.isArray(item.colors) ? 
             item.colors.map(c => String(c)) : [],
           sizes: Array.isArray(item.sizes) ? 
