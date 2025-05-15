@@ -223,9 +223,12 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     // Fix the infinite type instantiation by using a more direct approach
     if (!data) return [];
     
+    // Create a new array to avoid infinite type instantiation
     const products: Product[] = [];
     for (const item of data) {
-      products.push(transformSupabaseToProduct(item));
+      // Transform each item individually
+      const transformedProduct = transformSupabaseToProduct(item);
+      products.push(transformedProduct);
     }
     
     return products;

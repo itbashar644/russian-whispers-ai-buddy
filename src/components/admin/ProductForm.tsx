@@ -49,8 +49,8 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             setNewCategory={setNewCategory}
             setShowNewCategoryInput={setShowNewCategoryInput}
             handleInputChange={handleInputChange}
-            handleSelectChange={handleSelectChange}
             handleCheckboxChange={handleCheckboxChange}
+            handleSelectChange={handleSelectChange}
             handleMainImageUploaded={handleMainImageUploaded}
             handleAdditionalImagesChange={handleAdditionalImagesChange}
           />
