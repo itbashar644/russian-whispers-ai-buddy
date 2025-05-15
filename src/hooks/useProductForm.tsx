@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -30,7 +29,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
-  // Fixed parameter order to match what GeneralInfoTab expects
+  // Parameter order matches what GeneralInfoTab expects - (checked: boolean, name: string)
   const handleCheckboxChange = (checked: boolean, name: string) => {
     setFormData({
       ...formData,
@@ -162,10 +161,30 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleMainImageUploaded,
-    handleAdditionalImagesChange,
-    handleColorVariantsChange,
-    handleRemoveColor,
+    handleMainImageUploaded: (url: string) => {
+      setFormData({
+        ...formData,
+        imageUrl: url,
+      });
+    },
+    handleAdditionalImagesChange: (urls: string[]) => {
+      setFormData({
+        ...formData,
+        additionalImages: urls,
+      });
+    },
+    handleColorVariantsChange: (variants: ColorVariant[]) => {
+      setFormData({
+        ...formData,
+        colorVariants: variants
+      });
+    },
+    handleRemoveColor: (colorToRemove: string) => {
+      setFormData({
+        ...formData,
+        colors: formData.colors?.filter(color => color !== colorToRemove),
+      });
+    },
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput

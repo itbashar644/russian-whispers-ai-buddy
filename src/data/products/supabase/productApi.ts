@@ -27,7 +27,7 @@ export const fetchProductsFromSupabase = async (includeArchived: boolean = false
     }
 
     // Преобразуем данные из Supabase в тип Product
-    return data.map(product => transformSupabaseToProduct(product));
+    return data.map(item => transformSupabaseToProduct(item));
   } catch (err) {
     console.error("Ошибка при загрузке товаров:", err);
     throw err; // Пробрасываем ошибку дальше для обработки на уровне UI
@@ -191,7 +191,7 @@ export const getProductsByCategoryFromSupabase = async (category: string): Promi
     }
 
     // Преобразуем данные из Supabase в тип Product
-    return data.map(product => transformSupabaseToProduct(product));
+    return data.map(item => transformSupabaseToProduct(item));
   } catch (err) {
     console.error("Ошибка при загрузке товаров по категории:", err);
     throw err;
@@ -222,7 +222,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     }
     
     // Use the transform function to ensure data is in the correct format
-    return data ? data.map(product => transformSupabaseToProduct(product)) : [];
+    return data ? data.map(item => transformSupabaseToProduct(item)) : [];
   } catch (error) {
     console.error('Error in findRelatedProductsByModel:', error);
     return [];

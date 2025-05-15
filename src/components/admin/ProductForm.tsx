@@ -50,7 +50,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             setShowNewCategoryInput={setShowNewCategoryInput}
             handleInputChange={handleInputChange}
             handleSelectChange={handleSelectChange}
-            handleCheckboxChange={handleCheckboxChange}  // Order was fixed here to match the expected signature
+            handleCheckboxChange={handleCheckboxChange}
             handleMainImageUploaded={handleMainImageUploaded}
             handleAdditionalImagesChange={handleAdditionalImagesChange}
           />
