@@ -10,6 +10,7 @@ import {
   restoreProductInSupabase,
   addCategoryToSupabase
 } from "@/data/products/supabaseApi";
+import { transformSupabaseToProduct } from "@/data/products/supabase/productTransforms";
 
 interface ProductManagementProps {
   refreshProductsList: () => Promise<void>;
@@ -215,19 +216,21 @@ export function useProductManagement({
     
     try {
       // Fetch product details for all selected IDs
-      const { data: products, error } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select('*')
         .in('id', productIds);
       
       if (error) throw error;
       
-      if (!products || products.length < 2) {
+      if (!data || data.length < 2) {
         toast.error("Не удалось получить информацию о выбранных товарах");
         return;
       }
       
-      setProductsToMerge(products as Product[]);
+      // Transform the data to ensure proper type conversion
+      const transformedProducts = data.map(product => transformSupabaseToProduct(product));
+      setProductsToMerge(transformedProducts);
       setShowMergeDialog(true);
     } catch (error) {
       console.error("Error fetching products for merge:", error);

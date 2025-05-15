@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
@@ -220,7 +221,8 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
       return [];
     }
     
-    return data as Product[];
+    // Use the transform function to ensure data is in the correct format
+    return data ? data.map(product => transformSupabaseToProduct(product)) : [];
   } catch (error) {
     console.error('Error in findRelatedProductsByModel:', error);
     return [];
