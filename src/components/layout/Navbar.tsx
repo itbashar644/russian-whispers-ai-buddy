@@ -25,6 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -63,9 +70,6 @@ const Navbar = () => {
     };
     
     loadCategories();
-    
-    // Периодическая проверка обновлений категорий больше не нужна,
-    // так как данные всегда берутся из Supabase при загрузке страницы
   }, []);
 
   // Функция поиска товаров
@@ -135,9 +139,67 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 bg-white border-b">
       <div className="container flex items-center justify-between h-16 px-4 md:px-6">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-6 w-6" />
-          </Button>
+          {/* Mobile menu trigger */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[250px] sm:w-[300px]">
+              <SheetHeader>
+                <SheetTitle>Меню</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 flex flex-col gap-4">
+                <Link to="/" className="px-2 py-1 hover:bg-accent rounded-md">Главная</Link>
+                <Link to="/catalog" className="px-2 py-1 hover:bg-accent rounded-md">Каталог</Link>
+                <div className="pt-2 pb-1">
+                  <h3 className="mb-2 font-medium">Категории</h3>
+                  <div className="flex flex-col gap-1 pl-2">
+                    {isLoadingCategories ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mx-auto"></div>
+                    ) : (
+                      availableCategories.map((category) => (
+                        <Link
+                          key={category}
+                          to={`/catalog?category=${category}`}
+                          className="text-sm py-1 hover:bg-accent rounded-md flex items-center"
+                        >
+                          {getCategoryIcon(category)}
+                          {category}
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/account" className="px-2 py-1 hover:bg-accent rounded-md">Личный кабинет</Link>
+                    {profile && (profile.role === 'admin' || profile.role === 'editor') && (
+                      <Link to="/admin" className="px-2 py-1 hover:bg-accent rounded-md">Админ-панель</Link>
+                    )}
+                    <button 
+                      onClick={() => logout()}
+                      className="text-left px-2 py-1 hover:bg-accent rounded-md"
+                    >
+                      Выход
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="px-2 py-1 hover:bg-accent rounded-md flex items-center">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Войти
+                    </Link>
+                    <Link to="/register" className="px-2 py-1 hover:bg-accent rounded-md flex items-center">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Регистрация
+                    </Link>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
           <Link to="/" className="flex items-center">
             <span className="text-xl font-bold">The X Shop</span>
           </Link>

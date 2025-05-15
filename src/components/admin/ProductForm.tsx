@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/types/product";
-import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralInfoTab from "./product-form/GeneralInfoTab";
 import ColorsTab from "./product-form/ColorsTab";
@@ -31,6 +30,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     handleAdditionalImagesChange,
     handleColorVariantsChange,
     handleRemoveColor,
+    handleRelatedColorProductsChange,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
@@ -66,6 +66,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             formData={formData}
             handleColorVariantsChange={handleColorVariantsChange}
             handleRemoveColor={handleRemoveColor}
+            handleRelatedColorProductsChange={handleRelatedColorProductsChange}
           />
         </TabsContent>
 

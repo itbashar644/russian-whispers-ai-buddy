@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProductsByCategory, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
@@ -16,7 +16,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Box } from "lucide-react";
+import { Color } from "lucide-react";
 import { Product } from "@/types/product";
 import { Category } from "@/data/products/categoryData";
 
@@ -24,6 +24,7 @@ const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
+  const colorParam = searchParams.get("color");
   
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -37,6 +38,24 @@ const Catalog = () => {
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showColorVariants, setShowColorVariants] = useState<boolean>(false);
+
+  // Get all available colors from products
+  const availableColors = useMemo(() => {
+    if (!allProducts.length) return [];
+    
+    const colorSet = new Set<string>();
+    
+    allProducts.forEach(product => {
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        product.colorVariants.forEach(variant => {
+          colorSet.add(variant.color);
+        });
+      }
+    });
+    
+    return Array.from(colorSet).sort();
+  }, [allProducts]);
 
   // Загружаем данные при монтировании компонента
   useEffect(() => {
@@ -77,6 +96,51 @@ const Catalog = () => {
     
     let result = [...allProducts];
     
+    // Transform products for color display if needed
+    if (showColorVariants) {
+      const expandedProducts: Product[] = [];
+      
+      result.forEach(product => {
+        // If product has color variants, create virtual products for each variant
+        if (product.colorVariants && product.colorVariants.length > 0) {
+          product.colorVariants.forEach(variant => {
+            const variantProduct: Product = {
+              ...product,
+              id: `${product.id}-${variant.color}`.replace(/\s+/g, '-').toLowerCase(),
+              price: variant.price,
+              discountPrice: variant.discountPrice,
+              imageUrl: variant.imageUrl || product.imageUrl,
+              articleNumber: variant.articleNumber || product.articleNumber,
+              barcode: variant.barcode || product.barcode,
+              stockQuantity: variant.stockQuantity,
+              inStock: variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : product.inStock,
+              ozonUrl: variant.ozonUrl || product.ozonUrl,
+              wildberriesUrl: variant.wildberriesUrl || product.wildberriesUrl,
+              avitoUrl: variant.avitoUrl || product.avitoUrl,
+              colorVariants: [variant],
+              isColorVariant: true
+            };
+            expandedProducts.push(variantProduct);
+          });
+        } else {
+          // Product has no color variants, add as is
+          expandedProducts.push(product);
+        }
+      });
+      
+      result = expandedProducts;
+    }
+    
+    // Filter by color if color parameter is set
+    if (colorParam) {
+      result = result.filter(product => {
+        if (product.colorVariants && product.colorVariants.length > 0) {
+          return product.colorVariants.some(v => v.color.toLowerCase() === colorParam.toLowerCase());
+        }
+        return false;
+      });
+    }
+    
     // Фильтрация по поисковому запросу
     if (searchTerm) {
       result = result.filter(
@@ -89,9 +153,10 @@ const Catalog = () => {
     
     // Фильтрация по диапазону цен
     result = result.filter(
-      (p) => 
-        (p.discountPrice || p.price) >= priceRange.min && 
-        (p.discountPrice || p.price) <= priceRange.max
+      (p) => {
+        const price = p.discountPrice || p.price;
+        return price >= priceRange.min && price <= priceRange.max;
+      }
     );
     
     // Фильтрация по наличию
@@ -102,14 +167,18 @@ const Catalog = () => {
     // Сортировка результатов
     switch (sortBy) {
       case "price-asc":
-        result.sort((a, b) => 
-          (a.discountPrice || a.price) - (b.discountPrice || b.price)
-        );
+        result.sort((a, b) => {
+          const priceA = a.discountPrice || a.price;
+          const priceB = b.discountPrice || b.price;
+          return priceA - priceB;
+        });
         break;
       case "price-desc":
-        result.sort((a, b) => 
-          (b.discountPrice || b.price) - (a.discountPrice || a.price)
-        );
+        result.sort((a, b) => {
+          const priceA = a.discountPrice || a.price;
+          const priceB = b.discountPrice || b.price;
+          return priceB - priceA;
+        });
         break;
       case "name-asc":
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -126,13 +195,22 @@ const Catalog = () => {
     }
     
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading]);
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
       searchParams.set("category", categoryId);
     } else {
       searchParams.delete("category");
+    }
+    setSearchParams(searchParams);
+  };
+
+  const handleColorFilter = (color: string | null) => {
+    if (color) {
+      searchParams.set("color", color);
+    } else {
+      searchParams.delete("color");
     }
     setSearchParams(searchParams);
   };
@@ -214,6 +292,42 @@ const Catalog = () => {
               </div>
             </div>
 
+            {/* Color filter */}
+            {availableColors.length > 0 && (
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Цвета</h3>
+                  {colorParam && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleColorFilter(null)}
+                      className="h-6 text-xs"
+                    >
+                      Сбросить
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {availableColors.map(color => (
+                    <Button
+                      key={color}
+                      variant={colorParam === color ? "default" : "outline"}
+                      size="sm"
+                      className="px-2 py-1 h-auto text-xs"
+                      onClick={() => handleColorFilter(color)}
+                    >
+                      <span className="w-3 h-3 mr-1.5 rounded-full" style={{ 
+                        backgroundColor: color.toLowerCase() !== 'белый' ? color.toLowerCase() : '#ffffff',
+                        border: color.toLowerCase() === 'белый' ? '1px solid #ccc' : 'none' 
+                      }}></span>
+                      {color}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-6">
               <h3 className="font-semibold mb-4">Цена</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -259,6 +373,25 @@ const Catalog = () => {
                 </label>
               </div>
             </div>
+
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-4">Отображение</h3>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="show-colors" 
+                  checked={showColorVariants} 
+                  onCheckedChange={() => setShowColorVariants(!showColorVariants)} 
+                  disabled={loading}
+                />
+                <label
+                  htmlFor="show-colors"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
+                >
+                  <Color className="h-4 w-4 mr-1.5" />
+                  Показывать цвета отдельно
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Products section */}
@@ -268,6 +401,7 @@ const Catalog = () => {
                 {categoryParam 
                   ? availableCategories.includes(categoryParam) ? categoryParam : "Каталог"
                   : searchTerm ? `Поиск: ${searchTerm}` : "Каталог товаров"}
+                {colorParam && ` / Цвет: ${colorParam}`}
               </h1>
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
                 <form onSubmit={handleSearchSubmit} className="flex gap-2">
@@ -310,7 +444,10 @@ const Catalog = () => {
               </div>
             ) : (
               // Отображение товаров
-              <ProductGrid products={filteredProducts} />
+              <ProductGrid 
+                products={filteredProducts} 
+                showAsColorVariants={showColorVariants}
+              />
             )}
             
             {!loading && filteredProducts.length === 0 && (

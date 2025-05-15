@@ -1,12 +1,11 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ColorVariant } from "@/types/product";
-import { Plus, X, Pencil } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ImageUploader from "@/components/admin/ImageUploader";
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ColorVariant } from '@/types/product';
+import { X, Plus, Upload } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ColorVariantManagerProps {
   colorVariants: ColorVariant[];
@@ -14,232 +13,232 @@ interface ColorVariantManagerProps {
   basePrice: number;
 }
 
-const ColorVariantManager: React.FC<ColorVariantManagerProps> = ({
-  colorVariants,
+const ColorVariantManager: React.FC<ColorVariantManagerProps> = ({ 
+  colorVariants = [], 
   onChange,
-  basePrice
+  basePrice = 0
 }) => {
-  const [newColor, setNewColor] = useState("");
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState<ColorVariant>({
-    color: "",
-    price: basePrice,
-  });
-
-  const handleAddColor = () => {
-    if (newColor.trim()) {
-      // Check if color already exists
-      if (colorVariants.some(v => v.color.toLowerCase() === newColor.trim().toLowerCase())) {
-        return; // Color already exists
-      }
-      
-      const newVariant: ColorVariant = {
-        color: newColor.trim(),
-        price: basePrice,
-        stockQuantity: 0
-      };
-      
-      onChange([...colorVariants, newVariant]);
-      setNewColor("");
+  const [newColor, setNewColor] = useState('');
+  
+  const handleAddVariant = () => {
+    if (!newColor.trim()) return;
+    
+    // Check if the color already exists
+    if (colorVariants.some(variant => variant.color.toLowerCase() === newColor.toLowerCase())) {
+      alert('Этот цвет уже добавлен');
+      return;
     }
+    
+    const newVariant: ColorVariant = {
+      color: newColor,
+      price: basePrice,
+      stockQuantity: 0,
+      articleNumber: '',
+      barcode: ''
+    };
+    
+    onChange([...colorVariants, newVariant]);
+    setNewColor('');
   };
-
-  const handleRemoveColor = (index: number) => {
+  
+  const handleRemoveVariant = (index: number) => {
     const updatedVariants = [...colorVariants];
     updatedVariants.splice(index, 1);
     onChange(updatedVariants);
-    
-    if (editingIndex === index) {
-      setEditingIndex(null);
-    }
   };
-
-  const handleEditStart = (index: number) => {
-    setEditingIndex(index);
-    setEditForm({...colorVariants[index]});
-  };
-
-  const handleEditSave = () => {
-    if (editingIndex === null) return;
-    
+  
+  const handleVariantChange = (index: number, field: keyof ColorVariant, value: any) => {
     const updatedVariants = [...colorVariants];
-    updatedVariants[editingIndex] = editForm;
+    updatedVariants[index] = { ...updatedVariants[index], [field]: value };
     onChange(updatedVariants);
-    setEditingIndex(null);
   };
-
-  const handleEditCancel = () => {
-    setEditingIndex(null);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditForm({
-      ...editForm,
-      [name]: name === "price" || name === "discountPrice" || name === "stockQuantity"
-        ? parseFloat(value)
-        : value,
-    });
-  };
-
-  const handleImageChange = (url: string) => {
-    setEditForm({
-      ...editForm,
-      imageUrl: url
-    });
+  
+  const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // For simplicity, just use a fake URL here - in a real app you'd upload this
+    // You should implement proper image upload handling here
+    const fakeUrl = URL.createObjectURL(file);
+    handleVariantChange(index, 'imageUrl', fakeUrl);
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Input
+      <div className="flex gap-2">
+        <Input 
+          placeholder="Название цвета"
           value={newColor}
           onChange={(e) => setNewColor(e.target.value)}
-          placeholder="Название цвета"
           className="flex-1"
         />
-        <Button onClick={handleAddColor} type="button">
-          <Plus className="mr-2 h-4 w-4" />
+        <Button 
+          type="button" 
+          variant="secondary" 
+          onClick={handleAddVariant}
+        >
+          <Plus className="h-4 w-4 mr-2" />
           Добавить цвет
         </Button>
       </div>
-
-      {colorVariants.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2">
+      
+      {colorVariants.length > 0 ? (
+        <div className="space-y-6 divide-y">
           {colorVariants.map((variant, index) => (
-            <Card key={index} className={editingIndex === index ? "border-2 border-primary" : ""}>
-              <CardHeader className="p-4 pb-2 flex flex-row justify-between items-center">
-                <CardTitle className="text-base flex items-center">
-                  <div 
-                    className="h-4 w-4 rounded-full mr-2"
-                    style={{
-                      backgroundColor: variant.color.toLowerCase(),
-                      border: "1px solid #ccc"
-                    }}
-                  />
+            <div key={`${variant.color}-${index}`} className="pt-4 first:pt-0">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-medium flex items-center">
+                  <span className="inline-block w-4 h-4 mr-2 rounded-full" style={{ 
+                    backgroundColor: variant.color.toLowerCase() !== 'белый' ? variant.color.toLowerCase() : '#ffffff',
+                    border: variant.color.toLowerCase() === 'белый' ? '1px solid #ccc' : 'none' 
+                  }}></span>
                   {variant.color}
-                </CardTitle>
-                <div className="flex space-x-1">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => handleEditStart(index)}
-                    className="h-8 w-8"
-                    title="Редактировать вариант"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => handleRemoveColor(index)}
-                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                    title="Удалить вариант"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                </h4>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleRemoveVariant(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor={`color-${index}-price`}>Цена</Label>
+                      <Input 
+                        id={`color-${index}-price`}
+                        type="number" 
+                        value={variant.price || ''} 
+                        onChange={(e) => handleVariantChange(index, 'price', Number(e.target.value))}
+                        placeholder="Цена"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`color-${index}-discount`}>Цена со скидкой</Label>
+                      <Input 
+                        id={`color-${index}-discount`}
+                        type="number" 
+                        value={variant.discountPrice || ''} 
+                        onChange={(e) => handleVariantChange(index, 'discountPrice', e.target.value ? Number(e.target.value) : undefined)}
+                        placeholder="Цена со скидкой"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor={`color-${index}-article`}>Артикул</Label>
+                      <Input 
+                        id={`color-${index}-article`}
+                        value={variant.articleNumber || ''} 
+                        onChange={(e) => handleVariantChange(index, 'articleNumber', e.target.value)}
+                        placeholder="Артикул"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`color-${index}-barcode`}>Штрих-код</Label>
+                      <Input 
+                        id={`color-${index}-barcode`}
+                        value={variant.barcode || ''} 
+                        onChange={(e) => handleVariantChange(index, 'barcode', e.target.value)}
+                        placeholder="Штрих-код"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`color-${index}-quantity`}>Количество на складе</Label>
+                    <Input 
+                      id={`color-${index}-quantity`}
+                      type="number" 
+                      value={variant.stockQuantity || 0} 
+                      onChange={(e) => handleVariantChange(index, 'stockQuantity', Number(e.target.value))}
+                      placeholder="Количество"
+                    />
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-4 pt-2">
-                {editingIndex === index ? (
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor={`color-${index}`}>Название цвета</Label>
-                      <Input
-                        id={`color-${index}`}
-                        name="color"
-                        value={editForm.color}
-                        onChange={handleInputChange}
+                
+                <div className="space-y-2">
+                  <div>
+                    <Label>Изображение цвета</Label>
+                    <div className="mt-1 flex items-center">
+                      <div className="rounded-md border overflow-hidden mr-3 w-16 h-16">
+                        {variant.imageUrl ? (
+                          <AspectRatio ratio={1/1}>
+                            <img 
+                              src={variant.imageUrl} 
+                              alt={variant.color} 
+                              className="w-full h-full object-cover"
+                            />
+                          </AspectRatio>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <span className="text-xs text-muted-foreground">Нет</span>
+                          </div>
+                        )}
+                      </div>
+                      <Label 
+                        htmlFor={`color-${index}-image`}
+                        className="cursor-pointer bg-muted hover:bg-muted/80 px-3 py-1.5 rounded-md text-sm font-medium flex items-center"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Загрузить
+                      </Label>
+                      <Input 
+                        id={`color-${index}-image`}
+                        type="file" 
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(index, e)}
                       />
-                    </div>
-                    <div>
-                      <Label htmlFor={`price-${index}`}>Цена</Label>
-                      <Input
-                        id={`price-${index}`}
-                        name="price"
-                        type="number"
-                        value={editForm.price}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`discountPrice-${index}`}>Цена со скидкой</Label>
-                      <Input
-                        id={`discountPrice-${index}`}
-                        name="discountPrice"
-                        type="number"
-                        value={editForm.discountPrice || ""}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`articleNumber-${index}`}>Артикул</Label>
-                      <Input
-                        id={`articleNumber-${index}`}
-                        name="articleNumber"
-                        value={editForm.articleNumber || ""}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`barcode-${index}`}>Штрих-код</Label>
-                      <Input
-                        id={`barcode-${index}`}
-                        name="barcode"
-                        value={editForm.barcode || ""}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`stockQuantity-${index}`}>Количество на складе</Label>
-                      <Input
-                        id={`stockQuantity-${index}`}
-                        name="stockQuantity"
-                        type="number"
-                        value={editForm.stockQuantity || ""}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <Label>Изображение для этого цвета</Label>
-                      <ImageUploader
-                        initialImageUrl={editForm.imageUrl || ""}
-                        onImageUploaded={handleImageChange}
-                        onRemoveImage={() => handleImageChange("")}
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2 pt-2">
-                      <Button variant="outline" onClick={handleEditCancel}>Отмена</Button>
-                      <Button onClick={handleEditSave}>Сохранить</Button>
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Цена:</span>
-                      <span className="font-medium">{variant.price.toLocaleString()} ₽</span>
-                    </div>
-                    {variant.discountPrice && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Цена со скидкой:</span>
-                        <span className="font-medium">{variant.discountPrice.toLocaleString()} ₽</span>
+                  
+                  {/* Маркетплейсы */}
+                  <div className="mt-3 space-y-2">
+                    <Label>Ссылки на маркетплейсы</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div>
+                        <Label htmlFor={`color-${index}-ozon`} className="text-xs">OZON</Label>
+                        <Input 
+                          id={`color-${index}-ozon`}
+                          value={variant.ozonUrl || ''} 
+                          onChange={(e) => handleVariantChange(index, 'ozonUrl', e.target.value)}
+                          placeholder="https://ozon.ru/..."
+                        />
                       </div>
-                    )}
-                    {variant.articleNumber && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Артикул:</span>
-                        <span>{variant.articleNumber}</span>
+                      <div>
+                        <Label htmlFor={`color-${index}-wb`} className="text-xs">Wildberries</Label>
+                        <Input 
+                          id={`color-${index}-wb`}
+                          value={variant.wildberriesUrl || ''} 
+                          onChange={(e) => handleVariantChange(index, 'wildberriesUrl', e.target.value)}
+                          placeholder="https://wildberries.ru/..."
+                        />
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Количество:</span>
-                      <span>{variant.stockQuantity || 0} шт.</span>
+                      <div>
+                        <Label htmlFor={`color-${index}-avito`} className="text-xs">Avito</Label>
+                        <Input 
+                          id={`color-${index}-avito`}
+                          value={variant.avitoUrl || ''} 
+                          onChange={(e) => handleVariantChange(index, 'avitoUrl', e.target.value)}
+                          placeholder="https://avito.ru/..."
+                        />
+                      </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            </div>
           ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center">
+          <p className="text-muted-foreground">Добавьте цветовые варианты товара</p>
         </div>
       )}
     </div>

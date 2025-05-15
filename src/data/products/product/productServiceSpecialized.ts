@@ -1,8 +1,7 @@
 
 import { Product, ColorVariant } from "@/types/product";
-import { getProductById, getProductsByCategory } from "./productServiceBase";
+import { getProductById, getProductsByCategory, addOrUpdateProduct } from "./productServiceBase";
 import { refreshCacheIfNeeded, getProductsCache } from "../cache/productCache";
-import { addOrUpdateProduct } from "./productServiceBase";
 
 // Функция для уменьшения количества товара при заказе
 export const decreaseProductStock = async (productId: string, quantity: number, colorSelected?: string): Promise<boolean> => {
@@ -110,6 +109,118 @@ export const getRelatedProducts = async (id: string, limit: number = 4): Promise
   } catch (error) {
     console.error("Ошибка при получении связанных товаров:", error);
     return [];
+  }
+};
+
+// Функция для получения связанных цветовых вариантов продукта
+export const getRelatedColorProducts = async (productId: string): Promise<Product[]> => {
+  try {
+    const product = await getProductById(productId);
+    if (!product) return [];
+    
+    // Если у продукта нет связанных цветовых вариантов, возвращаем пустой массив
+    if (!product.relatedColorProducts || product.relatedColorProducts.length === 0) {
+      return [];
+    }
+    
+    // Получаем все связанные продукты
+    const relatedProducts = await Promise.all(
+      product.relatedColorProducts.map(id => getProductById(id))
+    );
+    
+    // Фильтруем undefined и архивированные продукты
+    return relatedProducts.filter(p => p && !p.archived) as Product[];
+  } catch (error) {
+    console.error("Ошибка при получении связанных цветовых вариантов:", error);
+    return [];
+  }
+};
+
+// Функция для связывания продуктов по цвету
+export const linkProductsByColor = async (productIds: string[]): Promise<boolean> => {
+  try {
+    if (!productIds || productIds.length <= 1) {
+      return false;
+    }
+    
+    // Получаем все продукты, которые нужно связать
+    const products = await Promise.all(productIds.map(id => getProductById(id)));
+    const validProducts = products.filter(p => p) as Product[];
+    
+    if (validProducts.length !== productIds.length) {
+      console.error("Не все продукты найдены для связывания");
+      return false;
+    }
+    
+    // Обновляем каждый продукт, добавляя ссылки на связанные продукты
+    for (const product of validProducts) {
+      // Исключаем текущий продукт из списка связанных
+      product.relatedColorProducts = productIds.filter(id => id !== product.id);
+      product.isColorVariant = true;
+      
+      // Устанавливаем parentProductId как ID первого продукта в списке, если это не сам продукт
+      if (product.id !== productIds[0]) {
+        product.parentProductId = productIds[0];
+      }
+      
+      await addOrUpdateProduct(product);
+    }
+    
+    // Обновляем кэш
+    await refreshCacheIfNeeded(true);
+    
+    return true;
+  } catch (error) {
+    console.error("Ошибка при связывании продуктов по цвету:", error);
+    return false;
+  }
+};
+
+// Функция для отвязывания продукта от цветовых вариантов
+export const unlinkProductFromColorVariants = async (productId: string): Promise<boolean> => {
+  try {
+    const product = await getProductById(productId);
+    if (!product) return false;
+    
+    // Если у продукта нет связанных цветовых вариантов, нет необходимости в отвязке
+    if (!product.relatedColorProducts || product.relatedColorProducts.length === 0) {
+      return true;
+    }
+    
+    // Получаем все связанные продукты
+    const relatedProducts = await Promise.all(
+      product.relatedColorProducts.map(id => getProductById(id))
+    );
+    
+    // Удаляем ссылку на текущий продукт из связанных продуктов
+    for (const relatedProduct of relatedProducts) {
+      if (!relatedProduct) continue;
+      
+      relatedProduct.relatedColorProducts = relatedProduct.relatedColorProducts?.filter(id => id !== productId) || [];
+      
+      // Если после удаления не осталось связанных продуктов, сбрасываем флаги
+      if (relatedProduct.relatedColorProducts.length === 0) {
+        relatedProduct.isColorVariant = false;
+        relatedProduct.parentProductId = undefined;
+      }
+      
+      await addOrUpdateProduct(relatedProduct);
+    }
+    
+    // Удаляем ссылки из текущего продукта
+    product.relatedColorProducts = [];
+    product.isColorVariant = false;
+    product.parentProductId = undefined;
+    
+    await addOrUpdateProduct(product);
+    
+    // Обновляем кэш
+    await refreshCacheIfNeeded(true);
+    
+    return true;
+  } catch (error) {
+    console.error("Ошибка при отвязке продукта от цветовых вариантов:", error);
+    return false;
   }
 };
 

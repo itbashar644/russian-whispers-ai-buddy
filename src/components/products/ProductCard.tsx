@@ -3,16 +3,19 @@ import { Link } from "react-router-dom";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Color } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState } from "react";
 import { getProductPrice } from "@/data/products";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProductCardProps {
   product: Product;
+  isColorVariant?: boolean;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, isColorVariant = false }: ProductCardProps) => {
   const { addItem } = useCart();
   const [imageError, setImageError] = useState(false);
   
@@ -28,18 +31,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
       color: defaultColorVariant ? defaultColorVariant.color : product.colors?.[0],
       selectedColorVariant: defaultColorVariant
     });
-  };
-
-  // Determine if the product has multiple price points across variants
-  const hasPriceRange = () => {
-    if (!product.colorVariants || product.colorVariants.length <= 1) return false;
-    
-    // Find min and max prices across variants
-    const prices = product.colorVariants.map(v => v.discountPrice || v.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    
-    return minPrice !== maxPrice;
   };
 
   // Get the price range text if applicable
@@ -59,7 +50,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     return `${minPrice} - ${maxPrice} ₽`;
   };
 
-  // Определяем отображаемую цену для кнопки - now integrating with getProductPrice function
+  // Определяем отображаемую цену для кнопки
   const displayPrice = product.colorVariants && product.colorVariants.length > 0
     ? (defaultColorVariant?.discountPrice || defaultColorVariant?.price)
     : (product.discountPrice || product.price);
@@ -70,7 +61,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     setImageError(true);
   };
 
-  // Проверка наличия товара - now checks color variants too
+  // Проверка наличия товара - checks color variants too
   const hasStock = () => {
     if (product.colorVariants && product.colorVariants.length > 0) {
       // If we have color variants, the product is in stock if at least one variant has stock
@@ -83,16 +74,48 @@ const ProductCard = ({ product }: ProductCardProps) => {
   // Get the image to display - first variant image or main product image
   const displayImage = defaultColorVariant?.imageUrl || product.imageUrl;
 
+  const hasPriceRange = () => {
+    if (!product.colorVariants || product.colorVariants.length <= 1) return false;
+    
+    // Find min and max prices across variants
+    const prices = product.colorVariants.map(v => v.discountPrice || v.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    
+    return minPrice !== maxPrice;
+  };
+
+  // Show a color tag if this is a color variant
+  const colorTag = isColorVariant && product.colorVariants && product.colorVariants.length > 0
+    ? product.colorVariants[0].color
+    : null;
+
   return (
-    <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md">
-      <Link to={`/product/${product.id}`} className="aspect-square overflow-hidden">
-        <img 
-          src={imageError ? "/placeholder.svg" : displayImage} 
-          alt={product.title} 
-          className="h-full w-full object-cover transition-transform hover:scale-105" 
-          onError={handleImageError}
-        />
+    <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-md relative">
+      {colorTag && (
+        <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs shadow-sm border">
+          <Color className="h-3 w-3" />
+          <span>{colorTag}</span>
+        </div>
+      )}
+      
+      <Link to={`/product/${product.id}`} className="relative block">
+        <AspectRatio ratio={1/1} className="overflow-hidden">
+          {imageError ? (
+            <div className="h-full w-full flex items-center justify-center bg-gray-100">
+              <Skeleton className="h-16 w-16 rounded-full" />
+            </div>
+          ) : (
+            <img 
+              src={displayImage} 
+              alt={product.title} 
+              className="h-full w-full object-cover transition-transform hover:scale-105" 
+              onError={handleImageError}
+            />
+          )}
+        </AspectRatio>
       </Link>
+      
       <CardContent className="flex-grow p-4">
         <div className="space-y-1">
           <Link to={`/product/${product.id}`} className="block">
@@ -143,19 +166,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {hasStock() ? "В наличии" : "Нет в наличии"}
           </div>
           
-          {/* Color variants display */}
-          {product.colorVariants && product.colorVariants.length > 1 && (
+          {/* Display color variants count if not a color variant itself */}
+          {!isColorVariant && product.colorVariants && product.colorVariants.length > 1 && (
             <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-muted-foreground">Цвета:</span>
-              <div className="flex gap-1">
-                {product.colorVariants.length > 3 ? (
-                  <span className="text-xs">{product.colorVariants.length} вариантов</span>
-                ) : (
-                  product.colorVariants.map((variant) => (
-                    <span key={variant.color} className="text-xs">{variant.color}</span>
-                  ))
-                )}
-              </div>
+              <Color className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {product.colorVariants.length} {product.colorVariants.length > 1 ? 'цвета' : 'цвет'}
+              </span>
             </div>
           )}
           
@@ -213,6 +230,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </div>
       </CardContent>
+      
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <Button 
           onClick={handleAddToCart} 

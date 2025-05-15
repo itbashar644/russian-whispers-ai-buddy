@@ -27,6 +27,9 @@ export interface Product {
   stockQuantity?: number; // New field to track inventory quantity
   colorVariants?: ColorVariant[]; // New field to store color variants
   material?: string; // Added back the material field
+  relatedColorProducts?: string[]; // IDs of related products that are color variants
+  isColorVariant?: boolean; // Flag to indicate if this is a color variant of another product
+  parentProductId?: string; // Reference to the parent product if this is a color variant
 }
 
 export interface ColorVariant {
@@ -37,6 +40,9 @@ export interface ColorVariant {
   barcode?: string;
   stockQuantity?: number;
   imageUrl?: string;
+  ozonUrl?: string;
+  wildberriesUrl?: string;
+  avitoUrl?: string;
 }
 
 export interface CartItem {
