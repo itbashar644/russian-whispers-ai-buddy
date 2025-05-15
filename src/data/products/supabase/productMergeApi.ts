@@ -92,6 +92,66 @@ export const getProductsByModelName = async (modelName: string): Promise<Product
 };
 
 /**
+ * Combines merged products into a single product with color variants
+ * This is useful for displaying merged products as a single product with color options
+ */
+export const combineProductVariants = (products: Product[]): Product => {
+  if (!products || products.length === 0) {
+    throw new Error("No products provided to combine");
+  }
+  
+  // Use the first (main) product as the base
+  const mainProduct = { ...products[0] };
+  
+  // If there are additional products, treat them as color variants
+  if (products.length > 1) {
+    const colorVariants = products.slice(1).map(product => {
+      // Extract the color if available, or use title as a fallback
+      const colorName = product.colors && product.colors.length > 0 
+        ? product.colors[0] 
+        : product.title.split(' ').pop() || 'Вариант';
+      
+      return {
+        color: colorName,
+        price: product.price,
+        discountPrice: product.discountPrice,
+        articleNumber: product.articleNumber,
+        barcode: product.barcode,
+        stockQuantity: product.stockQuantity,
+        imageUrl: product.imageUrl,
+        ozonUrl: product.ozonUrl,
+        wildberriesUrl: product.wildberriesUrl,
+        avitoUrl: product.avitoUrl,
+        productId: product.id // Add product ID to reference the original product
+      };
+    });
+    
+    // Add all variants to the main product
+    mainProduct.colorVariants = [
+      ...(mainProduct.colorVariants || []),
+      ...colorVariants
+    ];
+    
+    // Ensure mainProduct.colors includes all colors from variants
+    const allColors = new Set<string>();
+    
+    // Add main product color
+    if (mainProduct.colors && mainProduct.colors.length > 0) {
+      mainProduct.colors.forEach(color => allColors.add(color));
+    }
+    
+    // Add variant colors
+    colorVariants.forEach(variant => {
+      allColors.add(variant.color);
+    });
+    
+    mainProduct.colors = Array.from(allColors);
+  }
+  
+  return mainProduct;
+};
+
+/**
  * Bulk delete products
  */
 export const bulkDeleteProducts = async (productIds: string[]): Promise<boolean> => {
@@ -139,6 +199,7 @@ export const bulkArchiveProducts = async (productIds: string[], archive: boolean
 export const productMergeApi = {
   mergeProductsByModelName,
   getProductsByModelName,
+  combineProductVariants,
   bulkDeleteProducts,
   bulkArchiveProducts
 };
