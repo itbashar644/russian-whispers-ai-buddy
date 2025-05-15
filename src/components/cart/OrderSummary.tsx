@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import ContactMethodSelect from "./ContactMethodSelect";
 import TelegramNicknameInput from "./TelegramNicknameInput";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -57,6 +59,8 @@ const OrderSummary = ({
   const [saveInfo, setSaveInfo] = useState(false);
   const [hasSavedInfo, setHasSavedInfo] = useState(false);
   const [useSavedInfo, setUseSavedInfo] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
   // Load saved checkout information from localStorage on initial render
   useEffect(() => {
@@ -125,6 +129,16 @@ const OrderSummary = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if terms and privacy policy are agreed
+    if (!termsAgreed || !privacyAgreed) {
+      toast({
+        title: "Ошибка",
+        description: "Необходимо согласиться с Условиями использования и Политикой конфиденциальности",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Save checkout information if the user checked the option
     if (saveInfo) {
@@ -255,6 +269,38 @@ const OrderSummary = ({
           />
         )}
         
+        {/* Согласие с условиями использования */}
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="termsAgreement" 
+            checked={termsAgreed}
+            onCheckedChange={(checked) => setTermsAgreed(checked === true)} 
+            className="mt-1"
+          />
+          <label
+            htmlFor="termsAgreement"
+            className="text-sm font-medium leading-tight cursor-pointer"
+          >
+            Я прочитал(а) и согласен(на) с <Link to="/terms" className="text-primary underline" target="_blank">Условиями использования</Link>
+          </label>
+        </div>
+        
+        {/* Согласие с политикой конфиденциальности */}
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="privacyAgreement" 
+            checked={privacyAgreed}
+            onCheckedChange={(checked) => setPrivacyAgreed(checked === true)} 
+            className="mt-1"
+          />
+          <label
+            htmlFor="privacyAgreement"
+            className="text-sm font-medium leading-tight cursor-pointer"
+          >
+            Я прочитал(а) и согласен(на) с <Link to="/privacy" className="text-primary underline" target="_blank">Политикой конфиденциальности</Link>
+          </label>
+        </div>
+        
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="saveInfo" 
@@ -272,7 +318,7 @@ const OrderSummary = ({
         <Button 
           type="submit" 
           className="w-full"
-          disabled={isSubmitting || hasStockIssues}
+          disabled={isSubmitting || hasStockIssues || !termsAgreed || !privacyAgreed}
         >
           {isSubmitting ? "Оформление..." : "Оформить заказ"}
         </Button>

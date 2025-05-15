@@ -22,6 +22,12 @@ const Footer = () => {
               <li>
                 <Link to="/delivery" className="hover:underline">Доставка</Link>
               </li>
+              <li>
+                <Link to="/terms" className="hover:underline">Условия использования</Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:underline">Политика конфиденциальности</Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -61,7 +67,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">&copy; 2020 The X Shop. Все права защищены.</p>
+          <p className="text-sm text-muted-foreground">&copy; 2020-2025 The X Shop. Все права защищены.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <Link to="/terms" className="text-sm text-muted-foreground hover:underline">Условия использования</Link>
             <Link to="/privacy" className="text-sm text-muted-foreground hover:underline">Политика конфиденциальности</Link>

@@ -14,6 +14,8 @@ import Cart from "./pages/Cart";
 import About from "./pages/About";
 import Delivery from "./pages/Delivery";
 import Contacts from "./pages/Contacts";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { CartProvider } from "./context/CartContext";
@@ -49,6 +51,8 @@ const App = () => (
                 <Route path="/about" element={<About />} />
                 <Route path="/delivery" element={<Delivery />} />
                 <Route path="/contacts" element={<Contacts />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
                 
                 {/* Authentication routes */}
                 <Route path="/login" element={<Login />} />
