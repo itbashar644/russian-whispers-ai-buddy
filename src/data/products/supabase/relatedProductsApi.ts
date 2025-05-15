@@ -15,7 +15,7 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
     let query = supabase
       .from('products')
       .select('*')
-      .eq('model_name', modelName)
+      .eq('modelName', modelName)
       .eq('archived', false);
     
     // Exclude current product if ID is provided
@@ -55,18 +55,20 @@ export const findRelatedProductsByModel = async (modelName: string, currentProdu
           isNew: item.is_new || false,
           isBestseller: item.is_bestseller || false,
           archived: item.archived || false,
-          modelName: item.model_name || "",
-          colors: (Array.isArray(item.colors) ? item.colors.map(c => String(c)) : []) as string[],
-          sizes: (Array.isArray(item.sizes) ? item.sizes.map(s => String(s)) : []) as string[],
-          specifications: (typeof item.specifications === 'object' && item.specifications 
-            ? Object.entries(item.specifications).reduce((acc, [key, value]) => {
+          modelName: item.modelName || "",
+          colors: Array.isArray(item.colors) ? 
+            (item.colors as any[]).map(c => String(c)) : [],
+          sizes: Array.isArray(item.sizes) ? 
+            (item.sizes as any[]).map(s => String(s)) : [],
+          specifications: (typeof item.specifications === 'object' && item.specifications) 
+            ? Object.entries(item.specifications as Record<string, any>).reduce((acc, [key, value]) => {
                 acc[key] = String(value);
                 return acc;
               }, {} as Record<string, string>)
-            : {}) as Record<string, string>,
-          additionalImages: (Array.isArray(item.additional_images) 
-            ? item.additional_images.map(img => String(img)) 
-            : []) as string[]
+            : {},
+          additionalImages: Array.isArray(item.additional_images) 
+            ? (item.additional_images as any[]).map(img => String(img)) 
+            : []
         };
         
         results.push(product);
