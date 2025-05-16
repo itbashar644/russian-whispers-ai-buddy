@@ -8,6 +8,8 @@ import ProductImportExport from "@/components/admin/ProductImportExport";
 import ConfirmDialog from './ConfirmDialog';
 import { Button } from "@/components/ui/button";
 import { Merge, Trash2, Archive } from "lucide-react";
+import { updateProductStockApi } from "@/api/admin/productStockApi";
+import { toast } from "sonner";
 
 interface ProductTabContentProps {
   products: Product[];
@@ -159,6 +161,23 @@ const ProductTabContent = ({
 
     // Clear selections after action
     setSelectedProducts([]);
+  };
+
+  // Handle stock update
+  const handleStockUpdate = async (product: Product, newQuantity: number) => {
+    try {
+      const response = await updateProductStockApi(product.id, newQuantity);
+      if (response.success) {
+        toast.success(`Остаток товара обновлен до ${newQuantity}`);
+        // This assumes onEdit will update the product in the list
+        onEdit({ ...product, stockQuantity: newQuantity, inStock: newQuantity > 0 });
+      } else {
+        toast.error(`Ошибка при обновлении остатка: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast.error('Не удалось обновить остаток товара');
+    }
   };
 
   return (

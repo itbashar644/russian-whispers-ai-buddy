@@ -6,8 +6,8 @@ import { AlertTriangle } from "lucide-react";
 
 interface CartTableProps {
   items: CartItemType[];
-  updateQuantity: (id: string, quantity: number) => void;
-  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number, color?: string) => void;
+  removeItem: (id: string, color?: string) => void;
 }
 
 const CartTable = ({ items, updateQuantity, removeItem }: CartTableProps) => {
@@ -46,10 +46,10 @@ const CartTable = ({ items, updateQuantity, removeItem }: CartTableProps) => {
           <tbody>
             {items.map((item) => (
               <CartItem 
-                key={item.product.id} 
+                key={`${item.product.id}-${item.color || "default"}`}
                 item={item} 
-                updateQuantity={updateQuantity}
-                removeItem={removeItem}
+                updateQuantity={(id, quantity) => updateQuantity(id, quantity, item.color)}
+                removeItem={(id) => removeItem(id, item.color)}
               />
             ))}
           </tbody>

@@ -21,9 +21,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, Trash, RefreshCcw, ArchiveX } from "lucide-react";
+import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle } from "lucide-react";
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { decreaseProductStock } from "@/data/products/product/services/productStockService";
 
 interface ProductListProps {
   products: Product[];
@@ -38,6 +41,8 @@ interface ProductListProps {
   onSelectAll?: (selected: boolean) => void;
 }
 
+type SortField = "id" | "articleNumber" | "title" | "modelName" | "category" | "price" | "stockQuantity";
+
 const ProductList = ({ 
   products, 
   onEdit, 
@@ -50,6 +55,74 @@ const ProductList = ({
   onSelectProduct,
   onSelectAll
 }: ProductListProps) => {
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [stockQuantity, setStockQuantity] = useState<number>(0);
+
+  // Sort products based on the selected field and direction
+  const sortedProducts = [...products].sort((a, b) => {
+    let aValue, bValue;
+    
+    switch (sortField) {
+      case "id":
+        aValue = a.id;
+        bValue = b.id;
+        break;
+      case "articleNumber":
+        aValue = a.articleNumber || "";
+        bValue = b.articleNumber || "";
+        break;
+      case "title":
+        aValue = a.title;
+        bValue = b.title;
+        break;
+      case "modelName":
+        aValue = a.modelName || "";
+        bValue = b.modelName || "";
+        break;
+      case "category":
+        aValue = a.category;
+        bValue = b.category;
+        break;
+      case "price":
+        aValue = a.discountPrice || a.price;
+        bValue = b.discountPrice || b.price;
+        break;
+      case "stockQuantity":
+        aValue = a.stockQuantity || 0;
+        bValue = b.stockQuantity || 0;
+        break;
+      default:
+        aValue = a.title;
+        bValue = b.title;
+    }
+    
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle direction if clicking on the same field
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (field === sortField) {
+      return (
+        <ArrowUpDown className={`ml-2 h-4 w-4 inline ${sortDirection === "desc" ? "transform rotate-180" : ""}`} />
+      );
+    }
+    return <ArrowUpDown className="ml-2 h-4 w-4 text-gray-300 inline" />;
+  };
+
   const getDeleteButtonClasses = () => {
     switch (deleteButtonColor) {
       case "green":
@@ -90,6 +163,78 @@ const ProductList = ({
     }
   };
 
+  // Start editing stock
+  const startEditStock = (product: Product) => {
+    setEditingStockId(product.id);
+    setStockQuantity(product.stockQuantity || 0);
+  };
+
+  // Save stock updates
+  const saveStockUpdate = async (product: Product) => {
+    if (stockQuantity < 0) {
+      toast.error("Количество товара не может быть отрицательным");
+      return;
+    }
+    
+    try {
+      // Calculate difference to determine if we need to increase or decrease stock
+      const difference = stockQuantity - (product.stockQuantity || 0);
+      
+      if (difference !== 0) {
+        // Update the product's stock by difference
+        if (difference < 0) {
+          // Need to decrease stock
+          const success = await decreaseProductStock(product.id, Math.abs(difference));
+          if (!success) {
+            throw new Error("Failed to update stock quantity");
+          }
+        } else {
+          // Need to increase stock - This would require a new API function
+          const productToUpdate = { ...product, stockQuantity: stockQuantity };
+          // Assuming we have a function to update product
+          const response = await fetch(`/api/admin/products/${product.id}/stock`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stockQuantity })
+          });
+          
+          if (!response.ok) {
+            throw new Error("Failed to update stock quantity");
+          }
+        }
+        
+        toast.success(`Остаток товара обновлен до ${stockQuantity}`);
+        
+        // Update product in the list without full refresh
+        if (onEdit) {
+          const updatedProduct = { ...product, stockQuantity, inStock: stockQuantity > 0 };
+          onEdit(updatedProduct);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      toast.error("Ошибка при обновлении остатка товара");
+    } finally {
+      setEditingStockId(null);
+    }
+  };
+
+  // Cancel stock editing
+  const cancelEditStock = () => {
+    setEditingStockId(null);
+  };
+
+  // Handle stock change
+  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setStockQuantity(isNaN(value) ? 0 : value);
+  };
+
+  // Increment/decrement stock
+  const adjustStock = (increment: boolean) => {
+    setStockQuantity(prev => increment ? prev + 1 : Math.max(0, prev - 1));
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -118,25 +263,40 @@ const ProductList = ({
                     />
                   </TableHead>
                 )}
-                <TableHead>ID</TableHead>
-                <TableHead>Артикул</TableHead>
-                <TableHead>Название</TableHead>
-                <TableHead>Модель</TableHead>
-                <TableHead>Категория</TableHead>
-                <TableHead>Цена (₽)</TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("id")}>
+                  ID {getSortIcon("id")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("articleNumber")}>
+                  Артикул {getSortIcon("articleNumber")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("title")}>
+                  Название {getSortIcon("title")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("modelName")}>
+                  Модель {getSortIcon("modelName")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("category")}>
+                  Категория {getSortIcon("category")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("price")}>
+                  Цена (₽) {getSortIcon("price")}
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort("stockQuantity")}>
+                  Остаток {getSortIcon("stockQuantity")}
+                </TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead className="text-right">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.length === 0 ? (
+              {sortedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={onSelectProduct ? 9 : 8} className="text-center py-4">
+                  <TableCell colSpan={onSelectProduct ? 10 : 9} className="text-center py-4">
                     {mode === "active" ? "Товары не найдены" : "Архив пуст"}
                   </TableCell>
                 </TableRow>
               ) : (
-                products.map((product) => (
+                sortedProducts.map((product) => (
                   <TableRow key={product.id}>
                     {onSelectProduct && (
                       <TableCell>
@@ -170,7 +330,61 @@ const ProductList = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      {editingStockId === product.id ? (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => adjustStock(false)}
+                          >
+                            <MinusCircle className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            value={stockQuantity}
+                            onChange={handleStockChange}
+                            min="0"
+                            className="w-16 h-7 text-center"
+                          />
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => adjustStock(true)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-1 h-7"
+                            onClick={() => saveStockUpdate(product)}
+                          >
+                            ОК
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7"
+                            onClick={cancelEditStock}
+                          >
+                            Отмена
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="px-2 h-7"
+                          onClick={() => startEditStock(product)}
+                        >
+                          {product.stockQuantity !== undefined ? product.stockQuantity : "-"}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
                         {product.inStock ? (
                           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                             В наличии

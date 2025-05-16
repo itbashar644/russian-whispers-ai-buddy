@@ -1,29 +1,28 @@
-
 import { Product } from "@/types/product";
 import { fetchProductsFromSupabase } from "../supabaseApi";
 
-// Временный кэш продуктов для улучшения производительности
+// Cache variables
 let productsCache: Product[] = [];
 let productsCacheLoaded = false;
 let lastCacheUpdateTime = 0;
-const CACHE_TTL = 15000; // 15 секунд в миллисекундах - уменьшил для более частого обновления
+const CACHE_TTL = 5000; // 5 seconds in milliseconds - reduced for more frequent updates
 
-// Функция для проверки и обновления кэша
+// Function to check and update cache
 export const refreshCacheIfNeeded = async (forceRefresh = false): Promise<void> => {
   const now = Date.now();
   
-  // Обновляем кэш, если он устарел или требуется принудительное обновление
+  // Update cache if it's expired or force refresh is requested
   if (forceRefresh || !productsCacheLoaded || now - lastCacheUpdateTime > CACHE_TTL) {
     try {
       console.log("Refreshing products cache", forceRefresh ? "(forced)" : "");
-      // Загружаем все активные продукты
+      // Load all active products
       productsCache = await fetchProductsFromSupabase(false);
       productsCacheLoaded = true;
       lastCacheUpdateTime = now;
-      console.log("Кэш продуктов обновлен из Supabase:", productsCache.length, "товаров");
+      console.log("Product cache updated from Supabase:", productsCache.length, "products");
     } catch (error) {
-      console.error("Ошибка при обновлении кэша продуктов:", error);
-      // Не сбрасываем кэш в случае ошибки, чтобы не потерять данные
+      console.error("Error updating product cache:", error);
+      // Keep existing cache in case of error
       if (!productsCacheLoaded) {
         productsCache = [];
       }
@@ -32,17 +31,17 @@ export const refreshCacheIfNeeded = async (forceRefresh = false): Promise<void> 
   }
 };
 
-// Получение кэша продуктов
+// Get products cache
 export const getProductsCache = (): Product[] => {
   return [...productsCache];
 };
 
-// Инициализируем кэш продуктов при импорте модуля
+// Initialize product cache when module is imported
 refreshCacheIfNeeded(true).catch(err => {
   console.error("Failed to initialize product cache:", err);
 });
 
-// Экспортируем продукты через переменную для совместимости с существующим кодом
+// Export products via variable for compatibility with existing code
 export let products: Product[] = [];
 (async () => {
   try {
