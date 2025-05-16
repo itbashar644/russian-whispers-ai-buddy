@@ -1,4 +1,3 @@
-
 import { Product } from "@/types/product";
 import { 
   fetchProductsFromSupabase, 
@@ -12,44 +11,43 @@ import {
 import { refreshCacheIfNeeded, getProductsCache } from "../cache/productCache";
 import { generateRandomRating } from "../utils";
 
-// Экспортируем продукты через геттер для совместимости с существующим кодом
+// Export products through getter for compatibility with existing code
 export const getProducts = async (includeArchived = false): Promise<Product[]> => {
   try {
     if (includeArchived) {
-      // Если нужны архивированные продукты, загружаем их напрямую из базы
+      // If archived products are needed, load directly from database
       return await fetchProductsFromSupabase(true);
     }
     
-    // Всегда обновляем кэш при запросе продуктов
+    // Always update cache when requesting products
     await refreshCacheIfNeeded(true);
     
     return getProductsCache();
   } catch (error) {
-    console.error("Ошибка при получении товаров:", error);
-    // Возвращаем пустой массив вместо того чтобы выбрасывать исключение дальше
+    console.error("Error getting products:", error);
+    // Return empty array instead of throwing exception
     return [];
   }
 };
 
-// Функция для добавления или обновления продукта
+// Function to add or update product
 export const addOrUpdateProduct = async (product: Product): Promise<boolean> => {
   try {
-    // Если рейтинг не указан, генерируем случайный в диапазоне от 4.7 до 4.9
+    // If rating is not specified, generate random in range from 4.7 to 4.9
     if (!product.rating) {
       product.rating = generateRandomRating();
     }
     
-    // Update inStock status based on stock quantity
+    // Calculate inStock status based on stock quantity
     if (product.stockQuantity !== undefined) {
       product.inStock = product.stockQuantity > 0;
     } else {
-      // Если stockQuantity не указано, считаем товар как отсутствующий в наличии
       product.inStock = false;
     }
     
     // Update colorVariants stock status
     if (product.colorVariants && product.colorVariants.length > 0) {
-      // If we have color variants, check if at least one has stock
+      // Check if at least one color has stock
       const hasColorStock = product.colorVariants.some(variant => 
         variant.stockQuantity !== undefined && variant.stockQuantity > 0
       );
@@ -60,94 +58,94 @@ export const addOrUpdateProduct = async (product: Product): Promise<boolean> => 
       }
     }
     
-    // Сохраняем продукт в Supabase
+    // Save product to Supabase
     const result = await addOrUpdateProductInSupabase(product);
     
     if (result.success) {
-      // Принудительно обновляем кэш
+      // Force refresh cache
       await refreshCacheIfNeeded(true);
     }
     
     return result.success;
   } catch (error) {
-    console.error("Ошибка при добавлении/обновлении товара:", error);
+    console.error("Error adding/updating product:", error);
     return false;
   }
 };
 
-// Функция для архивирования продукта
+// Function to archive product
 export const archiveProduct = async (productId: string): Promise<boolean> => {
   try {
     const success = await archiveProductInSupabase(productId);
     
     if (success) {
-      // Принудительно обновляем кэш
+      // Force refresh cache
       await refreshCacheIfNeeded(true);
     }
     
     return success;
   } catch (error) {
-    console.error("Ошибка при архивировании товара:", error);
+    console.error("Error archiving product:", error);
     return false;
   }
 };
 
-// Функция для восстановления продукта из архива
+// Function to restore product from archive
 export const restoreProduct = async (productId: string): Promise<boolean> => {
   try {
     const success = await restoreProductInSupabase(productId);
     
     if (success) {
-      // Принудительно обновляем кэш
+      // Force refresh cache
       await refreshCacheIfNeeded(true);
     }
     
     return success;
   } catch (error) {
-    console.error("Ошибка при восстановлении товара из архива:", error);
+    console.error("Error restoring product from archive:", error);
     return false;
   }
 };
 
-// Функция для удаления продукта
+// Function to remove product
 export const removeProduct = async (productId: string): Promise<boolean> => {
   try {
     const success = await removeProductFromSupabase(productId);
     
     if (success) {
-      // Принудительно обновляем кэш
+      // Force refresh cache
       await refreshCacheIfNeeded(true);
     }
     
     return success;
   } catch (error) {
-    console.error("Ошибка при удалении товара:", error);
+    console.error("Error removing product:", error);
     return false;
   }
 };
 
-// Функция для получения продукта по ID
+// Function to get product by ID
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   try {
     return await getProductByIdFromSupabase(id);
   } catch (error) {
-    console.error("Ошибка при получении товара по ID:", error);
+    console.error("Error getting product by ID:", error);
     return undefined;
   }
 };
 
-// Функция для получения продуктов по категории
+// Function to get products by category
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
     if (!category) {
-      // Возвращаем все активные продукты
+      // Return all active products
       await refreshCacheIfNeeded(true);
       return getProductsCache();
     }
     
     return await getProductsByCategoryFromSupabase(category);
   } catch (error) {
-    console.error("Ошибка при получении товаров по категории:", error);
+    console.error("Error getting products by category:", error);
     return [];
   }
 };

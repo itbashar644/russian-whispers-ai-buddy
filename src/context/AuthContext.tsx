@@ -1,129 +1,129 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "sonner";
-import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { UserProfile } from "@/types/auth";
-import { loadUserProfile } from "@/utils/auth/profile";
-import { authMethods } from "@/utils/auth/authMethods";
+import { authMethods } from '@/utils/auth/authMethods';
+import { AuthResult, PasswordUpdateResult } from '@/utils/auth/types';
 
-// Типы для контекста аутентификации
-interface AuthContextType {
+type AuthContextType = {
+  session: Session | null;
   user: User | null;
-  profile: UserProfile | null;
+  loading: boolean;
+  loginWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  logout: () => Promise<AuthResult>;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<{ success: boolean, message?: string, isExistingUser?: boolean }>;
-  logout: () => Promise<void>;
-  updateProfile: (userData: Partial<UserProfile>) => Promise<boolean>;
-  resetPassword: (email: string) => Promise<boolean>;
-  updatePassword: (newPassword: string) => Promise<boolean | { error: string | { message?: string } | null }>;
-  updateEmail: (newEmail: string) => Promise<boolean>;
-  hasRole: (role: 'admin' | 'editor' | 'user') => Promise<boolean>;
-}
+  updatePassword: (newPassword: string) => Promise<PasswordUpdateResult>;
+  sendPasswordResetEmail: (email: string) => Promise<AuthResult>;
+  resetPassword: (params: { accessToken: string; password: string; }) => Promise<AuthResult>;
+  signupWithEmail: (email: string, password: string, metadata?: { name?: string; }) => Promise<AuthResult>;
+  hasRole: (roleName: string) => Promise<boolean>;
+};
 
-// Создание контекста аутентификации
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const defaultContext: AuthContextType = {
+  session: null,
+  user: null,
+  loading: true,
+  loginWithEmail: async () => ({ success: false }),
+  logout: async () => ({ success: false }),
+  isAuthenticated: false,
+  updatePassword: async () => ({ success: false }),
+  sendPasswordResetEmail: async () => ({ success: false }),
+  resetPassword: async () => ({ success: false }),
+  signupWithEmail: async () => ({ success: false }),
+  hasRole: async () => false
+};
 
-// Хук для использования контекста аутентификации
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-}
+const AuthContext = createContext<AuthContextType>(defaultContext);
 
-// Провайдер аутентификации
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Инициализация состояния аутентификации
   useEffect(() => {
-    console.log("Initializing auth state...");
-    
-    // Настраиваем слушатель изменения статуса аутентификации
+    // Set up auth state listener FIRST to avoid missing events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state changed:", event);
-        
-        // Only update state synchronously to prevent deadlocks
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setIsAuthenticated(!!currentSession);
-        
-        if (currentSession?.user) {
-          // Defer data fetching with setTimeout to prevent deadlocks
-          setTimeout(async () => {
-            try {
-              console.log("Loading user profile for:", currentSession.user.id);
-              const userData = await loadUserProfile(currentSession.user.id);
-              setProfile(userData.profile);
-              setUserRoles(userData.roles);
-            } catch (error) {
-              console.error("Error loading user profile:", error);
-            }
-          }, 0);
-        } else {
-          setProfile(null);
-          setUserRoles([]);
-        }
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
       }
     );
 
-    // Проверяем текущую сессию при загрузке
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      console.log("Initial session check:", currentSession ? "Session exists" : "No session");
-      
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setIsAuthenticated(!!currentSession);
-      
-      if (currentSession?.user) {
-        try {
-          console.log("Loading initial user profile");
-          const userData = await loadUserProfile(currentSession.user.id);
-          setProfile(userData.profile);
-          setUserRoles(userData.roles);
-        } catch (error) {
-          console.error("Error loading initial user profile:", error);
-        }
-      }
-      
-      setIsLoading(false);
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
-    // Отписываемся от событий при размонтировании
-    return () => {
-      console.log("Cleaning up auth subscription");
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Предоставляем значение контекста
+  // Auth functions that use our authMethods
+  const loginWithEmail = async (email: string, password: string) => {
+    return await authMethods.loginWithEmail(email, password);
+  };
+
+  const logout = async () => {
+    return await authMethods.logout();
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    return await authMethods.updatePassword(newPassword);
+  };
+
+  const sendPasswordResetEmail = async (email: string) => {
+    return await authMethods.sendPasswordResetEmail(email);
+  };
+
+  const resetPassword = async ({ accessToken, password }: { accessToken: string; password: string }) => {
+    return await authMethods.resetPassword({ accessToken, password });
+  };
+
+  const signupWithEmail = async (email: string, password: string, metadata?: { name?: string }) => {
+    return await authMethods.signupWithEmail(email, password, metadata);
+  };
+  
+  // Check if user has specific role
+  const hasRole = async (roleName: string): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: roleName
+      });
+      
+      if (error) {
+        console.error('Error checking role:', error);
+        return false;
+      }
+      
+      return data || false;
+    } catch (error) {
+      console.error('Error checking role:', error);
+      return false;
+    }
+  };
+
+  const value = {
+    session,
+    user,
+    loading,
+    loginWithEmail,
+    logout,
+    isAuthenticated: !!session,
+    updatePassword,
+    sendPasswordResetEmail,
+    resetPassword,
+    signupWithEmail,
+    hasRole
+  };
+
   return (
-    <AuthContext.Provider
-      value={{ 
-        user, 
-        profile, 
-        isAuthenticated, 
-        isLoading,
-        login: authMethods.login, 
-        register: authMethods.register, 
-        logout: authMethods.logout, 
-        updateProfile: (userData) => authMethods.updateProfile(userData, setProfile, profile),
-        resetPassword: authMethods.resetPassword,
-        updatePassword: authMethods.updatePassword,
-        updateEmail: authMethods.updateEmail,
-        hasRole: (role) => authMethods.hasRole(role, user, userRoles, setUserRoles)
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

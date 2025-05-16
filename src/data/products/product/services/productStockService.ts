@@ -13,7 +13,6 @@ import { getProductById as getBaseProductById } from "../productServiceBase";
 export const checkProductStock = async (productId: string, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Checking stock for product ${productId}, color: ${colorVariant || 'none'}`);
-    // Use getBaseProductById instead of getProductById from specialized service
     const product = await getBaseProductById(productId);
     
     if (!product) {
@@ -21,6 +20,7 @@ export const checkProductStock = async (productId: string, colorVariant?: string
       return false;
     }
     
+    // Check specific color variant stock if specified
     if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
       const hasStock = variant ? (variant.stockQuantity || 0) > 0 : false;
@@ -28,8 +28,10 @@ export const checkProductStock = async (productId: string, colorVariant?: string
       return hasStock;
     }
     
-    const hasStock = product.inStock && (product.stockQuantity || 0) > 0;
-    console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${product.stockQuantity || 0}`);
+    // Check main product stock - must be based on actual quantity
+    const stockQuantity = product.stockQuantity || 0;
+    const hasStock = stockQuantity > 0;
+    console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${stockQuantity}`);
     return hasStock;
   } catch (error) {
     console.error("Error checking product stock:", error);
@@ -43,7 +45,6 @@ export const checkProductStock = async (productId: string, colorVariant?: string
 export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`);
-    // Use getBaseProductById instead of getProductById from specialized service
     const product = await getBaseProductById(productId);
     
     if (!product) {
@@ -64,6 +65,10 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
           console.log(`Variant had no stock quantity, setting to 0`);
         }
         
+        // Update product's inStock status based on stock quantities
+        const hasStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
+        product.inStock = hasStock;
+        
         // Update product with modified color variant
         const result = await addOrUpdateProductInSupabase({
           ...product,
@@ -82,6 +87,7 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
     if (product.stockQuantity !== undefined) {
       console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
       product.stockQuantity = Math.max(0, product.stockQuantity - quantity);
+      // Set inStock based on actual quantity
       product.inStock = product.stockQuantity > 0;
       
       console.log("Updating product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);
@@ -111,7 +117,6 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
 export const updateProductStock = async (productId: string, newQuantity: number, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Attempting to update stock for product ${productId} to ${newQuantity}, color ${colorVariant || 'none'}`);
-    // Use getBaseProductById instead of getProductById from specialized service
     const product = await getBaseProductById(productId);
     
     if (!product) {
@@ -126,6 +131,10 @@ export const updateProductStock = async (productId: string, newQuantity: number,
         console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
         variant.stockQuantity = Math.max(0, newQuantity);
         console.log(`Updated variant stock to: ${variant.stockQuantity}`);
+        
+        // Update inStock status for the variant based on actual quantity
+        const hasAnyVariantStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
+        product.inStock = hasAnyVariantStock;
         
         // Update product with modified color variant
         const result = await addOrUpdateProductInSupabase({
@@ -144,6 +153,7 @@ export const updateProductStock = async (productId: string, newQuantity: number,
     // Handle main product stock
     console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
     product.stockQuantity = Math.max(0, newQuantity);
+    // Always set inStock based on actual quantity
     product.inStock = product.stockQuantity > 0;
     
     console.log("Setting product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);

@@ -1,257 +1,190 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { UserProfile } from "@/types/auth";
-import { toast } from "sonner";
-import { formatAuthError } from "./errorFormatter";
-import { createUserProfile, updateUserProfile } from "./profile";
+import { AuthResult, PasswordUpdateResult, ResetPasswordParams } from "./types";
 
 /**
- * Auth methods for user authentication
+ * Logs a user in with email and password
  */
-export const authMethods = {
-  /**
-   * Log in a user
-   */
-  async login(email: string, password: string): Promise<boolean> {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
+export const loginWithEmail = async (
+  email: string,
+  password: string
+): Promise<AuthResult> => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) {
-        toast.error("Ошибка входа", { description: formatAuthError(error) });
-        return false;
-      }
-
-      return !!data?.user;
-    } catch (error) {
+    if (error) {
       console.error("Login error:", error);
-      toast.error("Ошибка входа", {
-        description: "Произошла неизвестная ошибка. Попробуйте снова позже.",
-      });
-      return false;
-    }
-  },
-
-  /**
-   * Register a new user
-   */
-  async register(email: string, password: string, name: string = ""): Promise<{ 
-    success: boolean; 
-    message?: string;
-    isExistingUser?: boolean;
-  }> {
-    try {
-      const { data: existingUser, error: checkError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("email", email)
-        .single();
-
-      if (existingUser) {
-        return { 
-          success: false, 
-          message: "Пользователь с таким email уже существует",
-          isExistingUser: true
-        };
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            name: name,
-          },
-        },
-      });
-
-      if (error) {
-        return { success: false, message: formatAuthError(error) };
-      }
-
-      // Create user profile
-      if (data.user) {
-        await createUserProfile({
-          id: data.user.id,
-          name: name || "",
-          email: email,
-        });
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error("Registration error:", error);
-      return { success: false, message: "Произошла ошибка при регистрации" };
-    }
-  },
-
-  /**
-   * Log out the current user
-   */
-  async logout(): Promise<void> {
-    try {
-      await supabase.auth.signOut();
-      // Force page reload to clear any local state
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Ошибка выхода", {
-        description: "Не удалось завершить сеанс. Попробуйте снова.",
-      });
-    }
-  },
-
-  /**
-   * Update user profile
-   */
-  async updateProfile(
-    userData: Partial<UserProfile>, 
-    setProfile: (profile: UserProfile) => void, 
-    currentProfile: UserProfile | null
-  ): Promise<boolean> {
-    if (!currentProfile) {
-      toast.error("Профиль не найден");
-      return false;
+      return { success: false, error: error.message };
     }
 
-    try {
-      const result = await updateUserProfile({
-        ...userData,
-        id: currentProfile.id,
-      });
-
-      if (!result.success) {
-        toast.error("Ошибка обновления профиля");
-        return false;
-      }
-
-      // Update local state with new profile data
-      setProfile({
-        ...currentProfile,
-        ...userData,
-      });
-
-      toast.success("Профиль успешно обновлен");
-      return true;
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Ошибка обновления профиля");
-      return false;
-    }
-  },
-
-  /**
-   * Reset user password
-   */
-  async resetPassword(email: string): Promise<boolean> {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-
-      if (error) {
-        toast.error("Ошибка сброса пароля", { description: formatAuthError(error) });
-        return false;
-      }
-
-      toast.success("Запрос на сброс пароля отправлен", {
-        description: "Проверьте вашу электронную почту для дальнейших инструкций",
-      });
-      return true;
-    } catch (error) {
-      console.error("Password reset error:", error);
-      toast.error("Ошибка сброса пароля");
-      return false;
-    }
-  },
-
-  /**
-   * Update user password
-   */
-  async updatePassword(newPassword: string): Promise<boolean | { error: string | { message?: string } | null }> {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        toast.error("Ошибка обновления пароля", { description: formatAuthError(error) });
-        return { error: error };
-      }
-
-      toast.success("Пароль успешно обновлен");
-      return true;
-    } catch (error) {
-      console.error("Update password error:", error);
-      toast.error("Ошибка обновления пароля");
-      return { error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  },
-
-  /**
-   * Update user email
-   */
-  async updateEmail(newEmail: string): Promise<boolean> {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        email: newEmail,
-      });
-
-      if (error) {
-        toast.error("Ошибка обновления email", { description: formatAuthError(error) });
-        return false;
-      }
-
-      toast.success("Email успешно обновлен", {
-        description: "Проверьте вашу электронную почту для подтверждения",
-      });
-      return true;
-    } catch (error) {
-      console.error("Update email error:", error);
-      toast.error("Ошибка обновления email");
-      return false;
-    }
-  },
-
-  /**
-   * Check if user has a specific role
-   */
-  async hasRole(
-    role: 'admin' | 'editor' | 'user',
-    user: any,
-    userRoles: string[],
-    setUserRoles: (roles: string[]) => void
-  ): Promise<boolean> {
-    // If roles already loaded, check them
-    if (userRoles.length > 0) {
-      return userRoles.includes(role);
-    }
-
-    // If no user, definitely not authorized
-    if (!user) {
-      return false;
-    }
-
-    try {
-      // Get roles from the database
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("Error checking role:", error);
-        return false;
-      }
-
-      // Update roles in state
-      const roles = data.map((r) => r.role);
-      setUserRoles(roles);
-
-      return roles.includes(role);
-    } catch (error) {
-      console.error("Error checking user role:", error);
-      return false;
-    }
+    return { success: true };
+  } catch (e) {
+    console.error("Login exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { success: false, error: errorMessage };
   }
 };
+
+/**
+ * Logs a user out
+ */
+export const logout = async (): Promise<AuthResult> => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Logout error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error("Logout exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { success: false, error: errorMessage };
+  }
+};
+
+/**
+ * Updates a user's password
+ */
+export const updatePassword = async (
+  newPassword: string
+): Promise<PasswordUpdateResult> => {
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      console.error("Password update error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: "Password updated successfully" };
+  } catch (e) {
+    console.error("Password update exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { success: false, error: errorMessage };
+  }
+};
+
+/**
+ * Sends a password reset email
+ */
+export const sendPasswordResetEmail = async (
+  email: string
+): Promise<AuthResult> => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+
+    if (error) {
+      console.error("Reset password error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return {
+      success: true,
+      message: "Password reset instructions sent to your email",
+    };
+  } catch (e) {
+    console.error("Reset password exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { success: false, error: errorMessage };
+  }
+};
+
+/**
+ * Reset user password with token
+ */
+export const resetPassword = async ({
+  accessToken,
+  password,
+}: ResetPasswordParams): Promise<AuthResult> => {
+  try {
+    // Check if we have an access token
+    if (!accessToken) {
+      return { 
+        success: false, 
+        error: "No access token provided" 
+      };
+    }
+
+    // Update the user's password
+    const { data, error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      console.error("Password reset error:", error);
+      return { 
+        success: false, 
+        error: error.message 
+      };
+    }
+
+    return { 
+      success: true,
+      message: "Password successfully reset. You can now log in with your new password." 
+    };
+  } catch (e) {
+    console.error("Password reset exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { 
+      success: false, 
+      error: errorMessage 
+    };
+  }
+};
+
+/**
+ * Signs up a new user with email and password
+ */
+export const signupWithEmail = async (
+  email: string,
+  password: string,
+  metadata?: { name?: string }
+): Promise<AuthResult> => {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    });
+
+    if (error) {
+      console.error("Signup error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { 
+      success: true,
+      message: data.user?.identities?.length === 0 
+        ? "This email is already registered. Please log in instead."
+        : "Registration successful. Please check your email to confirm your account."
+    };
+  } catch (e) {
+    console.error("Signup exception:", e);
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
+    return { success: false, error: errorMessage };
+  }
+};
+
+// Export all auth methods
+export const authMethods = {
+  loginWithEmail,
+  logout,
+  updatePassword,
+  sendPasswordResetEmail,
+  resetPassword,
+  signupWithEmail,
+};
+
+export default authMethods;
