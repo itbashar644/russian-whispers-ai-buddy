@@ -1,4 +1,3 @@
-
 import { Product } from "@/types/product";
 import { getProductById as getProductByIdBase } from "../productServiceBase";
 import { addOrUpdateProduct } from "../productServiceBase";
@@ -32,7 +31,7 @@ export const updateProductStock = async (
       
       // Update the variant's stock
       product.colorVariants[variantIndex].stockQuantity = stockQuantity;
-      product.colorVariants[variantIndex].inStock = stockQuantity > 0;
+      // Don't set inStock directly on color variant as it doesn't have this property
       
       // Update the overall product stock status
       const hasAnyStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);

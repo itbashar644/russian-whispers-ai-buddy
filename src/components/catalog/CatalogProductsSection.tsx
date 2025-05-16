@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import ProductGrid from "@/components/products/ProductGrid";
 import CatalogFilters from "./CatalogFilters";
 import CatalogActiveFilters from "./CatalogActiveFiltersProps";
-import { SearchForm } from "./SearchForm"; // Fixed import statement
+import { SearchForm } from "./SearchForm"; 
 import { Category } from "@/types/categories";
 import { Product } from "@/types/product";
 import { Check, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
@@ -199,7 +199,6 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
               ))}
             </div>
           ) : products.length > 0 ? (
-            // Temporarily pass without displayAsList until we fix it
             <ProductGrid products={products} />
           ) : (
             <div className="text-center py-10">

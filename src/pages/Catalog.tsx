@@ -1,14 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProducts, getAllProductsCached } from "@/data/products";
 import { getAllCategories } from "@/data/products/categoryData";
-import { useProductFiltering } from "@/hooks/useProductFiltering";
-import { Product } from "@/types/product";
-import { Category } from "@/types/categories";
-import CatalogLayout from "@/components/catalog/CatalogLayout";
-import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
-import { getMaxPrice } from "@/hooks/useProductFiltering/helpers";
+import { useProductFiltering as useProductFilteringNew } from "@/hooks/useProductFiltering/index";
+
+// Helper function to get max price
+const getMaxPrice = (products: Product[]): number => {
+  if (products.length === 0) return 50000;
+  
+  return Math.max(
+    ...products.map(product => product.discountPrice || product.price)
+  );
+};
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,8 +41,20 @@ const Catalog = () => {
         ]);
         
         setProducts(productsData);
-        // Make sure categoriesData is an array of Category objects
-        setCategories(categoriesData as Category[]);
+        // Make sure categoriesData is properly mapped to Category[] type
+        const mappedCategories: Category[] = categoriesData.map((cat: string | Category) => {
+          // If it's already a Category object, return it
+          if (typeof cat === 'object' && cat !== null) {
+            return cat as Category;
+          }
+          // Otherwise create a Category object from the string
+          return {
+            name: cat as string,
+            imageUrl: '/placeholder.svg'
+          };
+        });
+        
+        setCategories(mappedCategories);
         
         // Установка максимальной цены на основе самого дорогого товара
         const calculatedMaxPrice = getMaxPrice(productsData);
@@ -56,7 +71,7 @@ const Catalog = () => {
   }, []);
   
   // Используем хук фильтрации для обработки всей логики фильтров
-  const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
+  const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFilteringNew({
     allProducts: products,
     searchTerm,
     priceRange,
