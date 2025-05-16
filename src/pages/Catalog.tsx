@@ -9,15 +9,6 @@ import { Category } from "@/types/categories";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
 
-// Helper function to get max price
-const getMaxPrice = (products: Product[]): number => {
-  if (products.length === 0) return 50000;
-  
-  return Math.max(
-    ...products.map(product => product.discountPrice || product.price)
-  );
-};
-
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
