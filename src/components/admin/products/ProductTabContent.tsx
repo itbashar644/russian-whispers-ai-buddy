@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +48,7 @@ const ProductTabContent = ({
   onBulkArchive,
   onBulkMerge
 }: ProductTabContentProps) => {
+  // State for confirmation dialogs
   const [confirmDelete, setConfirmDelete] = useState<{isOpen: boolean, productId: string}>({
     isOpen: false,
     productId: ''
@@ -69,8 +71,10 @@ const ProductTabContent = ({
     description: ''
   });
   
+  // Selected products for bulk actions
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
+  // Handle delete button click
   const handleDeleteClick = (productId: string) => {
     setConfirmDelete({
       isOpen: true,
@@ -78,6 +82,7 @@ const ProductTabContent = ({
     });
   };
   
+  // Handle permanent delete button click
   const handlePermanentDeleteClick = (productId: string) => {
     setConfirmPermanentDelete({
       isOpen: true,
@@ -85,6 +90,7 @@ const ProductTabContent = ({
     });
   };
   
+  // Handle delete confirmation
   const handleDeleteConfirm = () => {
     if (confirmDelete.productId) {
       onDelete(confirmDelete.productId);
@@ -92,6 +98,7 @@ const ProductTabContent = ({
     setConfirmDelete({isOpen: false, productId: ''});
   };
   
+  // Handle permanent delete confirmation
   const handlePermanentDeleteConfirm = () => {
     if (confirmPermanentDelete.productId && onPermanentDelete) {
       onPermanentDelete(confirmPermanentDelete.productId);
@@ -99,6 +106,7 @@ const ProductTabContent = ({
     setConfirmPermanentDelete({isOpen: false, productId: ''});
   };
 
+  // Handle product selection
   const handleProductSelection = (productId: string, selected: boolean) => {
     if (selected) {
       setSelectedProducts([...selectedProducts, productId]);
@@ -107,6 +115,7 @@ const ProductTabContent = ({
     }
   };
 
+  // Handle select all products
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
       setSelectedProducts(products.map(p => p.id));
@@ -115,6 +124,7 @@ const ProductTabContent = ({
     }
   };
 
+  // Initialize bulk action
   const handleBulkAction = (action: 'delete' | 'archive' | 'merge') => {
     if (selectedProducts.length === 0) return;
 
@@ -142,6 +152,7 @@ const ProductTabContent = ({
     });
   };
 
+  // Handle bulk action confirmation
   const handleBulkActionConfirm = () => {
     const action = confirmBulkAction.action;
     setConfirmBulkAction({ ...confirmBulkAction, isOpen: false });
@@ -158,12 +169,6 @@ const ProductTabContent = ({
 
     // Clear selections after action
     setSelectedProducts([]);
-  };
-
-  // This function handles product updates after stock changes
-  const handleProductUpdate = (updatedProduct: Product) => {
-    // We don't need to call onEdit here anymore, just pass the updated product
-    // The actual product state is managed in ProductList component now
   };
 
   return (

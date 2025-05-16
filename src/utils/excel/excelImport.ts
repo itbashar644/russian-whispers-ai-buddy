@@ -2,11 +2,20 @@
 import * as XLSX from 'xlsx';
 import { Product } from '@/types/product';
 import { getAllCategories, addCategory } from '@/data/products';
-import { addOrUpdateProductInSupabase } from '@/data/products/supabase/productApi';
+import { addOrUpdateProductInSupabase, fetchProductsFromSupabase } from '@/data/products/supabase/productApi';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ExcelProductData {
   [key: string]: any;
+}
+
+// Result interface for tracking update operations
+interface UpdateResult {
+  updated: number;
+  skipped: number;
+  failed: number;
+  notFound: number;
+  errors: string[];
 }
 
 // Convert Excel data to products array and save to Supabase
@@ -96,7 +105,8 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
             ? Number(row.stockQuantity) 
             : 0,
           material: row.material ? String(row.material) : undefined,
-          archived: false
+          archived: false,
+          modelName: row.modelName ? String(row.modelName) : undefined
         };
         
         products.push(product);
@@ -161,5 +171,151 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
   } catch (err) {
     console.error("Error processing Excel data:", err);
     throw err;
+  }
+};
+
+// New function to update existing products from Excel
+export const updateProductsFromExcel = async (data: ArrayBuffer): Promise<UpdateResult> => {
+  try {
+    console.log("Starting Excel update process...");
+    
+    // Read the Excel file
+    const workbook = XLSX.read(data, { type: 'array' });
+    
+    if (!workbook.SheetNames.length) {
+      throw new Error("Файл Excel не содержит листов");
+    }
+    
+    // Get the first worksheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    
+    if (!worksheet) {
+      throw new Error("Не удалось прочитать лист из файла Excel");
+    }
+    
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json<ExcelProductData>(worksheet);
+    
+    console.log(`Прочитано ${jsonData.length} строк из Excel файла`, jsonData);
+    
+    if (!jsonData || jsonData.length === 0) {
+      throw new Error("Файл не содержит данных. Проверьте формат файла и наличие информации.");
+    }
+    
+    // Fetch all existing products to match for updates
+    console.log("Fetching existing products...");
+    const existingProducts = await fetchProductsFromSupabase(true);
+    console.log(`Fetched ${existingProducts.length} existing products`);
+    
+    // Create lookup maps for faster matching
+    const productByIdMap = new Map<string, Product>();
+    const productByArticleMap = new Map<string, Product>();
+    
+    existingProducts.forEach(product => {
+      productByIdMap.set(product.id, product);
+      if (product.articleNumber) {
+        productByArticleMap.set(product.articleNumber, product);
+      }
+    });
+    
+    // Get existing categories
+    const existingCategories = await getAllCategories();
+    console.log("Existing categories:", existingCategories);
+    
+    // Initialize result object
+    const result: UpdateResult = {
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      notFound: 0,
+      errors: []
+    };
+    
+    // Process rows and update existing products
+    for (let i = 0; i < jsonData.length; i++) {
+      const row = jsonData[i];
+      const rowNum = i + 2; // +2 because Excel is 1-indexed and we have headers
+      
+      try {
+        // Try to find the product by ID or article number
+        let existingProduct: Product | undefined = undefined;
+        
+        if (row.id) {
+          existingProduct = productByIdMap.get(String(row.id));
+        }
+        
+        if (!existingProduct && row.articleNumber) {
+          existingProduct = productByArticleMap.get(String(row.articleNumber));
+        }
+        
+        if (!existingProduct) {
+          console.log(`Product not found for row ${rowNum}: ID=${row.id}, ArticleNumber=${row.articleNumber}`);
+          result.notFound++;
+          result.errors.push(`Строка ${rowNum}: товар не найден (ID=${row.id}, Артикул=${row.articleNumber})`);
+          continue;
+        }
+        
+        // Update product with Excel data
+        const updatedProduct: Product = { ...existingProduct };
+        
+        // Update fields only if they exist in the Excel row
+        if (row.title !== undefined) updatedProduct.title = String(row.title).trim();
+        if (row.description !== undefined) updatedProduct.description = String(row.description).trim();
+        if (row.price !== undefined && !isNaN(Number(row.price))) updatedProduct.price = Number(row.price);
+        if (row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice))) {
+          updatedProduct.discountPrice = Number(row.discountPrice);
+        }
+        if (row.category !== undefined) updatedProduct.category = String(row.category).trim();
+        if (row.imageUrl !== undefined) updatedProduct.imageUrl = String(row.imageUrl).trim() || '/placeholder.svg';
+        if (row.rating !== undefined) updatedProduct.rating = parseFloat(String(row.rating));
+        if (row.inStock !== undefined) updatedProduct.inStock = row.inStock === 'Да' || row.inStock === true || row.inStock === 'true';
+        if (row.countryOfOrigin !== undefined) updatedProduct.countryOfOrigin = String(row.countryOfOrigin).trim();
+        if (row.colors !== undefined) updatedProduct.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+        if (row.sizes !== undefined) updatedProduct.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+        if (row.isNew !== undefined) updatedProduct.isNew = row.isNew === 'Да' || row.isNew === true || row.isNew === 'true';
+        if (row.isBestseller !== undefined) updatedProduct.isBestseller = row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true';
+        if (row.barcode !== undefined) updatedProduct.barcode = row.barcode ? String(row.barcode) : undefined;
+        if (row.wildberriesUrl !== undefined) updatedProduct.wildberriesUrl = row.wildberriesUrl ? String(row.wildberriesUrl) : undefined;
+        if (row.ozonUrl !== undefined) updatedProduct.ozonUrl = row.ozonUrl ? String(row.ozonUrl) : undefined;
+        if (row.avitoUrl !== undefined) updatedProduct.avitoUrl = row.avitoUrl ? String(row.avitoUrl) : undefined;
+        if (row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity))) {
+          updatedProduct.stockQuantity = Number(row.stockQuantity);
+        }
+        if (row.material !== undefined) updatedProduct.material = row.material ? String(row.material) : undefined;
+        if (row.modelName !== undefined) updatedProduct.modelName = row.modelName ? String(row.modelName) : undefined;
+        
+        // Add new category if needed
+        if (updatedProduct.category && !existingCategories.includes(updatedProduct.category)) {
+          console.log(`Adding new category: ${updatedProduct.category}`);
+          await addCategory(updatedProduct.category);
+          existingCategories.push(updatedProduct.category); // Update our local cache
+        }
+        
+        // Update the product in the database
+        console.log(`Updating product: ${updatedProduct.title}`);
+        const updateResult = await addOrUpdateProductInSupabase(updatedProduct);
+        
+        if (updateResult.success) {
+          console.log(`Successfully updated product: ${updatedProduct.title}`);
+          result.updated++;
+        } else {
+          console.error(`Failed to update product: ${updatedProduct.title}`, updateResult.error);
+          result.failed++;
+          result.errors.push(`Строка ${rowNum}: ошибка обновления товара: ${updateResult.error}`);
+        }
+      } catch (err: any) {
+        console.error(`Error processing row ${rowNum}:`, err);
+        result.failed++;
+        result.errors.push(`Строка ${rowNum}: ошибка обработки данных: ${err.message || "Неизвестная ошибка"}`);
+      }
+    }
+    
+    console.log(`Update complete. Results: ${JSON.stringify(result)}`);
+    
+    return result;
+  } catch (err: any) {
+    console.error("Error processing Excel update:", err);
+    throw new Error(`Ошибка обновления товаров: ${err.message || "Неизвестная ошибка"}`);
   }
 };

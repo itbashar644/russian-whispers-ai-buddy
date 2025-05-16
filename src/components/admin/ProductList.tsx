@@ -1,32 +1,18 @@
+
 import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, 
+  AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle } from "lucide-react";
-import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { decreaseProductStock } from "@/data/products/product/services/productStockService";
 import { updateProductStockApiEndpoint } from "@/api/admin/productStockApi";
+import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle } from "lucide-react";
+import { Product } from "@/types/product";
 
 interface ProductListProps {
   products: Product[];
@@ -43,6 +29,127 @@ interface ProductListProps {
 
 type SortField = "id" | "articleNumber" | "title" | "modelName" | "category" | "price" | "stockQuantity";
 
+// A component for stock quantity editing
+const StockQuantityEditor = ({ 
+  product, 
+  onClose 
+}: { 
+  product: Product, 
+  onClose: (updated: boolean) => void 
+}) => {
+  const [stockQuantity, setStockQuantity] = useState<number>(product.stockQuantity || 0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle stock change
+  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setStockQuantity(isNaN(value) ? 0 : value);
+  };
+
+  // Increment/decrement stock
+  const adjustStock = (increment: boolean) => {
+    setStockQuantity(prev => increment ? prev + 1 : Math.max(0, prev - 1));
+  };
+
+  // Save stock updates
+  const saveStockUpdate = async () => {
+    if (stockQuantity < 0) {
+      toast.error("Количество товара не может быть отрицательным");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      // Calculate difference to determine if we need to increase or decrease stock
+      const difference = stockQuantity - (product.stockQuantity || 0);
+      
+      if (difference !== 0) {
+        // Update the product's stock by difference
+        if (difference < 0) {
+          // Need to decrease stock
+          const success = await decreaseProductStock(product.id, Math.abs(difference));
+          if (!success) {
+            throw new Error("Failed to update stock quantity");
+          }
+        } else {
+          // Need to increase stock
+          const response = await updateProductStockApiEndpoint(product.id, stockQuantity);
+          
+          if (!response.success) {
+            throw new Error(response.error || "Failed to update stock quantity");
+          }
+        }
+        
+        toast.success(`Остаток товара обновлен до ${stockQuantity}`);
+        
+        // Update the local product object
+        product.stockQuantity = stockQuantity;
+        product.inStock = stockQuantity > 0;
+        
+        onClose(true);
+      } else {
+        // No change in quantity
+        onClose(false);
+      }
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      toast.error("Ошибка при обновлении остатка товара");
+      onClose(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => adjustStock(false)}
+        disabled={isSubmitting}
+      >
+        <MinusCircle className="h-4 w-4" />
+      </Button>
+      <Input
+        type="number"
+        value={stockQuantity}
+        onChange={handleStockChange}
+        min="0"
+        className="w-16 h-7 text-center"
+        disabled={isSubmitting}
+      />
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => adjustStock(true)}
+        disabled={isSubmitting}
+      >
+        <PlusCircle className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="ml-1 h-7"
+        onClick={saveStockUpdate}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "..." : "ОК"}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7"
+        onClick={() => onClose(false)}
+        disabled={isSubmitting}
+      >
+        Отмена
+      </Button>
+    </div>
+  );
+};
+
 const ProductList = ({ 
   products, 
   onEdit, 
@@ -58,8 +165,7 @@ const ProductList = ({
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [editingStockId, setEditingStockId] = useState<string | null>(null);
-  const [stockQuantity, setStockQuantity] = useState<number>(0);
-
+  
   // Sort products based on the selected field and direction
   const sortedProducts = [...products].sort((a, b) => {
     let aValue, bValue;
@@ -103,6 +209,7 @@ const ProductList = ({
     return 0;
   });
 
+  // Handle column sorting
   const handleSort = (field: SortField) => {
     if (field === sortField) {
       // Toggle direction if clicking on the same field
@@ -114,6 +221,7 @@ const ProductList = ({
     }
   };
 
+  // Get sort icon for column header
   const getSortIcon = (field: SortField) => {
     if (field === sortField) {
       return (
@@ -123,6 +231,7 @@ const ProductList = ({
     return <ArrowUpDown className="ml-2 h-4 w-4 text-gray-300 inline" />;
   };
 
+  // Get delete button classes based on color prop
   const getDeleteButtonClasses = () => {
     switch (deleteButtonColor) {
       case "green":
@@ -134,6 +243,7 @@ const ProductList = ({
     }
   };
 
+  // Get delete button icon based on color prop
   const getDeleteButtonIcon = () => {
     switch (deleteButtonColor) {
       case "green":
@@ -164,68 +274,13 @@ const ProductList = ({
   };
 
   // Start editing stock
-  const startEditStock = (product: Product) => {
-    setEditingStockId(product.id);
-    setStockQuantity(product.stockQuantity || 0);
+  const startEditStock = (productId: string) => {
+    setEditingStockId(productId);
   };
 
-  // Save stock updates
-  const saveStockUpdate = async (product: Product) => {
-    if (stockQuantity < 0) {
-      toast.error("Количество товара не может быть отрицательным");
-      return;
-    }
-    
-    try {
-      // Calculate difference to determine if we need to increase or decrease stock
-      const difference = stockQuantity - (product.stockQuantity || 0);
-      
-      if (difference !== 0) {
-        // Update the product's stock by difference
-        if (difference < 0) {
-          // Need to decrease stock
-          const success = await decreaseProductStock(product.id, Math.abs(difference));
-          if (!success) {
-            throw new Error("Failed to update stock quantity");
-          }
-        } else {
-          // Need to increase stock
-          const response = await updateProductStockApiEndpoint(product.id, stockQuantity);
-          
-          if (!response.success) {
-            throw new Error(response.error || "Failed to update stock quantity");
-          }
-        }
-        
-        toast.success(`Остаток товара обновлен до ${stockQuantity}`);
-        
-        // Update product in the list WITHOUT triggering onEdit
-        // Just update the local state to reflect the new stock quantity
-        product.stockQuantity = stockQuantity;
-        product.inStock = stockQuantity > 0;
-      }
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      toast.error("Ошибка при обновлении остатка товара");
-    } finally {
-      setEditingStockId(null);
-    }
-  };
-
-  // Cancel stock editing
-  const cancelEditStock = () => {
+  // Handle stock editor close
+  const handleStockEditorClose = (updated: boolean) => {
     setEditingStockId(null);
-  };
-
-  // Handle stock change
-  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setStockQuantity(isNaN(value) ? 0 : value);
-  };
-
-  // Increment/decrement stock
-  const adjustStock = (increment: boolean) => {
-    setStockQuantity(prev => increment ? prev + 1 : Math.max(0, prev - 1));
   };
 
   return (
@@ -324,53 +379,16 @@ const ProductList = ({
                     </TableCell>
                     <TableCell>
                       {editingStockId === product.id ? (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => adjustStock(false)}
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                          <Input
-                            type="number"
-                            value={stockQuantity}
-                            onChange={handleStockChange}
-                            min="0"
-                            className="w-16 h-7 text-center"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => adjustStock(true)}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="ml-1 h-7"
-                            onClick={() => saveStockUpdate(product)}
-                          >
-                            ОК
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7"
-                            onClick={cancelEditStock}
-                          >
-                            Отмена
-                          </Button>
-                        </div>
+                        <StockQuantityEditor 
+                          product={product}
+                          onClose={handleStockEditorClose}
+                        />
                       ) : (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="px-2 h-7"
-                          onClick={() => startEditStock(product)}
+                          onClick={() => startEditStock(product.id)}
                         >
                           {product.stockQuantity !== undefined ? product.stockQuantity : "-"}
                         </Button>
