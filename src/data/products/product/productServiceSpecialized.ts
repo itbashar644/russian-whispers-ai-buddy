@@ -6,12 +6,19 @@ import { getProductByIdFromSupabase, fetchProductsFromSupabase } from "../supaba
 import { getProductById as getProductByIdBase } from "./productServiceBase";
 
 // Import the services
+import * as ProductCacheService from "./services/productCacheService";
+import * as ProductColorService from "./services/productColorService";
 import * as ProductFilterService from "./services/productFilterService";
 import * as ProductStockService from "./services/productStockService";
-import * as ProductColorService from "./services/productColorService";
-import * as ProductCacheService from "./services/productCacheService";
 
-// Re-export all services
+// Export the services - avoid using ProductStockService.checkProductStock directly
+// This fixes the circular dependency issue
+export const invalidateCache = ProductCacheService.invalidateCache;
+export const loadAllProducts = ProductCacheService.loadAllProducts;
+
+export const linkProductsByColor = ProductColorService.linkProductsByColor;
+export const getRelatedColorProducts = ProductColorService.getRelatedColorProducts;
+
 export const getAllProductsCached = ProductFilterService.getAllProductsCached;
 export const getProductsByCategory = ProductFilterService.getProductsByCategory;
 export const getActiveProducts = ProductFilterService.getActiveProducts;
@@ -21,12 +28,6 @@ export const getRelatedProducts = ProductFilterService.getRelatedProducts;
 
 export const checkProductStock = ProductStockService.checkProductStock;
 export const decreaseProductStock = ProductStockService.decreaseProductStock;
-
-export const linkProductsByColor = ProductColorService.linkProductsByColor;
-export const getRelatedColorProducts = ProductColorService.getRelatedColorProducts;
-
-export const invalidateCache = ProductCacheService.invalidateCache;
-export const loadAllProducts = ProductCacheService.loadAllProducts;
 
 /**
  * Gets a product by ID from cache or Supabase

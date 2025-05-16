@@ -3,7 +3,9 @@ import { Product } from "@/types/product";
 import { addOrUpdateProductInSupabase } from "../../supabaseApi";
 import { refreshCacheIfNeeded } from "../../cache/productCache";
 import { invalidateCache } from "./productCacheService";
-import { getProductById } from "../productServiceSpecialized";
+
+// Import the getProductById directly from productServiceBase to avoid circular dependency
+import { getProductById as getBaseProductById } from "../productServiceBase";
 
 /**
  * Check if a product is in stock
@@ -11,7 +13,8 @@ import { getProductById } from "../productServiceSpecialized";
 export const checkProductStock = async (productId: string, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Checking stock for product ${productId}, color: ${colorVariant || 'none'}`);
-    const product = await getProductById(productId);
+    // Use getBaseProductById instead of getProductById from specialized service
+    const product = await getBaseProductById(productId);
     
     if (!product) {
       console.log(`Stock check: Product ${productId} not found`);
@@ -40,7 +43,8 @@ export const checkProductStock = async (productId: string, colorVariant?: string
 export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`);
-    const product = await getProductById(productId);
+    // Use getBaseProductById instead of getProductById from specialized service
+    const product = await getBaseProductById(productId);
     
     if (!product) {
       console.error(`Product with ID ${productId} not found`);
@@ -107,7 +111,8 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
 export const updateProductStock = async (productId: string, newQuantity: number, colorVariant?: string): Promise<boolean> => {
   try {
     console.log(`Attempting to update stock for product ${productId} to ${newQuantity}, color ${colorVariant || 'none'}`);
-    const product = await getProductById(productId);
+    // Use getBaseProductById instead of getProductById from specialized service
+    const product = await getBaseProductById(productId);
     
     if (!product) {
       console.error(`Product with ID ${productId} not found`);
