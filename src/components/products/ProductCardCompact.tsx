@@ -12,21 +12,26 @@ interface ProductCardCompactProps {
 }
 
 const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, currentProduct }) => {
+  // Проверяем фактическое наличие на основе stockQuantity
+  const isAvailable = currentProduct.stockQuantity !== undefined 
+    ? currentProduct.stockQuantity > 0 
+    : currentProduct.inStock;
+  
   return (
-    <Card className={`h-full ${!currentProduct.inStock ? 'opacity-75' : ''}`}>
+    <Card className={`h-full ${!isAvailable ? 'opacity-75' : ''}`}>
       <Link to={`/product/${product.id}`} className="block h-full">
         <div className="relative h-40 overflow-hidden">
           <img
             src={currentProduct.imageUrl || "/placeholder.svg"}
             alt={product.title}
-            className={`h-full w-full object-cover transition-all hover:scale-105 ${!currentProduct.inStock ? 'grayscale-[30%]' : ''}`}
+            className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
           {currentProduct.discountPrice && (
             <Badge className="absolute top-2 right-2 bg-red-500">
               Sale
             </Badge>
           )}
-          {!currentProduct.inStock && (
+          {!isAvailable && (
             <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
               Нет в наличии
             </Badge>

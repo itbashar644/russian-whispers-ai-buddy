@@ -29,8 +29,13 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
   handleToggleWishlist,
   isInWishlist
 }) => {
+  // Определяем доступность товара на основе stockQuantity
+  const isAvailable = currentProduct.stockQuantity !== undefined 
+    ? currentProduct.stockQuantity > 0 
+    : currentProduct.inStock;
+  
   return (
-    <Card className={`h-full flex flex-col ${!currentProduct.inStock ? 'opacity-75' : ''}`}>
+    <Card className={`h-full flex flex-col ${!isAvailable ? 'opacity-75' : ''}`}>
       <Link
         to={`/product/${product.id}`}
         className="block flex-grow overflow-hidden"
@@ -39,7 +44,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           <img
             src={currentProduct.imageUrl || "/placeholder.svg"}
             alt={product.title}
-            className={`h-full w-full object-cover transition-all hover:scale-105 ${!currentProduct.inStock ? 'grayscale-[30%]' : ''}`}
+            className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {currentProduct.discountPrice && (
@@ -49,7 +54,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
             {product.isBestseller && (
               <Badge className="bg-amber-500">Хит продаж</Badge>
             )}
-            {!currentProduct.inStock && (
+            {!isAvailable && (
               <Badge variant="secondary" className="bg-gray-500">Нет в наличии</Badge>
             )}
           </div>
@@ -106,14 +111,14 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
               <Button
                 className="w-full"
                 onClick={handleAddToCart}
-                disabled={!currentProduct.inStock}
-                variant={!currentProduct.inStock ? "outline" : "default"}
+                disabled={!isAvailable}
+                variant={!isAvailable ? "outline" : "default"}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                {currentProduct.inStock ? "В корзину" : "Нет в наличии"}
+                {isAvailable ? "В корзину" : "Нет в наличии"}
               </Button>
             </TooltipTrigger>
-            {!currentProduct.inStock && (
+            {!isAvailable && (
               <TooltipContent>
                 <p>Товара нет в наличии. Добавьте его в избранное, чтобы следить за наличием.</p>
               </TooltipContent>

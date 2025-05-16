@@ -72,9 +72,16 @@ export const useProductFiltering = ({
       }
     );
     
-    // Filter by availability
+    // Filter by availability - check stockQuantity first, then inStock
     if (inStockOnly) {
-      result = result.filter((p) => p.inStock);
+      result = result.filter((p) => {
+        // Если есть stockQuantity, проверяем, что он больше 0
+        if (p.stockQuantity !== undefined) {
+          return p.stockQuantity > 0;
+        }
+        // Иначе используем inStock
+        return p.inStock;
+      });
     }
     
     // Sort products
@@ -83,13 +90,23 @@ export const useProductFiltering = ({
     setFilteredProducts(result);
   }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
 
-  // Calculate counts for stock status
+  // Calculate counts for stock status using stockQuantity for accuracy
   const inStockCount = useMemo(() => {
-    return filteredProducts.filter(p => p.inStock).length;
+    return filteredProducts.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity > 0;
+      }
+      return p.inStock;
+    }).length;
   }, [filteredProducts]);
   
   const outOfStockCount = useMemo(() => {
-    return filteredProducts.filter(p => !p.inStock).length;
+    return filteredProducts.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity <= 0;
+      }
+      return !p.inStock;
+    }).length;
   }, [filteredProducts]);
 
   return {

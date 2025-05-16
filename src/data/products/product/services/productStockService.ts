@@ -23,16 +23,24 @@ export const checkProductStock = async (productId: string, colorVariant?: string
     // Check specific color variant stock if specified
     if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
-      const hasStock = variant ? (variant.stockQuantity || 0) > 0 : false;
-      console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}`);
-      return hasStock;
+      if (variant) {
+        // Проверяем наличие stockQuantity и его значение
+        const hasStock = variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : false;
+        console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}`);
+        return hasStock;
+      }
+      return false;
     }
     
     // Check main product stock - must be based on actual quantity
-    const stockQuantity = product.stockQuantity || 0;
-    const hasStock = stockQuantity > 0;
-    console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${stockQuantity}`);
-    return hasStock;
+    if (product.stockQuantity !== undefined) {
+      const hasStock = product.stockQuantity > 0;
+      console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${product.stockQuantity}`);
+      return hasStock;
+    }
+    
+    // Fallback to inStock boolean if stockQuantity is not defined
+    return product.inStock || false;
   } catch (error) {
     console.error("Error checking product stock:", error);
     return false;

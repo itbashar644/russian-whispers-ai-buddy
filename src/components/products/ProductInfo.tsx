@@ -72,9 +72,10 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
     }
   };
   
+  // Проверяем доступность товара на основе stockQuantity
   const isProductAvailable = selectedColorVariant 
-    ? (selectedColorVariant.stockQuantity ?? 0) > 0
-    : product.stockQuantity && product.stockQuantity > 0;
+    ? (selectedColorVariant.stockQuantity || 0) > 0
+    : product.stockQuantity !== undefined ? product.stockQuantity > 0 : product.inStock;
 
   return (
     <div>
@@ -105,6 +106,13 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
         </div>
       )}
     </div>
+    
+    {/* Подробности запаса если есть stockQuantity */}
+    {product.stockQuantity !== undefined && (
+      <div className="mt-2 text-sm text-muted-foreground">
+        Доступно: {product.stockQuantity} шт.
+      </div>
+    )}
     
     {/* Product actions */}
     <div className="mt-6 space-y-4">
