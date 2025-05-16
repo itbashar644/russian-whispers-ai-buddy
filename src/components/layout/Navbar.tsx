@@ -48,6 +48,7 @@ const Navbar = () => {
         <div className="flex items-center gap-6 md:gap-8 lg:gap-10">
           <Link to="/" className="flex items-center gap-2">
             <Store className="h-6 w-6 text-primary" />
+            <span className="text-lg font-semibold">The X Shop</span>
           </Link>
           <NavLinks />
         </div>
