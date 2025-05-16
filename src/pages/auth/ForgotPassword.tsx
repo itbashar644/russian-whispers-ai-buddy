@@ -35,7 +35,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
-  const { resetPassword } = useAuth();
+  const { sendPasswordResetEmail } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -50,8 +50,8 @@ const ForgotPassword = () => {
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const success = await resetPassword(data.email);
-      if (success) {
+      const result = await sendPasswordResetEmail(data.email);
+      if (result.success) {
         setIsSuccess(true);
         form.reset();
       }

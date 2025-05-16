@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { updatePassword } from "@/utils/auth/methods";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 interface ResetPasswordFormProps {
@@ -16,6 +16,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+  const { updatePassword } = useAuth();
 
   const validatePassword = () => {
     if (password.length < 6) {
@@ -46,22 +47,11 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
     try {
       const result = await updatePassword(password);
       
-      // Handle result being false
-      if (result === false) {
-        throw new Error("Failed to update password");
-      }
-      
-      // Handle null result
-      if (result === null) {
-        throw new Error("Failed to update password: No response from server");
-      }
-      
-      // Handle result being an object with error property
-      if (typeof result === 'object' && 'error' in result) {
+      // Check if result has an error
+      if (!result.success) {
         let errorMessage = "Failed to update password";
         
-        // Check if result.error is not null before trying to access it
-        if (result.error !== null && result.error !== undefined) {
+        if (result.error) {
           if (typeof result.error === 'string') {
             errorMessage = result.error;
           } else if (typeof result.error === 'object' && result.error !== null && 'message' in result.error) {

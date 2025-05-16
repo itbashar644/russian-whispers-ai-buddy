@@ -22,7 +22,7 @@ import { toast } from "sonner";
 type FormData = z.infer<typeof RegisterFormSchema>;
 
 export default function RegisterForm() {
-  const { register: registerUser } = useAuth();
+  const { signupWithEmail } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -42,7 +42,7 @@ export default function RegisterForm() {
     setShowLoginPrompt(false);
     
     try {
-      const result = await registerUser(data.email, data.password, data.name);
+      const result = await signupWithEmail(data.email, data.password, { name: data.name });
       
       if (result.success) {
         toast.success("Регистрация успешна!", {
