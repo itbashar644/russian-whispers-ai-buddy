@@ -70,17 +70,22 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
   // Compact variant for smaller cards
   if (variant === "compact") {
     return (
-      <Card className="h-full">
+      <Card className={`h-full ${!currentProduct.inStock ? 'opacity-75' : ''}`}>
         <Link to={`/product/${product.id}`} className="block h-full">
           <div className="relative h-40 overflow-hidden">
             <img
               src={currentProduct.imageUrl || "/placeholder.svg"}
               alt={product.title}
-              className="h-full w-full object-cover transition-all hover:scale-105"
+              className={`h-full w-full object-cover transition-all hover:scale-105 ${!currentProduct.inStock ? 'grayscale-[30%]' : ''}`}
             />
             {currentProduct.discountPrice && (
               <Badge className="absolute top-2 right-2 bg-red-500">
                 Sale
+              </Badge>
+            )}
+            {!currentProduct.inStock && (
+              <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
+                Нет в наличии
               </Badge>
             )}
           </div>
@@ -128,7 +133,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
               <Badge className="bg-amber-500">Хит продаж</Badge>
             )}
             {!currentProduct.inStock && (
-              <Badge variant="warning" className="bg-gray-500">Нет в наличии</Badge>
+              <Badge variant="secondary" className="bg-gray-500">Нет в наличии</Badge>
             )}
           </div>
           
@@ -185,6 +190,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
                 className="w-full"
                 onClick={handleAddToCart}
                 disabled={!currentProduct.inStock}
+                variant={!currentProduct.inStock ? "outline" : "default"}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 {currentProduct.inStock ? "В корзину" : "Нет в наличии"}

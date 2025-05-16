@@ -171,14 +171,18 @@ const Catalog = () => {
       result = result.filter((p) => p.inStock);
     }
     
-    // Сортировка результатов
+    // Always sort by in-stock first, regardless of other sortings
+    result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+    
+    // Then apply additional sorting on top of the in-stock priority
     switch (sortBy) {
-      case "in-stock":
-        // Always show in-stock products first
-        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
-        break;
       case "price-asc":
         result.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by price
           const priceA = a.discountPrice || a.price;
           const priceB = b.discountPrice || b.price;
           return priceA - priceB;
@@ -186,23 +190,49 @@ const Catalog = () => {
         break;
       case "price-desc":
         result.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by price descending
           const priceA = a.discountPrice || a.price;
           const priceB = b.discountPrice || b.price;
           return priceB - priceA;
         });
         break;
       case "name-asc":
-        result.sort((a, b) => a.title.localeCompare(b.title));
+        result.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by name ascending
+          return a.title.localeCompare(b.title);
+        });
         break;
       case "name-desc":
-        result.sort((a, b) => b.title.localeCompare(a.title));
+        result.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by name descending
+          return b.title.localeCompare(a.title);
+        });
         break;
       case "rating":
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by rating
+          return b.rating - a.rating;
+        });
         break;
+      case "in-stock":
       default:
-        // Default sorting (always show in-stock products first)
-        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+        // Just maintain the stock sort that was already applied
         break;
     }
     
@@ -577,7 +607,7 @@ const Catalog = () => {
                 <form onSubmit={handleSearchSubmit} className="flex gap-2">
                   <Input
                     type="search"
-                    placeholder="Поиск товаров..."
+                    placeholder="Поиск то��аров..."
                     value={searchTerm}
                     onChange={handleSearchChange}
                     className="min-w-[200px]"
@@ -616,6 +646,11 @@ const Catalog = () => {
               <div className="text-sm">
                 <span className="font-medium">В наличии:</span> {inStockCount}
               </div>
+              {outOfStockCount > 0 && !inStockOnly && (
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium">Нет в наличии:</span> {outOfStockCount}
+                </div>
+              )}
             </div>
 
             {loading ? (
