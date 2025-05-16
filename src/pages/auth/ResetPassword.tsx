@@ -116,7 +116,10 @@ const ResetPassword: React.FC = () => {
       } 
       // If result is an object with error property, check the error
       else if (result && typeof result === 'object' && 'error' in result) {
-        throw new Error(result.error.message || "Failed to update password");
+        const errorMessage = result.error && typeof result.error === 'object' && 'message' in result.error 
+          ? result.error.message 
+          : "Failed to update password";
+        throw new Error(errorMessage);
       }
       
       toast.success("Пароль успешно обновлен", {
@@ -187,7 +190,7 @@ const ResetPassword: React.FC = () => {
                   Ссылка для сброса пароля недействительна или срок её действия истек.
                 </p>
                 <Button onClick={handleRequestPasswordReset}>
-                  Запросить новую ссы��ку
+                  Запросить новую ссылку
                 </Button>
               </div>
             )}
