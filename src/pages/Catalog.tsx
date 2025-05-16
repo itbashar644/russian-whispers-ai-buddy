@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProducts, getAllProductsCached } from "@/data/products";
@@ -74,6 +75,7 @@ const Catalog = () => {
     sortBy,
     loading,
     colorParam,
+    categoryParam, // Pass the categoryParam to the hook
     inStockOnly,
     showColorVariants
   });

@@ -8,8 +8,9 @@ export interface UseProductFilteringProps {
   sortBy: string;
   loading: boolean;
   colorParam: string | null;
-  inStockOnly: boolean; // Changed from optional to required
-  showColorVariants: boolean; // Changed from optional to required
+  categoryParam: string | null; // Add the category parameter
+  inStockOnly: boolean;
+  showColorVariants: boolean;
 }
 
 export interface FilteringResult {

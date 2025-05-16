@@ -5,6 +5,7 @@ import { UseProductFilteringProps, FilteringResult } from "./types";
 import { transformProductsForColorDisplay, sortProducts } from "./helpers";
 import { useAvailableColors } from "./useAvailableColors";
 import { useStockCounts } from "./useStockCounts";
+import { useCategoryFilter } from "./useCategoryFilter";
 
 export const useProductFiltering = ({
   allProducts,
@@ -13,19 +14,23 @@ export const useProductFiltering = ({
   sortBy,
   loading,
   colorParam,
-  inStockOnly = false, // Default value
-  showColorVariants = false // Default value
+  categoryParam, // Add category parameter here
+  inStockOnly = false,
+  showColorVariants = false
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
   // Get all available colors from products
   const availableColors = useAvailableColors(allProducts);
 
+  // Get products filtered by category
+  const productsFilteredByCategory = useCategoryFilter(allProducts, categoryParam);
+
   // Filter and sort products when parameters change
   useEffect(() => {
     if (loading) return;
     
-    let result = [...allProducts];
+    let result = [...productsFilteredByCategory];
     
     // Always transform products for color display if showColorVariants is true
     if (showColorVariants) {
@@ -69,7 +74,16 @@ export const useProductFiltering = ({
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam, inStockOnly, showColorVariants]);
+  }, [
+    productsFilteredByCategory,
+    priceRange,
+    searchTerm,
+    sortBy,
+    loading,
+    colorParam,
+    inStockOnly,
+    showColorVariants
+  ]);
 
   // Calculate counts for stock status using stockQuantity for accuracy
   const { inStockCount, outOfStockCount } = useStockCounts(filteredProducts);
