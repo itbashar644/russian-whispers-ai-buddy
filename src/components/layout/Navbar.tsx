@@ -1,361 +1,235 @@
 
-import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Menu, User, Box, LogIn, UserPlus } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+  ShoppingCart,
+  Menu,
+  X,
+  ChevronDown,
+  User,
+  LogIn,
+  Heart,
+} from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useState, useEffect } from "react";
-import { fetchCategoriesFromSupabase, fetchProductsFromSupabase } from "@/data/products/supabaseApi";
-import ProductGrid from "@/components/products/ProductGrid";
+import { useMediaQuery } from "@/hooks/use-mobile";
+import { Badge } from "@/components/ui/badge";
+import { useAuthContext } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 const Navbar = () => {
-  const { totalItems } = useCart();
-  const { profile, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-  
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearchDialog, setShowSearchDialog] = useState(false);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  
-  // Загрузка категорий из Supabase
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { cartItems } = useCart();
+  const { wishlist } = useWishlist();
+  const { user } = useAuthContext();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  // Don't show the navbar on admin pages
+  if (isAdminRoute) return null;
+
+  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  const handleScroll = () => {
+    if (window.scrollY > 10) {
+      setScrolled(true);
+    } else {
+      setScrolled(false);
+    }
+  };
+
   useEffect(() => {
-    const loadCategories = async () => {
-      setIsLoadingCategories(true);
-      try {
-        const categories = await fetchCategoriesFromSupabase();
-        // Извлекаем только имена категорий
-        const categoryNames = categories.map(cat => cat.name);
-        setAvailableCategories(categoryNames);
-      } catch (error) {
-        console.error("Ошибка при загрузке категорий:", error);
-        setAvailableCategories([]);
-      } finally {
-        setIsLoadingCategories(false);
-      }
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
-    
-    loadCategories();
   }, []);
 
-  // Функция поиска товаров
-  useEffect(() => {
-    if (searchQuery.trim().length > 2) {
-      const searchProducts = async () => {
-        setIsSearching(true);
-        try {
-          const allProducts = await fetchProductsFromSupabase(false);
-          const query = searchQuery.toLowerCase();
-          
-          const results = allProducts.filter(product => {
-            return (
-              product.title.toLowerCase().includes(query) ||
-              product.description.toLowerCase().includes(query) ||
-              product.category.toLowerCase().includes(query)
-            );
-          }).slice(0, 8); // Ограничиваем результаты
-          
-          setSearchResults(results);
-        } catch (error) {
-          console.error("Ошибка при поиске товаров:", error);
-          setSearchResults([]);
-        } finally {
-          setIsSearching(false);
-        }
-      };
-      
-      searchProducts();
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
-
-  // Обработка нажатия на поиск
-  const handleSearchClick = () => {
-    setShowSearchDialog(true);
-  };
-  
-  // Обработка отправки формы поиска
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setShowSearchDialog(false);
-    if (searchQuery.trim() !== "") {
-      navigate(`/catalog?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
-
-  // Получаем инициалы пользователя для аватара
-  const getInitials = (name: string) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map(part => part[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // Получаем иконку для категории
-  const getCategoryIcon = (category: string) => {
-    return <Box className="h-4 w-4 mr-2" />;
+  const closeMenu = () => {
+    setIsMenuOpen(false);
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b">
-      <div className="container flex items-center justify-between h-16 px-4 md:px-6">
-        <div className="flex items-center">
-          {/* Mobile menu trigger */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[250px] sm:w-[300px]">
-              <SheetHeader>
-                <SheetTitle>Меню</SheetTitle>
-              </SheetHeader>
-              <div className="mt-6 flex flex-col gap-4">
-                <Link to="/" className="px-2 py-1 hover:bg-accent rounded-md">Главная</Link>
-                <Link to="/catalog" className="px-2 py-1 hover:bg-accent rounded-md">Каталог</Link>
-                <div className="pt-2 pb-1">
-                  <h3 className="mb-2 font-medium">Категории</h3>
-                  <div className="flex flex-col gap-1 pl-2">
-                    {isLoadingCategories ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mx-auto"></div>
-                    ) : (
-                      availableCategories.map((category) => (
-                        <Link
-                          key={category}
-                          to={`/catalog?category=${category}`}
-                          className="text-sm py-1 hover:bg-accent rounded-md flex items-center"
-                        >
-                          {getCategoryIcon(category)}
-                          {category}
-                        </Link>
-                      ))
-                    )}
-                  </div>
-                </div>
-                {isAuthenticated ? (
-                  <>
-                    <Link to="/account" className="px-2 py-1 hover:bg-accent rounded-md">Личный кабинет</Link>
-                    {profile && (profile.role === 'admin' || profile.role === 'editor') && (
-                      <Link to="/admin" className="px-2 py-1 hover:bg-accent rounded-md">Админ-панель</Link>
-                    )}
-                    <button 
-                      onClick={() => logout()}
-                      className="text-left px-2 py-1 hover:bg-accent rounded-md"
-                    >
-                      Выход
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" className="px-2 py-1 hover:bg-accent rounded-md flex items-center">
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Войти
-                    </Link>
-                    <Link to="/register" className="px-2 py-1 hover:bg-accent rounded-md flex items-center">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Регистрация
-                    </Link>
-                  </>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold">The X Shop</span>
+    <header
+      className={`sticky top-0 z-50 w-full border-b transition-colors ${
+        scrolled
+          ? "border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80"
+          : "bg-white dark:bg-gray-950 border-transparent"
+      }`}
+    >
+      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-6 md:gap-8 lg:gap-10">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png" alt="Logo" className="h-8 w-auto" />
           </Link>
+          <nav className="hidden md:flex gap-6">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
+              }
+            >
+              Главная
+            </NavLink>
+            <NavLink
+              to="/catalog"
+              className={({ isActive }) =>
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
+              }
+            >
+              Каталог
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
+              }
+            >
+              О нас
+            </NavLink>
+            <NavLink
+              to="/contacts"
+              className={({ isActive }) =>
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
+              }
+            >
+              Контакты
+            </NavLink>
+          </nav>
         </div>
-        
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <Link to="/" className="font-medium transition-colors hover:text-primary">
-            Главная
+        <div className="flex items-center gap-4">
+          <Link to="/wishlist" className="relative">
+            <Heart className="h-5 w-5" />
+            {wishlist.length > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                {wishlist.length}
+              </Badge>
+            )}
           </Link>
-          <Link to="/catalog" className="font-medium transition-colors hover:text-primary">
-            Каталог
-          </Link>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Категории</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {isLoadingCategories ? (
-                      <li className="col-span-2 text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                      </li>
-                    ) : availableCategories.length > 0 ? (
-                      availableCategories.map((category) => (
-                        <li key={category}>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to={`/catalog?category=${category}`}
-                              className={cn(
-                                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                                "flex items-center"
-                              )}
-                            >
-                              {getCategoryIcon(category)}
-                              <div className="text-sm font-medium">{category}</div>
-                            </Link>
-                          </NavigationMenuLink>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="col-span-2 text-center py-4">
-                        <p className="text-muted-foreground">Нет доступных категорий</p>
-                      </li>
-                    )}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </nav>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleSearchClick}>
-            <Search className="h-5 w-5" />
-          </Button>
-          
-          {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {profile && profile.name ? getInitials(profile.name) : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/account">Личный кабинет</Link>
-                </DropdownMenuItem>
-                {profile && (profile.role === 'admin' || profile.role === 'editor') && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">Админ-панель</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => logout()}>
-                  Выход
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="flex items-center">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Войти
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/register" className="flex items-center">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Регистрация
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          
-          <Link to="/cart">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <Link to="/cart" className="relative">
+            <ShoppingCart className="h-5 w-5" />
+            {totalItems > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                 {totalItems}
-              </span>
-            </Button>
+              </Badge>
+            )}
           </Link>
-        </div>
-      </div>
-      
-      {/* Диалог поиска */}
-      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Поиск по каталогу</DialogTitle>
-            <DialogDescription>
-              Введите название товара или категорию
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSearchSubmit} className="mt-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Поиск..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-                autoFocus
-              />
-              <Button type="submit">Найти</Button>
-            </div>
-          </form>
-          
-          <div className="mt-4">
-            {isSearching ? (
-              <div className="flex justify-center p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div>
-                <h3 className="text-lg font-medium mb-2">Результаты поиска</h3>
-                <ProductGrid products={searchResults} />
-              </div>
-            ) : searchQuery.length > 2 && (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground">Ничего не найдено</p>
-              </div>
+          <div className="hidden md:block">
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="flex items-center gap-2"
+              >
+                <Link to="/account">
+                  <User className="h-4 w-4" />
+                  <span className="hidden md:inline-block">Мой аккаунт</span>
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="flex items-center gap-2"
+              >
+                <Link to="/auth/login">
+                  <LogIn className="h-4 w-4" />
+                  <span className="hidden md:inline-block">Войти</span>
+                </Link>
+              </Button>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+          <Button
+            variant="outline"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        </div>
+      </div>
+      {isMenuOpen && (
+        <div className="fixed inset-0 top-16 z-50 bg-white dark:bg-gray-950 p-4 md:hidden">
+          <div className="flex flex-col gap-4">
+            <Button
+              variant="ghost"
+              className="absolute top-4 right-4"
+              onClick={closeMenu}
+              size="icon"
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </Button>
+            <nav className="flex flex-col gap-4">
+              <Link
+                to="/"
+                onClick={closeMenu}
+                className="text-lg font-medium"
+              >
+                Главная
+              </Link>
+              <Link
+                to="/catalog"
+                onClick={closeMenu}
+                className="text-lg font-medium"
+              >
+                Каталог
+              </Link>
+              <Link
+                to="/about"
+                onClick={closeMenu}
+                className="text-lg font-medium"
+              >
+                О нас
+              </Link>
+              <Link
+                to="/contacts"
+                onClick={closeMenu}
+                className="text-lg font-medium"
+              >
+                Контакты
+              </Link>
+              <Link
+                to="/wishlist"
+                onClick={closeMenu}
+                className="text-lg font-medium flex items-center gap-2"
+              >
+                <Heart className="h-5 w-5" />
+                Избранное
+                {wishlist.length > 0 && (
+                  <Badge>{wishlist.length}</Badge>
+                )}
+              </Link>
+              {user ? (
+                <Link
+                  to="/account"
+                  onClick={closeMenu}
+                  className="text-lg font-medium flex items-center gap-2"
+                >
+                  <User className="h-5 w-5" />
+                  Мой аккаунт
+                </Link>
+              ) : (
+                <Link
+                  to="/auth/login"
+                  onClick={closeMenu}
+                  className="text-lg font-medium flex items-center gap-2"
+                >
+                  <LogIn className="h-5 w-5" />
+                  Войти
+                </Link>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

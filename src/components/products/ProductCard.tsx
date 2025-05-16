@@ -13,9 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import ProductColorOptions from "./ProductColorOptions";
+import { useWishlist } from "@/context/WishlistContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProductCardProps {
   product: Product;
@@ -25,6 +27,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
   const { addItem } = useCart();
+  const { toggleWishlistItem, isInWishlist } = useWishlist();
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
   );
@@ -36,7 +39,8 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
         ...product, 
         imageUrl: selectedVariant.imageUrl || product.imageUrl,
         price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice
+        discountPrice: selectedVariant.discountPrice,
+        inStock: selectedVariant.stockQuantity !== undefined ? selectedVariant.stockQuantity > 0 : product.inStock
       } 
     : product;
 
@@ -56,6 +60,11 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
     } else {
       addItem({ product, quantity: 1, color: selectedColor });
     }
+  };
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking the heart
+    toggleWishlistItem(product);
   };
 
   // Compact variant for smaller cards
@@ -99,7 +108,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
 
   // Default variant for regular sized cards
   return (
-    <Card className="h-full flex flex-col">
+    <Card className={`h-full flex flex-col ${!currentProduct.inStock ? 'opacity-75' : ''}`}>
       <Link
         to={`/product/${product.id}`}
         className="block flex-grow overflow-hidden"
@@ -108,7 +117,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
           <img
             src={currentProduct.imageUrl || "/placeholder.svg"}
             alt={product.title}
-            className="h-full w-full object-cover transition-all hover:scale-105"
+            className={`h-full w-full object-cover transition-all hover:scale-105 ${!currentProduct.inStock ? 'grayscale-[30%]' : ''}`}
           />
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {currentProduct.discountPrice && (
@@ -118,7 +127,20 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
             {product.isBestseller && (
               <Badge className="bg-amber-500">Хит продаж</Badge>
             )}
+            {!currentProduct.inStock && (
+              <Badge variant="warning" className="bg-gray-500">Нет в наличии</Badge>
+            )}
           </div>
+          
+          <button 
+            onClick={handleToggleWishlist}
+            className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
+            aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
+          >
+            <Heart 
+              className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+            />
+          </button>
         </div>
       </Link>
       <CardHeader className="p-4 pb-0">
@@ -156,14 +178,25 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button
-          className="w-full"
-          onClick={handleAddToCart}
-          disabled={!product.inStock}
-        >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {product.inStock ? "В корзину" : "Нет в наличии"}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="w-full"
+                onClick={handleAddToCart}
+                disabled={!currentProduct.inStock}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                {currentProduct.inStock ? "В корзину" : "Нет в наличии"}
+              </Button>
+            </TooltipTrigger>
+            {!currentProduct.inStock && (
+              <TooltipContent>
+                <p>Товара нет в наличии. Добавьте его в избранное, чтобы следить за наличием.</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );

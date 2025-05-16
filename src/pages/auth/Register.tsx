@@ -1,12 +1,10 @@
-import { useState } from "react";
+
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useAuthContext } from "@/context/AuthContext";
 import {
   Form,
   FormControl,
@@ -14,276 +12,198 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import RegisterFormSchema from "./schemas/registerFormSchema";
+import { toast } from "sonner";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Имя должно содержать минимум 2 символа"),
-  email: z.string().email("Введите корректный email"),
-  password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
-  confirmPassword: z.string(),
-  newsletterConsent: z.boolean().optional(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Пароли не совпадают",
-  path: ["confirmPassword"],
-});
+type FormData = z.infer<typeof RegisterFormSchema>;
 
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
-const Register = () => {
+export default function Register() {
+  const { register: registerUser } = useAuthContext();
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [registrationMessage, setRegistrationMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isExistingUser, setIsExistingUser] = useState(false);
-
-  // Если пользователь уже аутентифицирован, перенаправляем на главную
-  if (isAuthenticated) {
-    navigate('/account');
-    return null;
-  }
-
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  
+  const form = useForm<FormData>({
+    resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
-      newsletterConsent: false,
     },
   });
 
-  const onSubmit = async (data: RegisterFormValues) => {
+  async function onSubmit(data: FormData) {
     setIsLoading(true);
-    setErrorMessage(null);
-    setIsExistingUser(false);
+    setShowLoginPrompt(false);
     
     try {
-      console.log("Attempting registration with:", data.email);
-      const result = await register(data.email, data.password, data.name);
+      const result = await registerUser(data.email, data.password, data.name);
       
-      if (result.isExistingUser) {
-        setIsExistingUser(true);
-        setErrorMessage(result.message || "Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.");
-      } else if (result.success) {
-        // If user opted in for newsletter, add them to newsletter_subscriptions
-        if (data.newsletterConsent) {
-          const userId = (await supabase.auth.getUser()).data.user?.id;
-          if (userId) {
-            await supabase.from("newsletter_subscriptions").insert({
-              email: data.email,
-              name: data.name,
-              user_id: userId
-            });
-          }
-        }
-        
-        setRegistrationSuccess(true);
-        setRegistrationMessage(result.message || "Регистрация успешна! Теперь вы можете войти в систему.");
-        
-        // Auto-navigate to login page after delay
-        setTimeout(() => {
-          navigate("/login");
-        }, 5000);
+      if (result.success) {
+        toast.success("Регистрация успешна!", {
+          description: "Теперь вы можете войти в свой аккаунт.",
+        });
+        navigate("/auth/login");
+      } else if (result.isExistingUser) {
+        // User already exists, show login prompt
+        setShowLoginPrompt(true);
+        form.setError("email", {
+          type: "manual",
+          message: "Пользователь с таким email уже существует",
+        });
       } else {
-        setErrorMessage(result.message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
+        toast.error("Ошибка при регистрации", {
+          description: result.message || "Что-то пошло не так. Попробуйте еще раз.",
+        });
       }
-    } catch (error: any) {
+    } catch (error) {
+      toast.error("Ошибка при регистрации", {
+        description: "Что-то пошло не так. Попробуйте еще раз.",
+      });
       console.error("Registration error:", error);
-      setErrorMessage(error.message || "Произошла неизвестная ошибка при регистрации");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  if (registrationSuccess) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        
-        <div className="flex-grow container max-w-md mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Регистрация успешна!</h1>
-            <p className="mb-6">{registrationMessage}</p>
-            <Button 
-              onClick={() => navigate("/login")} 
-              className="w-full"
-            >
-              Перейти к входу
-            </Button>
-          </div>
-        </div>
-        
-        <Footer />
-      </div>
-    );
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
-      <div className="flex-grow container max-w-md mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">Создание аккаунта</h1>
-        
-        {errorMessage && (
-          <Alert className="mb-6" variant={isExistingUser ? "default" : "destructive"}>
-            <AlertDescription>
-              {errorMessage}
-              {isExistingUser && (
-                <div className="mt-2">
-                  <Link to="/login" className="text-blue-600 hover:underline font-medium">
-                    Перейти на страницу входа
+    <div className="min-h-screen flex">
+      <div className="hidden md:block md:w-1/2 bg-gray-100">
+        <div className="h-full flex items-center justify-center p-8">
+          <img
+            src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png"
+            alt="The X Shop"
+            className="max-w-sm w-full"
+          />
+        </div>
+      </div>
+      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8">
+        <div className="max-w-md w-full">
+          <div className="mb-8 text-center">
+            <Link to="/" className="inline-block mb-6 md:hidden">
+              <img
+                src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png"
+                alt="Logo"
+                className="h-12 mx-auto"
+              />
+            </Link>
+            <h1 className="text-2xl font-bold">Регистрация</h1>
+            <p className="text-muted-foreground mt-2">
+              Создайте аккаунт для доступа к заказам и избранному
+            </p>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Имя</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Иван Иванов" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="mail@example.com"
+                        autoComplete="username"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Пароль</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Подтвердите пароль</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {showLoginPrompt && (
+                <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+                  У вас уже есть аккаунт.{" "}
+                  <Link to="/auth/login" className="font-medium underline">
+                    Войти сейчас
                   </Link>
                 </div>
               )}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Имя</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Введите ваше имя" disabled={isLoading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Введите email" disabled={isLoading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Пароль</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Введите пароль"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Подтверждение пароля</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Подтвердите пароль"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        disabled={isLoading}
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="newsletterConsent"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Подписка на рассылку</FormLabel>
-                    <FormDescription>
-                      Получайте информацию о новых товарах, скидках и акциях
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-            
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
-            </Button>
-          </form>
-        </Form>
-        
-        <div className="mt-4 text-center">
-          <p className="text-muted-foreground">
-            Уже есть аккаунт?{" "}
-            <Link to="/login" className="text-primary hover:underline">
-              Войти
-            </Link>
-          </p>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Регистрация...
+                  </>
+                ) : (
+                  "Зарегистрироваться"
+                )}
+              </Button>
+
+              <div className="text-center text-sm">
+                Уже есть аккаунт?{" "}
+                <Link to="/auth/login" className="font-medium">
+                  Войти
+                </Link>
+              </div>
+            </form>
+          </Form>
         </div>
       </div>
-      
-      <Footer />
     </div>
   );
-};
-
-export default Register;
+}

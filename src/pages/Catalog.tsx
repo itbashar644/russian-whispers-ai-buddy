@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProductsByCategory, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
@@ -37,7 +36,7 @@ const Catalog = () => {
   });
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
   const [inStockOnly, setInStockOnly] = useState(inStockParam === "true");
-  const [sortBy, setSortBy] = useState("default");
+  const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -174,6 +173,10 @@ const Catalog = () => {
     
     // Сортировка результатов
     switch (sortBy) {
+      case "in-stock":
+        // Always show in-stock products first
+        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+        break;
       case "price-asc":
         result.sort((a, b) => {
           const priceA = a.discountPrice || a.price;
@@ -197,11 +200,9 @@ const Catalog = () => {
       case "rating":
         result.sort((a, b) => b.rating - a.rating);
         break;
-      case "in-stock":
-        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
-        break;
       default:
-        // Default sorting
+        // Default sorting (always show in-stock products first)
+        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
         break;
     }
     
@@ -593,7 +594,6 @@ const Catalog = () => {
                     <SelectValue placeholder="Сортировать по" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="default">По умолчанию</SelectItem>
                     <SelectItem value="in-stock">Сначала в наличии</SelectItem>
                     <SelectItem value="price-asc">Цена (по возрастанию)</SelectItem>
                     <SelectItem value="price-desc">Цена (по убыванию)</SelectItem>
