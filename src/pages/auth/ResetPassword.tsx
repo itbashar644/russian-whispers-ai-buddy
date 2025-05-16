@@ -105,7 +105,7 @@ const ResetPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      // Fix: Use object destructuring to get the error from the result
+      // Call the updatePassword function and handle both possible return types
       const result = await updatePassword(password);
       
       // If result is a boolean (true/false), handle accordingly
@@ -115,8 +115,8 @@ const ResetPassword: React.FC = () => {
         }
       } 
       // If result is an object with error property, check the error
-      else if (result && 'error' in result && result.error) {
-        throw result.error;
+      else if (result && typeof result === 'object' && 'error' in result) {
+        throw new Error(result.error.message || "Failed to update password");
       }
       
       toast.success("Пароль успешно обновлен", {
