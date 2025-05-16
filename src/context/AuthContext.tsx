@@ -18,7 +18,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<UserProfile>) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
-  updatePassword: (newPassword: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean | { error: string | { message?: string } | null }>;
   updateEmail: (newEmail: string) => Promise<boolean>;
   hasRole: (role: 'admin' | 'editor' | 'user') => Promise<boolean>;
 }

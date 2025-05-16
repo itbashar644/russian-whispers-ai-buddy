@@ -93,10 +93,27 @@ const AccountSecurity = () => {
   const onPasswordSubmit = async (data: PasswordFormValues) => {
     setIsPasswordLoading(true);
     try {
-      const success = await updatePassword(data.newPassword);
-      if (success) {
-        passwordForm.reset();
+      const result = await updatePassword(data.newPassword);
+      
+      if (result === false) {
+        toast.error("Не удалось обновить пароль");
+        return;
       }
+      
+      if (typeof result === 'object' && 'error' in result) {
+        const errorMessage = typeof result.error === 'string' 
+          ? result.error 
+          : (result.error?.message || "Не удалось обновить пароль");
+        
+        toast.error("Ошибка обновления пароля", {
+          description: errorMessage
+        });
+        return;
+      }
+      
+      // If we got here, the update was successful
+      passwordForm.reset();
+      toast.success("Пароль успешно обновлен");
     } finally {
       setIsPasswordLoading(false);
     }
