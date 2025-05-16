@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Настраиваем слушатель изменения статуса аутентификации
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsAuthenticated(!!currentSession);
@@ -56,9 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentSession?.user) {
           // Используем setTimeout для предотвращения блокировок
           setTimeout(async () => {
-            const userData = await loadUserProfile(currentSession.user.id);
-            setProfile(userData.profile);
-            setUserRoles(userData.roles);
+            try {
+              const userData = await loadUserProfile(currentSession.user.id);
+              setProfile(userData.profile);
+              setUserRoles(userData.roles);
+            } catch (error) {
+              console.error("Error loading user profile:", error);
+            }
           }, 0);
         } else {
           setProfile(null);
@@ -74,9 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(!!currentSession);
       
       if (currentSession?.user) {
-        const userData = await loadUserProfile(currentSession.user.id);
-        setProfile(userData.profile);
-        setUserRoles(userData.roles);
+        try {
+          const userData = await loadUserProfile(currentSession.user.id);
+          setProfile(userData.profile);
+          setUserRoles(userData.roles);
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+        }
       }
       
       setIsLoading(false);

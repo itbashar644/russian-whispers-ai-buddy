@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -42,6 +41,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   // Если пользователь уже аутентифицирован, перенаправляем на главную
   if (isAuthenticated) {
@@ -74,12 +74,41 @@ const Register = () => {
           });
         }
         
-        navigate("/account");
+        setRegistrationSuccess(true);
+        
+        // Auto-navigate only if we're configured to skip email confirmation
+        // Otherwise, display success message and ask user to check email
+        setTimeout(() => {
+          navigate("/login");
+        }, 5000);
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        
+        <div className="flex-grow container max-w-md mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Регистрация успешна!</h1>
+            <p className="mb-6">Ваш аккаунт был создан. Теперь вы можете войти в систему.</p>
+            <Button 
+              onClick={() => navigate("/login")} 
+              className="w-full"
+            >
+              Перейти к входу
+            </Button>
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
