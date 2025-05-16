@@ -177,7 +177,7 @@ const ResetPassword: React.FC = () => {
                   Ссылка для сброса пароля недействительна или срок её действия истек.
                 </p>
                 <Button onClick={handleRequestPasswordReset}>
-                  Запросить новую ссылку
+                  Запросить новую ссы��ку
                 </Button>
               </div>
             )}

@@ -1,5 +1,23 @@
 
 /**
+ * Hash a password
+ */
+export function hashPassword(password: string): string {
+  // In a real application, you would use a proper password hashing algorithm
+  // For now, just returning the password as is since Supabase handles password hashing
+  return password;
+}
+
+/**
+ * Verify a password against a hash
+ */
+export function verifyPassword(password: string, hash: string): boolean {
+  // In a real application, you would use a proper password verification
+  // For now, just comparing the strings since Supabase handles password verification
+  return hashPassword(password) === hash;
+}
+
+/**
  * Generate a secure random password
  * @returns A random password string
  */

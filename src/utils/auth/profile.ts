@@ -2,6 +2,67 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types/auth";
 
+/**
+ * Create a new user profile
+ */
+export async function createUserProfile(profileData: {
+  id: string;
+  name: string;
+  email: string;
+}) {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .insert([
+        {
+          id: profileData.id,
+          email: profileData.email,
+          name: profileData.name,
+        },
+      ]);
+
+    if (error) {
+      console.error("Error creating user profile:", error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error creating profile:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Update an existing user profile
+ */
+export async function updateUserProfile(profileData: Partial<UserProfile> & { id: string }) {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: profileData.name,
+        phone: profileData.phone,
+        address: profileData.address,
+        avatar_url: profileData.avatar_url,
+        preferredcontactmethod: profileData.preferredContactMethod,
+        savedaddresses: profileData.savedAddresses,
+        telegramnickname: profileData.telegramNickname,
+      })
+      .eq("id", profileData.id);
+
+    if (error) {
+      console.error("Error updating user profile:", error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error updating profile:", error);
+    return { success: false, error };
+  }
+}
+
 // Функция для загрузки профиля пользователя
 export const loadUserProfile = async (userId: string) => {
   try {
@@ -28,7 +89,7 @@ export const loadUserProfile = async (userId: string) => {
       return { profile: null, roles: [] };
     }
 
-    const roles = rolesData.map(r => r.role);
+    const roles = rolesData ? rolesData.map(r => r.role) : [];
 
     // Приводим данные профиля к нужному формату
     const typedProfileData = profileData as {

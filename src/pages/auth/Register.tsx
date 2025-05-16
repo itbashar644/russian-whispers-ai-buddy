@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   Form,
   FormControl,
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 type FormData = z.infer<typeof RegisterFormSchema>;
 
 export default function Register() {
-  const { register: registerUser } = useAuthContext();
+  const { register: registerUser } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);

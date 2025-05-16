@@ -4,7 +4,7 @@ import { generatePassword } from "./passwordUtils";
 import { toast } from "sonner";
 
 // Function to register a guest user and place an order
-export async function registerGuestUser(email: string, name: string): Promise<{
+export async function handleGuestCheckout(email: string, name: string): Promise<{
   success: boolean;
   userId?: string;
   password?: string;

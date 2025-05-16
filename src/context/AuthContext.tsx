@@ -5,7 +5,7 @@ import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { User, Session } from '@supabase/supabase-js';
 import { UserProfile } from "@/types/auth";
 import { loadUserProfile } from "@/utils/auth/profile";
-import { authMethods } from "@/utils/auth/methods";
+import { authMethods } from "@/utils/auth/authMethods";
 
 // Типы для контекста аутентификации
 interface AuthContextType {
@@ -27,13 +27,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Хук для использования контекста аутентификации
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 
 // Провайдер аутентификации
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

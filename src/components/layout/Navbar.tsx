@@ -14,15 +14,15 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
-import { useAuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { cartItems } = useCart();
+  const { cart } = useCart();
   const { wishlist } = useWishlist();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -30,7 +30,7 @@ const Navbar = () => {
   // Don't show the navbar on admin pages
   if (isAdminRoute) return null;
 
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const totalItems = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   const handleScroll = () => {
     if (window.scrollY > 10) {
