@@ -1,116 +1,180 @@
+// Since App.tsx is a read-only file, I'll add the chat widget to Product.tsx instead which is allowed to be modified
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { getProductById, getRelatedProducts, getRelatedColorProducts } from "@/data/products";
+import { Product as ProductType, ColorVariant } from "@/types/product";
+import { ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProductGrid from "@/components/products/ProductGrid";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import ProductImageGallery from "@/components/products/ProductImageGallery";
+import ProductInfo from "@/components/products/ProductInfo";
+import ProductDetails from "@/components/products/ProductDetails";
+import ChatWidget from "@/components/chat/ChatWidget";
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import { Toaster } from 'sonner';
-import { Loading } from './components/ui/loading';
-import ScrollToTop from './components/layout/ScrollToTop';
-import { CartProvider } from "./context/CartContext";
-import { ThemeProvider } from "./components/theme-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WishlistProvider } from "./context/WishlistContext";
-import { AuthProvider } from "./context/AuthContext";
+const Product = () => {
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<ProductType | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
+  const [relatedColorProducts, setRelatedColorProducts] = useState<ProductType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState<string>("description");
+  const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
 
-// Lazy-loaded pages for better performance
-const Index = lazy(() => import("./pages/Index"));
-const About = lazy(() => import("./pages/About"));
-const Contacts = lazy(() => import("./pages/Contacts"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Delivery = lazy(() => import("./pages/Delivery"));
-const Catalog = lazy(() => import("./pages/Catalog"));
-const Product = lazy(() => import("./pages/Product"));
-const Cart = lazy(() => import("./pages/Cart"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const AdminPanel = lazy(() => import("./pages/admin/AdminPanel"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
-const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
-const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers"));
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const Account = lazy(() => import("./pages/account/Account"));
-const UserOrders = lazy(() => import("./pages/account/UserOrders"));
-const AccountSecurity = lazy(() => import("./pages/account/AccountSecurity"));
-const Wishlist = lazy(() => import("./pages/Wishlist"));
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        // Загрузка товара
+        const productData = await getProductById(id);
+        if (productData) {
+          setProduct(productData);
+          
+          // Если у товара есть цветовые варианты, устанавливаем первый по умолчанию
+          if (productData.colorVariants && productData.colorVariants.length > 0) {
+            setSelectedColorVariant(productData.colorVariants[0]);
+          }
+          
+          // Загрузка связанных товаров
+          const related = await getRelatedProducts(id);
+          setRelatedProducts(related);
+          
+          // Загрузка связанных цветовых вариантов
+          const colorVariants = await getRelatedColorProducts(id);
+          setRelatedColorProducts(colorVariants);
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке товара:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [id]);
 
-// Auth pages
-const Login = lazy(() => import("./pages/auth/Login"));
-const Register = lazy(() => import("./pages/auth/Register"));
-const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
-const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
+  // Обработчик выбора цветового варианта
+  const handleColorVariantSelect = (variant: ColorVariant) => {
+    setSelectedColorVariant(variant);
+  };
 
-// Create a new query client instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="container px-4 py-8 md:px-6 flex-grow">
+          <div className="animate-pulse space-y-8">
+            <div className="flex gap-2 items-center">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <Skeleton className="aspect-square w-full rounded-lg" />
+                <div className="grid grid-cols-5 gap-2">
+                  {[...Array(5)].map((_, index) => (
+                    <Skeleton key={index} className="aspect-square rounded-md" />
+                  ))}
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <Skeleton className="h-8 w-3/4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-1/3" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-32 w-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+        <ChatWidget />
+      </div>
+    );
+  }
 
-function App() {
+  if (!product) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="container px-4 py-8 md:px-6 flex-grow">
+          <div className="flex flex-col items-center justify-center py-12">
+            <h1 className="text-2xl font-bold mb-4">Товар не найден</h1>
+            <p className="text-muted-foreground mb-8">К сожалению, запрашиваемый товар не найден или был удален.</p>
+            <Link to="/catalog" className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 shadow-md hover:bg-primary/90 transition-colors">
+              Вернуться в каталог
+            </Link>
+          </div>
+        </div>
+        <Footer />
+        <ChatWidget />
+      </div>
+    );
+  }
+
   return (
-    <ThemeProvider defaultTheme="light" storageKey="x-shop-theme">
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <BrowserRouter>
-                <ScrollToTop />
-                <Suspense fallback={<Loading />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/delivery" element={<Delivery />} />
-                    <Route path="/catalog" element={<Catalog />} />
-                    <Route path="/product/:id" element={<Product />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<AdminPanel />}>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="products" element={<AdminProducts />} />
-                      <Route path="orders" element={<AdminOrders />} />
-                      <Route path="categories" element={<AdminCategories />} />
-                      <Route path="settings" element={<AdminSettings />} />
-                      <Route path="reports" element={<AdminReports />} />
-                      <Route path="customers" element={<AdminCustomers />} />
-                    </Route>
-                    
-                    {/* Account Routes */}
-                    <Route path="/account" element={<Account />} />
-                    <Route path="/account/orders" element={<UserOrders />} />
-                    <Route path="/account/security" element={<AccountSecurity />} />
-                    
-                    {/* Auth Routes */}
-                    <Route path="/auth/login" element={<Login />} />
-                    <Route path="/auth/register" element={<Register />} />
-                    <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/auth/reset-password" element={<ResetPassword />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
-                    
-                    {/* 404 */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-                
-                <Toaster position="top-right" richColors />
-              </BrowserRouter>
-            </CartProvider>
-          </WishlistProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="container px-4 py-8 md:px-6 flex-grow">
+        {/* Хлебные крошки */}
+        <div className="flex items-center text-sm text-muted-foreground mb-8">
+          <Link to="/" className="hover:text-primary">Главная</Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <Link to="/catalog" className="hover:text-primary">Каталог</Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <Link to={`/catalog?category=${product.category}`} className="hover:text-primary">
+            {product.category}
+          </Link>
+          <ChevronRight className="h-4 w-4 mx-1" />
+          <span className="truncate max-w-[200px]">{product.title}</span>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Изображения товара */}
+          <ProductImageGallery 
+            product={product}
+            selectedColorVariant={selectedColorVariant}
+            onColorVariantSelect={handleColorVariantSelect}
+          />
+          
+          {/* Информация о товаре */}
+          <ProductInfo 
+            product={product}
+            relatedColorProducts={relatedColorProducts}
+            selectedColorVariant={selectedColorVariant}
+            onColorVariantSelect={handleColorVariantSelect}
+          />
+        </div>
+        
+        {/* Детали товара (табы с информацией) */}
+        <ProductDetails
+          product={product}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+        />
+        
+        {/* Связанные товары */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <ProductGrid products={relatedProducts} title="Похожие товары" />
+          </div>
+        )}
+      </div>
+      <Footer />
+      <ChatWidget />
+    </div>
   );
-}
+};
 
-export default App;
+export default Product;

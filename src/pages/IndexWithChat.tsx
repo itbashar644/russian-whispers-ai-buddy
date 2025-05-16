@@ -1,5 +1,4 @@
 
-// I can't modify Index.tsx directly as it's read-only, so I'll create IndexWithChat.tsx and update routes.tsx accordingly
 import React from "react";
 import Index from "./Index";
 import ChatWidget from "@/components/chat/ChatWidget";
