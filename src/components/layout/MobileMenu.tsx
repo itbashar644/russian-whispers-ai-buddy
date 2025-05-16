@@ -13,8 +13,18 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
-  const { wishlist } = useWishlist();
+  let user = null;
+  let wishlistItems = [];
+  
+  try {
+    const auth = useAuth();
+    const { wishlist } = useWishlist();
+    
+    user = auth?.user;
+    wishlistItems = wishlist || [];
+  } catch (error) {
+    console.error("Error in MobileMenu: Context not available", error);
+  }
   
   if (!isOpen) return null;
   
@@ -66,8 +76,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           >
             <Heart className="h-5 w-5" />
             Избранное
-            {wishlist.length > 0 && (
-              <Badge>{wishlist.length}</Badge>
+            {wishlistItems.length > 0 && (
+              <Badge>{wishlistItems.length}</Badge>
             )}
           </Link>
           {user ? (

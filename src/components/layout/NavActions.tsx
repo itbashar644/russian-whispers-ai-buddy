@@ -14,11 +14,23 @@ interface NavActionsProps {
 }
 
 export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
-  const { items } = useCart();
-  const { wishlist } = useWishlist();
-  const { user } = useAuth();
+  let cartItems = [];
+  let wishlistItems = [];
+  let user = null;
+  let totalItems = 0;
   
-  const totalItems = items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+  try {
+    const { items } = useCart();
+    const { wishlist } = useWishlist();
+    const auth = useAuth();
+    
+    cartItems = items || [];
+    wishlistItems = wishlist || [];
+    user = auth?.user;
+    totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0) || 0;
+  } catch (error) {
+    console.error("Error in NavActions: Context not available", error);
+  }
   
   return (
     <div className="flex items-center gap-4">
@@ -26,9 +38,9 @@ export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
       
       <Link to="/wishlist" className="relative">
         <Heart className="h-5 w-5" />
-        {wishlist.length > 0 && (
+        {wishlistItems.length > 0 && (
           <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-            {wishlist.length}
+            {wishlistItems.length}
           </Badge>
         )}
       </Link>
