@@ -28,6 +28,8 @@ const Cart = () => {
     total,
     clearCart
   } = useCart();
+
+  const { decreaseStockForItems } = useCart();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -68,12 +70,20 @@ const Cart = () => {
     telegramNickname?: string;
   }) => {
     if (items.length === 0) {
-      toast.error("Ваша корзина пуста. Добавьте товары перед оформлением заказа.");
+      toast({
+        title: "Ошибка",
+        description: "Ваша корзина пуста. Добавьте товары перед оформлением заказа.",
+        variant: "destructive"
+      });
       return;
     }
     
     if (!deliveryMethod) {
-      toast.error("Пожалуйста, выберите способ доставки.");
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, выберите способ доставки.",
+        variant: "destructive"
+      });
       return;
     }
     
@@ -95,15 +105,36 @@ const Cart = () => {
     };
     
     try {
-      // Process the order
+      // First decrease the stock quantities
+      console.log("Decreasing stock quantities before placing order");
+      const stockUpdateSuccess = await decreaseStockForItems(items);
+      
+      if (!stockUpdateSuccess) {
+        console.error("Failed to update stock quantities");
+        toast({
+          title: "Ошибка",
+          description: "Произошла ошибка при обновлении остатков товаров. Пожалуйста, попробуйте снова.",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Then process the order
       const result = await placeOrder(orderData);
       
       if (result.success) {
-        toast.success("Заказ успешно оформлен! Спасибо за покупку.");
+        toast({
+          title: "Успешно",
+          description: "Заказ успешно оформлен! Спасибо за покупку.",
+        });
         
         // Show additional message for guest users
         if (!user) {
-          toast.info("Мы создали аккаунт для вас. Проверьте вашу почту для получения пароля и инструкций.");
+          toast({
+            title: "Информация",
+            description: "Мы создали аккаунт для вас. Проверьте вашу почту для получения пароля и инструкций.",
+          });
         }
         
         // Clear the cart after successful order
@@ -111,7 +142,10 @@ const Cart = () => {
         
         // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
         if (user) {
-          toast.info("Вы можете отслеживать статус заказа в личном кабинете");
+          toast({
+            title: "Информация",
+            description: "Вы можете отслеживать статус заказа в личном кабинете",
+          });
           // Перенаправляем после небольшой задержки для чтения сообщения
           setTimeout(() => {
             navigate("/account");
@@ -123,10 +157,18 @@ const Cart = () => {
           }, 2000);
         }
       } else {
-        toast.error(result.error?.message || "Пожалуйста, попробуйте снова позже.");
+        toast({
+          title: "Ошибка",
+          description: result.error?.message || "Пожалуйста, попробуйте снова позже.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      toast.error("Пожалуйста, попробуйте снова позже.");
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, попробуйте снова позже.",
+        variant: "destructive"
+      });
       console.error("Order placement error:", error);
     } finally {
       setIsSubmitting(false);

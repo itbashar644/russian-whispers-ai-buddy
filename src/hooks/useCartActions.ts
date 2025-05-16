@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { CartItem } from "@/types/product";
 import { useToast } from "@/hooks/use-toast";
-import { checkProductStock } from "@/data/products/product/services/productStockService";
+import { checkProductStock, decreaseProductStock } from "@/data/products/product/services/productStockService";
 
 export function useCartActions() {
   const { toast } = useToast();
@@ -126,6 +127,36 @@ export function useCartActions() {
     }
   };
 
+  // New function to decrease stock quantities for all items in cart
+  const decreaseStockForItems = async (items: CartItem[]): Promise<boolean> => {
+    try {
+      console.log("Decreasing stock for all items in cart:", items);
+      
+      // Process each item in the cart
+      for (const item of items) {
+        console.log(`Decreasing stock for ${item.product.id}, quantity: ${item.quantity}, color: ${item.color || 'none'}`);
+        
+        // Decrease stock for this item
+        const result = await decreaseProductStock(
+          String(item.product.id),
+          item.quantity,
+          item.color
+        );
+        
+        if (!result) {
+          console.error(`Failed to decrease stock for product ${item.product.id}`);
+          return false;
+        }
+      }
+      
+      console.log("All stock quantities updated successfully");
+      return true;
+    } catch (error) {
+      console.error("Error decreasing stock for cart items:", error);
+      return false;
+    }
+  };
+
   const clearCart = (setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
     setItems([]);
     toast({
@@ -137,6 +168,7 @@ export function useCartActions() {
     addItem,
     removeItem,
     updateQuantity,
-    clearCart
+    clearCart,
+    decreaseStockForItems
   };
 }

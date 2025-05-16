@@ -2,12 +2,14 @@
 import { Product } from "@/types/product";
 import { addOrUpdateProductInSupabase } from "../../supabaseApi";
 import { refreshCacheIfNeeded } from "../../cache/productCache";
+import { invalidateCache } from "./productCacheService";
 
 /**
  * Check if a product is in stock
  */
 export const checkProductStock = async (productId: string, colorVariant?: string): Promise<boolean> => {
   try {
+    console.log(`Checking stock for product ${productId}, color: ${colorVariant || 'none'}`);
     const product = await import("../productServiceSpecialized").then(module => module.getProductById(productId));
     
     if (!product) {
@@ -64,7 +66,7 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
         });
         
         // Force refresh cache after stock update
-        await refreshCacheIfNeeded(true);
+        await invalidateCache();
         
         console.log(`Stock update result for variant: ${result.success ? 'Success' : 'Failed'}`);
         return result.success;
@@ -83,7 +85,7 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
       const result = await addOrUpdateProductInSupabase(product);
       
       // Force refresh cache after stock update
-      await refreshCacheIfNeeded(true);
+      await invalidateCache();
       
       console.log("Stock update result:", result);
       

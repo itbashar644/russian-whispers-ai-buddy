@@ -1,116 +1,110 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { CartItem, DeliveryMethod } from "../types/product";
-import { deliveryMethods } from "../data/deliveryMethods";
-import { useCartActions } from "@/hooks/useCartActions";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { CartItem, DeliveryMethod } from "@/types/product";
 import { useCartCalculations } from "@/hooks/useCartCalculations";
+import { useCartActions } from "@/hooks/useCartActions";
 
+// Define the CartContext shape
 interface CartContextType {
   items: CartItem[];
-  deliveryMethod: DeliveryMethod | null;
-  addItem: (item: CartItem) => void;
+  addItem: (item: CartItem) => Promise<void>;
   removeItem: (itemId: string, color?: string) => void;
-  updateQuantity: (itemId: string, quantity: number, color?: string) => void;
+  updateQuantity: (itemId: string, quantity: number, color?: string) => Promise<void>;
   clearCart: () => void;
-  setDeliveryMethod: (method: DeliveryMethod) => void;
-  totalItems: number;
+  deliveryMethod: DeliveryMethod | null;
+  setDeliveryMethod: React.Dispatch<React.SetStateAction<DeliveryMethod | null>>;
   subtotal: number;
   total: number;
+  decreaseStockForItems: (items: CartItem[]) => Promise<boolean>;
 }
 
+// Create the context with a default value
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
-}
-
-interface CartProviderProps {
-  children: ReactNode;
-}
-
-export function CartProvider({ children }: CartProviderProps) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(
-    deliveryMethods[0]
-  );
-  
-  const { addItem: addItemToCart, removeItem: removeItemFromCart, updateQuantity: updateItemQuantity, clearCart: clearAllItems } = useCartActions();
-  const { totalItems, subtotal, total } = useCartCalculations(items, deliveryMethod);
-
-  // Load cart from localStorage on initial load
-  useEffect(() => {
+// Create the provider component
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // State for cart items
+  const [items, setItems] = useState<CartItem[]>(() => {
     try {
-      const storedCart = localStorage.getItem("cart");
-      const storedDelivery = localStorage.getItem("deliveryMethod");
-      
-      if (storedCart) {
-        setItems(JSON.parse(storedCart));
-      }
-      
-      if (storedDelivery) {
-        setDeliveryMethod(JSON.parse(storedDelivery));
-      }
-    } catch (e) {
-      console.error("Failed to parse cart from localStorage", e);
-      // If there's an error parsing, use default empty state
-      setItems([]);
-      setDeliveryMethod(deliveryMethods[0]);
+      // Try to load items from localStorage
+      const savedItems = localStorage.getItem("cart");
+      return savedItems ? JSON.parse(savedItems) : [];
+    } catch (error) {
+      console.error("Error loading cart from localStorage:", error);
+      return [];
     }
-  }, []);
+  });
+
+  // State for selected delivery method
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(null);
+
+  // Get price calculations
+  const { subtotal, total } = useCartCalculations(items, deliveryMethod);
+
+  // Get cart actions
+  const { addItem: addItemAction, 
+          removeItem: removeItemAction, 
+          updateQuantity: updateQuantityAction, 
+          clearCart: clearCartAction,
+          decreaseStockForItems: decreaseStockForItemsAction } = useCartActions();
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem("cart", JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save cart to localStorage", e);
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
     }
   }, [items]);
 
-  // Save delivery method to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      if (deliveryMethod) {
-        localStorage.setItem("deliveryMethod", JSON.stringify(deliveryMethod));
-      }
-    } catch (e) {
-      console.error("Failed to save delivery method to localStorage", e);
-    }
-  }, [deliveryMethod]);
-
-  // Wrapped handler functions
-  const addItem = (item: CartItem) => {
-    addItemToCart(items, item, setItems);
+  // Handler for adding an item to the cart
+  const addItem = async (item: CartItem) => {
+    await addItemAction(items, item, setItems);
   };
 
+  // Handler for removing an item from the cart
   const removeItem = (itemId: string, color?: string) => {
-    removeItemFromCart(itemId, color, setItems);
+    removeItemAction(itemId, color, setItems);
   };
 
-  const updateQuantity = (itemId: string, quantity: number, color?: string) => {
-    updateItemQuantity(itemId, quantity, color, items, setItems);
+  // Handler for updating item quantity
+  const updateQuantity = async (itemId: string, quantity: number, color?: string) => {
+    await updateQuantityAction(itemId, quantity, color, items, setItems);
   };
 
+  // Handler for clearing the cart
   const clearCart = () => {
-    clearAllItems(setItems);
+    clearCartAction(setItems);
+  };
+  
+  // Handler for decreasing stock for all items in cart
+  const decreaseStockForItems = async (cartItems: CartItem[]): Promise<boolean> => {
+    return await decreaseStockForItemsAction(cartItems);
   };
 
-  const value = {
-    items,
-    deliveryMethod,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    setDeliveryMethod,
-    totalItems,
-    subtotal,
-    total,
-  };
+  return (
+    <CartContext.Provider value={{
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      deliveryMethod,
+      setDeliveryMethod,
+      subtotal,
+      total,
+      decreaseStockForItems
+    }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-}
+// Create and export the hook for using the cart context
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
+};
