@@ -26,6 +26,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import { Suspense } from "react";
 import { Skeleton } from "./components/ui/skeleton";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 
 const router = createBrowserRouter([
   {
@@ -132,5 +133,10 @@ const router = createBrowserRouter([
 ]);
 
 export const Routes = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ScrollToTop />
+    </>
+  );
 };

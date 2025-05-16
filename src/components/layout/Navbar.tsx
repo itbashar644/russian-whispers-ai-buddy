@@ -11,8 +11,18 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith("/admin");
+  
+  let location;
+  let isAdminRoute = false;
+  
+  // Safe check if we're in a browser context with Router
+  try {
+    location = useLocation();
+    isAdminRoute = location.pathname.startsWith("/admin");
+  } catch (error) {
+    // If useLocation fails, we're not in a Router context
+    console.log("Not in Router context");
+  }
 
   // Don't show the navbar on admin pages
   if (isAdminRoute) return null;
