@@ -3,6 +3,20 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+// Глобальные переменные для контекстов
+declare global {
+  interface Window {
+    cart: any;
+    wishlist: any;
+    auth: any;
+  }
+}
+
+// Инициализация глобальных переменных
+window.cart = {};
+window.wishlist = [];
+window.auth = {};
+
 // Устанавливаем заголовок страницы
 document.title = 'The X Shop';
 

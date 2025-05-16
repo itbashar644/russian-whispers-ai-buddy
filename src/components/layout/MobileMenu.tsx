@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 import { X, Heart, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/context/AuthContext";
-import { useWishlist } from "@/context/WishlistContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -14,17 +12,21 @@ interface MobileMenuProps {
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   let user = null;
-  let wishlistItems = [];
+  let wishlistCount = 0;
   
   try {
-    const auth = useAuth();
-    const { wishlist } = useWishlist();
+    const auth = window.auth;
+    const wishlist = window.wishlist;
     
-    user = auth?.user;
-    wishlistItems = wishlist || [];
+    if (auth && auth.user) {
+      user = auth.user;
+    }
+    
+    if (wishlist && Array.isArray(wishlist)) {
+      wishlistCount = wishlist.length;
+    }
   } catch (error) {
-    console.error("Error in MobileMenu: Context not available", error);
-    wishlistItems = [];
+    console.error("Error accessing auth or wishlist context:", error);
   }
   
   if (!isOpen) return null;
@@ -39,7 +41,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           size="icon"
         >
           <X className="h-5 w-5" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Закрыть</span>
         </Button>
         <nav className="flex flex-col gap-4">
           <Link
@@ -77,8 +79,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           >
             <Heart className="h-5 w-5" />
             Избранное
-            {wishlistItems.length > 0 && (
-              <Badge>{wishlistItems.length}</Badge>
+            {wishlistCount > 0 && (
+              <Badge>{wishlistCount}</Badge>
             )}
           </Link>
           {user ? (

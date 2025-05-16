@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -67,6 +68,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setProfile(null);
         }
+        
+        // Обновляем глобальную переменную
+        window.auth = {
+          session,
+          user: session?.user ?? null,
+          isAuthenticated: !!session,
+          loading: false
+        };
       }
     );
 
@@ -80,6 +89,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       setLoading(false);
+      
+      // Обновляем глобальную переменную
+      window.auth = {
+        session,
+        user: session?.user ?? null,
+        isAuthenticated: !!session,
+        loading: false
+      };
     });
 
     return () => subscription.unsubscribe();
@@ -118,6 +135,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
         
         setProfile(userProfile);
+        
+        // Обновляем глобальную переменную
+        if (window.auth) {
+          window.auth.profile = userProfile;
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -263,6 +285,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signupWithEmail,
     hasRole,
     updateProfile
+  };
+  
+  // Сохраняем значение контекста в глобальной переменной
+  window.auth = {
+    ...value
   };
 
   return (

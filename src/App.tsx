@@ -1,30 +1,28 @@
 
-import { BrowserRouter as Router } from "react-router-dom";
-import { Routes } from "./routes";
+import { BrowserRouter } from "react-router-dom";
+import { AppRoutes } from "./routes";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "sonner";
 import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-import ScrollToTop from "./components/layout/ScrollToTop";
-import Navbar from "./components/layout/Navbar";
+import { CookieConsent } from "./components/ui/cookie-consent";
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
+    <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <AuthProvider>
           <WishlistProvider>
             <CartProvider>
-              <Navbar />
-              <Routes />
+              <AppRoutes />
               <Toaster position="top-right" richColors closeButton />
+              <CookieConsent />
             </CartProvider>
           </WishlistProvider>
         </AuthProvider>
       </ThemeProvider>
-    </Router>
+    </BrowserRouter>
   );
 }
 
