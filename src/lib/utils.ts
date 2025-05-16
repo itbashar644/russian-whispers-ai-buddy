@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { ColorVariant, Product } from "@/types/product";
@@ -15,7 +14,7 @@ export function formatPrice(price: number): string {
     style: 'decimal',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(price);
+  }).format(price) + " ₽";
 }
 
 /**

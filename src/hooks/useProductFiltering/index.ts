@@ -8,10 +8,10 @@ export const useProductFiltering = ({
   allProducts,
   searchTerm,
   priceRange,
-  inStockOnly,
+  inStockOnly, // Keeping for backward compatibility
   sortBy,
   loading,
-  showColorVariants,
+  showColorVariants, // Keeping for backward compatibility
   colorParam
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
