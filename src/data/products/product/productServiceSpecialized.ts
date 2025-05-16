@@ -5,7 +5,7 @@ import {
   refreshCacheIfNeeded,
 } from "../cache/productCache";
 import { productMergeApi } from "../supabase/productMergeApi";
-import { getProductByIdFromSupabase, fetchProductsFromSupabase, updateProductInSupabase } from "../supabaseApi";
+import { getProductByIdFromSupabase, fetchProductsFromSupabase, addOrUpdateProductInSupabase } from "../supabaseApi";
 import { getProductById as getProductByIdBase } from "./productServiceBase";
 
 /**
@@ -225,7 +225,7 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
         }
         
         // Update product with modified color variant
-        const result = await updateProductInSupabase({
+        const result = await addOrUpdateProductInSupabase({
           ...product,
           colorVariants: product.colorVariants
         });
@@ -240,7 +240,7 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
       product.inStock = product.stockQuantity > 0;
       
       // Update product with new stock quantity
-      const result = await updateProductInSupabase(product);
+      const result = await addOrUpdateProductInSupabase(product);
       
       // Force refresh cache after stock update
       await refreshCacheIfNeeded(true);
