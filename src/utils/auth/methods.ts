@@ -1,4 +1,3 @@
-
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserProfile } from "@/types/auth";
@@ -87,7 +86,6 @@ export async function signUpWithEmail(email: string, password: string) {
     if (error.code === 'user_already_registered') {
       toast("Пользователь уже существует", {
         description: errorMessage,
-        variant: "info"
       });
     } else {
       toast("Ошибка регистрации", {

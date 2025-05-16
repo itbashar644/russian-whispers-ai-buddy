@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -72,12 +71,12 @@ const Register = () => {
     
     try {
       console.log("Attempting registration with:", data.email);
-      const { success, message, isExistingUser } = await register(data.email, data.password, data.name);
+      const result = await register(data.email, data.password, data.name);
       
-      if (isExistingUser) {
+      if (result.isExistingUser) {
         setIsExistingUser(true);
-        setErrorMessage(message || "Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.");
-      } else if (success) {
+        setErrorMessage(result.message || "Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.");
+      } else if (result.success) {
         // If user opted in for newsletter, add them to newsletter_subscriptions
         if (data.newsletterConsent) {
           const userId = (await supabase.auth.getUser()).data.user?.id;
@@ -91,14 +90,14 @@ const Register = () => {
         }
         
         setRegistrationSuccess(true);
-        setRegistrationMessage(message || "Регистрация успешна! Теперь вы можете войти в систему.");
+        setRegistrationMessage(result.message || "Регистрация успешна! Теперь вы можете войти в систему.");
         
         // Auto-navigate to login page after delay
         setTimeout(() => {
           navigate("/login");
         }, 5000);
       } else {
-        setErrorMessage(message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
+        setErrorMessage(result.message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
       }
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -139,7 +138,7 @@ const Register = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">Создание аккаунта</h1>
         
         {errorMessage && (
-          <Alert className="mb-6" variant={isExistingUser ? "info" : "destructive"}>
+          <Alert className="mb-6" variant={isExistingUser ? "default" : "destructive"}>
             <AlertDescription>
               {errorMessage}
               {isExistingUser && (
