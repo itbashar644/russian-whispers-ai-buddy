@@ -1,5 +1,4 @@
 
-// This component doesn't exist in the provided code snippets, so I'll create it properly
 import React from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
@@ -15,7 +14,7 @@ interface ProductCardFullProps {
   handleColorSelect: (color: string, variant?: ColorVariant) => void;
   handleAddToCart: () => void;
   handleToggleWishlist: (e: React.MouseEvent) => void;
-  isInWishlist: (product: Product) => boolean;
+  isInWishlist: (productId: string) => boolean;  // Changed from (product: Product) => boolean
 }
 
 const ProductCardFull = ({
@@ -51,7 +50,7 @@ const ProductCardFull = ({
       >
         <Heart
           className={`h-4 w-4 ${
-            isInWishlist(product) ? "fill-red-500 text-red-500" : "text-gray-600"
+            isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-600"
           }`}
         />
       </button>
