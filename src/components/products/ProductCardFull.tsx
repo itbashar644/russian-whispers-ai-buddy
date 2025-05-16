@@ -47,9 +47,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
             className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
           <div className="absolute top-2 right-2 flex flex-col gap-1">
-            {currentProduct.discountPrice && (
-              <Badge className="bg-red-500">Скидка</Badge>
-            )}
+            {/* Discount badge removed */}
             {product.isNew && <Badge className="bg-blue-500">Новинка</Badge>}
             {product.isBestseller && (
               <Badge className="bg-amber-500">Хит продаж</Badge>

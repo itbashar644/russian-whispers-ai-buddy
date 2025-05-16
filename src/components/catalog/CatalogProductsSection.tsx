@@ -105,14 +105,12 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
         handleClearAllFilters={handleClearAllFilters}
       />
 
-      {/* Products availability stats */}
+      {/* Products count */}
       <div className="flex items-center gap-4 mb-4">
         <div className="text-sm">
           <span className="font-medium">Всего товаров:</span> {filteredProducts.length}
         </div>
-        <div className="text-sm">
-          <span className="font-medium">В наличии:</span> {inStockCount}
-        </div>
+        {/* Removed "В наличии" count display */}
         {outOfStockCount > 0 && !inStockOnly && (
           <div className="text-sm text-muted-foreground">
             <span className="font-medium">Нет в наличии:</span> {outOfStockCount}

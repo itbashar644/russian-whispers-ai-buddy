@@ -26,11 +26,7 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
             alt={product.title}
             className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
-          {currentProduct.discountPrice && (
-            <Badge className="absolute top-2 right-2 bg-red-500">
-              Sale
-            </Badge>
-          )}
+          {/* Discount badge removed */}
           {!isAvailable && (
             <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
               Нет в наличии
