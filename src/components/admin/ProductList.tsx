@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -27,6 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { decreaseProductStock } from "@/data/products/product/services/productStockService";
+import { updateProductStockApiEndpoint } from "@/api/admin/productStockApi";
 
 interface ProductListProps {
   products: Product[];
@@ -189,17 +189,11 @@ const ProductList = ({
             throw new Error("Failed to update stock quantity");
           }
         } else {
-          // Need to increase stock - This would require a new API function
-          const productToUpdate = { ...product, stockQuantity: stockQuantity };
-          // Assuming we have a function to update product
-          const response = await fetch(`/api/admin/products/${product.id}/stock`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ stockQuantity })
-          });
+          // Need to increase stock
+          const response = await updateProductStockApiEndpoint(product.id, stockQuantity);
           
-          if (!response.ok) {
-            throw new Error("Failed to update stock quantity");
+          if (!response.success) {
+            throw new Error(response.error || "Failed to update stock quantity");
           }
         }
         

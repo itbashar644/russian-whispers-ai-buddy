@@ -39,3 +39,27 @@ export const updateProductStockApi = async (
     };
   }
 };
+
+/**
+ * API endpoint for updating product stock (to be used by frontend)
+ */
+export const updateProductStockApiEndpoint = async (
+  productId: string, 
+  stockQuantity: number, 
+  colorVariant?: string
+): Promise<{success: boolean, message?: string, error?: string, stockQuantity?: number}> => {
+  try {
+    const result = await updateProductStockApi(productId, stockQuantity, colorVariant);
+    
+    return {
+      ...result,
+      stockQuantity: result.success ? stockQuantity : undefined
+    };
+  } catch (error) {
+    console.error("Error in updateProductStockApiEndpoint:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error"
+    };
+  }
+};
