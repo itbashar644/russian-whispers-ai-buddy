@@ -21,7 +21,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
+import { Loader2, Mail, RefreshCw, Users } from "lucide-react";
+import { useNewsletterSubscribers } from "@/hooks/useNewsletterSubscribers";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
   subject: z.string().min(1, "Введите тему рассылки"),
@@ -31,16 +35,8 @@ const formSchema = z.object({
 type NewsletterFormValues = z.infer<typeof formSchema>;
 
 export function NewsletterManager() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [subscribers, setSubscribers] = useState<{email: string, timestamp: string}[]>([]);
-
-  // Load subscribers from localStorage on component mount
-  useState(() => {
-    const storedSubscribers = localStorage.getItem("newsletterSubscriptions");
-    if (storedSubscribers) {
-      setSubscribers(JSON.parse(storedSubscribers));
-    }
-  });
+  const [isSending, setIsSending] = useState(false);
+  const { subscribers, loading, error, fetchSubscribers, sendNewsletter } = useNewsletterSubscribers();
 
   const form = useForm<NewsletterFormValues>({
     resolver: zodResolver(formSchema),
@@ -51,38 +47,47 @@ export function NewsletterManager() {
   });
 
   const onSubmit = async (data: NewsletterFormValues) => {
-    if (subscribers.length === 0) {
-      toast.error("Нет подписчиков для рассылки");
-      return;
-    }
-    
-    setIsLoading(true);
+    setIsSending(true);
     
     try {
-      // In a real app, this would call an API endpoint to send emails
-      console.log("Sending newsletter:", data);
-      console.log("To subscribers:", subscribers.map(s => s.email));
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success(`Рассылка успешно отправлена ${subscribers.length} подписчикам!`);
-      form.reset();
-    } catch (error) {
-      console.error("Error sending newsletter:", error);
-      toast.error("Ошибка при отправке рассылки. Попробуйте позже.");
+      const success = await sendNewsletter(data.subject, data.content);
+      if (success) {
+        form.reset();
+      }
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
     }
+  };
+
+  const handleRefresh = () => {
+    fetchSubscribers();
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Управление рассылкой</CardTitle>
-        <CardDescription>
-          Отправка рекламной рассылки подписчикам ({subscribers.length})
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Управление рассылкой</CardTitle>
+            <CardDescription>
+              Отправка рекламной рассылки подписчикам
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Users className="h-3 w-3 mr-1" />
+              {loading ? '...' : subscribers.length} подписчиков
+            </Badge>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleRefresh} 
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -119,18 +124,41 @@ export function NewsletterManager() {
               )}
             />
             
-            <Button type="submit" disabled={isLoading || subscribers.length === 0}>
-              {isLoading ? "Отправка..." : "Отправить рассылку"}
+            <Button 
+              type="submit" 
+              disabled={isSending || loading || subscribers.length === 0}
+              className="w-full"
+            >
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Отправка...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Отправить рассылку
+                </>
+              )}
             </Button>
           </form>
         </Form>
         
-        {subscribers.length === 0 && (
+        {error && (
+          <p className="text-center text-destructive mt-4">
+            {error}
+          </p>
+        )}
+        
+        {subscribers.length === 0 && !loading && !error && (
           <p className="text-center text-muted-foreground mt-4">
             У вас пока нет подписчиков для рассылки
           </p>
         )}
       </CardContent>
+      <CardFooter className="text-sm text-muted-foreground border-t pt-4">
+        Рассылка будет отправлена всем активным подписчикам
+      </CardFooter>
     </Card>
   );
 }

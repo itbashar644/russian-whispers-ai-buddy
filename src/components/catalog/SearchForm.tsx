@@ -22,21 +22,28 @@ export const SearchForm: React.FC<SearchFormProps> = ({
 
   return (
     <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto">
-      <div className="relative w-full md:min-w-[250px]">
+      <div className="relative w-full md:min-w-[300px]">
         <Input
           ref={searchInputRef}
           type="search"
           placeholder="Поиск товаров..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="pr-10 border-primary/30 focus-visible:border-primary focus-visible:ring-primary/40 bg-primary/5 placeholder:text-muted-foreground/70"
+          className="pr-10 border-primary border-2 focus-visible:border-primary focus-visible:ring-primary/40 bg-primary/5 placeholder:text-muted-foreground/70 h-11"
           disabled={loading}
         />
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary/50 pointer-events-none">
-          <Search className="h-4 w-4" />
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary pointer-events-none">
+          <Search className="h-5 w-5" />
         </div>
       </div>
-      <Button type="submit" disabled={loading}>Найти</Button>
+      <Button 
+        type="submit" 
+        disabled={loading}
+        size="lg"
+        className="h-11 px-6"
+      >
+        Найти
+      </Button>
     </form>
   );
 };
