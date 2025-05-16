@@ -1,11 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 export function CookieConsent() {
@@ -31,19 +27,17 @@ export function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-50 mx-auto max-w-xs px-4">
-      <Card className="shadow-lg">
-        <CardContent className="pt-3 pb-1">
-          <p className="text-xs">
-            Мы используем cookies для улучшения работы сайта. <Link to="/privacy" className="text-primary underline text-xs">Подробнее</Link>
-          </p>
+    <div className="fixed bottom-2 left-0 right-0 z-50 mx-auto max-w-xs px-2">
+      <Card className="shadow-lg py-0">
+        <CardContent className="pt-2 pb-0 text-xs">
+          <p>Мы используем cookies. <Link to="/privacy" className="text-primary underline">Подробнее</Link></p>
         </CardContent>
-        <CardFooter className="flex justify-end gap-2 pb-2 pt-0">
-          <Button variant="outline" size="sm" onClick={() => setIsVisible(false)} className="h-7 text-xs">
-            Отклонить
+        <CardFooter className="flex justify-end gap-1 pb-2 pt-0">
+          <Button variant="ghost" size="sm" onClick={() => setIsVisible(false)} className="h-6 text-xs px-2">
+            Нет
           </Button>
-          <Button size="sm" onClick={acceptCookies} className="h-7 text-xs">
-            Принять
+          <Button size="sm" onClick={acceptCookies} className="h-6 text-xs px-2">
+            OK
           </Button>
         </CardFooter>
       </Card>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -78,9 +79,12 @@ const Cart = () => {
     
     setIsSubmitting(true);
     
+    // Get current authenticated user if available
+    const { user } = useAuth();
+    
     // Create order data object
     const orderData = {
-      user_id: user?.id,
+      user_id: user?.id, // Will be undefined for guest checkout
       items,
       total,
       delivery_method: deliveryMethod.id,
@@ -96,6 +100,12 @@ const Cart = () => {
       
       if (result.success) {
         toast.success("Заказ успешно оформлен! Спасибо за покупку.");
+        
+        // Show additional message for guest users
+        if (!user) {
+          toast.info("Мы создали аккаунт для вас. Проверьте вашу почту для получения пароля и инструкций.");
+        }
+        
         // Clear the cart after successful order
         clearCart();
         

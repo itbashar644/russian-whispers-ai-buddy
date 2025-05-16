@@ -1,9 +1,9 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CartItem } from "@/types/product";
-import { decreaseProductStock } from "@/data/products";
+import { decreaseProductStock } from "@/data/products/product/productServiceSpecialized";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { registerGuestUser } from "@/utils/auth/guestCheckout";
 
 export async function getAllOrders() {
   try {
@@ -97,7 +97,7 @@ export async function updateOrderTracking(orderId: string, trackingNumber: strin
   }
 }
 
-// New function to place an order
+// New function to place an order with guest checkout support
 export async function placeOrder(orderData: {
   user_id?: string;
   items: CartItem[];
@@ -111,9 +111,29 @@ export async function placeOrder(orderData: {
   try {
     console.log('Placing order with data:', orderData);
     
+    // Handle guest checkout - create a user account if no user_id is provided
+    if (!orderData.user_id) {
+      console.log('Guest checkout detected, registering user');
+      const { success, userId, error } = await registerGuestUser(
+        orderData.customer_email, 
+        orderData.customer_name
+      );
+      
+      if (success && userId) {
+        console.log('Guest user registered successfully with ID:', userId);
+        orderData.user_id = userId;
+      } else if (error) {
+        console.error('Failed to register guest user:', error);
+        // Continue with guest checkout even if registration fails
+      }
+    }
+    
     // Check stock availability for all items before placing the order
     for (const item of orderData.items) {
-      if (!decreaseProductStock(item.product.id, item.quantity)) {
+      const colorVariant = item.color || undefined;
+      const stockAvailable = await decreaseProductStock(item.product.id, item.quantity, colorVariant);
+      
+      if (!stockAvailable) {
         return {
           success: false,
           error: {
@@ -153,12 +173,7 @@ export async function placeOrder(orderData: {
 
     if (error) {
       console.error('Error creating order:', error);
-      // Revert the stock decrease since the order failed
-      for (const item of orderData.items) {
-        // This is a simplified approach; in a real app, you'd need a more robust solution
-        // like using transactions or a background job to ensure consistency
-        decreaseProductStock(item.product.id, -item.quantity);
-      }
+      // We don't need to revert stock decreases since they are now handled before insertion
       return { success: false, error };
     }
 

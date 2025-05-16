@@ -5,7 +5,7 @@ import {
   refreshCacheIfNeeded,
 } from "../cache/productCache";
 import { productMergeApi } from "../supabase/productMergeApi";
-import { getProductByIdFromSupabase, fetchProductsFromSupabase } from "../supabaseApi";
+import { getProductByIdFromSupabase, fetchProductsFromSupabase, updateProductInSupabase } from "../supabaseApi";
 import { getProductById as getProductByIdBase } from "./productServiceBase";
 
 /**
@@ -207,10 +207,48 @@ export const checkProductStock = async (productId: string, colorVariant?: string
  */
 export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
   try {
-    // Implementation would update stock in database
-    // This is a placeholder that would need to be implemented with actual database updates
-    console.log(`Decreasing stock for product ${productId} by ${quantity} units`);
-    return true;
+    const product = await getProductById(productId);
+    
+    if (!product) {
+      console.error(`Product with ID ${productId} not found`);
+      return false;
+    }
+    
+    // Handle color variants
+    if (colorVariant && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === colorVariant);
+      if (variant) {
+        if (variant.stockQuantity !== undefined) {
+          variant.stockQuantity = Math.max(0, variant.stockQuantity - quantity);
+        } else {
+          variant.stockQuantity = 0;
+        }
+        
+        // Update product with modified color variant
+        const result = await updateProductInSupabase({
+          ...product,
+          colorVariants: product.colorVariants
+        });
+        
+        return result.success;
+      }
+    }
+    
+    // Handle main product stock
+    if (product.stockQuantity !== undefined) {
+      product.stockQuantity = Math.max(0, product.stockQuantity - quantity);
+      product.inStock = product.stockQuantity > 0;
+      
+      // Update product with new stock quantity
+      const result = await updateProductInSupabase(product);
+      
+      // Force refresh cache after stock update
+      await refreshCacheIfNeeded(true);
+      
+      return result.success;
+    }
+    
+    return false;
   } catch (error) {
     console.error("Error decreasing product stock:", error);
     return false;

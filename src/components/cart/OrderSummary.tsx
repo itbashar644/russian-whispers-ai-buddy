@@ -1,15 +1,12 @@
 
 import React, { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
-import { Checkbox } from "@/components/ui/checkbox";
-import ContactMethodSelect from "./ContactMethodSelect";
-import TelegramNicknameInput from "./TelegramNicknameInput";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import OrderFormFields from "./OrderFormFields";
+import OrderTerms from "./OrderTerms";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -203,117 +200,20 @@ const OrderSummary = ({
       )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Имя</Label>
-          <Input
-            id="name"
-            name="name"
-            placeholder="Ваше имя"
-            value={orderForm.name}
-            onChange={handleOrderFormChange}
-            required
-          />
-        </div>
+        <OrderFormFields 
+          orderForm={orderForm}
+          handleOrderFormChange={handleOrderFormChange}
+          handleContactMethodChange={handleContactMethodChange}
+        />
         
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="email@example.com"
-            value={orderForm.email}
-            onChange={handleOrderFormChange}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="phone">Телефон</Label>
-          <Input
-            id="phone"
-            name="phone"
-            placeholder="+7 (XXX) XXX-XX-XX"
-            value={orderForm.phone}
-            onChange={handleOrderFormChange}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="address">Адрес доставки</Label>
-          <Input
-            id="address"
-            name="address"
-            placeholder="Ваш адрес"
-            value={orderForm.address}
-            onChange={handleOrderFormChange}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
-          <ContactMethodSelect 
-            value={orderForm.contactMethod} 
-            onValueChange={handleContactMethodChange}
-          />
-        </div>
-        
-        {/* Показываем поле для ника в Telegram если выбран этот способ связи */}
-        {orderForm.contactMethod === "telegram" && (
-          <TelegramNicknameInput
-            value={orderForm.telegramNickname}
-            onChange={handleOrderFormChange}
-            required
-          />
-        )}
-        
-        {/* Согласие с условиями использования */}
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="termsAgreement" 
-            checked={termsAgreed}
-            onCheckedChange={(checked) => setTermsAgreed(checked === true)} 
-            className="mt-1"
-          />
-          <label
-            htmlFor="termsAgreement"
-            className="text-sm font-medium leading-tight cursor-pointer"
-          >
-            Я прочитал(а) и согласен(на) с <Link to="/terms" className="text-primary underline" target="_blank">Условиями использования</Link>
-          </label>
-        </div>
-        
-        {/* Согласие с политикой конфиденциальности */}
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="privacyAgreement" 
-            checked={privacyAgreed}
-            onCheckedChange={(checked) => setPrivacyAgreed(checked === true)} 
-            className="mt-1"
-          />
-          <label
-            htmlFor="privacyAgreement"
-            className="text-sm font-medium leading-tight cursor-pointer"
-          >
-            Я прочитал(а) и согласен(на) с <Link to="/privacy" className="text-primary underline" target="_blank">Политикой конфиденциальности</Link>
-          </label>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="saveInfo" 
-            checked={saveInfo}
-            onCheckedChange={(checked) => setSaveInfo(checked === true)} 
-          />
-          <label
-            htmlFor="saveInfo"
-            className="text-sm font-medium leading-none cursor-pointer"
-          >
-            Сохранить информацию для будущих заказов
-          </label>
-        </div>
+        <OrderTerms
+          termsAgreed={termsAgreed}
+          setTermsAgreed={setTermsAgreed}
+          privacyAgreed={privacyAgreed}
+          setPrivacyAgreed={setPrivacyAgreed}
+          saveInfo={saveInfo}
+          setSaveInfo={setSaveInfo}
+        />
         
         <Button 
           type="submit" 
