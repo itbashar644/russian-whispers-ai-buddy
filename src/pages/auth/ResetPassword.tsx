@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
+// Define a type for the possible return values of updatePassword
+type UpdatePasswordResult = boolean | { error: { message?: string } | string | unknown };
+
 const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -106,7 +109,7 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
     try {
       // Call the updatePassword function and handle both possible return types
-      const result = await updatePassword(password);
+      const result = await updatePassword(password) as UpdatePasswordResult;
       
       // If result is a boolean (true/false), handle accordingly
       if (typeof result === "boolean") {
@@ -115,10 +118,19 @@ const ResetPassword: React.FC = () => {
         }
       } 
       // If result is an object with error property, check the error
-      else if (result && typeof result === 'object' && 'error' in result) {
-        const errorMessage = result.error && typeof result.error === 'object' && 'message' in result.error 
-          ? result.error.message 
-          : "Failed to update password";
+      else if (result && typeof result === 'object') {
+        // Safe extraction of error message with multiple type checks
+        let errorMessage = "Failed to update password";
+        
+        if ('error' in result) {
+          const errorObj = result.error;
+          if (typeof errorObj === 'object' && errorObj !== null && 'message' in errorObj) {
+            errorMessage = String(errorObj.message);
+          } else if (typeof errorObj === 'string') {
+            errorMessage = errorObj;
+          }
+        }
+        
         throw new Error(errorMessage);
       }
       
