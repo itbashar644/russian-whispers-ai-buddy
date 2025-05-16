@@ -39,10 +39,8 @@ export const useProductFiltering = ({
     
     let result = [...allProducts];
     
-    // Transform products for color display if needed
-    if (showColorVariants) {
-      result = transformProductsForColorDisplay(result);
-    }
+    // Always transform products for color display
+    result = transformProductsForColorDisplay(result);
     
     // Filter by color if color parameter is set
     if (colorParam) {
@@ -72,23 +70,11 @@ export const useProductFiltering = ({
       }
     );
     
-    // Filter by availability - check stockQuantity first, then inStock
-    if (inStockOnly) {
-      result = result.filter((p) => {
-        // Если есть stockQuantity, проверяем, что он больше 0
-        if (p.stockQuantity !== undefined) {
-          return p.stockQuantity > 0;
-        }
-        // Иначе используем inStock
-        return p.inStock;
-      });
-    }
-    
     // Sort products
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
+  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam]);
 
   // Calculate counts for stock status using stockQuantity for accuracy
   const inStockCount = useMemo(() => {

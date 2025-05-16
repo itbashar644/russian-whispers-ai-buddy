@@ -22,16 +22,13 @@ interface CatalogProductsSectionProps {
   filteredProducts: Product[];
   inStockCount: number;
   outOfStockCount: number;
-  inStockOnly: boolean;
   activeFiltersCount: number;
   sortBy: string;
-  showColorVariants: boolean;
   handleSearchSubmit: (e: React.FormEvent) => void;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setSortBy: (value: string) => void;
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
-  handleInStockFilter: (checked: boolean) => void;
   handleClearAllFilters: () => void;
 }
 
@@ -42,18 +39,14 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   availableCategories,
   loading,
   filteredProducts,
-  inStockCount,
   outOfStockCount,
-  inStockOnly,
   activeFiltersCount,
   sortBy,
-  showColorVariants,
   handleSearchSubmit,
   handleSearchChange,
   setSortBy,
   handleCategoryClick,
   handleColorFilter,
-  handleInStockFilter,
   handleClearAllFilters
 }) => {
   return (
@@ -96,12 +89,10 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
       <CatalogActiveFilters
         categoryParam={categoryParam}
         colorParam={colorParam}
-        inStockOnly={inStockOnly}
         searchTerm={searchTerm}
         activeFiltersCount={activeFiltersCount}
         handleCategoryClick={handleCategoryClick}
         handleColorFilter={handleColorFilter}
-        handleInStockFilter={handleInStockFilter}
         handleClearAllFilters={handleClearAllFilters}
       />
 
@@ -110,8 +101,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
         <div className="text-sm">
           <span className="font-medium">Всего товаров:</span> {filteredProducts.length}
         </div>
-        {/* Removed "В наличии" count display */}
-        {outOfStockCount > 0 && !inStockOnly && (
+        {outOfStockCount > 0 && (
           <div className="text-sm text-muted-foreground">
             <span className="font-medium">Нет в наличии:</span> {outOfStockCount}
           </div>
@@ -129,7 +119,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
         // Отображение товаров
         <ProductGrid 
           products={filteredProducts} 
-          showAsColorVariants={showColorVariants}
+          showAsColorVariants={true}
         />
       )}
       

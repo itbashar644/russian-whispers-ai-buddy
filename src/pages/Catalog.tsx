@@ -15,16 +15,13 @@ const Catalog = () => {
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
   const colorParam = searchParams.get("color");
-  const inStockParam = searchParams.get("in_stock");
   
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: 0,
     max: 5000,
   });
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [inStockOnly, setInStockOnly] = useState(inStockParam === "true");
   const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
-  const [showColorVariants, setShowColorVariants] = useState<boolean>(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
@@ -36,10 +33,10 @@ const Catalog = () => {
     allProducts,
     searchTerm,
     priceRange,
-    inStockOnly,
+    inStockOnly: false, // Always false now
     sortBy,
     loading,
-    showColorVariants,
+    showColorVariants: true, // Always true now
     colorParam
   });
 
@@ -48,10 +45,7 @@ const Catalog = () => {
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-    
-    // Update inStockOnly based on URL parameter
-    setInStockOnly(inStockParam === "true");
-  }, [searchParam, inStockParam]);
+  }, [searchParam]);
 
   // Подсчет количества активных фильтров
   useEffect(() => {
@@ -59,12 +53,11 @@ const Catalog = () => {
     
     if (categoryParam) count++;
     if (colorParam) count++;
-    if (inStockOnly) count++;
     if (priceRange.min > 0 || priceRange.max < 5000) count++;
     if (searchTerm) count++;
     
     setActiveFiltersCount(count);
-  }, [categoryParam, colorParam, inStockOnly, priceRange, searchTerm]);
+  }, [categoryParam, colorParam, priceRange, searchTerm]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -80,16 +73,6 @@ const Catalog = () => {
       searchParams.set("color", color);
     } else {
       searchParams.delete("color");
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleInStockFilter = (checked: boolean) => {
-    setInStockOnly(checked);
-    if (checked) {
-      searchParams.set("in_stock", "true");
-    } else {
-      searchParams.delete("in_stock");
     }
     setSearchParams(searchParams);
   };
@@ -117,7 +100,6 @@ const Catalog = () => {
     setSearchParams(new URLSearchParams());
     setPriceRange({ min: 0, max: 5000 });
     setSearchTerm("");
-    setInStockOnly(false);
   };
 
   // Находим объект категории по имени
@@ -144,21 +126,16 @@ const Catalog = () => {
           availableCategories={availableCategories}
           categoryParam={categoryParam}
           colorParam={colorParam}
-          inStockOnly={inStockOnly}
           priceRange={priceRange}
-          showColorVariants={showColorVariants}
           loading={loading}
           showMobileFilters={showMobileFilters}
           activeFiltersCount={activeFiltersCount}
           availableColors={availableColors}
-          inStockCount={inStockCount}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
-          handleInStockFilter={handleInStockFilter}
           handlePriceChange={handlePriceChange}
           handleClearAllFilters={handleClearAllFilters}
           findCategoryByName={findCategoryByName}
-          setShowColorVariants={setShowColorVariants}
         />
 
         <CatalogProductsSection
@@ -170,16 +147,13 @@ const Catalog = () => {
           filteredProducts={filteredProducts}
           inStockCount={inStockCount}
           outOfStockCount={outOfStockCount}
-          inStockOnly={inStockOnly}
           activeFiltersCount={activeFiltersCount}
           sortBy={sortBy}
-          showColorVariants={showColorVariants}
           handleSearchSubmit={handleSearchSubmit}
           handleSearchChange={handleSearchChange}
           setSortBy={setSortBy}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
-          handleInStockFilter={handleInStockFilter}
           handleClearAllFilters={handleClearAllFilters}
         />
       </div>
