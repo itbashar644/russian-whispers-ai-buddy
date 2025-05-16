@@ -46,9 +46,13 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
     try {
       const result = await updatePassword(password);
       
-      // Handle different error formats
-      if (result === false || (typeof result === 'object' && result !== null && 'error' in result)) {
-        const errorMessage = typeof result === 'object' && result.error 
+      // Handle different error formats with proper null checks
+      if (result === false) {
+        throw new Error("Failed to update password");
+      }
+      
+      if (result && typeof result === 'object' && 'error' in result) {
+        const errorMessage = result.error 
           ? typeof result.error === 'string' 
             ? result.error 
             : (result.error as any)?.message || "Failed to update password"

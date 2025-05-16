@@ -7,6 +7,7 @@ import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
 import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
