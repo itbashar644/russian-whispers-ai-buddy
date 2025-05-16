@@ -20,7 +20,7 @@ import { useWishlist } from "@/context/WishlistContext";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { cart } = useCart();
+  const { items } = useCart(); // Changed from cart to items which matches the CartContextType
   const { wishlist } = useWishlist();
   const { user } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -30,7 +30,7 @@ const Navbar = () => {
   // Don't show the navbar on admin pages
   if (isAdminRoute) return null;
 
-  const totalItems = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+  const totalItems = items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   const handleScroll = () => {
     if (window.scrollY > 10) {

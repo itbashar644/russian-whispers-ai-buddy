@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,9 +105,18 @@ const ResetPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      const { error } = await updatePassword(password);
-      if (error) {
-        throw error;
+      // Fix: Use object destructuring to get the error from the result
+      const result = await updatePassword(password);
+      
+      // If result is a boolean (true/false), handle accordingly
+      if (typeof result === "boolean") {
+        if (!result) {
+          throw new Error("Failed to update password");
+        }
+      } 
+      // If result is an object with error property, check the error
+      else if (result && 'error' in result && result.error) {
+        throw result.error;
       }
       
       toast.success("Пароль успешно обновлен", {

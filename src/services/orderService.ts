@@ -3,7 +3,7 @@ import { CartItem } from "@/types/product";
 import { decreaseProductStock } from "@/data/products/product/productServiceSpecialized";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
-import { registerGuestUser } from "@/utils/auth/guestCheckout";
+import { handleGuestCheckout } from "@/utils/auth/guestCheckout";
 
 export async function getAllOrders() {
   try {
@@ -114,7 +114,7 @@ export async function placeOrder(orderData: {
     // Handle guest checkout - create a user account if no user_id is provided
     if (!orderData.user_id) {
       console.log('Guest checkout detected, registering user');
-      const { success, userId, error } = await registerGuestUser(
+      const { success, userId, error } = await handleGuestCheckout(
         orderData.customer_email, 
         orderData.customer_name
       );
