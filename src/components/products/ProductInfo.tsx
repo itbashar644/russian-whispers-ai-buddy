@@ -1,198 +1,166 @@
-
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, Palette } from "lucide-react";
+import React, { useState, useEffect } from 'react';
 import { Product, ColorVariant } from "@/types/product";
-import { useCart } from "@/context/CartContext";
-import ColorVariantsGrid from "@/components/products/ColorVariantsGrid";
+import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { decreaseProductStock } from "@/data/products";
+import StockNotification from './StockNotification';
+import AlternativeProducts from './AlternativeProducts';
 
 interface ProductInfoProps {
   product: Product;
-  relatedColorProducts: Product[];
-  selectedColorVariant: ColorVariant | null;
-  onColorVariantSelect: (variant: ColorVariant) => void;
 }
 
-const ProductInfo: React.FC<ProductInfoProps> = ({ 
-  product, 
-  relatedColorProducts,
-  selectedColorVariant, 
-  onColorVariantSelect 
-}) => {
-  const { addItem } = useCart();
+const ProductInfo = ({ product }: ProductInfoProps) => {
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // Обработчик добавления товара в корзину
-  const handleAddToCart = () => {
-    addItem({
-      product,
-      quantity: 1,
-      color: selectedColorVariant?.color,
-      selectedColorVariant
-    });
-  };
+  useEffect(() => {
+    // Reset selected color when product changes
+    setSelectedColor(null);
+    setSelectedColorVariant(null);
+  }, [product]);
 
-  // Получаем текущую цену с учетом выбранного варианта и скидки
-  const getCurrentPrice = () => {
-    if (selectedColorVariant) {
-      return selectedColorVariant.discountPrice || selectedColorVariant.price;
+  useEffect(() => {
+    // Update selected color variant when selected color changes
+    if (selectedColor) {
+      const variant = product.colorVariants?.find(v => v.color === selectedColor) || null;
+      setSelectedColorVariant(variant);
+    } else {
+      setSelectedColorVariant(null);
     }
-    return product.discountPrice || product.price || 0;
-  };
+  }, [selectedColor, product.colorVariants]);
 
-  // Получаем исходную цену с учетом выбранного варианта
-  const getOriginalPrice = () => {
-    if (selectedColorVariant) {
-      return selectedColorVariant.price;
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true);
+    try {
+      // Decrease stock
+      const productId = product.id;
+      const colorVariant = selectedColor;
+      
+      const success = await decreaseProductStock(productId, quantity, colorVariant);
+      
+      if (success) {
+        // Add to cart logic (replace with your actual cart logic)
+        toast("Товар добавлен в корзину", {
+          description: `${product.title} (${quantity} шт.)`,
+        });
+      } else {
+        toast("Ошибка", {
+          description: "Не удалось добавить товар в корзину. Пожалуйста, попробуйте позже.",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast("Ошибка", {
+        description: "Не удалось добавить товар в корзину. Пожалуйста, попробуйте позже.",
+      });
+    } finally {
+      setIsAddingToCart(false);
     }
-    return product.price || 0;
   };
-
-  // Проверяем наличие товара с учетом выбранного варианта
-  const isInStock = () => {
-    if (!product) return false;
-    
-    if (selectedColorVariant) {
-      return selectedColorVariant.stockQuantity !== undefined && selectedColorVariant.stockQuantity > 0;
-    }
-    
-    return product.inStock && (product.stockQuantity === undefined ? false : product.stockQuantity > 0);
-  };
-
-  // Формируем заголовок товара
-  const getTitle = () => {
-    if (selectedColorVariant && selectedColorVariant.color) {
-      return `${product.title} (${selectedColorVariant.color})`;
-    }
-    
-    return product.title;
-  };
+  
+  const isProductAvailable = selectedColorVariant 
+    ? (selectedColorVariant.stockQuantity ?? 0) > 0
+    : product.stockQuantity && product.stockQuantity > 0;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{getTitle()}</h1>
+    <div>
+      <h1 className="text-2xl font-bold">{product.title}</h1>
+      <p className="text-muted-foreground mt-2">{product.description}</p>
       
-      {/* Цена */}
-      <div className="flex items-center">
-        <span className="text-2xl font-bold mr-3">{getCurrentPrice()} ₽</span>
-        {getCurrentPrice() !== getOriginalPrice() && (
-          <span className="text-muted-foreground line-through">{getOriginalPrice()} ₽</span>
+      {/* Price section */}
+      <div className="mt-4">
+        {product.discountPrice ? (
+          <div className="flex items-center space-x-2">
+            <span className="text-xl font-bold">{formatCurrency(product.discountPrice)}</span>
+            <span className="text-gray-500 line-through">{formatCurrency(product.price)}</span>
+          </div>
+        ) : (
+          <span className="text-xl font-bold">{formatCurrency(product.price)}</span>
         )}
       </div>
-      
-      {/* Артикул */}
-      {(selectedColorVariant?.articleNumber || product.articleNumber) && (
-        <p className="text-sm text-muted-foreground">
-          Артикул: {selectedColorVariant?.articleNumber || product.articleNumber}
-        </p>
-      )}
-      
-      {/* Статус наличия */}
-      <div className={`text-sm font-medium ${isInStock() ? "text-green-600" : "text-red-500"}`}>
-        {isInStock() ? "В наличии" : "Нет в наличии"}
-      </div>
-      
-      {/* Related color variants */}
-      {relatedColorProducts.length > 0 && (
-        <ColorVariantsGrid 
-          currentProduct={product}
-          relatedProducts={relatedColorProducts}
-        />
-      )}
-      
-      {/* Цветовые варианты */}
-      {product.colorVariants && product.colorVariants.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            <span className="font-medium">Цвет: {selectedColorVariant?.color || product.colorVariants[0].color}</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {product.colorVariants.map((variant, index) => (
-              <button
-                key={index}
-                type="button"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${
-                  selectedColorVariant?.color === variant.color
-                    ? "bg-primary text-primary-foreground font-medium"
-                    : "bg-muted hover:bg-muted/80"
-                }`}
-                onClick={() => onColorVariantSelect(variant)}
-              >
-                <span className="w-3 h-3 rounded-full" style={{ 
-                  backgroundColor: variant.color.toLowerCase() !== 'белый' ? variant.color.toLowerCase() : '#ffffff',
-                  border: variant.color.toLowerCase() === 'белый' ? '1px solid #ccc' : 'none' 
-                }}></span>
-                {variant.color}
-              </button>
-            ))}
-          </div>
+    
+    {/* Availability section */}
+    <div className="mt-4">
+      {isProductAvailable ? (
+        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+          В наличии
+        </div>
+      ) : (
+        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+          Нет в наличии
         </div>
       )}
-      
-      {/* Кнопка добавления в корзину */}
-      <Button 
-        size="lg" 
-        className="w-full mt-6" 
-        onClick={handleAddToCart}
-        disabled={!isInStock()}
-      >
-        <ShoppingCart className="mr-2 h-5 w-5" />
-        Добавить в корзину
-      </Button>
-      
-      {/* Кнопки маркетплейсов */}
-      {((selectedColorVariant && (selectedColorVariant.ozonUrl || selectedColorVariant.wildberriesUrl || selectedColorVariant.avitoUrl)) || 
-        (!selectedColorVariant && (product.ozonUrl || product.wildberriesUrl || product.avitoUrl))) && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Купить на маркетплейсах:</p>
-          <div className="flex flex-wrap gap-2">
-            {(selectedColorVariant?.ozonUrl || product.ozonUrl) && (
-              <a 
-                href={selectedColorVariant?.ozonUrl || product.ozonUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-muted hover:bg-muted/80 px-3 py-2 rounded-md"
+    </div>
+    
+    {/* Product actions */}
+    <div className="mt-6 space-y-4">
+      {isProductAvailable ? (
+        <div className="flex flex-col space-y-4">
+          {/* Quantity selector */}
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium">Количество:</span>
+            <div className="flex items-center border rounded-md">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-2 border-r"
+                aria-label="Уменьшить количество"
               >
-                <img 
-                  src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png" 
-                  alt="Ozon" 
-                  className="w-5 h-5 object-contain" 
-                />
-                <span className="text-sm font-medium">Ozon</span>
-              </a>
-            )}
-            
-            {(selectedColorVariant?.wildberriesUrl || product.wildberriesUrl) && (
-              <a 
-                href={selectedColorVariant?.wildberriesUrl || product.wildberriesUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-muted hover:bg-muted/80 px-3 py-2 rounded-md"
+                −
+              </button>
+              <span className="px-4 py-2">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-3 py-2 border-l"
+                aria-label="Увеличить количество"
               >
-                <img 
-                  src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png" 
-                  alt="Wildberries" 
-                  className="w-5 h-5 object-contain" 
-                />
-                <span className="text-sm font-medium">Wildberries</span>
-              </a>
-            )}
-            
-            {(selectedColorVariant?.avitoUrl || product.avitoUrl) && (
-              <a 
-                href={selectedColorVariant?.avitoUrl || product.avitoUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-muted hover:bg-muted/80 px-3 py-2 rounded-md"
-              >
-                <img 
-                  src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png" 
-                  alt="Avito" 
-                  className="w-5 h-5 object-contain" 
-                />
-                <span className="text-sm font-medium">Avito</span>
-              </a>
-            )}
+                +
+              </button>
+            </div>
+          </div>
+          
+          <Button
+            onClick={handleAddToCart}
+            className="w-full"
+            disabled={isAddingToCart}
+          >
+            {isAddingToCart ? "Добавляем..." : "Добавить в корзину"}
+          </Button>
+        </div>
+      ) : (
+        <StockNotification 
+          productId={product.id} 
+          productName={product.title} 
+          variant={selectedColor}
+        />
+      )}
+    </div>
+    
+    {/* Show alternative products if current one is not available */}
+    {!isProductAvailable && (
+      <AlternativeProducts productId={product.id} title="Похожие товары в наличии" />
+    )}
+    
+      {/* Color variants */}
+      {product.colors && product.colors.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-medium mb-2">Цвет:</h3>
+          <div className="flex items-center space-x-3">
+            {product.colors.map((color) => (
+              <button
+                key={color}
+                className={`
+                  w-8 h-8 rounded-full shadow-sm
+                  ${selectedColor === color ? 'ring-2 ring-primary' : ''}
+                `}
+                style={{ backgroundColor: color }}
+                onClick={() => setSelectedColor(color)}
+                aria-label={`Выбрать цвет ${color}`}
+              />
+            ))}
           </div>
         </div>
       )}

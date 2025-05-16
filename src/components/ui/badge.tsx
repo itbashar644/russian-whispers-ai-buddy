@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -15,6 +16,12 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        success: 
+          "border-transparent bg-green-100 text-green-800 hover:bg-green-200",
+        warning:
+          "border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+        info:
+          "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200",
       },
     },
     defaultVariants: {
@@ -25,11 +32,21 @@ const badgeVariants = cva(
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+    VariantProps<typeof badgeVariants> {
+  onClick?: () => void;
+}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, onClick, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div
+      className={cn(
+        badgeVariants({ variant }), 
+        onClick && "cursor-pointer",
+        className
+      )}
+      onClick={onClick}
+      {...props}
+    />
   )
 }
 

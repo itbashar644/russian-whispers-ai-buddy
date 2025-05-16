@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProductsByCategory, getAllCategories, getCategoryObjects, getActiveProducts } from "@/data/products";
@@ -15,15 +16,18 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Palette } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Palette, Filter, X, Package, PackageCheck } from "lucide-react";
 import { Product } from "@/types/product";
 import { Category } from "@/data/products/categoryData";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
   const colorParam = searchParams.get("color");
+  const inStockParam = searchParams.get("in_stock");
   
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -32,12 +36,14 @@ const Catalog = () => {
     max: 5000,
   });
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [inStockOnly, setInStockOnly] = useState(false);
+  const [inStockOnly, setInStockOnly] = useState(inStockParam === "true");
   const [sortBy, setSortBy] = useState("default");
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [categoryObjects, setCategoryObjects] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showColorVariants, setShowColorVariants] = useState<boolean>(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Get all available colors from products
   const availableColors = useMemo(() => {
@@ -87,7 +93,10 @@ const Catalog = () => {
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-  }, [searchParam]);
+    
+    // Update inStockOnly based on URL parameter
+    setInStockOnly(inStockParam === "true");
+  }, [searchParam, inStockParam]);
 
   // Фильтруем и сортируем продукты при изменении параметров
   useEffect(() => {
@@ -188,6 +197,9 @@ const Catalog = () => {
       case "rating":
         result.sort((a, b) => b.rating - a.rating);
         break;
+      case "in-stock":
+        result.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+        break;
       default:
         // Default sorting
         break;
@@ -195,6 +207,19 @@ const Catalog = () => {
     
     setFilteredProducts(result);
   }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
+
+  // Подсчет количества активных фильтров
+  useEffect(() => {
+    let count = 0;
+    
+    if (categoryParam) count++;
+    if (colorParam) count++;
+    if (inStockOnly) count++;
+    if (priceRange.min > 0 || priceRange.max < 5000) count++;
+    if (searchTerm) count++;
+    
+    setActiveFiltersCount(count);
+  }, [categoryParam, colorParam, inStockOnly, priceRange, searchTerm]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -210,6 +235,16 @@ const Catalog = () => {
       searchParams.set("color", color);
     } else {
       searchParams.delete("color");
+    }
+    setSearchParams(searchParams);
+  };
+
+  const handleInStockFilter = (checked: boolean) => {
+    setInStockOnly(checked);
+    if (checked) {
+      searchParams.set("in_stock", "true");
+    } else {
+      searchParams.delete("in_stock");
     }
     setSearchParams(searchParams);
   };
@@ -232,10 +267,98 @@ const Catalog = () => {
     }
     setSearchParams(searchParams);
   };
+  
+  const handleClearAllFilters = () => {
+    setSearchParams(new URLSearchParams());
+    setPriceRange({ min: 0, max: 5000 });
+    setSearchTerm("");
+    setInStockOnly(false);
+  };
 
   // Находим объект категории по имени
   const findCategoryByName = (name: string) => {
     return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
+  };
+
+  // Вспомогательные функции для интерфейса
+  const inStockCount = useMemo(() => {
+    return filteredProducts.filter(p => p.inStock).length;
+  }, [filteredProducts]);
+  
+  const outOfStockCount = useMemo(() => {
+    return filteredProducts.filter(p => !p.inStock).length;
+  }, [filteredProducts]);
+  
+  // Рендер активных фильтров
+  const renderActiveFilters = () => {
+    if (activeFiltersCount === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {categoryParam && (
+          <Badge 
+            variant="secondary" 
+            className="flex items-center gap-1"
+            onClick={() => handleCategoryClick(null)}
+          >
+            Категория: {categoryParam} <X className="h-3 w-3" />
+          </Badge>
+        )}
+        
+        {colorParam && (
+          <Badge 
+            variant="secondary" 
+            className="flex items-center gap-1"
+            onClick={() => handleColorFilter(null)}
+          >
+            Цвет: {colorParam} <X className="h-3 w-3" />
+          </Badge>
+        )}
+        
+        {inStockOnly && (
+          <Badge 
+            variant="secondary" 
+            className="flex items-center gap-1"
+            onClick={() => handleInStockFilter(false)}
+          >
+            Только в наличии <X className="h-3 w-3" />
+          </Badge>
+        )}
+        
+        {(priceRange.min > 0 || priceRange.max < 5000) && (
+          <Badge 
+            variant="secondary" 
+            className="flex items-center gap-1"
+          >
+            Цена: {priceRange.min} - {priceRange.max} ₽
+          </Badge>
+        )}
+        
+        {searchTerm && (
+          <Badge 
+            variant="secondary" 
+            className="flex items-center gap-1"
+            onClick={() => {
+              setSearchTerm('');
+              searchParams.delete('search');
+              setSearchParams(searchParams);
+            }}
+          >
+            Поиск: {searchTerm} <X className="h-3 w-3" />
+          </Badge>
+        )}
+        
+        {activeFiltersCount > 1 && (
+          <Badge 
+            variant="outline" 
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={handleClearAllFilters}
+          >
+            Сбросить все <X className="h-3 w-3" />
+          </Badge>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -244,8 +367,63 @@ const Catalog = () => {
 
       <div className="container px-4 py-8 md:px-6 flex-grow">
         <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
+          {/* Mobile filters toggle */}
+          <div className="md:hidden mb-4">
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+            >
+              <Filter className="h-4 w-4" />
+              Фильтры {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            </Button>
+          </div>
+
           {/* Sidebar filters */}
-          <div className="space-y-6">
+          <div className={`space-y-6 ${showMobileFilters ? 'block' : 'hidden'} md:block`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-lg">Фильтры</h2>
+              {activeFiltersCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={handleClearAllFilters}>
+                  Сбросить все
+                </Button>
+              )}
+            </div>
+            
+            {/* Filters for availability */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <PackageCheck className="h-4 w-4" />
+                Наличие
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="in-stock" 
+                      checked={inStockOnly} 
+                      onCheckedChange={(checked) => handleInStockFilter(checked === true)}
+                      disabled={loading}
+                    />
+                    <label
+                      htmlFor="in-stock"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Только в наличии
+                    </label>
+                  </div>
+                  
+                  <Badge variant="outline">{inStockCount}</Badge>
+                </div>
+                
+                {!inStockOnly && outOfStockCount > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    {outOfStockCount} товаров отсутствует в наличии
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div>
               <h3 className="font-semibold mb-4">Категории</h3>
               <div className="space-y-2">
@@ -309,19 +487,29 @@ const Catalog = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {availableColors.map(color => (
-                    <Button
-                      key={color}
-                      variant={colorParam === color ? "default" : "outline"}
-                      size="sm"
-                      className="px-2 py-1 h-auto text-xs"
-                      onClick={() => handleColorFilter(color)}
-                    >
-                      <span className="w-3 h-3 mr-1.5 rounded-full" style={{ 
-                        backgroundColor: color.toLowerCase() !== 'белый' ? color.toLowerCase() : '#ffffff',
-                        border: color.toLowerCase() === 'белый' ? '1px solid #ccc' : 'none' 
-                      }}></span>
-                      {color}
-                    </Button>
+                    <TooltipProvider key={color}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={colorParam === color ? "default" : "outline"}
+                            size="sm"
+                            className="px-2 py-1 h-auto text-xs"
+                            onClick={() => handleColorFilter(color)}
+                          >
+                            <span className="w-3 h-3 mr-1.5 rounded-full" style={{ 
+                              backgroundColor: color.toLowerCase() !== 'белый' ? color.toLowerCase() : '#ffffff',
+                              border: color.toLowerCase() === 'белый' ? '1px solid #ccc' : 'none' 
+                            }}></span>
+                            {color}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {filteredProducts.filter(p => 
+                            p.colorVariants?.some(v => v.color === color)
+                          ).length} товаров
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   ))}
                 </div>
               </div>
@@ -352,24 +540,6 @@ const Catalog = () => {
                     disabled={loading}
                   />
                 </div>
-              </div>
-            </div>
-
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-4">Наличие</h3>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="in-stock" 
-                  checked={inStockOnly} 
-                  onCheckedChange={() => setInStockOnly(!inStockOnly)} 
-                  disabled={loading}
-                />
-                <label
-                  htmlFor="in-stock"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Только в наличии
-                </label>
               </div>
             </div>
 
@@ -424,6 +594,7 @@ const Catalog = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="default">По умолчанию</SelectItem>
+                    <SelectItem value="in-stock">Сначала в наличии</SelectItem>
                     <SelectItem value="price-asc">Цена (по возрастанию)</SelectItem>
                     <SelectItem value="price-desc">Цена (по убыванию)</SelectItem>
                     <SelectItem value="name-asc">Название (А-Я)</SelectItem>
@@ -431,6 +602,19 @@ const Catalog = () => {
                     <SelectItem value="rating">По рейтингу</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            
+            {/* Active filters display */}
+            {renderActiveFilters()}
+
+            {/* Products availability stats */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="text-sm">
+                <span className="font-medium">Всего товаров:</span> {filteredProducts.length}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">В наличии:</span> {inStockCount}
               </div>
             </div>
 
