@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-import { sendMessage, getMessages } from '@/services/chatService';
+import { sendMessage, getMessages, markMessagesAsRead } from '@/services/chatService';
 import { ChatMessage } from '@/types/chat';
 
 const useChatMessages = () => {
@@ -14,7 +14,7 @@ const useChatMessages = () => {
   const { isAuthenticated, profile } = useAuth();
 
   // Helper function to fetch messages
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const msgs = await getMessages();
       if (msgs && msgs.length > 0) {
@@ -22,12 +22,12 @@ const useChatMessages = () => {
         
         // Count unread messages from admin
         const newUnreadCount = msgs.filter(m => m.is_from_admin && !m.is_read).length;
-        setUnreadCount(newUnreadCount);
+        setUnreadCount(prevCount => newUnreadCount > prevCount ? newUnreadCount : prevCount);
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
-  };
+  }, []);
 
   // Check webhook status on first load
   useEffect(() => {
@@ -50,9 +50,10 @@ const useChatMessages = () => {
     const interval = setInterval(fetchMessages, 10000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchMessages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  // Handle sending messages
+  const handleSendMessage = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!message.trim()) return;
@@ -71,19 +72,32 @@ const useChatMessages = () => {
         setMessage("");
         await fetchMessages();
       } else {
-        toast.error("Error sending message", {
-          description: "Failed to send message. Please try again later."
+        toast.error("Ошибка отправки сообщения", {
+          description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
         });
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Error sending message", {
-        description: "An unexpected error occurred. Please try again later."
+      toast.error("Ошибка отправки сообщения", {
+        description: "Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже."
       });
     } finally {
       setIsSending(false);
     }
-  };
+  }, [message, profile, fetchMessages]);
+
+  // Mark messages as read when opened
+  const markAsRead = useCallback(async () => {
+    try {
+      await markMessagesAsRead();
+      // Update local read status
+      setMessages(prev => 
+        prev.map(m => m.is_from_admin && !m.is_read ? { ...m, is_read: true } : m)
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  }, []);
 
   return {
     message,
@@ -94,7 +108,8 @@ const useChatMessages = () => {
     isSending,
     configStatus,
     handleSendMessage,
-    fetchMessages
+    fetchMessages,
+    markAsRead
   };
 };
 

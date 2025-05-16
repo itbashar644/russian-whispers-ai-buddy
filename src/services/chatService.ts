@@ -2,9 +2,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessage } from "@/types/chat";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
-// Получение или создание ID чата
+// Get or create chat ID
 export const getChatId = (): string => {
   let chatId = localStorage.getItem("chat_id");
   if (!chatId) {
@@ -14,7 +14,7 @@ export const getChatId = (): string => {
   return chatId;
 };
 
-// Отправка сообщения
+// Send a message
 export const sendMessage = async (
   message: string,
   userInfo?: { name?: string; email?: string }
@@ -49,7 +49,7 @@ export const sendMessage = async (
   }
 };
 
-// Получение истории сообщений
+// Get message history
 export const getMessages = async (): Promise<ChatMessage[]> => {
   try {
     const chatId = getChatId();
@@ -68,7 +68,7 @@ export const getMessages = async (): Promise<ChatMessage[]> => {
       return [];
     }
     
-    return response.data.messages || [];
+    return response.data?.messages || [];
   } catch (error) {
     console.error("Error in getMessages:", error);
     return [];
@@ -113,7 +113,7 @@ export const checkTelegramWebhookStatus = async (): Promise<any> => {
   }
 };
 
-// Проверка состояния telegram-chat функции
+// Check chat status
 export const checkChatStatus = async (): Promise<{
   ok: boolean;
   config?: {
@@ -141,7 +141,7 @@ export const checkChatStatus = async (): Promise<{
   }
 };
 
-// Проверка на наличие новых сообщений
+// Poll for new messages
 export const pollForNewMessages = async (
   lastMessageId: number | null,
   callback: (messages: ChatMessage[]) => void
@@ -161,7 +161,7 @@ export const pollForNewMessages = async (
   }
 };
 
-// Настройка webhook для Telegram
+// Setup Telegram webhook
 export const setupTelegramWebhook = async (url: string): Promise<boolean> => {
   try {
     const response = await supabase.functions.invoke("telegram-chat/setup-webhook", {

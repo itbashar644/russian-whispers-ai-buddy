@@ -1,7 +1,6 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Category } from "@/data/products/categoryData";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
@@ -29,14 +28,12 @@ const Catalog = () => {
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
   
   // Фильтрация и сортировка продуктов
-  const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
+  const { filteredProducts, availableColors, inStockCount } = useProductFiltering({
     allProducts,
     searchTerm,
     priceRange,
-    inStockOnly: false, // Always false now
     sortBy,
     loading,
-    showColorVariants: true, // Always true now
     colorParam
   });
 
@@ -146,7 +143,6 @@ const Catalog = () => {
           loading={loading}
           filteredProducts={filteredProducts}
           inStockCount={inStockCount}
-          outOfStockCount={outOfStockCount}
           activeFiltersCount={activeFiltersCount}
           sortBy={sortBy}
           handleSearchSubmit={handleSearchSubmit}

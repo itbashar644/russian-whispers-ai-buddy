@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@/types/product";
 import { UseProductFilteringProps, FilteringResult } from "./types";
 import { transformProductsForColorDisplay, sortProducts } from "./helpers";
