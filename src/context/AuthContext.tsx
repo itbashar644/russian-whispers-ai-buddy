@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -111,7 +110,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatar_url: data.avatar_url,
           role: user?.app_metadata?.role as 'admin' | 'editor' | 'user' || 'user',
           preferredContactMethod: data.preferredcontactmethod as 'phone' | 'telegram' | 'whatsapp',
-          savedAddresses: Array.isArray(data.savedaddresses) ? data.savedaddresses : [],
+          // Convert any JSON array to an array of strings
+          savedAddresses: Array.isArray(data.savedaddresses) 
+            ? data.savedaddresses.map(item => String(item))
+            : [],
           telegramNickname: data.telegramnickname || ''
         };
         
