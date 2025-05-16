@@ -1,5 +1,5 @@
 
-import { Routes, Route, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
@@ -9,40 +9,15 @@ import AdminCustomers from "./AdminCustomers";
 import AdminReports from "./AdminReports";
 import AdminSettings from "./AdminSettings";
 import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
-import { Button } from "@/components/ui/button";
-import { LogOut, Home } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
 
 const AdminPanel = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      const result = await logout();
-      if (result.success) {
-        toast.success("Выход выполнен");
-        navigate("/");
-      } else {
-        toast.error("Ошибка при выходе из системы");
-      }
-    } catch (error) {
-      toast.error("Произошла ошибка");
-      console.error(error);
-    }
-  };
-
-  const handleGoToSite = () => {
-    navigate("/");
-  };
   
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 hidden md:block bg-white shadow-sm pt-6">
-        <div className="px-6 pb-6 mb-6 border-b flex justify-between items-center">
+        <div className="px-6 pb-6 mb-6 border-b">
           <h2 className="text-xl font-bold">Админ панель</h2>
         </div>
         
@@ -71,26 +46,6 @@ const AdminPanel = () => {
           <NavItem to="/admin/settings" path={location.pathname}>
             Настройки
           </NavItem>
-          
-          <div className="mt-8 space-y-2 px-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start" 
-              onClick={handleGoToSite}
-            >
-              <Home className="mr-2 h-4 w-4" />
-              Вернуться на сайт
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Выйти
-            </Button>
-          </div>
         </nav>
       </aside>
       

@@ -12,7 +12,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const location = useLocation();
-  const isAdminRoute = location?.pathname.startsWith("/admin") || false;
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   // Don't show the navbar on admin pages
   if (isAdminRoute) return null;

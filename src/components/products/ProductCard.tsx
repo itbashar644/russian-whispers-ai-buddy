@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, ColorVariant } from "@/types/product";
+import { formatPrice } from "@/lib/utils";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import ProductCardCompact from "./ProductCardCompact";
 import ProductCardFull from "./ProductCardFull";
 
@@ -12,38 +15,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
-  let cartAdd: (item: any) => Promise<void>;
-  let wishlistFuncs: {
-    toggleWishlistItem: (product: Product) => void;
-    isInWishlist: (id: string) => boolean;
-  };
-  
-  try {
-    // Безопасно пытаемся использовать контексты
-    const cart = window.cart;
-    const wishlist = window.wishlist;
-    
-    cartAdd = cart && typeof cart.addItem === 'function' 
-      ? cart.addItem 
-      : () => Promise.resolve();
-    
-    wishlistFuncs = {
-      toggleWishlistItem: wishlist && typeof wishlist.toggleWishlistItem === 'function'
-        ? wishlist.toggleWishlistItem
-        : () => {},
-      isInWishlist: wishlist && typeof wishlist.isInWishlist === 'function'
-        ? wishlist.isInWishlist
-        : () => false
-    };
-  } catch (error) {
-    console.error("Error in ProductCard: Context not available", error);
-    cartAdd = () => Promise.resolve();
-    wishlistFuncs = {
-      toggleWishlistItem: () => {},
-      isInWishlist: () => false
-    };
-  }
-
+  const { addItem } = useCart();
+  const { toggleWishlistItem, isInWishlist } = useWishlist();
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
   );
@@ -67,20 +40,20 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
 
   const handleAddToCart = () => {
     if (selectedVariant) {
-      cartAdd({
+      addItem({
         product, 
         quantity: 1, 
         color: selectedColor,
         selectedColorVariant: selectedVariant
       });
     } else {
-      cartAdd({ product, quantity: 1, color: selectedColor });
+      addItem({ product, quantity: 1, color: selectedColor });
     }
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the heart
-    wishlistFuncs.toggleWishlistItem(product);
+    toggleWishlistItem(product);
   };
 
   // Compact variant for smaller cards
@@ -102,7 +75,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
       handleColorSelect={handleColorSelect}
       handleAddToCart={handleAddToCart}
       handleToggleWishlist={handleToggleWishlist}
-      isInWishlist={wishlistFuncs.isInWishlist}
+      isInWishlist={isInWishlist}
     />
   );
 };

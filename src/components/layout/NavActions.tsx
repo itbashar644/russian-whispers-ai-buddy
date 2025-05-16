@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, User, LogIn, Heart, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { SearchIcon } from "./SearchIcon";
 
 interface NavActionsProps {
@@ -11,27 +14,11 @@ interface NavActionsProps {
 }
 
 export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
-  let cartCount = 0;
-  let wishlistCount = 0;
-  let user = null;
+  const { items } = useCart();
+  const { wishlist } = useWishlist();
+  const { user } = useAuth();
   
-  // Безопасно получаем данные из контекстов, если они доступны
-  // Это не работа с контекстами напрямую, а работа с глобальными переменными
-  try {
-    if (window.cart && Array.isArray(window.cart.items)) {
-      cartCount = window.cart.items.reduce((acc, item) => acc + (item.quantity || 0), 0);
-    }
-    
-    if (window.wishlist && Array.isArray(window.wishlist)) {
-      wishlistCount = window.wishlist.length;
-    }
-    
-    if (window.auth && window.auth.user) {
-      user = window.auth.user;
-    }
-  } catch (error) {
-    console.error("Error accessing context data:", error);
-  }
+  const totalItems = items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   
   return (
     <div className="flex items-center gap-4">
@@ -39,18 +26,18 @@ export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
       
       <Link to="/wishlist" className="relative">
         <Heart className="h-5 w-5" />
-        {wishlistCount > 0 && (
+        {wishlist.length > 0 && (
           <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-            {wishlistCount}
+            {wishlist.length}
           </Badge>
         )}
       </Link>
       
       <Link to="/cart" className="relative">
         <ShoppingCart className="h-5 w-5" />
-        {cartCount > 0 && (
+        {totalItems > 0 && (
           <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-            {cartCount}
+            {totalItems}
           </Badge>
         )}
       </Link>
@@ -75,7 +62,7 @@ export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
             asChild
             className="flex items-center gap-2"
           >
-            <Link to="/login">
+            <Link to="/auth/login">
               <LogIn className="h-4 w-4" />
               <span className="hidden md:inline-block">Войти</span>
             </Link>
@@ -91,7 +78,7 @@ export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
         aria-label="Toggle menu"
       >
         <Menu className="h-5 w-5" />
-        <span className="sr-only">Меню</span>
+        <span className="sr-only">Toggle menu</span>
       </Button>
     </div>
   );

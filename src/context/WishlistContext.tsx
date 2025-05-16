@@ -35,9 +35,6 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    
-    // Также сохраняем в глобальной переменной для безопасного доступа
-    window.wishlist = wishlist;
   }, [wishlist]);
   
   const addToWishlist = (product: Product) => {
@@ -70,28 +67,15 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     toast('Список избранного очищен');
   };
   
-  // Делаем контекст доступным через window
-  const contextValue = {
-    wishlist,
-    addToWishlist,
-    removeFromWishlist,
-    toggleWishlistItem,
-    isInWishlist,
-    clearWishlist,
-  };
-  
-  // Сохраняем методы контекста в глобальной переменной
-  window.wishlist = {
-    ...wishlist,
-    addToWishlist,
-    removeFromWishlist, 
-    toggleWishlistItem,
-    isInWishlist,
-    clearWishlist
-  };
-  
   return (
-    <WishlistContext.Provider value={contextValue}>
+    <WishlistContext.Provider value={{
+      wishlist,
+      addToWishlist,
+      removeFromWishlist,
+      toggleWishlistItem,
+      isInWishlist,
+      clearWishlist,
+    }}>
       {children}
     </WishlistContext.Provider>
   );

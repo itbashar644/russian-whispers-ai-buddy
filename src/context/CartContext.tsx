@@ -15,7 +15,7 @@ interface CartContextType {
   setDeliveryMethod: React.Dispatch<React.SetStateAction<DeliveryMethod | null>>;
   subtotal: number;
   total: number;
-  totalItems: number;
+  totalItems: number;  // Added this property
   decreaseStockForItems: (items: CartItem[]) => Promise<boolean>;
 }
 
@@ -53,18 +53,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     try {
       localStorage.setItem("cart", JSON.stringify(items));
-      
-      // Сохраняем корзину в глобальной переменной
-      window.cart = {
-        items,
-        totalItems,
-        subtotal,
-        total
-      };
     } catch (error) {
       console.error("Error saving cart to localStorage:", error);
     }
-  }, [items, subtotal, total, totalItems]);
+  }, [items]);
 
   // Handler for adding an item to the cart
   const addItem = async (item: CartItem) => {
@@ -91,27 +83,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await decreaseStockForItemsAction(cartItems);
   };
 
-  const contextValue = {
-    items,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    deliveryMethod,
-    setDeliveryMethod,
-    subtotal,
-    total,
-    totalItems,
-    decreaseStockForItems
-  };
-  
-  // Сохраняем методы контекста в глобальной переменной
-  window.cart = {
-    ...contextValue
-  };
-
   return (
-    <CartContext.Provider value={contextValue}>
+    <CartContext.Provider value={{
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      deliveryMethod,
+      setDeliveryMethod,
+      subtotal,
+      total,
+      totalItems,  // Added this property to the context value
+      decreaseStockForItems
+    }}>
       {children}
     </CartContext.Provider>
   );

@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { X, Heart, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,23 +13,8 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
-  let user = null;
-  let wishlistCount = 0;
-  
-  try {
-    const auth = window.auth;
-    const wishlist = window.wishlist;
-    
-    if (auth && auth.user) {
-      user = auth.user;
-    }
-    
-    if (wishlist && Array.isArray(wishlist)) {
-      wishlistCount = wishlist.length;
-    }
-  } catch (error) {
-    console.error("Error accessing auth or wishlist context:", error);
-  }
+  const { user } = useAuth();
+  const { wishlist } = useWishlist();
   
   if (!isOpen) return null;
   
@@ -41,7 +28,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           size="icon"
         >
           <X className="h-5 w-5" />
-          <span className="sr-only">Закрыть</span>
+          <span className="sr-only">Close</span>
         </Button>
         <nav className="flex flex-col gap-4">
           <Link
@@ -79,8 +66,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           >
             <Heart className="h-5 w-5" />
             Избранное
-            {wishlistCount > 0 && (
-              <Badge>{wishlistCount}</Badge>
+            {wishlist.length > 0 && (
+              <Badge>{wishlist.length}</Badge>
             )}
           </Link>
           {user ? (
@@ -94,7 +81,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </Link>
           ) : (
             <Link
-              to="/login"
+              to="/auth/login"
               onClick={onClose}
               className="text-lg font-medium flex items-center gap-2"
             >
