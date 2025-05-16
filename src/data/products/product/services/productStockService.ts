@@ -1,6 +1,55 @@
+
 import { Product } from "@/types/product";
 import { getProductById as getProductByIdBase } from "../productServiceBase";
 import { addOrUpdateProduct } from "../productServiceBase";
+
+/**
+ * Updates product stock quantity
+ */
+export const updateProductStock = async (
+  productId: string,
+  stockQuantity: number,
+  colorVariant?: string
+): Promise<boolean> => {
+  try {
+    const product = await getProductByIdBase(productId);
+    
+    if (!product) {
+      console.error("Product not found:", productId);
+      return false;
+    }
+    
+    // Update the specific color variant if provided
+    if (colorVariant && product.colorVariants?.length) {
+      const variantIndex = product.colorVariants.findIndex(
+        v => v.color === colorVariant
+      );
+      
+      if (variantIndex === -1) {
+        console.error("Color variant not found:", colorVariant);
+        return false;
+      }
+      
+      // Update the variant's stock
+      product.colorVariants[variantIndex].stockQuantity = stockQuantity;
+      product.colorVariants[variantIndex].inStock = stockQuantity > 0;
+      
+      // Update the overall product stock status
+      const hasAnyStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
+      product.inStock = hasAnyStock;
+    } else {
+      // Update the main product stock
+      product.stockQuantity = stockQuantity;
+      product.inStock = stockQuantity > 0;
+    }
+    
+    // Save the updated product
+    return await addOrUpdateProduct(product);
+  } catch (error) {
+    console.error("Error updating product stock:", error);
+    return false;
+  }
+};
 
 /**
  * Decreases the stock quantity of a product

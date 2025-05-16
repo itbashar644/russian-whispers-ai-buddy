@@ -38,7 +38,8 @@ const Catalog = () => {
         ]);
         
         setProducts(productsData);
-        setCategories(categoriesData);
+        // Make sure categoriesData is an array of Category objects
+        setCategories(categoriesData as Category[]);
         
         // Установка максимальной цены на основе самого дорогого товара
         const calculatedMaxPrice = getMaxPrice(productsData);

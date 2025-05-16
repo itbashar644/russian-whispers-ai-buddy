@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 
 interface PriceFilterProps {
   priceRange: { min: number; max: number };
-  handlePriceChange: (type: "min" | "max", value: string) => void;
+  handlePriceChange: (value: { min: number; max: number }) => void;
   loading: boolean;
 }
 
@@ -14,6 +14,16 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
   handlePriceChange,
   loading
 }) => {
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const minValue = parseInt(e.target.value) || 0;
+    handlePriceChange({ min: minValue, max: priceRange.max });
+  };
+
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const maxValue = parseInt(e.target.value) || 0;
+    handlePriceChange({ min: priceRange.min, max: maxValue });
+  };
+
   return (
     <div className="border-t pt-6">
       <h3 className="font-semibold mb-4">Цена</h3>
@@ -24,7 +34,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
             id="min-price"
             type="number"
             value={priceRange.min}
-            onChange={(e) => handlePriceChange("min", e.target.value)}
+            onChange={handleMinChange}
             min={0}
             disabled={loading}
           />
@@ -35,7 +45,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
             id="max-price"
             type="number"
             value={priceRange.max}
-            onChange={(e) => handlePriceChange("max", e.target.value)}
+            onChange={handleMaxChange}
             min={0}
             disabled={loading}
           />

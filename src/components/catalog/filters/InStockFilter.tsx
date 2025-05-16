@@ -1,47 +1,32 @@
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PackageCheck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface InStockFilterProps {
   inStockOnly: boolean;
-  inStockCount: number;
-  handleInStockFilter: (checked: boolean) => void;
+  handleInStockChange: (checked: boolean) => void;
   loading: boolean;
 }
 
 const InStockFilter: React.FC<InStockFilterProps> = ({
   inStockOnly,
-  inStockCount,
-  handleInStockFilter,
+  handleInStockChange,
   loading
 }) => {
   return (
     <div className="border-t pt-6">
-      <h3 className="font-semibold mb-4 flex items-center gap-2">
-        <PackageCheck className="h-4 w-4" />
-        Наличие
-      </h3>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="in-stock" 
-              checked={inStockOnly} 
-              onCheckedChange={(checked) => handleInStockFilter(checked === true)}
-              disabled={loading}
-            />
-            <label
-              htmlFor="in-stock"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Только в наличии
-            </label>
-          </div>
-          
-          <Badge variant="outline">{inStockCount}</Badge>
-        </div>
+      <h3 className="font-semibold mb-4">Наличие</h3>
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="in-stock"
+          checked={inStockOnly}
+          onCheckedChange={handleInStockChange}
+          disabled={loading}
+        />
+        <Label htmlFor="in-stock" className="cursor-pointer">
+          Только в наличии
+        </Label>
       </div>
     </div>
   );

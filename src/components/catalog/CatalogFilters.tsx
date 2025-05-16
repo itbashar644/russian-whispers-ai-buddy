@@ -2,55 +2,53 @@
 import React from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Category } from "@/data/products/categoryData";
+import { Category } from "@/types/categories";
 import CategoryFilter from "./filters/CategoryFilter";
 import PriceFilter from "./filters/PriceFilter";
 import ColorFilter from "./filters/ColorFilter";
 import InStockFilter from "./filters/InStockFilter";
-import DisplayOptions from "./filters/DisplayOptions";
 import { X } from "lucide-react";
 
 interface CatalogFiltersProps {
-  availableCategories: string[];
+  categories: Category[];
   categoryParam: string | null;
   colorParam: string | null;
   priceRange: { min: number; max: number };
-  loading: boolean;
-  showMobileFilters: boolean;
-  activeFiltersCount: number;
-  availableColors: string[];
+  maxPrice: number;
+  sortBy: string;
   inStockOnly: boolean;
-  inStockCount: number;
-  showColorVariants: boolean;
+  loading: boolean;
+  availableColors: string[];
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
-  handlePriceChange: (type: "min" | "max", value: string) => void;
-  handleClearAllFilters: () => void;
-  findCategoryByName: (name: string) => Category;
-  handleInStockFilter: (checked: boolean) => void;
-  setShowColorVariants: (show: boolean) => void;
+  handlePriceChange: (value: { min: number; max: number }) => void;
+  handleSortChange: (value: string) => void;
+  handleInStockChange: (checked: boolean) => void;
 }
 
 const CatalogFilters: React.FC<CatalogFiltersProps> = ({
-  availableCategories,
+  categories,
   categoryParam,
   colorParam,
   priceRange,
-  loading,
-  showMobileFilters,
-  activeFiltersCount,
-  availableColors,
+  maxPrice,
+  sortBy,
   inStockOnly,
-  inStockCount,
-  showColorVariants,
+  loading,
+  availableColors,
   handleCategoryClick,
   handleColorFilter,
   handlePriceChange,
-  handleClearAllFilters,
-  findCategoryByName,
-  handleInStockFilter,
-  setShowColorVariants
+  handleSortChange,
+  handleInStockChange
 }) => {
+  const activeFiltersCount = 
+    (categoryParam ? 1 : 0) +
+    (colorParam ? 1 : 0) +
+    (priceRange.min > 0 || priceRange.max < maxPrice ? 1 : 0) +
+    (inStockOnly ? 1 : 0) +
+    (sortBy !== "default" ? 1 : 0);
+
   // Content of the filters
   const filtersContent = (
     <div className="space-y-6">
@@ -60,7 +58,13 @@ const CatalogFilters: React.FC<CatalogFiltersProps> = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={handleClearAllFilters}
+            onClick={() => {
+              handleCategoryClick(null);
+              handleColorFilter(null);
+              handlePriceChange({ min: 0, max: maxPrice });
+              handleInStockChange(false);
+              handleSortChange("default");
+            }}
             className="h-8 text-xs"
           >
             Сбросить все
@@ -69,11 +73,10 @@ const CatalogFilters: React.FC<CatalogFiltersProps> = ({
       </div>
       
       <CategoryFilter 
-        availableCategories={availableCategories}
+        categories={categories}
         categoryParam={categoryParam}
         loading={loading}
         handleCategoryClick={handleCategoryClick}
-        findCategoryByName={findCategoryByName}
       />
       
       <PriceFilter 
@@ -86,60 +89,22 @@ const CatalogFilters: React.FC<CatalogFiltersProps> = ({
         availableColors={availableColors}
         colorParam={colorParam}
         handleColorFilter={handleColorFilter}
+        loading={loading}
       />
 
       <InStockFilter 
         inStockOnly={inStockOnly}
-        inStockCount={inStockCount}
-        handleInStockFilter={handleInStockFilter}
-        loading={loading}
-      />
-
-      <DisplayOptions 
-        showColorVariants={showColorVariants}
-        setShowColorVariants={setShowColorVariants}
+        handleInStockChange={handleInStockChange}
         loading={loading}
       />
     </div>
   );
 
-  // Responsive filter display
+  // Simplified filter display
   return (
-    <>
-      {/* Mobile filters */}
-      <Sheet open={showMobileFilters}>
-        <SheetContent side="left" className="w-[80vw] sm:w-[350px]">
-          <div className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Фильтры</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                onClick={() => showMobileFilters = false}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="overflow-auto flex-1">
-              {filtersContent}
-            </div>
-            
-            <div className="pt-6 border-t mt-6">
-              <Button onClick={() => showMobileFilters = false} className="w-full">
-                Применить фильтры
-              </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-      
-      {/* Desktop filters */}
-      <div className="hidden md:block sticky top-24">
-        {filtersContent}
-      </div>
-    </>
+    <div className="space-y-6 pb-4">
+      {filtersContent}
+    </div>
   );
 };
 

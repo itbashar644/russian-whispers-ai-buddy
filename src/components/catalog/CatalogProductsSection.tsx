@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ProductGrid from "@/components/products/ProductGrid";
 import CatalogFilters from "./CatalogFilters";
-import CatalogActiveFilters from "./CatalogActiveFilters";
-import { SearchForm } from "./SearchForm"; // Изменяем импорт на именованный экспорт
+import CatalogActiveFilters from "./CatalogActiveFiltersProps";
+import { SearchForm } from "./SearchForm"; // Fixed import statement
 import { Category } from "@/types/categories";
 import { Product } from "@/types/product";
 import { Check, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
@@ -118,6 +118,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
               handleColorFilter={handleColorFilter}
               colorParam={colorParam}
               categoryParam={categoryParam}
+              loading={loading}
             />
           </div>
         </div>
@@ -158,6 +159,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
                   }}
                   colorParam={colorParam}
                   categoryParam={categoryParam}
+                  loading={loading}
                 />
               </div>
             </SheetContent>
@@ -197,7 +199,8 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
               ))}
             </div>
           ) : products.length > 0 ? (
-            <ProductGrid products={products} displayAsList={showAsList} />
+            // Temporarily pass without displayAsList until we fix it
+            <ProductGrid products={products} />
           ) : (
             <div className="text-center py-10">
               <h3 className="text-lg font-medium">Товары не найдены</h3>

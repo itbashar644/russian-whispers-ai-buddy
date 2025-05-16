@@ -1,66 +1,45 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Category } from "@/data/products/categoryData";
+import { Category } from "@/types/categories";
+import { Check } from "lucide-react";
 
 interface CategoryFilterProps {
-  availableCategories: string[];
+  categories: Category[];
   categoryParam: string | null;
   loading: boolean;
   handleCategoryClick: (categoryId: string | null) => void;
-  findCategoryByName: (name: string) => Category;
 }
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
-  availableCategories,
+  categories,
   categoryParam,
   loading,
-  handleCategoryClick,
-  findCategoryByName,
+  handleCategoryClick
 }) => {
-  if (loading) {
-    return (
-      <div className="space-y-2">
-        {Array.from({length: 5}).map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 animate-pulse rounded-md"></div>
+  return (
+    <div>
+      <h3 className="font-semibold mb-4">Категории</h3>
+      <div className="space-y-1">
+        {categories.map((category) => (
+          <Button
+            key={category.name}
+            variant="ghost"
+            className={`w-full justify-start px-2 ${
+              categoryParam === category.name ? "bg-muted" : ""
+            }`}
+            onClick={() => handleCategoryClick(category.name)}
+            disabled={loading}
+          >
+            <div className="flex items-center">
+              {categoryParam === category.name && (
+                <Check className="mr-1 h-4 w-4" />
+              )}
+              <span>{category.name}</span>
+            </div>
+          </Button>
         ))}
       </div>
-    );
-  }
-  
-  return (
-    <div className="space-y-2">
-      <Button
-        variant={!categoryParam ? "default" : "outline"}
-        className="w-full justify-start"
-        onClick={() => handleCategoryClick(null)}
-      >
-        Все товары
-      </Button>
-      
-      {availableCategories.map((category) => {
-        const categoryObj = findCategoryByName(category);
-        return (
-          <Button
-            key={category}
-            variant={categoryParam === category ? "default" : "outline"}
-            className="w-full justify-start flex items-center"
-            onClick={() => handleCategoryClick(category)}
-          >
-            <span className="w-4 h-4 mr-2 overflow-hidden flex-shrink-0">
-              <img 
-                src={categoryObj.imageUrl} 
-                className="w-full h-full object-cover" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-                alt=""
-              />
-            </span>
-            <span>{category}</span>
-          </Button>
-        );
-      })}
     </div>
   );
 };
