@@ -26,70 +26,66 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import { Suspense } from "react";
 import { Skeleton } from "./components/ui/skeleton";
-import Navbar from "./components/layout/Navbar";
 
 export const Routes = () => {
   return (
-    <>
-      <Navbar />
-      <RouterRoutes>
-        <Route path="/" element={<IndexWithChat />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contacts" element={<Contacts />} />
-        <Route path="/delivery" element={<Delivery />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route 
-          path="/catalog" 
-          element={
-            <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="w-full h-full" /></div>}>
-              <CatalogWithChat />
-            </Suspense>
-          } 
-        />
-        <Route path="/product/:id" element={<Product />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route 
-          path="/admin/*" 
-          element={
-            <AdminAuth>
-              <AdminPanel />
-            </AdminAuth>
-          } 
-        />
-        <Route 
-          path="/account" 
-          element={
-            <UserAuth>
-              <Account />
-            </UserAuth>
-          } 
-        />
-        <Route 
-          path="/account/security" 
-          element={
-            <UserAuth>
-              <AccountSecurity />
-            </UserAuth>
-          } 
-        />
-        <Route 
-          path="/account/orders" 
-          element={
-            <UserAuth>
-              <UserOrders />
-            </UserAuth>
-          } 
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="*" element={<NotFound />} />
-      </RouterRoutes>
-    </>
+    <RouterRoutes>
+      <Route path="/" element={<IndexWithChat />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contacts" element={<Contacts />} />
+      <Route path="/delivery" element={<Delivery />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route 
+        path="/catalog" 
+        element={
+          <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="w-full h-full" /></div>}>
+            <CatalogWithChat />
+          </Suspense>
+        } 
+      />
+      <Route path="/product/:id" element={<Product />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route 
+        path="/admin/*" 
+        element={
+          <AdminAuth>
+            <AdminPanel />
+          </AdminAuth>
+        } 
+      />
+      <Route 
+        path="/account" 
+        element={
+          <UserAuth>
+            <Account />
+          </UserAuth>
+        } 
+      />
+      <Route 
+        path="/account/security" 
+        element={
+          <UserAuth>
+            <AccountSecurity />
+          </UserAuth>
+        } 
+      />
+      <Route 
+        path="/account/orders" 
+        element={
+          <UserAuth>
+            <UserOrders />
+          </UserAuth>
+        } 
+      />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="*" element={<NotFound />} />
+    </RouterRoutes>
   );
 };
