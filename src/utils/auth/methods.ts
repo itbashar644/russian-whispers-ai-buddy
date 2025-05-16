@@ -10,6 +10,7 @@ export const login = authMethods.loginWithEmail;
 export const logout = authMethods.logout;
 export const updatePassword = authMethods.updatePassword;
 export const resetPassword = authMethods.resetPassword;
+export const sendPasswordResetEmail = authMethods.sendPasswordResetEmail;
 
 // Re-export from other files
 export { formatAuthError } from "./errorFormatter";

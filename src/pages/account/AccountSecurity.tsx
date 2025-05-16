@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -95,12 +94,7 @@ const AccountSecurity = () => {
     try {
       const result = await updatePassword(data.newPassword);
       
-      if (result === false) {
-        toast.error("Не удалось обновить пароль");
-        return;
-      }
-      
-      if (typeof result === 'object' && 'error' in result) {
+      if (!result.success) {
         const errorMessage = typeof result.error === 'string' 
           ? result.error 
           : (result.error?.message || "Не удалось обновить пароль");

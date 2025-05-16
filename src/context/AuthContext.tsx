@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatar_url: data.avatar_url,
           role: user?.app_metadata?.role as 'admin' | 'editor' | 'user' || 'user',
           preferredContactMethod: data.preferredcontactmethod as 'phone' | 'telegram' | 'whatsapp',
-          savedAddresses: data.savedaddresses || [],
+          savedAddresses: Array.isArray(data.savedaddresses) ? data.savedaddresses : [],
           telegramNickname: data.telegramnickname || ''
         };
         
@@ -195,6 +195,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signupWithEmail = async (email: string, password: string, metadata?: { name?: string }) => {
     return await authMethods.signupWithEmail(email, password, metadata);
   };
+
+  // Create a wrapper for register that adapts the parameter format
+  const register = async (email: string, password: string, name?: string) => {
+    const metadata = name ? { name } : undefined;
+    return await signupWithEmail(email, password, metadata);
+  };
   
   // Added methods for convenience
   const updateEmail = async (newEmail: string): Promise<AuthResult> => {
@@ -237,7 +243,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     session,
     user,
     profile,
@@ -246,7 +252,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loginWithEmail,
     login: loginWithEmail, // Alias for loginWithEmail
     logout,
-    register: signupWithEmail, // Alias for signupWithEmail
+    register, // Use the wrapper function
     isAuthenticated: !!session,
     updatePassword,
     updateEmail,
