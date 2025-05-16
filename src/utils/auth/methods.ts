@@ -1,11 +1,21 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserProfile } from "@/types/auth";
 import { loadUserProfile } from "./profile";
 
 export async function signInWithEmail(email: string, password: string) {
   try {
+    // Clean up existing auth state before signing in
+    cleanupAuthState();
+    
+    // Attempt to sign out globally first to prevent conflicts
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (err) {
+      // Continue even if this fails
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -23,6 +33,9 @@ export async function signInWithEmail(email: string, password: string) {
 
 export async function signUpWithEmail(email: string, password: string) {
   try {
+    // Clean up existing auth state before signing up
+    cleanupAuthState();
+    
     // Set redirect URL for confirmation emails
     const redirectTo = `${window.location.origin}/auth/callback`;
     
@@ -32,32 +45,56 @@ export async function signUpWithEmail(email: string, password: string) {
       options: {
         emailRedirectTo: redirectTo,
         data: {
-          email_confirmed_at: new Date().toISOString(), // Auto-confirm for now to prevent email issues
+          email_confirmed_at: new Date().toISOString(), // Auto-confirm for development
         }
       }
     });
 
     if (error) throw error;
     
-    // For development and testing, we auto-confirm emails
-    // This is overridden by Supabase settings in production
+    let message = "Аккаунт создан успешно.";
+    
+    // If email confirmation is required by Supabase settings
+    if (data?.user?.identities?.length === 0) {
+      message = "На ваш email отправлено письмо для подтверждения. Пожалуйста, проверьте почту.";
+    } else {
+      message = "Аккаунт создан успешно. Вы можете войти в систему.";
+    }
+    
     toast("Регистрация выполнена", {
-      description: "Аккаунт создан успешно. Вы можете войти в систему.",
+      description: message,
     });
     
-    return { data, error: null };
+    return { 
+      data, 
+      error: null, 
+      message 
+    };
   } catch (error: any) {
+    const errorMessage = error.message || "Произошла ошибка при регистрации";
     toast("Ошибка регистрации", {
-      description: error.message,
+      description: errorMessage,
     });
-    return { data: null, error };
+    return { 
+      data: null, 
+      error,
+      message: errorMessage
+    };
   }
 }
 
 export async function signOut() {
   try {
-    const { error } = await supabase.auth.signOut();
+    // Clean up auth state
+    cleanupAuthState();
+    
+    // Attempt global sign out
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
     if (error) throw error;
+    
+    // Force page reload for clean state
+    window.location.href = '/';
+    
     return { error: null };
   } catch (error: any) {
     toast("Ошибка выхода", {
@@ -117,10 +154,10 @@ export const authMethods = {
     return !error && !!data;
   },
   
-  register: async (email: string, password: string, name: string): Promise<boolean> => {
-    const { data, error } = await signUpWithEmail(email, password);
+  register: async (email: string, password: string, name: string): Promise<{ success: boolean, message?: string }> => {
+    const { data, error, message } = await signUpWithEmail(email, password);
     
-    if (error) return false;
+    if (error) return { success: false, message };
     
     if (data.user) {
       // Update profile with name after successful registration
@@ -130,19 +167,21 @@ export const authMethods = {
           .update({ name })
           .eq('id', data.user.id);
           
-        return true;
-      } catch (err) {
+        return { success: true, message };
+      } catch (err: any) {
         console.error("Error updating profile:", err);
-        return !!data.user; // Return true even if profile update fails
+        return { 
+          success: !!data.user, 
+          message: "Аккаунт создан, но произошла ошибка при сохранении профиля"
+        }; // Return true even if profile update fails
       }
     }
     
-    return false;
+    return { success: false, message: "Неизвестная ошибка при регистрации" };
   },
   
   logout: async (): Promise<void> => {
     await signOut();
-    window.location.href = '/';
   },
   
   // Profile methods

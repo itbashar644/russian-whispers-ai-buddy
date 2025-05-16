@@ -14,7 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<{ success: boolean, message?: string }>;
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<UserProfile>) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
@@ -46,18 +46,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Инициализация состояния аутентификации
   useEffect(() => {
+    console.log("Initializing auth state...");
+    
     // Настраиваем слушатель изменения статуса аутентификации
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event);
+        
+        // Only update state synchronously to prevent deadlocks
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsAuthenticated(!!currentSession);
         
         if (currentSession?.user) {
-          // Используем setTimeout для предотвращения блокировок
+          // Defer data fetching with setTimeout to prevent deadlocks
           setTimeout(async () => {
             try {
+              console.log("Loading user profile for:", currentSession.user.id);
               const userData = await loadUserProfile(currentSession.user.id);
               setProfile(userData.profile);
               setUserRoles(userData.roles);
@@ -74,17 +79,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Проверяем текущую сессию при загрузке
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession ? "Session exists" : "No session");
+      
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession);
       
       if (currentSession?.user) {
         try {
+          console.log("Loading initial user profile");
           const userData = await loadUserProfile(currentSession.user.id);
           setProfile(userData.profile);
           setUserRoles(userData.roles);
         } catch (error) {
-          console.error("Error loading user profile:", error);
+          console.error("Error loading initial user profile:", error);
         }
       }
       
@@ -93,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Отписываемся от событий при размонтировании
     return () => {
+      console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
   }, []);

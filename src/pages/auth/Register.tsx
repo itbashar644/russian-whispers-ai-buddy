@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -42,6 +43,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationMessage, setRegistrationMessage] = useState("");
 
   // Если пользователь уже аутентифицирован, перенаправляем на главную
   if (isAuthenticated) {
@@ -63,24 +65,30 @@ const Register = () => {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      const success = await register(data.email, data.password, data.name);
+      const { success, message } = await register(data.email, data.password, data.name);
+      
       if (success) {
         // If user opted in for newsletter, add them to newsletter_subscriptions
         if (data.newsletterConsent) {
-          await supabase.from("newsletter_subscriptions").insert({
-            email: data.email,
-            name: data.name,
-            user_id: (await supabase.auth.getUser()).data.user?.id
-          });
+          const userId = (await supabase.auth.getUser()).data.user?.id;
+          if (userId) {
+            await supabase.from("newsletter_subscriptions").insert({
+              email: data.email,
+              name: data.name,
+              user_id: userId
+            });
+          }
         }
         
         setRegistrationSuccess(true);
+        setRegistrationMessage(message || "Регистрация успешна! Теперь вы можете войти в систему.");
         
-        // Auto-navigate only if we're configured to skip email confirmation
-        // Otherwise, display success message and ask user to check email
+        // Auto-navigate to login page after delay
         setTimeout(() => {
           navigate("/login");
         }, 5000);
+      } else {
+        setRegistrationMessage(message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
       }
     } finally {
       setIsLoading(false);
@@ -95,7 +103,7 @@ const Register = () => {
         <div className="flex-grow container max-w-md mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Регистрация успешна!</h1>
-            <p className="mb-6">Ваш аккаунт был создан. Теперь вы можете войти в систему.</p>
+            <p className="mb-6">{registrationMessage}</p>
             <Button 
               onClick={() => navigate("/login")} 
               className="w-full"

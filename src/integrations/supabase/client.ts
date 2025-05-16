@@ -16,20 +16,28 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-// Utility function to clean up authentication state
+// Enhanced cleanup function to properly clean all auth state
 export const cleanupAuthState = () => {
+  console.log("Cleaning up auth state...");
+  
   // Remove standard tokens
   localStorage.removeItem('supabase.auth.token');
+  
   // Remove all Supabase keys from localStorage
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      console.log(`Removing key: ${key}`);
       localStorage.removeItem(key);
     }
   });
+  
   // Also clean sessionStorage if needed
   Object.keys(sessionStorage || {}).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      console.log(`Removing session key: ${key}`);
       sessionStorage.removeItem(key);
     }
   });
+  
+  console.log("Auth state cleanup complete");
 };
