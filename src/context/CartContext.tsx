@@ -15,6 +15,7 @@ interface CartContextType {
   setDeliveryMethod: React.Dispatch<React.SetStateAction<DeliveryMethod | null>>;
   subtotal: number;
   total: number;
+  totalItems: number;  // Added this property
   decreaseStockForItems: (items: CartItem[]) => Promise<boolean>;
 }
 
@@ -39,7 +40,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod | null>(null);
 
   // Get price calculations
-  const { subtotal, total } = useCartCalculations(items, deliveryMethod);
+  const { subtotal, total, totalItems } = useCartCalculations(items, deliveryMethod);
 
   // Get cart actions
   const { addItem: addItemAction, 
@@ -93,6 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setDeliveryMethod,
       subtotal,
       total,
+      totalItems,  // Added this property to the context value
       decreaseStockForItems
     }}>
       {children}
