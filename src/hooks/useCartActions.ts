@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { CartItem } from "@/types/product";
 import { useToast } from "@/hooks/use-toast";
-import { checkProductStock } from "@/data/products";
+import { checkProductStock } from "@/data/products/product/services/productStockService";
 
 export function useCartActions() {
   const { toast } = useToast();
@@ -26,8 +25,9 @@ export function useCartActions() {
         ? prevItems[existingItemIndex].quantity + item.quantity 
         : item.quantity;
       
-      // Convert product.id to string to match the expected type for checkProductStock
-      if (!checkProductStock(String(item.product.id), totalRequestedQuantity)) {
+      // Check product stock with the correct parameter types
+      // First parameter should be the product ID as string, not the quantity
+      if (!checkProductStock(String(item.product.id), item.color)) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
@@ -94,9 +94,9 @@ export function useCartActions() {
       
       const item = prevItems[itemIndex];
       
-      // Check if there's enough stock for the requested quantity
-      // Convert product.id to string to match the expected type for checkProductStock
-      if (!checkProductStock(String(itemId), quantity)) {
+      // Check product stock with the correct parameter types
+      // First parameter should be the product ID as string, not the quantity
+      if (!checkProductStock(String(itemId), color)) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
