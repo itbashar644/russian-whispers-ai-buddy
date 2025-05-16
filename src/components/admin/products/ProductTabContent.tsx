@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Product } from "@/types/product";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +7,6 @@ import ProductImportExport from "@/components/admin/ProductImportExport";
 import ConfirmDialog from './ConfirmDialog';
 import { Button } from "@/components/ui/button";
 import { Merge, Trash2, Archive } from "lucide-react";
-import { updateProductStockApi } from "@/api/admin/productStockApi";
-import { toast } from "sonner";
 
 interface ProductTabContentProps {
   products: Product[];
@@ -163,21 +160,10 @@ const ProductTabContent = ({
     setSelectedProducts([]);
   };
 
-  // Handle stock update
-  const handleStockUpdate = async (product: Product, newQuantity: number) => {
-    try {
-      const response = await updateProductStockApi(product.id, newQuantity);
-      if (response.success) {
-        toast.success(`Остаток товара обновлен до ${newQuantity}`);
-        // This assumes onEdit will update the product in the list
-        onEdit({ ...product, stockQuantity: newQuantity, inStock: newQuantity > 0 });
-      } else {
-        toast.error(`Ошибка при обновлении остатка: ${response.error}`);
-      }
-    } catch (error) {
-      console.error('Error updating stock:', error);
-      toast.error('Не удалось обновить остаток товара');
-    }
+  // This function handles product updates after stock changes
+  const handleProductUpdate = (updatedProduct: Product) => {
+    // We don't need to call onEdit here anymore, just pass the updated product
+    // The actual product state is managed in ProductList component now
   };
 
   return (
@@ -251,7 +237,7 @@ const ProductTabContent = ({
       ) : (
         <ProductList
           products={products}
-          onEdit={onEdit}
+          onEdit={onEdit} // Still pass onEdit for the edit button
           onDelete={handleDeleteClick}
           deleteButtonText={deleteButtonText}
           deleteButtonColor={deleteButtonColor}

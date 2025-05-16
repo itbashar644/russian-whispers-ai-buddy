@@ -199,11 +199,10 @@ const ProductList = ({
         
         toast.success(`Остаток товара обновлен до ${stockQuantity}`);
         
-        // Update product in the list without full refresh
-        if (onEdit) {
-          const updatedProduct = { ...product, stockQuantity, inStock: stockQuantity > 0 };
-          onEdit(updatedProduct);
-        }
+        // Update product in the list WITHOUT triggering onEdit
+        // Just update the local state to reflect the new stock quantity
+        product.stockQuantity = stockQuantity;
+        product.inStock = stockQuantity > 0;
       }
     } catch (error) {
       console.error("Error updating stock:", error);
