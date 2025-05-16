@@ -18,6 +18,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
@@ -44,6 +45,8 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationMessage, setRegistrationMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isExistingUser, setIsExistingUser] = useState(false);
 
   // Если пользователь уже аутентифицирован, перенаправляем на главную
   if (isAuthenticated) {
@@ -64,10 +67,17 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
+    setErrorMessage(null);
+    setIsExistingUser(false);
+    
     try {
-      const { success, message } = await register(data.email, data.password, data.name);
+      console.log("Attempting registration with:", data.email);
+      const { success, message, isExistingUser } = await register(data.email, data.password, data.name);
       
-      if (success) {
+      if (isExistingUser) {
+        setIsExistingUser(true);
+        setErrorMessage(message || "Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.");
+      } else if (success) {
         // If user opted in for newsletter, add them to newsletter_subscriptions
         if (data.newsletterConsent) {
           const userId = (await supabase.auth.getUser()).data.user?.id;
@@ -88,8 +98,11 @@ const Register = () => {
           navigate("/login");
         }, 5000);
       } else {
-        setRegistrationMessage(message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
+        setErrorMessage(message || "Ошибка при регистрации. Пожалуйста, попробуйте снова.");
       }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      setErrorMessage(error.message || "Произошла неизвестная ошибка при регистрации");
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +137,21 @@ const Register = () => {
       
       <div className="flex-grow container max-w-md mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">Создание аккаунта</h1>
+        
+        {errorMessage && (
+          <Alert className="mb-6" variant={isExistingUser ? "info" : "destructive"}>
+            <AlertDescription>
+              {errorMessage}
+              {isExistingUser && (
+                <div className="mt-2">
+                  <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                    Перейти на страницу входа
+                  </Link>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

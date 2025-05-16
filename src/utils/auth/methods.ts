@@ -50,7 +50,17 @@ export async function signUpWithEmail(email: string, password: string) {
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      // Check if the error is because the user already exists
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        throw {
+          ...error,
+          message: "Пользователь с таким email уже зарегистрирован. Пожалуйста, войдите в систему.",
+          code: 'user_already_registered'
+        };
+      }
+      throw error;
+    }
     
     let message = "Аккаунт создан успешно.";
     
@@ -72,9 +82,19 @@ export async function signUpWithEmail(email: string, password: string) {
     };
   } catch (error: any) {
     const errorMessage = error.message || "Произошла ошибка при регистрации";
-    toast("Ошибка регистрации", {
-      description: errorMessage,
-    });
+    
+    // Use a more user-friendly toast variant for user_already_registered errors
+    if (error.code === 'user_already_registered') {
+      toast("Пользователь уже существует", {
+        description: errorMessage,
+        variant: "info"
+      });
+    } else {
+      toast("Ошибка регистрации", {
+        description: errorMessage,
+      });
+    }
+    
     return { 
       data: null, 
       error,
@@ -154,12 +174,15 @@ export const authMethods = {
     return !error && !!data;
   },
   
-  register: async (email: string, password: string, name: string): Promise<{ success: boolean, message?: string }> => {
+  register: async (email: string, password: string, name: string): Promise<{ success: boolean, message?: string, isExistingUser?: boolean }> => {
     const { data, error, message } = await signUpWithEmail(email, password);
     
-    if (error) return { success: false, message };
+    // Check if the error is for an existing user
+    const isExistingUser = error?.code === 'user_already_registered';
     
-    if (data.user) {
+    if (error) return { success: false, message, isExistingUser };
+    
+    if (data?.user) {
       // Update profile with name after successful registration
       try {
         await supabase
