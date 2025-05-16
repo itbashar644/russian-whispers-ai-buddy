@@ -8,7 +8,7 @@ export interface UseProductFilteringProps {
   sortBy: string;
   loading: boolean;
   colorParam: string | null;
-  categoryParam: string | null; // Add the category parameter
+  categoryParam: string | null;
   inStockOnly: boolean;
   showColorVariants: boolean;
 }

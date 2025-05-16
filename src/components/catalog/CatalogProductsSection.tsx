@@ -1,16 +1,12 @@
+
 import React, { useState } from "react";
-import { SearchForm } from "./SearchForm"; 
 import { Category } from "@/types/categories";
 import { Product } from "@/types/product";
-import { SlidersHorizontal } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import ProductsDisplay from "./catalog-sections/ProductsDisplay";
-import CatalogFilters from "./CatalogFilters";
 import CatalogActiveFilters from "./CatalogActiveFiltersProps";
-import DisplayOptions from "./filters/DisplayOptions";
 import CatalogHeader from "./catalog-sections/CatalogHeader";
+import DesktopFilters from "./catalog-sections/DesktopFilters";
+import MobileFiltersPanel from "./catalog-sections/MobileFiltersPanel";
 
 interface CatalogProductsSectionProps {
   products: Product[];

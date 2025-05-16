@@ -74,8 +74,9 @@ const MobileFiltersPanel: React.FC<MobileFiltersPanelProps> = (props) => {
       </Sheet>
       
       <DisplayOptions 
-        showAsList={props.showAsList} 
-        setShowAsList={props.setShowAsList} 
+        showColorVariants={props.showAsList}
+        setShowColorVariants={props.setShowAsList}
+        loading={props.loading}
       />
     </div>
   );
