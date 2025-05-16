@@ -59,8 +59,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
         if (result.error !== null) {
           if (typeof result.error === 'string') {
             errorMessage = result.error;
-          } else if (result.error && typeof result.error === 'object' && 'message' in result.error) {
-            errorMessage = result.error.message || errorMessage;
+          } else if (result.error !== null && typeof result.error === 'object' && 'message' in result.error) {
+            const errorObj = result.error as { message?: string };
+            errorMessage = errorObj.message || errorMessage;
           }
         }
           
