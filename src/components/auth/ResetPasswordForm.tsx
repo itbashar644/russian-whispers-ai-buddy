@@ -51,9 +51,13 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
         throw new Error("Failed to update password");
       }
       
+      // Handle null result
+      if (result === null) {
+        throw new Error("Failed to update password: No response from server");
+      }
+      
       // Handle result being an object with error property
-      // Add null check before accessing properties
-      if (result !== null && typeof result === 'object' && 'error' in result) {
+      if (typeof result === 'object' && 'error' in result) {
         let errorMessage = "Failed to update password";
         
         // Check if result.error is not null before trying to access it

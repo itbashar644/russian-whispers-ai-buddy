@@ -168,7 +168,7 @@ export const authMethods = {
   /**
    * Update user password
    */
-  async updatePassword(newPassword: string): Promise<boolean> {
+  async updatePassword(newPassword: string): Promise<boolean | { error: string | { message?: string } | null }> {
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
@@ -176,7 +176,7 @@ export const authMethods = {
 
       if (error) {
         toast.error("Ошибка обновления пароля", { description: formatAuthError(error) });
-        return false;
+        return { error: error };
       }
 
       toast.success("Пароль успешно обновлен");
@@ -184,7 +184,7 @@ export const authMethods = {
     } catch (error) {
       console.error("Update password error:", error);
       toast.error("Ошибка обновления пароля");
-      return false;
+      return { error: error instanceof Error ? error.message : "Unknown error" };
     }
   },
 
