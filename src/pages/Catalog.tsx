@@ -3,6 +3,11 @@ import { useSearchParams } from "react-router-dom";
 import { getProducts, getAllProductsCached } from "@/data/products";
 import { getAllCategories } from "@/data/products/categoryData";
 import { useProductFiltering as useProductFilteringNew } from "@/hooks/useProductFiltering/index";
+import { getMaxPrice } from "@/hooks/useProductFiltering/helpers";
+import { Product } from "@/types/product";
+import { Category } from "@/types/categories";
+import CatalogLayout from "@/components/catalog/CatalogLayout";
+import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
 
 // Helper function to get max price
 const getMaxPrice = (products: Product[]): number => {
