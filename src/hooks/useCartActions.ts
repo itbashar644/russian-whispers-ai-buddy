@@ -16,44 +16,49 @@ export function useCartActions() {
     );
   };
 
-  const addItem = (items: CartItem[], item: CartItem, setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
-    setItems((prevItems) => {
-      const existingItemIndex = findExistingItemIndex(prevItems, item);
-
-      // Check if there's enough stock for the requested quantity
-      const totalRequestedQuantity = existingItemIndex >= 0 
-        ? prevItems[existingItemIndex].quantity + item.quantity 
-        : item.quantity;
+  const addItem = async (items: CartItem[], item: CartItem, setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
+    try {
+      const existingItemIndex = findExistingItemIndex(items, item);
       
-      // Check product stock with the correct parameter types
-      // First parameter should be the product ID as string, not the quantity
-      if (!checkProductStock(String(item.product.id), item.color)) {
+      // Check if there's enough stock for the requested quantity
+      const stockAvailable = await checkProductStock(String(item.product.id), item.color);
+      
+      if (!stockAvailable) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
           variant: "destructive"
         });
-        return prevItems; // Don't update cart if not enough stock
+        return; // Don't update cart if not enough stock
       }
 
-      if (existingItemIndex >= 0) {
-        // Item exists, update quantity
-        const newItems = [...prevItems];
-        newItems[existingItemIndex] = {
-          ...newItems[existingItemIndex],
-          quantity: newItems[existingItemIndex].quantity + item.quantity,
-        };
-        return newItems;
-      } else {
-        // Item doesn't exist, add it
-        return [...prevItems, item];
-      }
-    });
-    
-    toast({
-      title: "Товар добавлен в корзину",
-      description: `${item.product.title} - ${item.color || ""}`
-    });
+      setItems((prevItems) => {
+        if (existingItemIndex >= 0) {
+          // Item exists, update quantity
+          const newItems = [...prevItems];
+          newItems[existingItemIndex] = {
+            ...newItems[existingItemIndex],
+            quantity: newItems[existingItemIndex].quantity + item.quantity,
+          };
+          return newItems;
+        } else {
+          // Item doesn't exist, add it
+          return [...prevItems, item];
+        }
+      });
+      
+      toast({
+        title: "Товар добавлен в корзину",
+        description: `${item.product.title} - ${item.color || ""}`
+      });
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить товар в корзину",
+        variant: "destructive"
+      });
+    }
   };
 
   const removeItem = (itemId: string, color: string | undefined, setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
@@ -73,7 +78,7 @@ export function useCartActions() {
     });
   };
 
-  const updateQuantity = (
+  const updateQuantity = async (
     itemId: string, 
     quantity: number, 
     color: string | undefined,
@@ -85,30 +90,40 @@ export function useCartActions() {
       return;
     }
 
-    setItems((prevItems) => {
-      const itemIndex = color 
-        ? prevItems.findIndex(item => item.product.id === itemId && item.color === color)
-        : prevItems.findIndex(item => item.product.id === itemId);
-
-      if (itemIndex === -1) return prevItems;
-      
-      const item = prevItems[itemIndex];
-      
+    try {
       // Check product stock with the correct parameter types
-      // First parameter should be the product ID as string, not the quantity
-      if (!checkProductStock(String(itemId), color)) {
+      const stockAvailable = await checkProductStock(String(itemId), color);
+      
+      if (!stockAvailable) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
           variant: "destructive"
         });
-        return prevItems; // Don't update if not enough stock
+        return; // Don't update if not enough stock
       }
-      
-      const newItems = [...prevItems];
-      newItems[itemIndex] = { ...item, quantity };
-      return newItems;
-    });
+
+      setItems((prevItems) => {
+        const itemIndex = color 
+          ? prevItems.findIndex(item => item.product.id === itemId && item.color === color)
+          : prevItems.findIndex(item => item.product.id === itemId);
+
+        if (itemIndex === -1) return prevItems;
+        
+        const item = prevItems[itemIndex];
+        
+        const newItems = [...prevItems];
+        newItems[itemIndex] = { ...item, quantity };
+        return newItems;
+      });
+    } catch (error) {
+      console.error("Error updating item quantity:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить количество товара",
+        variant: "destructive"
+      });
+    }
   };
 
   const clearCart = (setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {

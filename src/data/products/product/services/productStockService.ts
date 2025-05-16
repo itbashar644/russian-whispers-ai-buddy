@@ -7,18 +7,28 @@ import { refreshCacheIfNeeded } from "../../cache/productCache";
  * Check if a product is in stock
  */
 export const checkProductStock = async (productId: string, colorVariant?: string): Promise<boolean> => {
-  const product = await import("../productServiceSpecialized").then(module => module.getProductById(productId));
-  
-  if (!product) {
+  try {
+    const product = await import("../productServiceSpecialized").then(module => module.getProductById(productId));
+    
+    if (!product) {
+      console.log(`Stock check: Product ${productId} not found`);
+      return false;
+    }
+    
+    if (colorVariant && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === colorVariant);
+      const hasStock = variant ? (variant.stockQuantity || 0) > 0 : false;
+      console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}`);
+      return hasStock;
+    }
+    
+    const hasStock = product.inStock && (product.stockQuantity || 0) > 0;
+    console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}`);
+    return hasStock;
+  } catch (error) {
+    console.error("Error checking product stock:", error);
     return false;
   }
-  
-  if (colorVariant && product.colorVariants) {
-    const variant = product.colorVariants.find(v => v.color === colorVariant);
-    return variant ? (variant.stockQuantity || 0) > 0 : false;
-  }
-  
-  return product.inStock && (product.stockQuantity || 0) > 0;
 };
 
 /**
@@ -26,6 +36,7 @@ export const checkProductStock = async (productId: string, colorVariant?: string
  */
 export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
   try {
+    console.log(`Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`);
     const product = await import("../productServiceSpecialized").then(module => module.getProductById(productId));
     
     if (!product) {
@@ -37,10 +48,13 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
     if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
       if (variant) {
+        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
         if (variant.stockQuantity !== undefined) {
           variant.stockQuantity = Math.max(0, variant.stockQuantity - quantity);
+          console.log(`Updated variant stock to: ${variant.stockQuantity}`);
         } else {
           variant.stockQuantity = 0;
+          console.log(`Variant had no stock quantity, setting to 0`);
         }
         
         // Update product with modified color variant
@@ -52,12 +66,14 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
         // Force refresh cache after stock update
         await refreshCacheIfNeeded(true);
         
+        console.log(`Stock update result for variant: ${result.success ? 'Success' : 'Failed'}`);
         return result.success;
       }
     }
     
     // Handle main product stock
     if (product.stockQuantity !== undefined) {
+      console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
       product.stockQuantity = Math.max(0, product.stockQuantity - quantity);
       product.inStock = product.stockQuantity > 0;
       
@@ -72,9 +88,10 @@ export const decreaseProductStock = async (productId: string, quantity = 1, colo
       console.log("Stock update result:", result);
       
       return result.success;
+    } else {
+      console.log(`Product ${productId} has no stock quantity defined`);
+      return false;
     }
-    
-    return false;
   } catch (error) {
     console.error("Error decreasing product stock:", error);
     return false;

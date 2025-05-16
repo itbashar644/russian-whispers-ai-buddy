@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
   Eye, EyeOff, Key, Mail, ArrowRight, 
-  ChevronRight, Apple 
+  ChevronRight 
 } from "lucide-react";
 import { type Provider } from "@supabase/supabase-js";
 
@@ -204,16 +204,6 @@ const Login = () => {
                   <path d="M21.8055 10.0415H21V10H12V14H17.6515C17.2571 15.1082 16.5467 16.0766 15.608 16.7855L15.6095 16.7845L18.7045 19.4035C18.4855 19.6025 22 17 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#1976D2"/>
                 </svg>
                 Войти через Google
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => handleSocialLogin('apple')}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Apple className="h-4 w-4" />
-                Войти через Apple
               </Button>
             </div>
           </CardContent>
