@@ -8,6 +8,8 @@ export interface UseProductFilteringProps {
   sortBy: string;
   loading: boolean;
   colorParam: string | null;
+  inStockOnly?: boolean; // Add missing prop as optional
+  showColorVariants?: boolean; // Add missing prop as optional
 }
 
 export interface FilteringResult {

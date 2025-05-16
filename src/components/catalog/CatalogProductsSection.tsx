@@ -4,7 +4,7 @@ import { Product } from "@/types/product";
 import ProductGrid from "@/components/products/ProductGrid";
 import { Category } from "@/data/products/categoryData";
 import { Skeleton } from "@/components/ui/skeleton";
-import SearchForm from "./SearchForm";
+import { SearchForm } from "./SearchForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CatalogActiveFilters from "./CatalogActiveFilters";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +13,7 @@ interface CatalogProductsSectionProps {
   categoryParam: string | null;
   searchTerm: string;
   colorParam: string | null;
-  availableCategories: Category[];
+  availableCategories: string[]; // Changed from Category[] to string[] to match actual data
   loading: boolean;
   filteredProducts: Product[];
   inStockCount: number;
@@ -25,6 +25,7 @@ interface CatalogProductsSectionProps {
   handleCategoryClick: (category: string | null) => void;
   handleColorFilter: (color: string | null) => void;
   handleClearAllFilters: () => void;
+  categoryObjects: Category[]; // Added to access category objects
 }
 
 const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
@@ -43,12 +44,13 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   handleCategoryClick,
   handleColorFilter,
   handleClearAllFilters,
+  categoryObjects
 }) => {
   const { toast } = useToast();
 
   // Get active category name
   const activeCategoryName = categoryParam 
-    ? availableCategories.find((c) => c.id === categoryParam)?.name 
+    ? categoryParam // Use categoryParam directly as the name
     : null;
 
   // Filtering and count summary
@@ -80,6 +82,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
           searchTerm={searchTerm} 
           handleSearchChange={handleSearchChange} 
           handleSearchSubmit={handleSearchSubmit}
+          loading={loading}
         />
       </div>
       
@@ -116,8 +119,8 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
         <CatalogActiveFilters 
           categoryParam={categoryParam}
           colorParam={colorParam}
+          searchTerm={searchTerm}
           activeFiltersCount={activeFiltersCount}
-          availableCategories={availableCategories}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
           handleClearAllFilters={handleClearAllFilters}

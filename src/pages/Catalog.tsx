@@ -23,6 +23,8 @@ const Catalog = () => {
   const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [showColorVariants, setShowColorVariants] = useState(false);
 
   // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
@@ -34,7 +36,9 @@ const Catalog = () => {
     priceRange,
     sortBy,
     loading,
-    colorParam
+    colorParam,
+    inStockOnly,
+    showColorVariants
   });
 
   useEffect(() => {
@@ -52,9 +56,10 @@ const Catalog = () => {
     if (colorParam) count++;
     if (priceRange.min > 0 || priceRange.max < 5000) count++;
     if (searchTerm) count++;
+    if (inStockOnly) count++;
     
     setActiveFiltersCount(count);
-  }, [categoryParam, colorParam, priceRange, searchTerm]);
+  }, [categoryParam, colorParam, priceRange, searchTerm, inStockOnly]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -97,11 +102,11 @@ const Catalog = () => {
     setSearchParams(new URLSearchParams());
     setPriceRange({ min: 0, max: 5000 });
     setSearchTerm("");
+    setInStockOnly(false);
   };
 
-  // Находим объект категории по имени
-  const findCategoryByName = (name: string) => {
-    return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
+  const handleInStockFilter = (checked: boolean) => {
+    setInStockOnly(checked);
   };
 
   return (
@@ -128,11 +133,16 @@ const Catalog = () => {
           showMobileFilters={showMobileFilters}
           activeFiltersCount={activeFiltersCount}
           availableColors={availableColors}
+          inStockOnly={inStockOnly} 
+          inStockCount={inStockCount}
+          showColorVariants={showColorVariants}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
           handlePriceChange={handlePriceChange}
           handleClearAllFilters={handleClearAllFilters}
-          findCategoryByName={findCategoryByName}
+          findCategoryByName={(name) => categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" }}
+          handleInStockFilter={handleInStockFilter}
+          setShowColorVariants={setShowColorVariants}
         />
 
         <CatalogProductsSection
@@ -151,6 +161,7 @@ const Catalog = () => {
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
           handleClearAllFilters={handleClearAllFilters}
+          categoryObjects={categoryObjects}
         />
       </div>
     </CatalogLayout>

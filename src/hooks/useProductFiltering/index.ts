@@ -12,7 +12,9 @@ export const useProductFiltering = ({
   priceRange,
   sortBy,
   loading,
-  colorParam
+  colorParam,
+  inStockOnly = false, // Default value
+  showColorVariants = false // Default value
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
@@ -25,8 +27,10 @@ export const useProductFiltering = ({
     
     let result = [...allProducts];
     
-    // Always transform products for color display
-    result = transformProductsForColorDisplay(result);
+    // Always transform products for color display if showColorVariants is true
+    if (showColorVariants) {
+      result = transformProductsForColorDisplay(result);
+    }
     
     // Filter by color if color parameter is set
     if (colorParam) {
@@ -56,11 +60,16 @@ export const useProductFiltering = ({
       }
     );
     
+    // Filter by in-stock status
+    if (inStockOnly) {
+      result = result.filter((p) => p.inStock);
+    }
+    
     // Sort products
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam]);
+  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam, inStockOnly, showColorVariants]);
 
   // Calculate counts for stock status using stockQuantity for accuracy
   const { inStockCount, outOfStockCount } = useStockCounts(filteredProducts);

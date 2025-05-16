@@ -9,14 +9,15 @@ interface SearchFormProps {
   searchTerm: string;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSearchSubmit: (e: React.FormEvent) => void;
-  loading: boolean;
+  loading?: boolean;
 }
 
+// Export as a named export instead of default export
 export const SearchForm: React.FC<SearchFormProps> = ({
   searchTerm,
   handleSearchChange,
   handleSearchSubmit,
-  loading
+  loading = false
 }) => {
   const { searchInputRef } = useSearch();
 
