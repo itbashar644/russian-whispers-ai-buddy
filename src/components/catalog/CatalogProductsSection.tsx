@@ -1,165 +1,216 @@
 
-import React from "react";
-import { Product } from "@/types/product";
+import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import ProductGrid from "@/components/products/ProductGrid";
-import { Category } from "@/data/products/categoryData";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SearchForm } from "./SearchForm";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import CatalogFilters from "./CatalogFilters";
 import CatalogActiveFilters from "./CatalogActiveFilters";
-import { useToast } from "@/hooks/use-toast";
+import { SearchForm } from "./SearchForm"; // Изменяем импорт на именованный экспорт
+import { Category } from "@/types/categories";
+import { Product } from "@/types/product";
+import { Check, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface CatalogProductsSectionProps {
-  categoryParam: string | null;
-  searchTerm: string;
-  colorParam: string | null;
-  availableCategories: string[]; // Changed from Category[] to string[] to match actual data
+  products: Product[];
   loading: boolean;
-  filteredProducts: Product[];
+  categoryParam: string | null;
+  colorParam: string | null;
+  searchTerm: string;
+  availableColors: string[];
+  availableCategories: Category[];
   inStockCount: number;
-  activeFiltersCount: number;
+  outOfStockCount: number;
+  priceRange: { min: number; max: number };
+  maxPrice: number;
   sortBy: string;
-  handleSearchSubmit: (e: React.FormEvent) => void;
-  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setSortBy: (value: string) => void;
+  inStockOnly: boolean;
+  handlePriceChange: (value: { min: number; max: number }) => void;
+  handleSortChange: (value: string) => void;
+  handleInStockChange: (value: boolean) => void;
   handleCategoryClick: (category: string | null) => void;
   handleColorFilter: (color: string | null) => void;
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSearchSubmit: (e: React.FormEvent) => void;
   handleClearAllFilters: () => void;
-  categoryObjects: Category[]; // Added to access category objects
 }
 
 const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
-  categoryParam,
-  searchTerm,
-  colorParam,
-  availableCategories,
+  products,
   loading,
-  filteredProducts,
+  categoryParam,
+  colorParam,
+  searchTerm,
+  availableColors,
+  availableCategories,
   inStockCount,
-  activeFiltersCount,
+  outOfStockCount,
+  priceRange,
+  maxPrice,
   sortBy,
-  handleSearchSubmit,
-  handleSearchChange,
-  setSortBy,
+  inStockOnly,
+  handlePriceChange,
+  handleSortChange,
+  handleInStockChange,
   handleCategoryClick,
   handleColorFilter,
-  handleClearAllFilters,
-  categoryObjects
+  handleSearchChange,
+  handleSearchSubmit,
+  handleClearAllFilters
 }) => {
-  const { toast } = useToast();
-
-  // Get active category name
-  const activeCategoryName = categoryParam 
-    ? categoryParam // Use categoryParam directly as the name
-    : null;
-
-  // Filtering and count summary
-  const getCatalogTitle = () => {
-    if (loading) return (
-      <Skeleton className="h-8 w-60" />
-    );
-
-    if (activeCategoryName) {
-      return (
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-          {activeCategoryName}
-        </h1>
-      );
-    }
-
-    return (
-      <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-        Каталог товаров
-      </h1>
-    );
-  };
-
-  // Filter and sorting controls
-  const getFilterControls = () => (
-    <div className="flex justify-between flex-wrap gap-4 mb-6">
-      <div className="flex-1 min-w-[200px]">
-        <SearchForm 
-          searchTerm={searchTerm} 
-          handleSearchChange={handleSearchChange} 
+  const [showAsList, setShowAsList] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  
+  // Рассчитываем количество активных фильтров
+  const activeFiltersCount = 
+    (categoryParam ? 1 : 0) +
+    (colorParam ? 1 : 0) +
+    (searchTerm ? 1 : 0);
+    
+  return (
+    <div className="flex flex-col space-y-6 w-full">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Наши товары</h2>
+          <p className="text-muted-foreground">
+            Всего товаров: {products.length}
+            {inStockCount > 0 && products.length > 0 && (
+              <span>, В наличии: {inStockCount}</span>
+            )}
+          </p>
+        </div>
+        
+        <SearchForm
+          searchTerm={searchTerm}
+          handleSearchChange={handleSearchChange}
           handleSearchSubmit={handleSearchSubmit}
           loading={loading}
         />
       </div>
       
-      <div className="w-auto md:w-[200px]">
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Сортировать по" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="in-stock">В наличии</SelectItem>
-            <SelectItem value="price-asc">По возрастанию цены</SelectItem>
-            <SelectItem value="price-desc">По убыванию цены</SelectItem>
-            <SelectItem value="name-asc">По названию (А-Я)</SelectItem>
-            <SelectItem value="name-desc">По названию (Я-А)</SelectItem>
-            <SelectItem value="rating">По рейтингу</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="pt-4">
-      {getCatalogTitle()}
+      {/* Активные фильтры - показываем только если есть активные фильтры */}
+      <CatalogActiveFilters 
+        categoryParam={categoryParam}
+        colorParam={colorParam}
+        searchTerm={searchTerm}
+        activeFiltersCount={activeFiltersCount}
+        handleCategoryClick={handleCategoryClick}
+        handleColorFilter={handleColorFilter}
+        handleClearAllFilters={handleClearAllFilters}
+      />
       
-      {!loading && (
-        <div className="text-sm text-muted-foreground mb-2">
-          Всего товаров: <strong>{filteredProducts.length}</strong>{" "}
-          ({inStockCount} в наличии)
+      {/* Панель фильтров и результатов */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Фильтры для десктопа - скрываем на мобильных */}
+        <div className="hidden lg:block">
+          <div className="sticky top-20">
+            <CatalogFilters
+              availableColors={availableColors}
+              categories={availableCategories}
+              priceRange={priceRange}
+              maxPrice={maxPrice}
+              sortBy={sortBy}
+              inStockOnly={inStockOnly}
+              handlePriceChange={handlePriceChange}
+              handleSortChange={handleSortChange}
+              handleInStockChange={handleInStockChange}
+              handleCategoryClick={handleCategoryClick}
+              handleColorFilter={handleColorFilter}
+              colorParam={colorParam}
+              categoryParam={categoryParam}
+            />
+          </div>
         </div>
-      )}
-      
-      {activeFiltersCount > 0 && (
-        <CatalogActiveFilters 
-          categoryParam={categoryParam}
-          colorParam={colorParam}
-          searchTerm={searchTerm}
-          activeFiltersCount={activeFiltersCount}
-          handleCategoryClick={handleCategoryClick}
-          handleColorFilter={handleColorFilter}
-          handleClearAllFilters={handleClearAllFilters}
-        />
-      )}
-      
-      {getFilterControls()}
-      
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-6 w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : filteredProducts.length > 0 ? (
-        <ProductGrid products={filteredProducts} />
-      ) : (
-        <div className="text-center py-8">
-          <h3 className="text-lg font-semibold mb-2">
-            Товары не найдены
-          </h3>
-          <p className="text-muted-foreground">
-            Попробуйте изменить параметры фильтрации
-          </p>
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={handleClearAllFilters}
-              className="mt-4 underline text-primary"
+        
+        {/* Мобильная панель с кнопками фильтров и отображения */}
+        <div className="flex justify-between items-center lg:hidden mb-2">
+          <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="h-9">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                Фильтры
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[350px] overflow-y-auto">
+              <div className="py-4">
+                <CatalogFilters
+                  availableColors={availableColors}
+                  categories={availableCategories}
+                  priceRange={priceRange}
+                  maxPrice={maxPrice}
+                  sortBy={sortBy}
+                  inStockOnly={inStockOnly}
+                  handlePriceChange={handlePriceChange}
+                  handleSortChange={handleSortChange}
+                  handleInStockChange={handleInStockChange}
+                  handleCategoryClick={(catId) => {
+                    handleCategoryClick(catId);
+                    setIsFiltersOpen(false);
+                  }}
+                  handleColorFilter={(color) => {
+                    handleColorFilter(color);
+                    setIsFiltersOpen(false);
+                  }}
+                  colorParam={colorParam}
+                  categoryParam={categoryParam}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          <div className="flex items-center border rounded-md">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-3 h-9 ${!showAsList ? 'bg-muted' : ''}`}
+              onClick={() => setShowAsList(false)}
             >
-              Сбросить все фильтры
-            </button>
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-3 h-9 ${showAsList ? 'bg-muted' : ''}`}
+              onClick={() => setShowAsList(true)}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Основной контент с товарами */}
+        <div className="lg:col-span-3">
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="relative border rounded-md overflow-hidden aspect-[3/4]"
+                >
+                  <div className="w-full h-full bg-gray-100 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          ) : products.length > 0 ? (
+            <ProductGrid products={products} displayAsList={showAsList} />
+          ) : (
+            <div className="text-center py-10">
+              <h3 className="text-lg font-medium">Товары не найдены</h3>
+              <p className="text-muted-foreground mt-2">
+                Попробуйте изменить параметры фильтрации или поискать что-то другое
+              </p>
+              <Button onClick={handleClearAllFilters} className="mt-4">
+                Сбросить все фильтры
+              </Button>
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

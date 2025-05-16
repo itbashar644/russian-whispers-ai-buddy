@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 interface CatalogActiveFiltersProps {
   categoryParam: string | null;
   colorParam: string | null;
-  searchTerm?: string; // Make optional
+  searchTerm?: string; // Делаем опциональным
   activeFiltersCount: number;
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
@@ -17,7 +17,7 @@ interface CatalogActiveFiltersProps {
 const CatalogActiveFilters: React.FC<CatalogActiveFiltersProps> = ({
   categoryParam,
   colorParam,
-  searchTerm = "", // Default value
+  searchTerm = "", // Значение по умолчанию
   activeFiltersCount,
   handleCategoryClick,
   handleColorFilter,

@@ -1,37 +1,62 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import CatalogLayout from "@/components/catalog/CatalogLayout";
-import CatalogFilters from "@/components/catalog/CatalogFilters";
-import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
-import { Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCatalogData } from "@/hooks/useCatalogData";
+import { getProducts, getAllProductsCached } from "@/data/products";
+import { getAllCategories } from "@/data/products/categoryData";
 import { useProductFiltering } from "@/hooks/useProductFiltering";
+import { Product } from "@/types/product";
+import { Category } from "@/types/categories";
+import CatalogLayout from "@/components/catalog/CatalogLayout";
+import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
+import { getMaxPrice } from "@/hooks/useProductFiltering/helpers";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
-  const searchParam = searchParams.get("search");
   const colorParam = searchParams.get("color");
+  const searchTerm = searchParams.get("q") || "";
   
-  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
-    min: 0,
-    max: 5000,
-  });
-  const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Параметры фильтрации
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
+  const [maxPrice, setMaxPrice] = useState(50000);
+  const [sortBy, setSortBy] = useState("default");
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [showColorVariants, setShowColorVariants] = useState(false);
-
-  // Загрузка данных каталога
-  const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
+  const [showColorVariants, setShowColorVariants] = useState(true);
   
-  // Фильтрация и сортировка продуктов
-  const { filteredProducts, availableColors, inStockCount } = useProductFiltering({
-    allProducts,
+  // Загрузка товаров и категорий
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          getAllProductsCached(),
+          getAllCategories()
+        ]);
+        
+        setProducts(productsData);
+        setCategories(categoriesData);
+        
+        // Установка максимальной цены на основе самого дорогого товара
+        const calculatedMaxPrice = getMaxPrice(productsData);
+        setMaxPrice(calculatedMaxPrice);
+        setPriceRange(prev => ({ min: prev.min, max: calculatedMaxPrice }));
+      } catch (error) {
+        console.error("Error loading catalog data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  // Используем хук фильтрации для обработки всей логики фильтров
+  const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
+    allProducts: products,
     searchTerm,
     priceRange,
     sortBy,
@@ -40,130 +65,91 @@ const Catalog = () => {
     inStockOnly,
     showColorVariants
   });
-
-  useEffect(() => {
-    // Update searchTerm when searchParam changes
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-  }, [searchParam]);
-
-  // Подсчет количества активных фильтров
-  useEffect(() => {
-    let count = 0;
-    
-    if (categoryParam) count++;
-    if (colorParam) count++;
-    if (priceRange.min > 0 || priceRange.max < 5000) count++;
-    if (searchTerm) count++;
-    if (inStockOnly) count++;
-    
-    setActiveFiltersCount(count);
-  }, [categoryParam, colorParam, priceRange, searchTerm, inStockOnly]);
-
-  const handleCategoryClick = (categoryId: string | null) => {
-    if (categoryId) {
-      searchParams.set("category", categoryId);
-    } else {
-      searchParams.delete("category");
-    }
-    setSearchParams(searchParams);
+  
+  // Обработчики изменения параметров фильтрации
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Не обновляем URL при каждом вводе символа
+    const value = e.target.value;
   };
-
-  const handleColorFilter = (color: string | null) => {
-    if (color) {
-      searchParams.set("color", color);
-    } else {
-      searchParams.delete("color");
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handlePriceChange = (type: "min" | "max", value: string) => {
-    const numValue = parseInt(value, 10) || 0;
-    setPriceRange((prev) => ({ ...prev, [type]: numValue }));
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
+  
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      searchParams.set("search", searchTerm);
-    } else {
-      searchParams.delete("search");
+    const inputElement = e.currentTarget.querySelector('input[type="search"]') as HTMLInputElement;
+    if (inputElement) {
+      const value = inputElement.value;
+      updateSearchParams({ q: value || null });
     }
-    setSearchParams(searchParams);
+  };
+  
+  const handleCategoryClick = (category: string | null) => {
+    updateSearchParams({ category });
+  };
+  
+  const handleColorFilter = (color: string | null) => {
+    updateSearchParams({ color });
+  };
+  
+  const handlePriceChange = (value: { min: number; max: number }) => {
+    setPriceRange(value);
+  };
+  
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+  };
+  
+  const handleInStockChange = (checked: boolean) => {
+    setInStockOnly(checked);
   };
   
   const handleClearAllFilters = () => {
-    setSearchParams(new URLSearchParams());
-    setPriceRange({ min: 0, max: 5000 });
-    setSearchTerm("");
+    // Сбрасываем все параметры фильтров
+    setSearchParams({});
+    setPriceRange({ min: 0, max: maxPrice });
+    setSortBy("default");
     setInStockOnly(false);
   };
-
-  const handleInStockFilter = (checked: boolean) => {
-    setInStockOnly(checked);
+  
+  // Вспомогательная функция для обновления URL параметров
+  const updateSearchParams = (params: Record<string, string | null>) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    
+    // Обновляем или удаляем параметры
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, value);
+      }
+    });
+    
+    setSearchParams(newSearchParams);
   };
-
+  
   return (
     <CatalogLayout>
-      <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
-        {/* Mobile filters toggle */}
-        <div className="md:hidden mb-4">
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center justify-center gap-2"
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
-          >
-            <Filter className="h-4 w-4" />
-            Фильтры {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </Button>
-        </div>
-
-        <CatalogFilters 
-          availableCategories={availableCategories}
-          categoryParam={categoryParam}
-          colorParam={colorParam}
-          priceRange={priceRange}
-          loading={loading}
-          showMobileFilters={showMobileFilters}
-          activeFiltersCount={activeFiltersCount}
-          availableColors={availableColors}
-          inStockOnly={inStockOnly} 
-          inStockCount={inStockCount}
-          showColorVariants={showColorVariants}
-          handleCategoryClick={handleCategoryClick}
-          handleColorFilter={handleColorFilter}
-          handlePriceChange={handlePriceChange}
-          handleClearAllFilters={handleClearAllFilters}
-          findCategoryByName={(name) => categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" }}
-          handleInStockFilter={handleInStockFilter}
-          setShowColorVariants={setShowColorVariants}
-        />
-
-        <CatalogProductsSection
-          categoryParam={categoryParam}
-          searchTerm={searchTerm}
-          colorParam={colorParam}
-          availableCategories={availableCategories}
-          loading={loading}
-          filteredProducts={filteredProducts}
-          inStockCount={inStockCount}
-          activeFiltersCount={activeFiltersCount}
-          sortBy={sortBy}
-          handleSearchSubmit={handleSearchSubmit}
-          handleSearchChange={handleSearchChange}
-          setSortBy={setSortBy}
-          handleCategoryClick={handleCategoryClick}
-          handleColorFilter={handleColorFilter}
-          handleClearAllFilters={handleClearAllFilters}
-          categoryObjects={categoryObjects}
-        />
-      </div>
+      <CatalogProductsSection 
+        products={filteredProducts}
+        loading={loading}
+        categoryParam={categoryParam}
+        colorParam={colorParam}
+        searchTerm={searchTerm}
+        availableColors={availableColors}
+        availableCategories={categories}
+        inStockCount={inStockCount}
+        outOfStockCount={outOfStockCount}
+        priceRange={priceRange}
+        maxPrice={maxPrice}
+        sortBy={sortBy}
+        inStockOnly={inStockOnly}
+        handlePriceChange={handlePriceChange}
+        handleSortChange={handleSortChange}
+        handleInStockChange={handleInStockChange}
+        handleCategoryClick={handleCategoryClick}
+        handleColorFilter={handleColorFilter}
+        handleSearchChange={handleSearchChange}
+        handleSearchSubmit={handleSearchSubmit}
+        handleClearAllFilters={handleClearAllFilters}
+      />
     </CatalogLayout>
   );
 };
