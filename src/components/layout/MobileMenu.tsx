@@ -24,6 +24,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     wishlistItems = wishlist || [];
   } catch (error) {
     console.error("Error in MobileMenu: Context not available", error);
+    wishlistItems = [];
   }
   
   if (!isOpen) return null;
@@ -91,7 +92,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </Link>
           ) : (
             <Link
-              to="/auth/login"
+              to="/login"
               onClick={onClose}
               className="text-lg font-medium flex items-center gap-2"
             >

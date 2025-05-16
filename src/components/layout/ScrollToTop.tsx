@@ -3,16 +3,15 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function ScrollToTop() {
-  let location;
+  let location = null;
   
-  // Safe check if we're in a browser context with Router
   try {
     location = useLocation();
     
     useEffect(() => {
       // When the route changes, scroll to top
       window.scrollTo(0, 0);
-    }, [location.pathname]);
+    }, [location?.pathname]);
   } catch (error) {
     // If useLocation fails, we're not in a Router context
     console.log("ScrollToTop: Not in Router context");
