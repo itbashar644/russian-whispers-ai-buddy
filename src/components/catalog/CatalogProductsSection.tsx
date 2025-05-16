@@ -1,10 +1,7 @@
 
 import React from "react";
 import { Product } from "@/types/product";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
 import ProductGrid from "@/components/products/ProductGrid";
 import {
   Select,
@@ -14,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CatalogActiveFilters from "./CatalogActiveFilters";
+import { SearchForm } from "./SearchForm";
 
 interface CatalogProductsSectionProps {
   categoryParam: string | null;
@@ -68,17 +66,12 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
           {colorParam && ` / Цвет: ${colorParam}`}
         </h1>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2">
-            <Input
-              type="search"
-              placeholder="Поиск товаров..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="min-w-[200px]"
-              disabled={loading}
-            />
-            <Button type="submit" disabled={loading}>Найти</Button>
-          </form>
+          <SearchForm
+            searchTerm={searchTerm}
+            handleSearchChange={handleSearchChange}
+            handleSearchSubmit={handleSearchSubmit}
+            loading={loading}
+          />
           <Select 
             value={sortBy}
             onValueChange={setSortBy}

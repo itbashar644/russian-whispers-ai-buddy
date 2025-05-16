@@ -1,0 +1,218 @@
+
+import { useState, useEffect, useMemo } from "react";
+import { Product } from "@/types/product";
+
+interface UseProductFilteringProps {
+  allProducts: Product[];
+  searchTerm: string;
+  priceRange: { min: number; max: number };
+  inStockOnly: boolean;
+  sortBy: string;
+  loading: boolean;
+  showColorVariants: boolean;
+  colorParam: string | null;
+}
+
+export const useProductFiltering = ({
+  allProducts,
+  searchTerm,
+  priceRange,
+  inStockOnly,
+  sortBy,
+  loading,
+  showColorVariants,
+  colorParam
+}: UseProductFilteringProps) => {
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+
+  // Get all available colors from products
+  const availableColors = useMemo(() => {
+    if (!allProducts.length) return [];
+    
+    const colorSet = new Set<string>();
+    
+    allProducts.forEach(product => {
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        product.colorVariants.forEach(variant => {
+          colorSet.add(variant.color);
+        });
+      }
+    });
+    
+    return Array.from(colorSet).sort();
+  }, [allProducts]);
+
+  // Фильтруем и сортируем продукты при изменении параметров
+  useEffect(() => {
+    if (loading) return;
+    
+    let result = [...allProducts];
+    
+    // Transform products for color display if needed
+    if (showColorVariants) {
+      result = transformProductsForColorDisplay(result);
+    }
+    
+    // Filter by color if color parameter is set
+    if (colorParam) {
+      result = result.filter(product => {
+        if (product.colorVariants && product.colorVariants.length > 0) {
+          return product.colorVariants.some(v => v.color.toLowerCase() === colorParam.toLowerCase());
+        }
+        return false;
+      });
+    }
+    
+    // Фильтрация по поисковому запросу
+    if (searchTerm) {
+      result = result.filter(
+        (p) => 
+          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Фильтрация по диапазону цен
+    result = result.filter(
+      (p) => {
+        const price = p.discountPrice || p.price;
+        return price >= priceRange.min && price <= priceRange.max;
+      }
+    );
+    
+    // Фильтрация по наличию
+    if (inStockOnly) {
+      result = result.filter((p) => p.inStock);
+    }
+    
+    // Always sort by in-stock first
+    result = sortProducts(result, sortBy);
+    
+    setFilteredProducts(result);
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
+
+  // Transform products for color display
+  const transformProductsForColorDisplay = (products: Product[]): Product[] => {
+    const expandedProducts: Product[] = [];
+    
+    products.forEach(product => {
+      // If product has color variants, create virtual products for each variant
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        product.colorVariants.forEach(variant => {
+          const variantProduct: Product = {
+            ...product,
+            id: `${product.id}-${variant.color}`.replace(/\s+/g, '-').toLowerCase(),
+            price: variant.price,
+            discountPrice: variant.discountPrice,
+            imageUrl: variant.imageUrl || product.imageUrl,
+            articleNumber: variant.articleNumber || product.articleNumber,
+            barcode: variant.barcode || product.barcode,
+            stockQuantity: variant.stockQuantity,
+            inStock: variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : product.inStock,
+            ozonUrl: variant.ozonUrl || product.ozonUrl,
+            wildberriesUrl: variant.wildberriesUrl || product.wildberriesUrl,
+            avitoUrl: variant.avitoUrl || product.avitoUrl,
+            colorVariants: [variant],
+            isColorVariant: true
+          };
+          expandedProducts.push(variantProduct);
+        });
+      } else {
+        // Product has no color variants, add as is
+        expandedProducts.push(product);
+      }
+    });
+    
+    return expandedProducts;
+  };
+
+  // Sort products based on selected sortBy option
+  const sortProducts = (products: Product[], sortByOption: string): Product[] => {
+    // Create a copy to avoid mutating the original array
+    const sortedProducts = [...products];
+    
+    // Always sort by in-stock first, regardless of other sortings
+    sortedProducts.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+    
+    // Then apply additional sorting on top of the in-stock priority
+    switch (sortByOption) {
+      case "price-asc":
+        sortedProducts.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by price
+          const priceA = a.discountPrice || a.price;
+          const priceB = b.discountPrice || b.price;
+          return priceA - priceB;
+        });
+        break;
+      case "price-desc":
+        sortedProducts.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by price descending
+          const priceA = a.discountPrice || a.price;
+          const priceB = b.discountPrice || b.price;
+          return priceB - priceA;
+        });
+        break;
+      case "name-asc":
+        sortedProducts.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by name ascending
+          return a.title.localeCompare(b.title);
+        });
+        break;
+      case "name-desc":
+        sortedProducts.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by name descending
+          return b.title.localeCompare(a.title);
+        });
+        break;
+      case "rating":
+        sortedProducts.sort((a, b) => {
+          // First by stock
+          if (a.inStock !== b.inStock) {
+            return a.inStock ? -1 : 1;
+          }
+          // Then by rating
+          return b.rating - a.rating;
+        });
+        break;
+      case "in-stock":
+      default:
+        // Just maintain the stock sort that was already applied
+        break;
+    }
+    
+    return sortedProducts;
+  };
+
+  // Вспомогательные функции для интерфейса
+  const inStockCount = useMemo(() => {
+    return filteredProducts.filter(p => p.inStock).length;
+  }, [filteredProducts]);
+  
+  const outOfStockCount = useMemo(() => {
+    return filteredProducts.filter(p => !p.inStock).length;
+  }, [filteredProducts]);
+
+  return {
+    filteredProducts,
+    availableColors,
+    inStockCount,
+    outOfStockCount
+  };
+};
