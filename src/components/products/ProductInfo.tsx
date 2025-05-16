@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Product, ColorVariant } from "@/types/product";
-import { formatCurrency } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { decreaseProductStock } from "@/data/products";
@@ -9,29 +10,38 @@ import AlternativeProducts from './AlternativeProducts';
 
 interface ProductInfoProps {
   product: Product;
+  // Add the missing properties to match what's being passed in Product.tsx
+  relatedColorProducts?: Product[];
+  selectedColorVariant?: ColorVariant | null;
+  onColorVariantSelect?: (variant: ColorVariant) => void;
 }
 
-const ProductInfo = ({ product }: ProductInfoProps) => {
+const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant = null, onColorVariantSelect }: ProductInfoProps) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
+  const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(propSelectedColorVariant);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     // Reset selected color when product changes
     setSelectedColor(null);
-    setSelectedColorVariant(null);
-  }, [product]);
+    setSelectedColorVariant(propSelectedColorVariant);
+  }, [product, propSelectedColorVariant]);
 
   useEffect(() => {
     // Update selected color variant when selected color changes
     if (selectedColor) {
       const variant = product.colorVariants?.find(v => v.color === selectedColor) || null;
       setSelectedColorVariant(variant);
+      
+      // Call the parent's handler if provided
+      if (variant && onColorVariantSelect) {
+        onColorVariantSelect(variant);
+      }
     } else {
       setSelectedColorVariant(null);
     }
-  }, [selectedColor, product.colorVariants]);
+  }, [selectedColor, product.colorVariants, onColorVariantSelect]);
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
@@ -75,11 +85,11 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
       <div className="mt-4">
         {product.discountPrice ? (
           <div className="flex items-center space-x-2">
-            <span className="text-xl font-bold">{formatCurrency(product.discountPrice)}</span>
-            <span className="text-gray-500 line-through">{formatCurrency(product.price)}</span>
+            <span className="text-xl font-bold">{formatPrice(product.discountPrice)}</span>
+            <span className="text-gray-500 line-through">{formatPrice(product.price)}</span>
           </div>
         ) : (
-          <span className="text-xl font-bold">{formatCurrency(product.price)}</span>
+          <span className="text-xl font-bold">{formatPrice(product.price)}</span>
         )}
       </div>
     
