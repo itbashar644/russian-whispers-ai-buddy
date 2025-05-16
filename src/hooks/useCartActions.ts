@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { CartItem } from "@/types/product";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +26,8 @@ export function useCartActions() {
         ? prevItems[existingItemIndex].quantity + item.quantity 
         : item.quantity;
       
-      if (!checkProductStock(item.product.id, totalRequestedQuantity)) {
+      // Convert product.id to string to match the expected type for checkProductStock
+      if (!checkProductStock(String(item.product.id), totalRequestedQuantity)) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
@@ -93,7 +95,8 @@ export function useCartActions() {
       const item = prevItems[itemIndex];
       
       // Check if there's enough stock for the requested quantity
-      if (!checkProductStock(itemId, quantity)) {
+      // Convert product.id to string to match the expected type for checkProductStock
+      if (!checkProductStock(String(itemId), quantity)) {
         toast({
           title: "Ошибка",
           description: "Недостаточно товара на складе",
