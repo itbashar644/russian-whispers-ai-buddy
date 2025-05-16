@@ -6,10 +6,11 @@ import {
   ShoppingCart,
   Menu,
   X,
-  ChevronDown,
   User,
   LogIn,
   Heart,
+  Search,
+  Store,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useMediaQuery } from "@/hooks/use-mobile";
@@ -20,7 +21,7 @@ import { useWishlist } from "@/context/WishlistContext";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { items } = useCart(); // Changed from cart to items which matches the CartContextType
+  const { items } = useCart();
   const { wishlist } = useWishlist();
   const { user } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -62,7 +63,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-6 md:gap-8 lg:gap-10">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png" alt="Logo" className="h-8 w-auto" />
+            <Store className="h-6 w-6 text-primary" />
           </Link>
           <nav className="hidden md:flex gap-6">
             <NavLink
@@ -100,6 +101,9 @@ const Navbar = () => {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          <Link to="/catalog" className="flex items-center justify-center">
+            <Search className="h-5 w-5 text-primary hover:text-primary/80 transition-colors" />
+          </Link>
           <Link to="/wishlist" className="relative">
             <Heart className="h-5 w-5" />
             {wishlist.length > 0 && (

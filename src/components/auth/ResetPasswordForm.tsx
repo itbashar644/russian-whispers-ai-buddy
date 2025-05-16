@@ -7,9 +7,6 @@ import { Label } from "@/components/ui/label";
 import { updatePassword } from "@/utils/auth/methods";
 import { toast } from "sonner";
 
-// Define a type for the possible return values of updatePassword
-type UpdatePasswordResult = boolean | { error: { message?: string } | string | unknown };
-
 interface ResetPasswordFormProps {
   loading: boolean;
   setLoading: (loading: boolean) => void;
@@ -20,47 +17,43 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ loading, setLoadi
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validatePassword = () => {
     if (password.length < 6) {
       toast.error("Пароль слишком короткий", {
         description: "Пароль должен содержать не менее 6 символов"
       });
-      return;
+      return false;
     }
 
     if (password !== confirmPassword) {
       toast.error("Пароли не совпадают", {
         description: "Пароль и подтверждение должны совпадать"
       });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePassword()) {
       return;
     }
 
     setLoading(true);
     try {
-      // Call the updatePassword function and handle both possible return types
-      const result = await updatePassword(password) as UpdatePasswordResult;
+      const result = await updatePassword(password);
       
-      // If result is a boolean (true/false), handle accordingly
-      if (typeof result === "boolean") {
-        if (!result) {
-          throw new Error("Failed to update password");
-        }
-      } 
-      // If result is an object with error property, check the error
-      else if (result && typeof result === 'object') {
-        // Safe extraction of error message with multiple type checks
-        let errorMessage = "Failed to update password";
-        
-        if ('error' in result) {
-          const errorObj = result.error;
-          if (typeof errorObj === 'object' && errorObj !== null && 'message' in errorObj) {
-            errorMessage = String(errorObj.message);
-          } else if (typeof errorObj === 'string') {
-            errorMessage = errorObj;
-          }
-        }
-        
+      // Handle different error formats
+      if (result === false || (typeof result === 'object' && result !== null && 'error' in result)) {
+        const errorMessage = typeof result === 'object' && result.error 
+          ? typeof result.error === 'string' 
+            ? result.error 
+            : (result.error as any)?.message || "Failed to update password"
+          : "Failed to update password";
+          
         throw new Error(errorMessage);
       }
       

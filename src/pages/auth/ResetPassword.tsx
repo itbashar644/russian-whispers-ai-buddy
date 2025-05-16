@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 import ResetPasswordError from "@/components/auth/ResetPasswordError";
+import ResetPasswordWrapper from "@/components/auth/ResetPasswordWrapper";
 
 const ResetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,6 @@ const ResetPassword: React.FC = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
-        const type = hashParams.get("type");
         
         // If we have tokens in the hash
         if (accessToken && refreshToken) {
@@ -84,34 +84,12 @@ const ResetPassword: React.FC = () => {
   }, [navigate, location.pathname]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>{isRecoveryMode ? "Установка нового пароля" : "Сброс пароля"}</CardTitle>
-            <CardDescription>
-              {isRecoveryMode
-                ? "Придумайте новый пароль для вашего аккаунта"
-                : "Запросите ссылку для сброса пароля"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isRecoveryMode ? (
-              <ResetPasswordForm loading={loading} setLoading={setLoading} />
-            ) : (
-              <ResetPasswordError onRequestReset={() => navigate("/forgot-password")} />
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="link" onClick={() => navigate("/login")}>
-              Вернуться на страницу входа
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-      <Footer />
-    </div>
+    <ResetPasswordWrapper 
+      isRecoveryMode={isRecoveryMode} 
+      loading={loading} 
+      setLoading={setLoading}
+      navigate={navigate}
+    />
   );
 };
 
