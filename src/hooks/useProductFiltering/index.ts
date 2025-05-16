@@ -3,35 +3,21 @@ import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 import { UseProductFilteringProps, FilteringResult } from "./types";
 import { transformProductsForColorDisplay, sortProducts } from "./helpers";
+import { useAvailableColors } from "./useAvailableColors";
+import { useStockCounts } from "./useStockCounts";
 
 export const useProductFiltering = ({
   allProducts,
   searchTerm,
   priceRange,
-  inStockOnly, // Keeping for backward compatibility
   sortBy,
   loading,
-  showColorVariants, // Keeping for backward compatibility
   colorParam
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-
+  
   // Get all available colors from products
-  const availableColors = useMemo(() => {
-    if (!allProducts.length) return [];
-    
-    const colorSet = new Set<string>();
-    
-    allProducts.forEach(product => {
-      if (product.colorVariants && product.colorVariants.length > 0) {
-        product.colorVariants.forEach(variant => {
-          colorSet.add(variant.color);
-        });
-      }
-    });
-    
-    return Array.from(colorSet).sort();
-  }, [allProducts]);
+  const availableColors = useAvailableColors(allProducts);
 
   // Filter and sort products when parameters change
   useEffect(() => {
@@ -77,23 +63,7 @@ export const useProductFiltering = ({
   }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam]);
 
   // Calculate counts for stock status using stockQuantity for accuracy
-  const inStockCount = useMemo(() => {
-    return filteredProducts.filter(p => {
-      if (p.stockQuantity !== undefined) {
-        return p.stockQuantity > 0;
-      }
-      return p.inStock;
-    }).length;
-  }, [filteredProducts]);
-  
-  const outOfStockCount = useMemo(() => {
-    return filteredProducts.filter(p => {
-      if (p.stockQuantity !== undefined) {
-        return p.stockQuantity <= 0;
-      }
-      return !p.inStock;
-    }).length;
-  }, [filteredProducts]);
+  const { inStockCount, outOfStockCount } = useStockCounts(filteredProducts);
 
   return {
     filteredProducts,
