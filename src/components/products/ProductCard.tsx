@@ -30,7 +30,6 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
         price: selectedVariant.price,
         discountPrice: selectedVariant.discountPrice,
         stockQuantity: selectedVariant.stockQuantity,
-        // Устанавливаем inStock на основе stockQuantity для варианта
         inStock: selectedVariant.stockQuantity !== undefined ? selectedVariant.stockQuantity > 0 : product.inStock
       } 
     : product;

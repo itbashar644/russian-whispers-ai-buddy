@@ -69,7 +69,7 @@ export const importProductsIntoSupabase = async (products: Product[]): Promise<b
       
       const { error } = await supabase
         .from("products")
-        .insert(transformedBatch);
+        .insert(transformedBatch as any[]);
 
       if (error) {
         console.error("Ошибка при импорте товаров (партия", i/batchSize + 1, "):", error);

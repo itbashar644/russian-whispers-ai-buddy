@@ -2,12 +2,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 import { 
+  getMaxPrice,
   transformProductsForColorDisplay,
-  filterProducts, 
-  sortProducts,
-  extractAvailableColors,
-  countStockStatus
+  sortProducts
 } from "./helpers";
+import { filterProducts } from "./helpers/filterProducts";
+import { extractAvailableColors } from "./helpers/extractAvailableColors";
+import { countStockStatus } from "./helpers/countStockStatus";
 
 interface UseProductFilteringProps {
   allProducts: Product[];

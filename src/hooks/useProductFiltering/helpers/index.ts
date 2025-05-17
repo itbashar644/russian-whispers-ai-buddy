@@ -2,6 +2,8 @@
 export * from './filterProducts';
 export * from './sortProducts';
 export * from './transformProducts';
+export * from './extractAvailableColors';
+export * from './countStockStatus';
 
 /**
  * Get maximum price from products

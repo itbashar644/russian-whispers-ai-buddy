@@ -59,13 +59,15 @@ const FiltersSidebar: React.FC<FiltersSidebarProps> = ({
       <InStockFilter 
         inStockOnly={inStockOnly}
         handleInStockChange={handleInStockChange}
+        loading={loading}
       />
       
       {availableColors.length > 0 && (
         <ColorFilter 
-          colors={availableColors}
-          selectedColor={colorParam}
-          handleColorSelect={handleColorFilter}
+          availableColors={availableColors}
+          colorParam={colorParam}
+          handleColorFilter={handleColorFilter}
+          loading={loading}
         />
       )}
     </div>
