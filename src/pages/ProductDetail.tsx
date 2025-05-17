@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -12,8 +11,10 @@ import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { formatVideoUrl } from "@/lib/utils";
-import { Product } from "@/types/product";
+import { Product, ColorVariant } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductDetails from "@/components/products/ProductDetails";
+import { toast } from "sonner";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
+  const [selectedTab, setSelectedTab] = useState("description");
   
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
@@ -34,7 +36,9 @@ const ProductDetail = () => {
       
       setLoading(true);
       try {
+        console.log("Fetching product with ID:", id);
         const productData = await getProductById(id);
+        console.log("Product data received:", productData);
         setProduct(productData || null);
         
         if (productData) {
@@ -51,6 +55,9 @@ const ProductDetail = () => {
         }
       } catch (error) {
         console.error("Error loading product:", error);
+        toast.error("Ошибка загрузки товара", {
+          description: "Не удалось загрузить данные товара."
+        });
       } finally {
         setLoading(false);
       }
@@ -75,7 +82,7 @@ const ProductDetail = () => {
     }
     
     // Otherwise check the main product stock
-    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
+    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : true);
   };
 
   // Get stock status text
@@ -219,6 +226,10 @@ const ProductDetail = () => {
         quantity,
         color: selectedColor,
         selectedColorVariant
+      });
+      
+      toast.success("Товар добавлен в корзину", {
+        description: `${product.title} (${quantity} шт.)`
       });
     }
   };
@@ -614,13 +625,15 @@ const ProductDetail = () => {
                 </Button>
               </div>
             </div>
-
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-3">Описание</h3>
-              <p className="text-muted-foreground">{product.description}</p>
-            </div>
           </div>
         </div>
+
+        {/* Product details tabs section */}
+        <ProductDetails 
+          product={product}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+        />
 
         {relatedProducts.length > 0 && (
           <section className="mt-16">

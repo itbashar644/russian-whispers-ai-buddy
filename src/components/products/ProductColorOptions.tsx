@@ -20,12 +20,12 @@ const ProductColorOptions: React.FC<ProductColorOptionsProps> = ({
   }
 
   return (
-    <div className={`flex flex-wrap gap-1 ${className}`}>
+    <div className={`flex flex-wrap gap-2 ${className}`}>
       {product.colorVariants.map((variant) => (
         <button
           key={variant.color}
-          className={`w-4 h-4 rounded-full border ${
-            selectedColor === variant.color ? "ring-1 ring-primary" : ""
+          className={`w-6 h-6 rounded-full border-2 ${
+            selectedColor === variant.color ? "ring-2 ring-primary ring-offset-2" : "border-gray-200"
           }`}
           style={{ backgroundColor: variant.color }}
           onClick={(e) => {

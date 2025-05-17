@@ -60,7 +60,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           <Heart 
             className={cn("h-4 w-4", isInWishlist ? "fill-red-500 text-red-500" : "")} 
           />
-          <span className="sr-only">Add to wishlist</span>
+          <span className="sr-only">Добавить в избранное</span>
         </Button>
         
         {/* Product Image */}

@@ -54,7 +54,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the heart
-    toggleWishlistItem(product);
+    toggleWishlistItem(product.id);
   };
 
   // Check if product is in wishlist
