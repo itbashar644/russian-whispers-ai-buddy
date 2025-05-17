@@ -25,10 +25,7 @@ export const getAllCategories = async (): Promise<string[]> => {
   await loadCategoriesFromSupabase();
   
   // Возвращаем только имена категорий для совместимости с существующим кодом
-  // Фильтруем категорию "Другое"
-  return categories
-    .filter(category => category.name !== "Другое")
-    .map(category => category.name);
+  return categories.map(category => category.name);
 };
 
 // Функция для получения объектов категорий
@@ -36,8 +33,7 @@ export const getCategoryObjects = async (): Promise<Category[]> => {
   // Всегда обновляем категории из Supabase
   await loadCategoriesFromSupabase();
   
-  // Фильтруем категорию "Другое"
-  return categories.filter(category => category.name !== "Другое");
+  return [...categories];
 };
 
 // Функция для загрузки категорий из Supabase
