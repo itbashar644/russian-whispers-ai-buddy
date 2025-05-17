@@ -1,0 +1,77 @@
+
+import { Product } from "@/types/product";
+
+/**
+ * Sort products based on selected sortBy option
+ */
+export const sortProducts = (products: Product[], sortByOption: string): Product[] => {
+  // Create a copy to avoid mutating the original array
+  const sortedProducts = [...products];
+  
+  // Always sort by in-stock first, regardless of other sortings
+  sortedProducts.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+  
+  // Then apply additional sorting on top of the in-stock priority
+  switch (sortByOption) {
+    case "price-asc":
+      sortedProducts.sort((a, b) => {
+        // First by stock
+        if (a.inStock !== b.inStock) {
+          return a.inStock ? -1 : 1;
+        }
+        // Then by price
+        const priceA = a.discountPrice || a.price;
+        const priceB = b.discountPrice || b.price;
+        return priceA - priceB;
+      });
+      break;
+    case "price-desc":
+      sortedProducts.sort((a, b) => {
+        // First by stock
+        if (a.inStock !== b.inStock) {
+          return a.inStock ? -1 : 1;
+        }
+        // Then by price descending
+        const priceA = a.discountPrice || a.price;
+        const priceB = b.discountPrice || b.price;
+        return priceB - priceA;
+      });
+      break;
+    case "name-asc":
+      sortedProducts.sort((a, b) => {
+        // First by stock
+        if (a.inStock !== b.inStock) {
+          return a.inStock ? -1 : 1;
+        }
+        // Then by name ascending
+        return a.title.localeCompare(b.title);
+      });
+      break;
+    case "name-desc":
+      sortedProducts.sort((a, b) => {
+        // First by stock
+        if (a.inStock !== b.inStock) {
+          return a.inStock ? -1 : 1;
+        }
+        // Then by name descending
+        return b.title.localeCompare(a.title);
+      });
+      break;
+    case "rating":
+      sortedProducts.sort((a, b) => {
+        // First by stock
+        if (a.inStock !== b.inStock) {
+          return a.inStock ? -1 : 1;
+        }
+        // Then by rating
+        return b.rating - a.rating;
+      });
+      break;
+    case "in-stock":
+    default:
+      // Just maintain the stock sort that was already applied
+      break;
+  }
+  
+  return sortedProducts;
+};

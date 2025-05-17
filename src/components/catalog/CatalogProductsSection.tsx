@@ -42,79 +42,103 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = (props) =>
     (props.colorParam ? 1 : 0) +
     (props.searchTerm ? 1 : 0);
     
+  // Destructure props for clarity
+  const {
+    products,
+    loading,
+    categoryParam,
+    colorParam,
+    searchTerm,
+    availableColors,
+    availableCategories,
+    inStockCount,
+    priceRange,
+    maxPrice,
+    sortBy,
+    inStockOnly,
+    handlePriceChange,
+    handleSortChange,
+    handleInStockChange,
+    handleCategoryClick,
+    handleColorFilter,
+    handleSearchChange,
+    handleSearchSubmit,
+    handleClearAllFilters
+  } = props;
+    
   return (
     <div className="flex flex-col space-y-6 w-full">
       <CatalogHeader 
-        products={props.products}
-        inStockCount={props.inStockCount}
-        searchTerm={props.searchTerm}
-        handleSearchChange={props.handleSearchChange}
-        handleSearchSubmit={props.handleSearchSubmit}
-        loading={props.loading}
+        products={products}
+        inStockCount={inStockCount}
+        searchTerm={searchTerm}
+        handleSearchChange={handleSearchChange}
+        handleSearchSubmit={handleSearchSubmit}
+        loading={loading}
       />
       
-      {/* Активные фильтры - показываем только если есть активные фильтры */}
+      {/* Show active filters only when there are active filters */}
       {activeFiltersCount > 0 && (
         <CatalogActiveFilters 
-          categoryParam={props.categoryParam}
-          colorParam={props.colorParam}
-          searchTerm={props.searchTerm}
+          categoryParam={categoryParam}
+          colorParam={colorParam}
+          searchTerm={searchTerm}
           activeFiltersCount={activeFiltersCount}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          handleClearAllFilters={props.handleClearAllFilters}
+          handleCategoryClick={handleCategoryClick}
+          handleColorFilter={handleColorFilter}
+          handleClearAllFilters={handleClearAllFilters}
         />
       )}
       
-      {/* Панель фильтров и результатов */}
+      {/* Filters and results panel */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Фильтры для десктопа - скрываем на мобильных */}
+        {/* Desktop filters - hidden on mobile */}
         <DesktopFilters 
-          availableColors={props.availableColors}
-          categories={props.availableCategories}
-          priceRange={props.priceRange}
-          maxPrice={props.maxPrice}
-          sortBy={props.sortBy}
-          inStockOnly={props.inStockOnly}
-          handlePriceChange={props.handlePriceChange}
-          handleSortChange={props.handleSortChange}
-          handleInStockChange={props.handleInStockChange}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          colorParam={props.colorParam}
-          categoryParam={props.categoryParam}
-          loading={props.loading}
+          availableColors={availableColors}
+          categories={availableCategories}
+          priceRange={priceRange}
+          maxPrice={maxPrice}
+          sortBy={sortBy}
+          inStockOnly={inStockOnly}
+          handlePriceChange={handlePriceChange}
+          handleSortChange={handleSortChange}
+          handleInStockChange={handleInStockChange}
+          handleCategoryClick={handleCategoryClick}
+          handleColorFilter={handleColorFilter}
+          colorParam={colorParam}
+          categoryParam={categoryParam}
+          loading={loading}
         />
         
-        {/* Мобильная панель с кнопками фильтров и отображения */}
+        {/* Mobile filters panel */}
         <MobileFiltersPanel 
           activeFiltersCount={activeFiltersCount}
           isFiltersOpen={isFiltersOpen}
           setIsFiltersOpen={setIsFiltersOpen}
           showAsList={showAsList}
           setShowAsList={setShowAsList}
-          availableColors={props.availableColors}
-          categories={props.availableCategories}
-          priceRange={props.priceRange}
-          maxPrice={props.maxPrice}
-          sortBy={props.sortBy}
-          inStockOnly={props.inStockOnly}
-          handlePriceChange={props.handlePriceChange}
-          handleSortChange={props.handleSortChange}
-          handleInStockChange={props.handleInStockChange}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          colorParam={props.colorParam}
-          categoryParam={props.categoryParam}
-          loading={props.loading}
+          availableColors={availableColors}
+          categories={availableCategories}
+          priceRange={priceRange}
+          maxPrice={maxPrice}
+          sortBy={sortBy}
+          inStockOnly={inStockOnly}
+          handlePriceChange={handlePriceChange}
+          handleSortChange={handleSortChange}
+          handleInStockChange={handleInStockChange}
+          handleCategoryClick={handleCategoryClick}
+          handleColorFilter={handleColorFilter}
+          colorParam={colorParam}
+          categoryParam={categoryParam}
+          loading={loading}
         />
         
-        {/* Основной контент с товарами */}
+        {/* Main content with products */}
         <div className="lg:col-span-3">
           <ProductsDisplay 
-            products={props.products}
-            loading={props.loading}
-            handleClearAllFilters={props.handleClearAllFilters}
+            products={products}
+            loading={loading}
+            handleClearAllFilters={handleClearAllFilters}
             showAsList={showAsList}
           />
         </div>

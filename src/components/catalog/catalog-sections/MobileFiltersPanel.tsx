@@ -1,17 +1,16 @@
 
 import React from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SlidersHorizontal } from "lucide-react";
-import { Category } from "@/types/categories";
-import CatalogFilters from "../CatalogFilters";
 import DisplayOptions from "../filters/DisplayOptions";
+import FiltersSidebar from "./filters/FiltersSidebar";
+import { Category } from "@/types/categories";
 
 interface MobileFiltersPanelProps {
   activeFiltersCount: number;
   isFiltersOpen: boolean;
-  setIsFiltersOpen: (open: boolean) => void;
+  setIsFiltersOpen: (isOpen: boolean) => void;
   showAsList: boolean;
   setShowAsList: (showAsList: boolean) => void;
   availableColors: string[];
@@ -30,54 +29,43 @@ interface MobileFiltersPanelProps {
   loading: boolean;
 }
 
-const MobileFiltersPanel: React.FC<MobileFiltersPanelProps> = (props) => {
+const MobileFiltersPanel: React.FC<MobileFiltersPanelProps> = ({
+  activeFiltersCount,
+  isFiltersOpen,
+  setIsFiltersOpen,
+  showAsList,
+  setShowAsList,
+  ...filterProps
+}) => {
   return (
-    <div className="flex justify-between items-center lg:hidden mb-2">
-      <Sheet open={props.isFiltersOpen} onOpenChange={props.setIsFiltersOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="h-9">
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Фильтры
-            {props.activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {props.activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] sm:w-[350px] overflow-y-auto">
+    <div className="lg:hidden sticky top-16 z-30 bg-background border-b mb-4 -mx-4 px-4 py-3 flex items-center justify-between">
+      <Button 
+        variant="outline" 
+        size="sm"
+        className="flex items-center gap-2"
+        onClick={() => setIsFiltersOpen(true)}
+      >
+        <SlidersHorizontal className="h-4 w-4" />
+        <span>Фильтры</span>
+        {activeFiltersCount > 0 && (
+          <span className="inline-flex items-center justify-center bg-primary text-primary-foreground rounded-full h-5 w-5 text-xs">
+            {activeFiltersCount}
+          </span>
+        )}
+      </Button>
+      
+      <DisplayOptions showAsList={showAsList} setShowAsList={setShowAsList} />
+      
+      <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+        <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Фильтры</SheetTitle>
+          </SheetHeader>
           <div className="py-4">
-            <CatalogFilters
-              availableColors={props.availableColors}
-              categories={props.categories}
-              priceRange={props.priceRange}
-              maxPrice={props.maxPrice}
-              sortBy={props.sortBy}
-              inStockOnly={props.inStockOnly}
-              handlePriceChange={props.handlePriceChange}
-              handleSortChange={props.handleSortChange}
-              handleInStockChange={props.handleInStockChange}
-              handleCategoryClick={(catId) => {
-                props.handleCategoryClick(catId);
-                props.setIsFiltersOpen(false);
-              }}
-              handleColorFilter={(color) => {
-                props.handleColorFilter(color);
-                props.setIsFiltersOpen(false);
-              }}
-              colorParam={props.colorParam}
-              categoryParam={props.categoryParam}
-              loading={props.loading}
-            />
+            <FiltersSidebar {...filterProps} />
           </div>
         </SheetContent>
       </Sheet>
-      
-      <DisplayOptions 
-        showColorVariants={props.showAsList}
-        setShowColorVariants={props.setShowAsList}
-        loading={props.loading}
-      />
     </div>
   );
 };

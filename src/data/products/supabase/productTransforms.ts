@@ -1,96 +1,115 @@
 
+import { supabase } from "@/integrations/supabase/client";
 import { Product, ColorVariant } from "@/types/product";
 import { Json } from "@/integrations/supabase/types";
 
-// Функция для преобразования типов данных для Supabase
-export const transformProductToSupabase = (product: Product) => {
-  try {
-    // Handle undefined arrays gracefully
-    const colors = Array.isArray(product.colors) ? product.colors : [];
-    const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-    const additionalImages = Array.isArray(product.additionalImages) ? product.additionalImages : [];
-    const colorVariants = Array.isArray(product.colorVariants) ? product.colorVariants : [];
-    
-    // Ensure specifications is an object
-    const specifications = product.specifications && typeof product.specifications === 'object' 
-      ? product.specifications 
-      : {};
-
-    return {
-      id: product.id, // Ensure ID is included when updating
-      title: product.title || "",
-      description: product.description || "",
-      price: typeof product.price === 'number' ? product.price : 0,
-      discount_price: product.discountPrice,
-      category: product.category || "",
-      image_url: product.imageUrl || "/placeholder.svg",
-      additional_images: additionalImages as unknown as Json,
-      rating: typeof product.rating === 'number' ? product.rating : 5,
-      in_stock: product.inStock !== undefined ? product.inStock : true,
-      colors: colors as unknown as Json,
-      sizes: sizes as unknown as Json,
-      country_of_origin: product.countryOfOrigin || "Россия",
-      specifications: specifications as unknown as Json,
-      is_new: product.isNew || false,
-      is_bestseller: product.isBestseller || false,
-      article_number: product.articleNumber || "",
-      barcode: product.barcode || "",
-      ozon_url: product.ozonUrl || null,
-      wildberries_url: product.wildberriesUrl || null,
-      avito_url: product.avitoUrl || null,
-      archived: product.archived || false,
-      stock_quantity: typeof product.stockQuantity === 'number' ? product.stockQuantity : 0,
-      color_variants: colorVariants as unknown as Json,
-      video_url: product.videoUrl || null,
-      video_type: product.videoType || null,
-      material: product.material || "",
-      model_name: product.modelName || null  // Add model_name field
-    };
-  } catch (error) {
-    console.error("Error transforming product data for Supabase:", error);
-    throw new Error("Ошибка преобразования данных товара: " + (error instanceof Error ? error.message : "Неизвестная ошибка"));
+/**
+ * Transform a Supabase product record into our Product type
+ */
+export const transformSupabaseToProduct = (item: any): Product => {
+  // Parse colors JSON data
+  let colors: string[] | undefined = undefined;
+  if (item.colors) {
+    colors = Array.isArray(item.colors) ? item.colors : undefined;
   }
+
+  // Parse sizes JSON data
+  let sizes: string[] | undefined = undefined;
+  if (item.sizes) {
+    sizes = Array.isArray(item.sizes) ? item.sizes : undefined;
+  }
+
+  // Parse color variants
+  let colorVariants: ColorVariant[] | undefined = undefined;
+  if (item.color_variants) {
+    colorVariants = Array.isArray(item.color_variants) 
+      ? item.color_variants
+      : undefined;
+  }
+
+  // Parse specifications
+  let specifications: Record<string, string> | undefined = undefined;
+  if (item.specifications && typeof item.specifications === 'object') {
+    specifications = item.specifications;
+  }
+
+  // Parse additional_images
+  let additionalImages: string[] | undefined = undefined;
+  if (item.additional_images) {
+    additionalImages = Array.isArray(item.additional_images) 
+      ? item.additional_images
+      : undefined;
+  }
+
+  // Create the product object
+  const product: Product = {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    price: parseFloat(item.price),
+    discountPrice: item.discount_price ? parseFloat(item.discount_price) : undefined,
+    category: item.category,
+    imageUrl: item.image_url || "/placeholder.svg",
+    additionalImages: additionalImages,
+    videoUrl: item.video_url,
+    videoType: item.video_type,
+    rating: parseFloat(item.rating || "5"),
+    inStock: item.in_stock,
+    colors: colors,
+    sizes: sizes,
+    countryOfOrigin: item.country_of_origin,
+    specifications: specifications,
+    isNew: item.is_new || false,
+    isBestseller: item.is_bestseller || false,
+    articleNumber: item.article_number,
+    barcode: item.barcode,
+    ozonUrl: item.ozon_url,
+    wildberriesUrl: item.wildberries_url,
+    avitoUrl: item.avito_url,
+    material: item.material,
+    archived: item.archived || false,
+    stockQuantity: typeof item.stock_quantity === 'number' ? item.stock_quantity : undefined,
+    colorVariants: colorVariants,
+    modelName: item.model_name,
+    variantName: item.variant_name
+  };
+
+  return product;
 };
 
-// Функция для преобразования данных из Supabase в тип Product
-export const transformSupabaseToProduct = (data: any): Product => {
-  if (!data) {
-    throw new Error("No data received from Supabase");
-  }
-  
-  try {
-    return {
-      id: data.id,
-      title: data.title || "",
-      description: data.description || "",
-      price: data.price || 0,
-      discountPrice: data.discount_price,
-      category: data.category || "",
-      imageUrl: data.image_url || "/placeholder.svg",
-      additionalImages: data.additional_images as string[] || [],
-      rating: data.rating || 5,
-      inStock: data.in_stock !== undefined ? data.in_stock : true,
-      colors: data.colors as string[] || [],
-      sizes: data.sizes as string[] || [],
-      countryOfOrigin: data.country_of_origin || "",
-      specifications: data.specifications as Record<string, string> || {},
-      isNew: data.is_new || false,
-      isBestseller: data.is_bestseller || false,
-      articleNumber: data.article_number || "",
-      barcode: data.barcode || "",
-      ozonUrl: data.ozon_url,
-      wildberriesUrl: data.wildberries_url,
-      avitoUrl: data.avito_url,
-      archived: data.archived || false,
-      stockQuantity: data.stock_quantity,
-      colorVariants: data.color_variants as ColorVariant[] || [],
-      videoUrl: data.video_url,
-      videoType: data.video_type,
-      material: data.material || "",
-      modelName: data.model_name  // Map model_name field
-    };
-  } catch (error) {
-    console.error("Error transforming Supabase data to Product:", error, data);
-    throw new Error("Ошибка преобразования данных из Supabase: " + (error instanceof Error ? error.message : "Неизвестная ошибка"));
-  }
+/**
+ * Transform our Product type to a Supabase record
+ */
+export const transformProductToSupabase = (product: Product): Record<string, any> => {
+  return {
+    id: product.id,
+    title: product.title,
+    description: product.description,
+    price: product.price,
+    discount_price: product.discountPrice,
+    category: product.category,
+    image_url: product.imageUrl,
+    additional_images: product.additionalImages as Json,
+    video_url: product.videoUrl,
+    video_type: product.videoType,
+    rating: product.rating,
+    in_stock: product.inStock,
+    colors: product.colors as Json,
+    sizes: product.sizes as Json,
+    country_of_origin: product.countryOfOrigin,
+    specifications: product.specifications as Json,
+    is_new: product.isNew,
+    is_bestseller: product.isBestseller,
+    article_number: product.articleNumber,
+    barcode: product.barcode,
+    ozon_url: product.ozonUrl,
+    wildberries_url: product.wildberriesUrl,
+    avito_url: product.avitoUrl,
+    archived: product.archived,
+    stock_quantity: product.stockQuantity,
+    color_variants: product.colorVariants as Json,
+    material: product.material,
+    model_name: product.modelName,
+    variant_name: product.variantName
+  };
 };

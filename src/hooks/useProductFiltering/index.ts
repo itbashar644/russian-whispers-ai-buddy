@@ -1,92 +1,78 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
-import { UseProductFilteringProps, FilteringResult } from "./types";
-import { transformProductsForColorDisplay, sortProducts } from "./helpers";
-import { useAvailableColors } from "./useAvailableColors";
-import { useStockCounts } from "./useStockCounts";
-import { useCategoryFilter } from "./useCategoryFilter";
+import { 
+  transformProductsForColorDisplay,
+  filterProducts, 
+  sortProducts,
+  extractAvailableColors,
+  countStockStatus
+} from "./helpers";
+
+interface UseProductFilteringProps {
+  allProducts: Product[];
+  searchTerm: string;
+  priceRange: { min: number; max: number };
+  inStockOnly: boolean;
+  sortBy: string;
+  loading: boolean;
+  showColorVariants: boolean;
+  colorParam: string | null;
+  categoryParam?: string | null;
+}
 
 export const useProductFiltering = ({
   allProducts,
   searchTerm,
   priceRange,
+  inStockOnly,
   sortBy,
   loading,
+  showColorVariants,
   colorParam,
-  categoryParam,
-  inStockOnly = false,
-  showColorVariants = false
-}: UseProductFilteringProps): FilteringResult => {
+  categoryParam
+}: UseProductFilteringProps) => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  
-  // Get all available colors from products
-  const availableColors = useAvailableColors(allProducts);
 
-  // Get products filtered by category
-  const productsFilteredByCategory = useCategoryFilter(allProducts, categoryParam);
+  // Get all available colors from products
+  const availableColors = useMemo(() => {
+    return extractAvailableColors(allProducts);
+  }, [allProducts]);
 
   // Filter and sort products when parameters change
   useEffect(() => {
     if (loading) return;
     
-    let result = [...productsFilteredByCategory];
+    let result = [...allProducts];
     
-    // Always transform products for color display if showColorVariants is true
+    // Filter by category if category parameter is set
+    if (categoryParam) {
+      result = result.filter(product => product.category === categoryParam);
+    }
+    
+    // Transform products for color display if needed
     if (showColorVariants) {
       result = transformProductsForColorDisplay(result);
     }
     
-    // Filter by color if color parameter is set
-    if (colorParam) {
-      result = result.filter(product => {
-        if (product.colorVariants && product.colorVariants.length > 0) {
-          return product.colorVariants.some(v => v.color.toLowerCase() === colorParam.toLowerCase());
-        }
-        return false;
-      });
-    }
+    // Apply filters
+    result = filterProducts(result, {
+      searchTerm,
+      priceRange,
+      inStockOnly,
+      colorParam
+    });
     
-    // Filter by search term
-    if (searchTerm) {
-      result = result.filter(
-        (p) => 
-          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Filter by price range
-    result = result.filter(
-      (p) => {
-        const price = p.discountPrice || p.price;
-        return price >= priceRange.min && price <= priceRange.max;
-      }
-    );
-    
-    // Filter by in-stock status
-    if (inStockOnly) {
-      result = result.filter((p) => p.inStock);
-    }
-    
-    // Sort products
+    // Apply sorting
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [
-    productsFilteredByCategory,
-    priceRange,
-    searchTerm,
-    sortBy,
-    loading,
-    colorParam,
-    inStockOnly,
-    showColorVariants
-  ]);
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam, categoryParam]);
 
-  // Calculate counts for stock status using stockQuantity for accuracy
-  const { inStockCount, outOfStockCount } = useStockCounts(filteredProducts);
+  // Calculate stock status counts
+  const { inStockCount, outOfStockCount } = useMemo(() => {
+    return countStockStatus(filteredProducts);
+  }, [filteredProducts]);
 
   return {
     filteredProducts,
@@ -96,5 +82,5 @@ export const useProductFiltering = ({
   };
 };
 
-// Re-export types
-export * from "./types";
+// Re-export helpers
+export * from "./helpers";
