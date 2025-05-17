@@ -1,46 +1,58 @@
 
 import { Product } from "@/types/product";
 
-interface FilterOptions {
-  searchTerm?: string;
-  priceRange?: { min: number; max: number };
-  inStockOnly?: boolean;
-  colorParam?: string | null;
-}
+export const filterProducts = (
+  products: Product[],
+  {
+    searchQuery = "",
+    category = null,
+    minPrice = 0,
+    maxPrice = Number.MAX_SAFE_INTEGER,
+    inStockOnly = false,
+    selectedColor = null,
+  }
+) => {
+  return products.filter((product) => {
+    // Filter by search query
+    if (
+      searchQuery &&
+      !product.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
+      return false;
+    }
 
-export const filterProducts = (products: Product[], options: FilterOptions): Product[] => {
-  const { searchTerm, priceRange, inStockOnly, colorParam } = options;
-  
-  return products.filter(product => {
-    // Filter by color if color parameter is set
-    if (colorParam) {
-      const hasColor = product.colorVariants?.some(v => 
-        v.color.toLowerCase() === colorParam.toLowerCase()
-      );
-      if (!hasColor) return false;
+    // Filter by category
+    if (category && product.category !== category) {
+      return false;
     }
-    
-    // Filter by search term
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
-        product.title.toLowerCase().includes(searchLower) ||
-        product.description.toLowerCase().includes(searchLower) ||
-        product.category.toLowerCase().includes(searchLower);
-      
-      if (!matchesSearch) return false;
+
+    // Filter by price
+    const price = product.discountPrice || product.price;
+    if (price < minPrice || price > maxPrice) {
+      return false;
     }
-    
-    // Filter by price range
-    if (priceRange) {
-      const price = product.discountPrice || product.price;
-      if (price < priceRange.min || price > priceRange.max) return false;
+
+    // Filter by stock status
+    if (inStockOnly && !product.inStock) {
+      return false;
     }
-    
-    // Filter by stock availability
-    if (inStockOnly && !product.inStock) return false;
-    
-    // Product passed all filters
+
+    // Filter by color
+    if (selectedColor) {
+      // Check in product.colors array
+      if (product.colors && product.colors.includes(selectedColor)) {
+        return true;
+      }
+
+      // Check in colorVariants
+      if (product.colorVariants && product.colorVariants.some(v => v.color === selectedColor)) {
+        return true;
+      }
+
+      return false;
+    }
+
     return true;
   });
 };

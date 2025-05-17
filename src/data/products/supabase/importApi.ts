@@ -67,6 +67,7 @@ export const importProductsIntoSupabase = async (products: Product[]): Promise<b
       // Преобразуем данные товаров в формат для Supabase
       const transformedBatch = batch.map(product => transformProductToSupabase(product));
       
+      // Use type casting to bypass TypeScript's strict type checking
       const { error } = await supabase
         .from("products")
         .insert(transformedBatch as any[]);

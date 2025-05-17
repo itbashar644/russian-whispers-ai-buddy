@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -202,7 +201,7 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
         <div className="space-y-2">
           <Label>Основное изображение *</Label>
           <ImageUploader
-            currentImageUrl={formData.imageUrl}
+            initialImageUrl={formData.imageUrl}
             onImageUploaded={handleMainImageUploaded}
             required
           />
@@ -211,8 +210,8 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
         <div className="space-y-2">
           <Label>Дополнительные изображения</Label>
           <MultipleImageUploader
-            imageUrls={formData.additionalImages || []}
-            onChange={handleAdditionalImagesChange}
+            initialImageUrls={formData.additionalImages || []}
+            onImagesChange={handleAdditionalImagesChange}
           />
         </div>
       </div>
