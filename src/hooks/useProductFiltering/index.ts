@@ -1,41 +1,46 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 import { UseProductFilteringProps, FilteringResult } from "./types";
 import { transformProductsForColorDisplay, sortProducts } from "./helpers";
-import { useAvailableColors } from "./useAvailableColors";
-import { useStockCounts } from "./useStockCounts";
-import { useCategoryFilter } from "./useCategoryFilter";
 
 export const useProductFiltering = ({
   allProducts,
   searchTerm,
   priceRange,
+  inStockOnly,
   sortBy,
   loading,
-  colorParam,
-  categoryParam,
-  inStockOnly = false,
-  showColorVariants = false
+  showColorVariants,
+  colorParam
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  
-  // Get all available colors from products
-  const availableColors = useAvailableColors(allProducts);
 
-  // Get products filtered by category
-  const productsFilteredByCategory = useCategoryFilter(allProducts, categoryParam);
+  // Get all available colors from products
+  const availableColors = useMemo(() => {
+    if (!allProducts.length) return [];
+    
+    const colorSet = new Set<string>();
+    
+    allProducts.forEach(product => {
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        product.colorVariants.forEach(variant => {
+          colorSet.add(variant.color);
+        });
+      }
+    });
+    
+    return Array.from(colorSet).sort();
+  }, [allProducts]);
 
   // Filter and sort products when parameters change
   useEffect(() => {
     if (loading) return;
     
-    let result = [...productsFilteredByCategory];
+    let result = [...allProducts];
     
-    // Always transform products for color display if showColorVariants is true
-    if (showColorVariants) {
-      result = transformProductsForColorDisplay(result);
-    }
+    // Always transform products for color display
+    result = transformProductsForColorDisplay(result);
     
     // Filter by color if color parameter is set
     if (colorParam) {
@@ -65,28 +70,30 @@ export const useProductFiltering = ({
       }
     );
     
-    // Filter by in-stock status
-    if (inStockOnly) {
-      result = result.filter((p) => p.inStock);
-    }
-    
     // Sort products
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [
-    productsFilteredByCategory,
-    priceRange,
-    searchTerm,
-    sortBy,
-    loading,
-    colorParam,
-    inStockOnly,
-    showColorVariants
-  ]);
+  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam]);
 
   // Calculate counts for stock status using stockQuantity for accuracy
-  const { inStockCount, outOfStockCount } = useStockCounts(filteredProducts);
+  const inStockCount = useMemo(() => {
+    return filteredProducts.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity > 0;
+      }
+      return p.inStock;
+    }).length;
+  }, [filteredProducts]);
+  
+  const outOfStockCount = useMemo(() => {
+    return filteredProducts.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity <= 0;
+      }
+      return !p.inStock;
+    }).length;
+  }, [filteredProducts]);
 
   return {
     filteredProducts,

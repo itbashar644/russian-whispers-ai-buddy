@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Palette, Grid3X3, List } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Palette } from "lucide-react";
 
 interface DisplayOptionsProps {
   showColorVariants: boolean;
@@ -16,7 +15,8 @@ const DisplayOptions: React.FC<DisplayOptionsProps> = ({
   loading
 }) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="border-t pt-6">
+      <h3 className="font-semibold mb-4">Отображение</h3>
       <div className="flex items-center space-x-2">
         <Checkbox 
           id="show-colors" 
@@ -29,7 +29,7 @@ const DisplayOptions: React.FC<DisplayOptionsProps> = ({
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
         >
           <Palette className="h-4 w-4 mr-1.5" />
-          Варианты цветов
+          Показывать цвета отдельно
         </label>
       </div>
     </div>

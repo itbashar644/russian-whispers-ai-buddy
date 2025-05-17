@@ -1,113 +1,118 @@
+
 import { Product } from "@/types/product";
-import { getProductById as getProductByIdBase } from "../productServiceBase";
-import { addOrUpdateProduct } from "../productServiceBase";
+import { addOrUpdateProductInSupabase } from "../../supabaseApi";
+import { refreshCacheIfNeeded } from "../../cache/productCache";
+import { invalidateCache } from "./productCacheService";
+
+// Import the getProductById directly from productServiceBase to avoid circular dependency
+import { getProductById as getBaseProductById } from "../productServiceBase";
 
 /**
- * Updates product stock quantity
+ * Check if a product is in stock
  */
-export const updateProductStock = async (
-  productId: string,
-  stockQuantity: number,
-  colorVariant?: string
-): Promise<boolean> => {
+export const checkProductStock = async (productId: string, colorVariant?: string): Promise<boolean> => {
   try {
-    const product = await getProductByIdBase(productId);
+    console.log(`Checking stock for product ${productId}, color: ${colorVariant || 'none'}`);
+    const product = await getBaseProductById(productId);
     
     if (!product) {
-      console.error("Product not found:", productId);
+      console.log(`Stock check: Product ${productId} not found`);
       return false;
     }
     
-    // Update the specific color variant if provided
-    if (colorVariant && product.colorVariants?.length) {
-      const variantIndex = product.colorVariants.findIndex(
-        v => v.color === colorVariant
-      );
-      
-      if (variantIndex === -1) {
-        console.error("Color variant not found:", colorVariant);
-        return false;
+    // Check specific color variant stock if specified
+    if (colorVariant && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === colorVariant);
+      if (variant) {
+        // Проверяем наличие stockQuantity и его значение
+        const hasStock = variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : false;
+        console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}`);
+        return hasStock;
       }
-      
-      // Update the variant's stock
-      product.colorVariants[variantIndex].stockQuantity = stockQuantity;
-      // Don't set inStock directly on color variant as it doesn't have this property
-      
-      // Update the overall product stock status
-      const hasAnyStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
-      product.inStock = hasAnyStock;
-    } else {
-      // Update the main product stock
-      product.stockQuantity = stockQuantity;
-      product.inStock = stockQuantity > 0;
+      return false;
     }
     
-    // Save the updated product
-    return await addOrUpdateProduct(product);
+    // Check main product stock - must be based on actual quantity
+    if (product.stockQuantity !== undefined) {
+      const hasStock = product.stockQuantity > 0;
+      console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${product.stockQuantity}`);
+      return hasStock;
+    }
+    
+    // Fallback to inStock boolean if stockQuantity is not defined
+    return product.inStock || false;
   } catch (error) {
-    console.error("Error updating product stock:", error);
+    console.error("Error checking product stock:", error);
     return false;
   }
 };
 
 /**
- * Decreases the stock quantity of a product
+ * Decrease product stock
  */
-export const decreaseProductStock = async (
-  productId: string,
-  quantity: number = 1,
-  colorVariant: string | null = null
-): Promise<boolean> => {
+export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
   try {
-    // Get the product first to check current stock
-    const product = await getProductByIdBase(productId);
+    console.log(`Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`);
+    const product = await getBaseProductById(productId);
     
     if (!product) {
-      console.error("Product not found:", productId);
+      console.error(`Product with ID ${productId} not found`);
       return false;
     }
     
-    // If there's a color variant specified, update that specific variant's stock
-    if (colorVariant && product.colorVariants?.length) {
-      const variantIndex = product.colorVariants.findIndex(
-        v => v.color === colorVariant
-      );
-      
-      if (variantIndex === -1) {
-        console.error("Color variant not found:", colorVariant);
-        return false;
+    // Handle color variants
+    if (colorVariant && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === colorVariant);
+      if (variant) {
+        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
+        if (variant.stockQuantity !== undefined) {
+          variant.stockQuantity = Math.max(0, variant.stockQuantity - quantity);
+          console.log(`Updated variant stock to: ${variant.stockQuantity}`);
+        } else {
+          variant.stockQuantity = 0;
+          console.log(`Variant had no stock quantity, setting to 0`);
+        }
+        
+        // Update product's inStock status based on stock quantities
+        const hasStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
+        product.inStock = hasStock;
+        
+        // Update product with modified color variant
+        const result = await addOrUpdateProductInSupabase({
+          ...product,
+          colorVariants: product.colorVariants
+        });
+        
+        // Force refresh cache after stock update
+        await invalidateCache();
+        
+        console.log(`Stock update result for variant: ${result.success ? 'Success' : 'Failed'}`);
+        return result.success;
       }
-      
-      const currentStock = product.colorVariants[variantIndex].stockQuantity || 0;
-      
-      if (currentStock < quantity) {
-        console.error("Not enough stock for variant:", colorVariant);
-        return false;
-      }
-      
-      // Update the variant's stock
-      product.colorVariants[variantIndex].stockQuantity = currentStock - quantity;
-      
-      // Check if we need to update the overall product stock status
-      const hasAnyStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
-      product.inStock = hasAnyStock;
-      
-    } else {
-      // Update the main product stock
-      const currentStock = product.stockQuantity || 0;
-      
-      if (currentStock < quantity) {
-        console.error("Not enough stock for product:", productId);
-        return false;
-      }
-      
-      product.stockQuantity = currentStock - quantity;
-      product.inStock = product.stockQuantity > 0;
     }
     
-    // Save the updated product
-    const result = await addOrUpdateProduct(product);
-    return result;
+    // Handle main product stock
+    if (product.stockQuantity !== undefined) {
+      console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
+      product.stockQuantity = Math.max(0, product.stockQuantity - quantity);
+      // Set inStock based on actual quantity
+      product.inStock = product.stockQuantity > 0;
+      
+      console.log("Updating product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);
+      
+      // Update product with new stock quantity
+      const result = await addOrUpdateProductInSupabase(product);
+      
+      // Force refresh cache after stock update
+      await invalidateCache();
+      
+      console.log("Stock update result:", result);
+      
+      return result.success;
+    } else {
+      console.log(`Product ${productId} has no stock quantity defined`);
+      return false;
+    }
   } catch (error) {
     console.error("Error decreasing product stock:", error);
     return false;
@@ -115,29 +120,63 @@ export const decreaseProductStock = async (
 };
 
 /**
- * Checks if a product is in stock
+ * Update product stock directly (set to specific amount)
  */
-export const checkProductStock = async (
-  productId: string,
-  colorVariant: string | null = null
-): Promise<boolean> => {
+export const updateProductStock = async (productId: string, newQuantity: number, colorVariant?: string): Promise<boolean> => {
   try {
-    const product = await getProductByIdBase(productId);
+    console.log(`Attempting to update stock for product ${productId} to ${newQuantity}, color ${colorVariant || 'none'}`);
+    const product = await getBaseProductById(productId);
     
     if (!product) {
+      console.error(`Product with ID ${productId} not found`);
       return false;
     }
     
-    // Check specific color variant stock if requested
-    if (colorVariant && product.colorVariants?.length) {
+    // Handle color variants
+    if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
-      return variant?.stockQuantity !== undefined && variant.stockQuantity > 0;
+      if (variant) {
+        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
+        variant.stockQuantity = Math.max(0, newQuantity);
+        console.log(`Updated variant stock to: ${variant.stockQuantity}`);
+        
+        // Update inStock status for the variant based on actual quantity
+        const hasAnyVariantStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
+        product.inStock = hasAnyVariantStock;
+        
+        // Update product with modified color variant
+        const result = await addOrUpdateProductInSupabase({
+          ...product,
+          colorVariants: product.colorVariants
+        });
+        
+        // Force refresh cache after stock update
+        await invalidateCache();
+        
+        console.log(`Stock update result for variant: ${result.success ? 'Success' : 'Failed'}`);
+        return result.success;
+      }
     }
     
-    // Otherwise check general product stock
-    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
+    // Handle main product stock
+    console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
+    product.stockQuantity = Math.max(0, newQuantity);
+    // Always set inStock based on actual quantity
+    product.inStock = product.stockQuantity > 0;
+    
+    console.log("Setting product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);
+    
+    // Update product with new stock quantity
+    const result = await addOrUpdateProductInSupabase(product);
+    
+    // Force refresh cache after stock update
+    await invalidateCache();
+    
+    console.log("Stock update result:", result);
+    
+    return result.success;
   } catch (error) {
-    console.error("Error checking product stock:", error);
+    console.error("Error updating product stock:", error);
     return false;
   }
 };

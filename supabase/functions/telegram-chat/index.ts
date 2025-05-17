@@ -61,36 +61,10 @@ async function sendTelegramMessage(text: string) {
 // Process incoming message from the website chat
 async function handleIncomingMessage(req: Request) {
   try {
-    const { message, chatId, name, email } = await req.json();
+    const { message, chatId, userName, userEmail } = await req.json();
     const supabase = getSupabaseClient();
     
     console.log(`Received message from chat ${chatId}: ${message}`);
-    
-    // Ensure chat session exists first
-    const { data: chatSession, error: sessionError } = await supabase
-      .from('chat_sessions')
-      .select('id')
-      .eq('id', chatId)
-      .maybeSingle();
-      
-    if (!chatSession) {
-      // Create chat session if it doesn't exist
-      const { error: createSessionError } = await supabase
-        .from('chat_sessions')
-        .insert({
-          id: chatId,
-          customer_name: name || '',
-          customer_email: email || null
-        });
-      
-      if (createSessionError) {
-        console.error('Error creating chat session:', createSessionError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'Failed to create chat session' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-    }
     
     // Store message in Supabase
     const { error: dbError } = await supabase
@@ -105,13 +79,13 @@ async function handleIncomingMessage(req: Request) {
     if (dbError) {
       console.error('Error storing message:', dbError);
       return new Response(
-        JSON.stringify({ success: false, error: 'Database error', details: dbError }),
+        JSON.stringify({ success: false, error: 'Database error' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
     
     // Forward message to Telegram admin
-    const userInfo = name ? `${name} (${email || 'No email'})` : `User (${email || 'Anonymous'})`;
+    const userInfo = userName ? `${userName} (${userEmail || 'No email'})` : `User (${userEmail || 'Anonymous'})`;
     const telegramText = `<b>New message from ${userInfo}</b>\n\nChat ID: ${chatId}\n\nMessage: ${message}`;
     
     const telegramResult = await sendTelegramMessage(telegramText);
@@ -122,66 +96,6 @@ async function handleIncomingMessage(req: Request) {
     );
   } catch (error) {
     console.error('Error processing incoming message:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
-  }
-}
-
-// Get messages for a chat ID
-async function getMessagesForChat(req: Request) {
-  try {
-    const { chatId } = await req.json();
-    const supabase = getSupabaseClient();
-    
-    // Ensure chat session exists
-    const { data: chatSession, error: sessionError } = await supabase
-      .from('chat_sessions')
-      .select('id')
-      .eq('id', chatId)
-      .maybeSingle();
-      
-    if (!chatSession) {
-      // Create chat session if it doesn't exist
-      const { error: createSessionError } = await supabase
-        .from('chat_sessions')
-        .insert({
-          id: chatId,
-          customer_name: '',
-          customer_email: null
-        });
-      
-      if (createSessionError) {
-        console.error('Error creating chat session:', createSessionError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'Failed to create chat session' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-    }
-    
-    // Get messages for this chat
-    const { data: messages, error: messagesError } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
-    
-    if (messagesError) {
-      console.error('Error getting messages:', messagesError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to get messages' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-    
-    return new Response(
-      JSON.stringify({ success: true, messages: messages || [] }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
-  } catch (error) {
-    console.error('Error in getMessagesForChat:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -205,15 +119,15 @@ async function handleTelegramWebhook(req: Request) {
     const supabase = getSupabaseClient();
     
     // Check if this is a reply to a chat message
-    // Format expected: "CHAT_ID: message content" or "REPLY:CHAT_ID:message content"
-    const chatIdMatch = text.match(/^(?:REPLY:)?([a-zA-Z0-9-]+):(.+)/s);
+    // Format expected: "CHAT_ID: message content"
+    const chatIdMatch = text.match(/^([a-zA-Z0-9-]+):\s*(.+)/s);
     
     if (!chatIdMatch) {
       console.log('Message format not recognized for chat reply');
       return new Response(JSON.stringify({ 
           success: true, 
           action: 'ignored',
-          message: 'To reply to a user, use format: CHAT_ID: your message or REPLY:CHAT_ID:your message' 
+          message: 'To reply to a user, use format: CHAT_ID: your message' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
@@ -222,32 +136,6 @@ async function handleTelegramWebhook(req: Request) {
     const replyMessage = chatIdMatch[2].trim();
     
     console.log(`Sending admin reply to chat ${chatId}: ${replyMessage}`);
-    
-    // Ensure chat session exists
-    const { data: chatSession, error: sessionError } = await supabase
-      .from('chat_sessions')
-      .select('id')
-      .eq('id', chatId)
-      .maybeSingle();
-      
-    if (!chatSession) {
-      // Create chat session if it doesn't exist
-      const { error: createSessionError } = await supabase
-        .from('chat_sessions')
-        .insert({
-          id: chatId,
-          customer_name: '',
-          customer_email: null
-        });
-      
-      if (createSessionError) {
-        console.error('Error creating chat session:', createSessionError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'Failed to create chat session' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-    }
     
     // Store admin reply in database
     const { error: dbError } = await supabase
@@ -376,32 +264,10 @@ Deno.serve(async (req) => {
       return handleTelegramWebhook(req);
     case 'send':
       return handleIncomingMessage(req);
-    case 'setup-webhook':
+    case 'setup':
       return setupTelegramWebhook(req);
-    case 'webhook-status':
-      return getWebhookStatus(req);
-    case 'messages':
-      return getMessagesForChat(req);
-    case 'mark-read':
-      // TODO: Implement mark as read functionality
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
     case 'status':
-      // Basic status endpoint to check if function is running
-      return new Response(
-        JSON.stringify({ 
-          status: "ok", 
-          config: {
-            telegram_bot_token_set: !!Deno.env.get('TELEGRAM_BOT_TOKEN'),
-            telegram_admin_chat_id_set: !!Deno.env.get('TELEGRAM_ADMIN_CHAT_ID'),
-            supabase_url_set: !!Deno.env.get('SUPABASE_URL'),
-            supabase_service_role_key_set: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
+      return getWebhookStatus(req);
     default:
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid endpoint' }),

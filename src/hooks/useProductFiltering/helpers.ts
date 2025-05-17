@@ -1,16 +1,9 @@
 
 import { Product } from "@/types/product";
 
-// Helper function for price calculations
-export const getMaxPrice = (products: Product[]): number => {
-  if (products.length === 0) return 50000;
-  
-  return Math.max(
-    ...products.map(product => product.discountPrice || product.price)
-  );
-};
-
-// Function to transform products for color display
+/**
+ * Transform products for color display
+ */
 export const transformProductsForColorDisplay = (products: Product[]): Product[] => {
   const expandedProducts: Product[] = [];
   
@@ -45,7 +38,9 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
   return expandedProducts;
 };
 
-// Sort products based on selected sortBy option
+/**
+ * Sort products based on selected sortBy option
+ */
 export const sortProducts = (products: Product[], sortByOption: string): Product[] => {
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];

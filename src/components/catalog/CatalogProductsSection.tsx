@@ -1,124 +1,136 @@
 
-import React, { useState } from "react";
-import { Category } from "@/types/categories";
+import React from "react";
 import { Product } from "@/types/product";
-import ProductsDisplay from "./catalog-sections/ProductsDisplay";
-import CatalogActiveFilters from "./CatalogActiveFiltersProps";
-import CatalogHeader from "./catalog-sections/CatalogHeader";
-import DesktopFilters from "./catalog-sections/DesktopFilters";
-import MobileFiltersPanel from "./catalog-sections/MobileFiltersPanel";
+import { Button } from "@/components/ui/button";
+import ProductGrid from "@/components/products/ProductGrid";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import CatalogActiveFilters from "./CatalogActiveFilters";
+import { SearchForm } from "./SearchForm";
 
 interface CatalogProductsSectionProps {
-  products: Product[];
-  loading: boolean;
   categoryParam: string | null;
-  colorParam: string | null;
   searchTerm: string;
-  availableColors: string[];
-  availableCategories: Category[];
+  colorParam: string | null;
+  availableCategories: string[];
+  loading: boolean;
+  filteredProducts: Product[];
   inStockCount: number;
   outOfStockCount: number;
-  priceRange: { min: number; max: number };
-  maxPrice: number;
+  activeFiltersCount: number;
   sortBy: string;
-  inStockOnly: boolean;
-  handlePriceChange: (value: { min: number; max: number }) => void;
-  handleSortChange: (value: string) => void;
-  handleInStockChange: (value: boolean) => void;
-  handleCategoryClick: (category: string | null) => void;
-  handleColorFilter: (color: string | null) => void;
-  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSearchSubmit: (e: React.FormEvent) => void;
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setSortBy: (value: string) => void;
+  handleCategoryClick: (categoryId: string | null) => void;
+  handleColorFilter: (color: string | null) => void;
   handleClearAllFilters: () => void;
 }
 
-const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = (props) => {
-  const [showAsList, setShowAsList] = useState(false);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  
-  // Рассчитываем количество активных фильтров
-  const activeFiltersCount = 
-    (props.categoryParam ? 1 : 0) +
-    (props.colorParam ? 1 : 0) +
-    (props.searchTerm ? 1 : 0);
-    
+const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
+  categoryParam,
+  searchTerm,
+  colorParam,
+  availableCategories,
+  loading,
+  filteredProducts,
+  outOfStockCount,
+  activeFiltersCount,
+  sortBy,
+  handleSearchSubmit,
+  handleSearchChange,
+  setSortBy,
+  handleCategoryClick,
+  handleColorFilter,
+  handleClearAllFilters
+}) => {
   return (
-    <div className="flex flex-col space-y-6 w-full">
-      <CatalogHeader 
-        products={props.products}
-        inStockCount={props.inStockCount}
-        searchTerm={props.searchTerm}
-        handleSearchChange={props.handleSearchChange}
-        handleSearchSubmit={props.handleSearchSubmit}
-        loading={props.loading}
-      />
+    <div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold">
+          {categoryParam 
+            ? availableCategories.includes(categoryParam) ? categoryParam : "Каталог"
+            : searchTerm ? `Поиск: ${searchTerm}` : "Каталог товаров"}
+          {colorParam && ` / Цвет: ${colorParam}`}
+        </h1>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+          <SearchForm
+            searchTerm={searchTerm}
+            handleSearchChange={handleSearchChange}
+            handleSearchSubmit={handleSearchSubmit}
+            loading={loading}
+          />
+          <Select 
+            value={sortBy}
+            onValueChange={setSortBy}
+            disabled={loading}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Сортировать по" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="in-stock">Сначала в наличии</SelectItem>
+              <SelectItem value="price-asc">Цена (по возрастанию)</SelectItem>
+              <SelectItem value="price-desc">Цена (по убыванию)</SelectItem>
+              <SelectItem value="name-asc">Название (А-Я)</SelectItem>
+              <SelectItem value="name-desc">Название (Я-А)</SelectItem>
+              <SelectItem value="rating">По рейтингу</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
-      {/* Активные фильтры - показываем только если есть активные фильтры */}
-      {activeFiltersCount > 0 && (
-        <CatalogActiveFilters 
-          categoryParam={props.categoryParam}
-          colorParam={props.colorParam}
-          searchTerm={props.searchTerm}
-          activeFiltersCount={activeFiltersCount}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          handleClearAllFilters={props.handleClearAllFilters}
+      {/* Active filters display */}
+      <CatalogActiveFilters
+        categoryParam={categoryParam}
+        colorParam={colorParam}
+        searchTerm={searchTerm}
+        activeFiltersCount={activeFiltersCount}
+        handleCategoryClick={handleCategoryClick}
+        handleColorFilter={handleColorFilter}
+        handleClearAllFilters={handleClearAllFilters}
+      />
+
+      {/* Products count */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="text-sm">
+          <span className="font-medium">Всего товаров:</span> {filteredProducts.length}
+        </div>
+        {outOfStockCount > 0 && (
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Нет в наличии:</span> {outOfStockCount}
+          </div>
+        )}
+      </div>
+
+      {loading ? (
+        // Заглушки при загрузке
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({length: 8}).map((_, i) => (
+            <div key={i} className="h-[300px] bg-gray-200 animate-pulse rounded-lg"></div>
+          ))}
+        </div>
+      ) : (
+        // Отображение товаров
+        <ProductGrid 
+          products={filteredProducts} 
+          showAsColorVariants={true}
         />
       )}
       
-      {/* Панель фильтров и результатов */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Фильтры для десктопа - скрываем на мобильных */}
-        <DesktopFilters 
-          availableColors={props.availableColors}
-          categories={props.availableCategories}
-          priceRange={props.priceRange}
-          maxPrice={props.maxPrice}
-          sortBy={props.sortBy}
-          inStockOnly={props.inStockOnly}
-          handlePriceChange={props.handlePriceChange}
-          handleSortChange={props.handleSortChange}
-          handleInStockChange={props.handleInStockChange}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          colorParam={props.colorParam}
-          categoryParam={props.categoryParam}
-          loading={props.loading}
-        />
-        
-        {/* Мобильная панель с кнопками фильтров и отображения */}
-        <MobileFiltersPanel 
-          activeFiltersCount={activeFiltersCount}
-          isFiltersOpen={isFiltersOpen}
-          setIsFiltersOpen={setIsFiltersOpen}
-          showAsList={showAsList}
-          setShowAsList={setShowAsList}
-          availableColors={props.availableColors}
-          categories={props.availableCategories}
-          priceRange={props.priceRange}
-          maxPrice={props.maxPrice}
-          sortBy={props.sortBy}
-          inStockOnly={props.inStockOnly}
-          handlePriceChange={props.handlePriceChange}
-          handleSortChange={props.handleSortChange}
-          handleInStockChange={props.handleInStockChange}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          colorParam={props.colorParam}
-          categoryParam={props.categoryParam}
-          loading={props.loading}
-        />
-        
-        {/* Основной контент с товарами */}
-        <div className="lg:col-span-3">
-          <ProductsDisplay 
-            products={props.products}
-            loading={props.loading}
-            handleClearAllFilters={props.handleClearAllFilters}
-            showAsList={showAsList}
-          />
+      {!loading && filteredProducts.length === 0 && (
+        <div className="py-8 text-center">
+          <h2 className="text-xl font-semibold mb-2">Товары не найдены</h2>
+          <p className="text-muted-foreground">
+            Попробуйте изменить параметры фильтрации или поисковый запрос
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };
