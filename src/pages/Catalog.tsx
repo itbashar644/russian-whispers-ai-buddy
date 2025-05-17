@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProducts, getAllProductsCached } from "@/data/products";
@@ -82,8 +81,7 @@ const Catalog = () => {
   
   // Обработчики изменения параметров фильтрации
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Не обновляем URL при каждом вводе символа
-    const value = e.target.value;
+    // Локально сохраняем значение, но не обновляем URL при каждом символе
   };
   
   const handleSearchSubmit = (e: React.FormEvent) => {

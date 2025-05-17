@@ -1,12 +1,11 @@
 
-import React from 'react';
-import { ColorVariant } from '@/types/product';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Product, ColorVariant } from "@/types/product";
 
-interface ProductColorOptionsProps {
-  product: any;
-  selectedColor: string;
-  handleColorSelect?: (colorName: string, variant?: ColorVariant) => void;
+export interface ProductColorOptionsProps {
+  product: Product;
+  selectedColor?: string;
+  handleColorSelect: (colorName: string, variant?: ColorVariant) => void;
   className?: string;
 }
 
@@ -14,56 +13,28 @@ const ProductColorOptions: React.FC<ProductColorOptionsProps> = ({
   product,
   selectedColor,
   handleColorSelect,
-  className = ''
+  className = ""
 }) => {
-  // Если нет цветов или обработчика, не показываем опции выбора цвета
-  if ((!product.colors || product.colors.length === 0) && 
-      (!product.colorVariants || product.colorVariants.length === 0) || 
-      !handleColorSelect) {
+  if (!product.colorVariants || product.colorVariants.length === 0) {
     return null;
   }
-
-  // Объединяем обычные цвета и цвета из вариантов
-  const allColors = new Set<string>();
-  
-  if (product.colors && Array.isArray(product.colors)) {
-    product.colors.forEach((color: string) => allColors.add(color));
-  }
-  
-  if (product.colorVariants && Array.isArray(product.colorVariants)) {
-    product.colorVariants.forEach((variant: ColorVariant) => {
-      if (variant.color) allColors.add(variant.color);
-    });
-  }
-
-  const uniqueColors = Array.from(allColors);
-
-  // Если нет цветов после объединения, не показываем опции
-  if (uniqueColors.length === 0) {
-    return null;
-  }
-
-  const getVariantForColor = (colorName: string): ColorVariant | undefined => {
-    if (!product.colorVariants) return undefined;
-    return product.colorVariants.find((v: ColorVariant) => v.color === colorName);
-  };
 
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
-      {uniqueColors.map((color) => (
+    <div className={`flex flex-wrap gap-1 ${className}`}>
+      {product.colorVariants.map((variant) => (
         <button
-          key={color}
-          className={cn(
-            "h-6 min-w-[1.5rem] px-2 border text-xs rounded", 
-            selectedColor === color 
-              ? "bg-primary text-primary-foreground border-primary" 
-              : "bg-background border-input hover:bg-muted/50"
-          )}
-          onClick={() => handleColorSelect(color, getVariantForColor(color))}
-          title={color}
-        >
-          {color}
-        </button>
+          key={variant.color}
+          className={`w-4 h-4 rounded-full border ${
+            selectedColor === variant.color ? "ring-1 ring-primary" : ""
+          }`}
+          style={{ backgroundColor: variant.color }}
+          onClick={(e) => {
+            e.preventDefault(); // Prevent navigation
+            handleColorSelect(variant.color, variant);
+          }}
+          aria-label={`Выбрать цвет ${variant.color}`}
+          title={variant.color}
+        />
       ))}
     </div>
   );
