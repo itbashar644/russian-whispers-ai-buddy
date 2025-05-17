@@ -1,44 +1,37 @@
 
 import React from "react";
-import { Grid2X2, List } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Palette, Grid3X3, List } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface DisplayOptionsProps {
-  showAsList: boolean;
-  setShowAsList: (showAsList: boolean) => void;
+  showColorVariants: boolean;
+  setShowColorVariants: (show: boolean) => void;
+  loading: boolean;
 }
 
 const DisplayOptions: React.FC<DisplayOptionsProps> = ({
-  showAsList,
-  setShowAsList
+  showColorVariants,
+  setShowColorVariants,
+  loading
 }) => {
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "rounded-md",
-          !showAsList && "bg-muted text-accent-foreground"
-        )}
-        onClick={() => setShowAsList(false)}
-      >
-        <Grid2X2 className="h-4 w-4" />
-        <span className="sr-only">Grid view</span>
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "rounded-md",
-          showAsList && "bg-muted text-accent-foreground"
-        )}
-        onClick={() => setShowAsList(true)}
-      >
-        <List className="h-4 w-4" />
-        <span className="sr-only">List view</span>
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="show-colors" 
+          checked={showColorVariants} 
+          onCheckedChange={() => setShowColorVariants(!showColorVariants)} 
+          disabled={loading}
+        />
+        <label
+          htmlFor="show-colors"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
+        >
+          <Palette className="h-4 w-4 mr-1.5" />
+          Варианты цветов
+        </label>
+      </div>
     </div>
   );
 };

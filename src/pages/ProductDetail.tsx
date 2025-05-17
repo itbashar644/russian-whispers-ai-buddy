@@ -2,22 +2,18 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
-import { formatPrice, cn } from "@/lib/utils";
+import { getProductPrice } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import ProductGrid from "@/components/products/ProductGrid";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Product, ColorVariant } from "@/types/product";
+import { formatVideoUrl } from "@/lib/utils";
+import { Product } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProductDetails from "@/components/products/ProductDetails";
-import { toast } from "sonner";
-import ProductImageGallery from "@/components/products/ProductImageGallery";
-import ProductVariantSelector from "@/components/products/ProductVariantSelector";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,13 +21,12 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { addItem } = useCart();
-  const { toggleWishlistItem, isInWishlist } = useWishlist();
-  const [selectedTab, setSelectedTab] = useState("description");
   
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
-  const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [modelVariants, setModelVariants] = useState<Product[]>([]);
+  const [imageError, setImageError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,45 +34,23 @@ const ProductDetail = () => {
       
       setLoading(true);
       try {
-        console.log("Fetching product with ID:", id);
         const productData = await getProductById(id);
-        console.log("Product data received:", productData);
+        setProduct(productData || null);
         
         if (productData) {
-          setProduct(productData);
-          
           // Set default color when product is loaded
           if (productData.colorVariants && productData.colorVariants.length > 0) {
             setSelectedColor(productData.colorVariants[0].color);
-            setSelectedColorVariant(productData.colorVariants[0]);
           } else if (productData.colors && productData.colors.length > 0) {
             setSelectedColor(productData.colors[0]);
           }
           
-          // Load related products for suggestions
+          // Load related products
           const related = await getRelatedProducts(id, 4);
           setRelatedProducts(related);
-
-          // Если есть связанные варианты товаров (одна модель, разные цвета)
-          if (productData.modelName) {
-            try {
-              const { getProductsByModelName } = await import("@/data/products/supabase/productMergeApi");
-              const variants = await getProductsByModelName(productData.modelName);
-              if (variants && variants.length > 1) {
-                setModelVariants(variants);
-              }
-            } catch (error) {
-              console.error("Failed to load product variants:", error);
-            }
-          }
-        } else {
-          console.error("No product data returned");
         }
       } catch (error) {
         console.error("Error loading product:", error);
-        toast.error("Ошибка загрузки товара", {
-          description: "Не удалось загрузить данные товара."
-        });
       } finally {
         setLoading(false);
       }
@@ -86,7 +59,12 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  // Check stock availability based on selected color variant
+  // Find the selected color variant if it exists
+  const selectedColorVariant = product?.colorVariants?.find(
+    v => v.color === selectedColor
+  );
+
+  // Check stock availability - now needs to check the specific variant
   const hasStock = () => {
     if (!product) return false;
     
@@ -97,7 +75,7 @@ const ProductDetail = () => {
     }
     
     // Otherwise check the main product stock
-    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : true);
+    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
   };
 
   // Get stock status text
@@ -132,7 +110,7 @@ const ProductDetail = () => {
     return "В наличии";
   };
   
-  // Get stock status class for styling
+  // Get stock status class
   const getStockStatusClass = () => {
     if (!product) return "";
     
@@ -153,63 +131,17 @@ const ProductDetail = () => {
     return "text-green-600";
   };
 
-  const handleQuantityChange = (value: number) => {
-    if (value >= 1) {
-      // Check against the selected color variant's stock if applicable
-      if (selectedColor && product?.colorVariants?.length) {
-        const variant = product.colorVariants.find(v => v.color === selectedColor);
-        if (variant?.stockQuantity !== undefined && value > variant.stockQuantity) {
-          setQuantity(variant.stockQuantity);
-          return;
-        }
-      }
-      
-      // Otherwise check against the main product stock
-      if (product?.stockQuantity !== undefined && value > product.stockQuantity) {
-        setQuantity(product.stockQuantity);
-      } else {
-        setQuantity(value);
+  // Effect to update image when color changes
+  useEffect(() => {
+    if (selectedColor && product?.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.imageUrl) {
+        // If the variant has an image, set it as the current image
+        setCurrentImageIndex(0);
+        setImageError(false);
       }
     }
-  };
-
-  const handleAddToCart = () => {
-    if (!product || !hasStock()) return;
-    
-    addItem({
-      product,
-      quantity,
-      color: selectedColor,
-      selectedColorVariant
-    });
-    
-    toast.success("Товар добавлен в корзину", {
-      description: `${product.title} (${quantity} шт.)`
-    });
-  };
-
-  // Handle color variant selection
-  const handleColorVariantSelect = (variant: ColorVariant) => {
-    setSelectedColor(variant.color);
-    setSelectedColorVariant(variant);
-
-    // Если у варианта есть ID продукта и это другой продукт, перенаправляем на его страницу
-    if (variant.productId && variant.productId !== product?.id) {
-      // Поскольку перенаправление на другую страницу, просто выводим сообщение
-      console.log(`Variant with product ID ${variant.productId} was selected`);
-    }
-  };
-  
-  // Handle wishlist toggle
-  const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (product) {
-      toggleWishlistItem(product);
-    }
-  };
-  
-  // Check if product is in wishlist
-  const isProductInWishlist = product ? isInWishlist(product.id) : false;
+  }, [selectedColor, product]);
 
   // Force scroll to top when component mounts
   useEffect(() => {
@@ -260,12 +192,134 @@ const ProductDetail = () => {
     );
   }
 
+  const handleQuantityChange = (value: number) => {
+    if (value >= 1) {
+      // Check against the selected color variant's stock if applicable
+      if (selectedColor && product.colorVariants?.length) {
+        const variant = product.colorVariants.find(v => v.color === selectedColor);
+        if (variant?.stockQuantity !== undefined && value > variant.stockQuantity) {
+          setQuantity(variant.stockQuantity);
+          return;
+        }
+      }
+      
+      // Otherwise check against the main product stock
+      if (product.stockQuantity !== undefined && value > product.stockQuantity) {
+        setQuantity(product.stockQuantity);
+      } else {
+        setQuantity(value);
+      }
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (hasStock()) {
+      addItem({
+        product,
+        quantity,
+        color: selectedColor,
+        selectedColorVariant
+      });
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    // Reset quantity to 1 when changing color
+    setQuantity(1);
+  };
+
+  // Get variant-specific image if available, otherwise use the main product image
+  const getVariantImage = () => {
+    if (selectedColor && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.imageUrl) {
+        return variant.imageUrl;
+      }
+    }
+    return product.imageUrl;
+  };
+
+  // Get all available images (main image + additional images)
+  const allImages = [
+    getVariantImage(),
+    ...(product.additionalImages || [])
+  ].filter(Boolean);
+
+  // Current image to display
+  const currentImage = allImages[currentImageIndex] || "/placeholder.svg";
+
+  // Функция для обработки ошибок загрузки изображения
+  const handleImageError = () => {
+    console.error("Ошибка загрузки изображения:", currentImage);
+    setImageError(true);
+  };
+
+  // Функция для обработки ошибок загрузки видео
+  const handleVideoError = () => {
+    console.error("Ошибка загрузки видео:", product.videoUrl);
+    setVideoError(true);
+  };
+
+  // Функция для определения типа рендера видео в зависимости от типа
+  const renderVideo = () => {
+    if (!product.videoUrl) return null;
+    
+    // Если произошла ошибка загрузки видео, не показываем блок
+    if (videoError) return null;
+
+    // Определяем тип видео (по умолчанию mp4 для обратной совместимости)
+    const videoType = product.videoType || 'mp4';
+    
+    switch (videoType) {
+      case 'vk':
+      case 'youtube':
+        const formattedUrl = formatVideoUrl(product.videoUrl, videoType);
+        return (
+          <div className="mt-4 border rounded-lg overflow-hidden aspect-video">
+            <iframe 
+              src={formattedUrl}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              title={product.title}
+              onError={handleVideoError}
+            />
+          </div>
+        );
+      case 'mp4':
+      default:
+        return (
+          <div className="mt-4 border rounded-lg overflow-hidden">
+            <video 
+              controls 
+              className="w-full h-auto"
+              poster={imageError ? "/placeholder.svg" : product.imageUrl}
+              onError={handleVideoError}
+            >
+              <source src={product.videoUrl} type="video/mp4" />
+              Ваш браузер не поддерживает видео.
+            </video>
+          </div>
+        );
+    }
+  };
+
   // Get article number to display - use variant-specific article number if available
-  const displayArticleNumber = selectedColorVariant?.articleNumber || product.articleNumber;
+  const getArticleNumber = () => {
+    if (selectedColor && product.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.articleNumber) {
+        return variant.articleNumber;
+      }
+    }
+    return product.articleNumber;
+  };
+
+  const displayArticleNumber = getArticleNumber();
   
   // Get the price to display
-  const displayPrice = selectedColorVariant?.discountPrice || selectedColorVariant?.price || 
-                      product.discountPrice || product.price;
+  const displayPrice = getProductPrice(product, selectedColor);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -283,12 +337,42 @@ const ProductDetail = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            {/* Product Image Gallery */}
-            <ProductImageGallery 
-              product={product}
-              selectedColorVariant={selectedColorVariant}
-              onColorVariantSelect={handleColorVariantSelect}
-            />
+            {/* Main image display */}
+            <div className="border rounded-lg overflow-hidden">
+              <img 
+                src={imageError ? "/placeholder.svg" : currentImage} 
+                alt={product.title} 
+                className="w-full h-auto object-cover aspect-square" 
+                onError={handleImageError}
+              />
+            </div>
+            
+            {/* Thumbnails gallery */}
+            {allImages.length > 1 && (
+              <div className="mt-4 grid grid-cols-5 gap-2">
+                {allImages.map((img, index) => (
+                  <button 
+                    key={index}
+                    className={`border rounded overflow-hidden aspect-square ${
+                      index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${product.title} - изображение ${index + 1}`}
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Видео, если есть */}
+            {product.videoUrl && renderVideo()}
           </div>
 
           <div className="space-y-6">
@@ -424,14 +508,6 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Добавление варианта выбора в случае, если это товар с разными вариантами модели */}
-            {modelVariants.length > 1 && (
-              <ProductVariantSelector
-                product={product}
-                variants={modelVariants}
-              />
-            )}
-
             <div className="space-y-4">
               {/* Color selection */}
               {product.colorVariants && product.colorVariants.length > 0 ? (
@@ -439,7 +515,7 @@ const ProductDetail = () => {
                   <h3 className="font-medium mb-2">Цвет</h3>
                   <RadioGroup 
                     value={selectedColor || ''} 
-                    onValueChange={setSelectedColor}
+                    onValueChange={handleColorChange}
                     className="flex flex-wrap gap-2"
                   >
                     {product.colorVariants.map((variant) => (
@@ -526,39 +602,25 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="pt-4 flex gap-2">
+              <div className="pt-4">
                 <Button 
                   size="lg" 
-                  className="flex-1"
+                  className="w-full"
                   onClick={handleAddToCart}
                   disabled={!hasStock()}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  {hasStock() ? `В корзину` : "Нет в наличии"}
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="aspect-square"
-                  onClick={handleToggleWishlist}
-                >
-                  <Heart 
-                    className={cn("h-5 w-5", isProductInWishlist ? "fill-red-500 text-red-500" : "")} 
-                  />
-                  <span className="sr-only">Добавить в избранное</span>
+                  {hasStock() ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
                 </Button>
               </div>
             </div>
+
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-3">Описание</h3>
+              <p className="text-muted-foreground">{product.description}</p>
+            </div>
           </div>
         </div>
-
-        {/* Product details tabs section */}
-        <ProductDetails 
-          product={product}
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-        />
 
         {relatedProducts.length > 0 && (
           <section className="mt-16">

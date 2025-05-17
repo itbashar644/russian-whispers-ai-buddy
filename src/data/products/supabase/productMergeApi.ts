@@ -92,9 +92,8 @@ export const getProductsByModelName = async (modelName: string): Promise<Product
 };
 
 /**
- * Combines merged products into a single product with variants
+ * Combines merged products into a single product with color variants
  * This is useful for displaying merged products as a single product with color options
- * and variant selection
  */
 export const combineProductVariants = (products: Product[]): Product => {
   if (!products || products.length === 0) {
@@ -104,9 +103,8 @@ export const combineProductVariants = (products: Product[]): Product => {
   // Use the first (main) product as the base
   const mainProduct = { ...products[0] };
   
-  // If there are additional products, treat them as variants
+  // If there are additional products, treat them as color variants
   if (products.length > 1) {
-    // First, collect all color variants
     const colorVariants = products.slice(1).map(product => {
       // Extract the color if available, or use title as a fallback
       const colorName = product.colors && product.colors.length > 0 
@@ -124,19 +122,15 @@ export const combineProductVariants = (products: Product[]): Product => {
         ozonUrl: product.ozonUrl,
         wildberriesUrl: product.wildberriesUrl,
         avitoUrl: product.avitoUrl,
-        productId: product.id // Добавляем ID исходного продукта для возможной навигации
+        productId: product.id // Add product ID to reference the original product
       };
     });
     
-    // Add all color variants to the main product
+    // Add all variants to the main product
     mainProduct.colorVariants = [
-      // Если у основного продукта уже есть вариант для его цвета, сохраняем его
       ...(mainProduct.colorVariants || []),
       ...colorVariants
     ];
-    
-    // Create a list of related products (model variants)
-    mainProduct.relatedColorProducts = products.slice(1).map(product => product.id);
     
     // Ensure mainProduct.colors includes all colors from variants
     const allColors = new Set<string>();
@@ -144,12 +138,6 @@ export const combineProductVariants = (products: Product[]): Product => {
     // Add main product color
     if (mainProduct.colors && mainProduct.colors.length > 0) {
       mainProduct.colors.forEach(color => allColors.add(color));
-    } else if (mainProduct.colorVariants && mainProduct.colorVariants.length > 0) {
-      // Если у основного товара есть цветовые варианты, но нет colors, добавим его вариант
-      const mainVariantColor = mainProduct.colorVariants[0]?.color;
-      if (mainVariantColor) {
-        allColors.add(mainVariantColor);
-      }
     }
     
     // Add variant colors
@@ -161,29 +149,6 @@ export const combineProductVariants = (products: Product[]): Product => {
   }
   
   return mainProduct;
-};
-
-/**
- * Gets products that have variant options for a model
- */
-export const getProductVariants = async (modelName: string): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("model_name", modelName)
-      .order("variant_name", { ascending: true });
-
-    if (error) {
-      console.error("Ошибка при получении вариантов товара:", error);
-      throw error;
-    }
-
-    return (data || []).map(item => transformSupabaseToProduct(item));
-  } catch (err) {
-    console.error("Ошибка при получении вариантов товара:", err);
-    throw err;
-  }
 };
 
 /**
@@ -235,7 +200,6 @@ export const productMergeApi = {
   mergeProductsByModelName,
   getProductsByModelName,
   combineProductVariants,
-  getProductVariants,
   bulkDeleteProducts,
   bulkArchiveProducts
 };

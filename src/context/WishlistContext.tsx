@@ -7,7 +7,7 @@ interface WishlistContextType {
   wishlist: Product[];
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (productId: string) => void;
-  toggleWishlistItem: (productOrId: Product | string) => void;
+  toggleWishlistItem: (product: Product) => void;
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => void;
 }
@@ -50,23 +50,11 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     toast('Товар удален из избранного');
   };
   
-  const toggleWishlistItem = (productOrId: Product | string) => {
-    // Check if we received a product object or just an ID
-    if (typeof productOrId === 'string') {
-      const productId = productOrId;
-      if (isInWishlist(productId)) {
-        removeFromWishlist(productId);
-      } else {
-        // If we only have an ID, we can't add it to wishlist since we need the full product
-        console.error('Cannot add to wishlist with just an ID. Need full product object.');
-      }
+  const toggleWishlistItem = (product: Product) => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
     } else {
-      // We have a full product object
-      if (isInWishlist(productOrId.id)) {
-        removeFromWishlist(productOrId.id);
-      } else {
-        addToWishlist(productOrId);
-      }
+      addToWishlist(product);
     }
   };
   

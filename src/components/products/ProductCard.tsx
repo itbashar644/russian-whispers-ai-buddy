@@ -30,6 +30,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
         price: selectedVariant.price,
         discountPrice: selectedVariant.discountPrice,
         stockQuantity: selectedVariant.stockQuantity,
+        // Устанавливаем inStock на основе stockQuantity для варианта
         inStock: selectedVariant.stockQuantity !== undefined ? selectedVariant.stockQuantity > 0 : product.inStock
       } 
     : product;
@@ -54,11 +55,8 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the heart
-    toggleWishlistItem(product); // Pass the full product object, not just the ID
+    toggleWishlistItem(product);
   };
-
-  // Check if product is in wishlist
-  const isProductInWishlist = isInWishlist(product.id);
 
   // Compact variant for smaller cards
   if (variant === "compact") {
@@ -79,7 +77,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
       handleColorSelect={handleColorSelect}
       handleAddToCart={handleAddToCart}
       handleToggleWishlist={handleToggleWishlist}
-      isInWishlist={isProductInWishlist}
+      isInWishlist={isInWishlist}
     />
   );
 };

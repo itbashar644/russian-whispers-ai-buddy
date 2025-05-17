@@ -12,14 +12,12 @@ interface ImageUploaderProps {
   initialImageUrl?: string;
   onImageUploaded: (url: string) => void;
   onRemoveImage?: () => void;
-  required?: boolean;
 }
 
 export default function ImageUploader({ 
   initialImageUrl, 
   onImageUploaded, 
-  onRemoveImage,
-  required
+  onRemoveImage 
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>(initialImageUrl || "");

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts, getRelatedColorProducts } from "@/data/products";
-import { productMergeApi } from "@/data/products/supabase/productMergeApi";
 import { Product as ProductType, ColorVariant } from "@/types/product";
 import { ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,14 +11,12 @@ import Footer from "@/components/layout/Footer";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
 import ProductInfo from "@/components/products/ProductInfo";
 import ProductDetails from "@/components/products/ProductDetails";
-import ProductVariantSelector from "@/components/products/ProductVariantSelector";
 
 const Product = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [relatedColorProducts, setRelatedColorProducts] = useState<ProductType[]>([]);
-  const [modelVariants, setModelVariants] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<string>("description");
   const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
@@ -30,35 +27,23 @@ const Product = () => {
       
       setLoading(true);
       try {
-        // Load product
+        // Загрузка товара
         const productData = await getProductById(id);
         if (productData) {
           setProduct(productData);
           
-          // Set first color variant as default if available
+          // Если у товара есть цветовые варианты, устанавливаем первый по умолчанию
           if (productData.colorVariants && productData.colorVariants.length > 0) {
             setSelectedColorVariant(productData.colorVariants[0]);
           }
           
-          // Load related products
+          // Загрузка связанных товаров
           const related = await getRelatedProducts(id);
           setRelatedProducts(related);
           
-          // Load color variants
+          // Загрузка связанных цветовых вариантов
           const colorVariants = await getRelatedColorProducts(id);
           setRelatedColorProducts(colorVariants);
-          
-          // Load model variants if this product has a model name
-          if (productData.modelName) {
-            try {
-              const variants = await productMergeApi.getProductsByModelName(productData.modelName);
-              if (variants && variants.length > 0) {
-                setModelVariants(variants);
-              }
-            } catch (error) {
-              console.error("Error fetching model variants:", error);
-            }
-          }
         }
       } catch (error) {
         console.error("Ошибка при загрузке товара:", error);
@@ -70,7 +55,7 @@ const Product = () => {
     fetchData();
   }, [id]);
 
-  // Handler for color variant selection
+  // Обработчик выбора цветового варианта
   const handleColorVariantSelect = (variant: ColorVariant) => {
     setSelectedColorVariant(variant);
   };
@@ -139,7 +124,7 @@ const Product = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="container px-4 py-8 md:px-6 flex-grow">
-        {/* Breadcrumbs */}
+        {/* Хлебные крошки */}
         <div className="flex items-center text-sm text-muted-foreground mb-8">
           <Link to="/" className="hover:text-primary">Главная</Link>
           <ChevronRight className="h-4 w-4 mx-1" />
@@ -153,40 +138,30 @@ const Product = () => {
         </div>
         
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Product images */}
+          {/* Изображения товара */}
           <ProductImageGallery 
             product={product}
             selectedColorVariant={selectedColorVariant}
             onColorVariantSelect={handleColorVariantSelect}
           />
           
-          {/* Product info */}
-          <div>
-            <ProductInfo 
-              product={product}
-              relatedColorProducts={relatedColorProducts}
-              selectedColorVariant={selectedColorVariant}
-              onColorVariantSelect={handleColorVariantSelect}
-            />
-            
-            {/* Show variant selector if model variants exist */}
-            {modelVariants.length > 1 && (
-              <ProductVariantSelector 
-                product={product}
-                variants={modelVariants}
-              />
-            )}
-          </div>
+          {/* Информация о товаре */}
+          <ProductInfo 
+            product={product}
+            relatedColorProducts={relatedColorProducts}
+            selectedColorVariant={selectedColorVariant}
+            onColorVariantSelect={handleColorVariantSelect}
+          />
         </div>
         
-        {/* Product details (tabs with information) */}
+        {/* Детали товара (табы с информацией) */}
         <ProductDetails
           product={product}
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
         />
         
-        {/* Related products */}
+        {/* Связанные товары */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <ProductGrid products={relatedProducts} title="Похожие товары" />

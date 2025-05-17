@@ -4,20 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 
 interface ColorFilterProps {
-  colors?: string[];
   availableColors: string[];
   colorParam: string | null;
   handleColorFilter: (color: string | null) => void;
   loading?: boolean;
-  selectedColor?: string;
 }
 
 const ColorFilter: React.FC<ColorFilterProps> = ({
   availableColors,
   colorParam,
   handleColorFilter,
-  loading = false,
-  selectedColor
+  loading = false
 }) => {
   if (availableColors.length === 0) return null;
 

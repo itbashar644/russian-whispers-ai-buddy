@@ -1,22 +1,23 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, CornerRightDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProductCardFullProps {
   product: Product;
   currentProduct: Product;
-  selectedColor?: string;
+  selectedColor: string | undefined;
   handleColorSelect: (colorName: string, variant?: ColorVariant) => void;
   handleAddToCart: () => void;
   handleToggleWishlist: (e: React.MouseEvent) => void;
-  isInWishlist: boolean;
+  isInWishlist: (id: string) => boolean;
 }
 
 const ProductCardFull: React.FC<ProductCardFullProps> = ({
@@ -28,113 +29,102 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
   handleToggleWishlist,
   isInWishlist
 }) => {
-  const [imageError, setImageError] = useState(false);
+  // Определяем доступность товара на основе stockQuantity
+  const isAvailable = currentProduct.stockQuantity !== undefined 
+    ? currentProduct.stockQuantity > 0 
+    : currentProduct.inStock;
   
-  // Check if the product has model variants
-  const hasVariants = product.modelName && !product.isColorVariant;
-
   return (
-    <div className="group relative flex flex-col border rounded-lg overflow-hidden h-full transition-all hover:border-primary">
-      {/* Product Image with Link */}
-      <Link 
-        to={`/product/${product.id}`} 
-        className="aspect-[3/4] bg-background overflow-hidden relative"
+    <Card className={`h-full flex flex-col ${!isAvailable ? 'opacity-75' : ''}`}>
+      <Link
+        to={`/product/${product.id}`}
+        className="block flex-grow overflow-hidden"
       >
-        {/* Product Badges */}
-        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-          {product.isNew && (
-            <Badge variant="secondary" className="bg-blue-500 hover:bg-blue-500">Новинка</Badge>
-          )}
-          {product.isBestseller && (
-            <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-500">Хит продаж</Badge>
-          )}
-        </div>
-        
-        {/* Wishlist Button */}
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={handleToggleWishlist}
-        >
-          <Heart 
-            className={cn("h-4 w-4", isInWishlist ? "fill-red-500 text-red-500" : "")} 
+        <div className="relative h-56 overflow-hidden">
+          <img
+            src={currentProduct.imageUrl || "/placeholder.svg"}
+            alt={product.title}
+            className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
-          <span className="sr-only">Добавить в избранное</span>
-        </Button>
-        
-        {/* Product Image */}
-        <img
-          src={imageError ? "/placeholder.svg" : currentProduct.imageUrl}
-          alt={currentProduct.title}
-          className="w-full h-full object-cover object-center transition-transform group-hover:scale-105"
-          onError={() => setImageError(true)}
-          loading="lazy"
-        />
-        
-        {/* Out of Stock Overlay */}
-        {!currentProduct.inStock && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-white font-medium px-3 py-1 bg-red-500 rounded-md">Нет в наличии</span>
+          <div className="absolute top-2 right-2 flex flex-col gap-1">
+            {/* Discount badge removed */}
+            {product.isNew && <Badge className="bg-blue-500">Новинка</Badge>}
+            {product.isBestseller && (
+              <Badge className="bg-amber-500">Хит продаж</Badge>
+            )}
+            {!isAvailable && (
+              <Badge variant="secondary" className="bg-gray-500">Нет в наличии</Badge>
+            )}
           </div>
-        )}
-
-        {/* Variants Indicator */}
-        {hasVariants && (
-          <Badge 
-            variant="outline" 
-            className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm border-primary text-primary px-3"
-          >
-            <CornerRightDown className="mr-1 h-3 w-3" />
-            Варианты
-          </Badge>
-        )}
-      </Link>
-      
-      {/* Product Info */}
-      <div className="flex flex-col space-y-3 p-3 flex-grow">
-        <Link to={`/product/${product.id}`} className="flex-grow">
-          <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
-            {product.title}
-          </h3>
           
-          {/* Color Options */}
-          {product.colorVariants && product.colorVariants.length > 0 && (
-            <ProductColorOptions
-              product={product}
-              selectedColor={selectedColor}
-              handleColorSelect={handleColorSelect}
-              className="mt-2"
+          <button 
+            onClick={handleToggleWishlist}
+            className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
+            aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
+          >
+            <Heart 
+              className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
             />
-          )}
-        </Link>
-        
-        {/* Price */}
-        <div className="flex items-baseline">
-          {currentProduct.discountPrice ? (
-            <>
-              <span className="font-bold">{formatPrice(currentProduct.discountPrice)} ₽</span>
-              <span className="text-muted-foreground line-through text-sm ml-2">
-                {formatPrice(currentProduct.price)} ₽
-              </span>
-            </>
-          ) : (
-            <span className="font-bold">{formatPrice(currentProduct.price)} ₽</span>
-          )}
+          </button>
         </div>
-        
-        {/* Add to Cart Button */}
-        <Button 
-          onClick={handleAddToCart}
-          disabled={!currentProduct.inStock}
-          className="w-full"
-          size="sm"
-        >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          {currentProduct.inStock ? "В корзину" : "Нет в наличии"}
-        </Button>
-      </div>
-    </div>
+      </Link>
+      <CardHeader className="p-4 pb-0">
+        <Link to={`/product/${product.id}`} className="block">
+          <CardTitle className="line-clamp-2 text-lg">{product.title}</CardTitle>
+        </Link>
+        <CardDescription className="flex items-center justify-between mt-2">
+          <div className="flex flex-col">
+            {currentProduct.discountPrice ? (
+              <>
+                <span className="text-lg font-semibold">
+                  {formatPrice(currentProduct.discountPrice)}
+                </span>
+                <span className="text-sm line-through text-muted-foreground">
+                  {formatPrice(currentProduct.price)}
+                </span>
+              </>
+            ) : (
+              <span className="text-lg font-semibold">
+                {formatPrice(currentProduct.price)}
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-muted-foreground">{product.category}</div>
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="p-4 pt-2 flex-grow">
+        {/* Display color options if available */}
+        <ProductColorOptions 
+          product={product}
+          selectedColor={selectedColor}
+          onColorSelect={handleColorSelect}
+        />
+      </CardContent>
+
+      <CardFooter className="p-4 pt-0">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="w-full"
+                onClick={handleAddToCart}
+                disabled={!isAvailable}
+                variant={!isAvailable ? "outline" : "default"}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                {isAvailable ? "В корзину" : "Нет в наличии"}
+              </Button>
+            </TooltipTrigger>
+            {!isAvailable && (
+              <TooltipContent>
+                <p>Товара нет в наличии. Добавьте его в избранное, чтобы следить за наличием.</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
+    </Card>
   );
 };
 

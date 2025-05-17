@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { Label } from "@/components/ui/label";
+
+import React from 'react';
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -9,29 +11,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Product } from "@/types/product";
 import ImageUploader from "@/components/admin/ImageUploader";
 import MultipleImageUploader from "@/components/admin/MultipleImageUploader";
-import { Product } from "@/types/product";
 
-export interface GeneralInfoTabProps {
+interface GeneralInfoTabProps {
   formData: Partial<Product>;
   categories: string[];
   showNewCategoryInput: boolean;
   newCategory: string;
-  setNewCategory: (category: string) => void;
-  setShowNewCategoryInput: (show: boolean) => void;
+  setNewCategory: (value: string) => void;
+  setShowNewCategoryInput: (value: boolean) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleSelectChange: (name: string, value: string) => void;
+  handleSelectChange: (value: string, name: string) => void;
   handleCheckboxChange: (checked: boolean, name: string) => void;
   handleMainImageUploaded: (url: string) => void;
   handleAdditionalImagesChange: (urls: string[]) => void;
 }
 
-const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
+const GeneralInfoTab = ({
   formData,
   categories,
   showNewCategoryInput,
@@ -43,239 +41,263 @@ const GeneralInfoTab: React.FC<GeneralInfoTabProps> = ({
   handleCheckboxChange,
   handleMainImageUploaded,
   handleAdditionalImagesChange
-}) => {
+}: GeneralInfoTabProps) => {
+  // Create a helper function to handle stock quantity changes properly
+  const handleStockQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ? parseInt(e.target.value) : undefined;
+    
+    // Create a synthetic event that matches the expected interface
+    const syntheticEvent = {
+      target: {
+        name: "stockQuantity",
+        value: value !== undefined ? value.toString() : ""
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleInputChange(syntheticEvent);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Название товара *</Label>
+    <div className="grid gap-4">
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="title" className="text-right">
+          Название *
+        </Label>
         <Input
           id="title"
           name="title"
           value={formData.title || ""}
           onChange={handleInputChange}
-          placeholder="Введите название товара"
-          required
+          className="col-span-3"
         />
       </div>
       
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">Описание товара *</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={formData.description || ""}
-          onChange={handleInputChange}
-          placeholder="Введите описание товара"
-          className="h-24"
-          required
-        />
-      </div>
-      
-      {/* Category */}
-      <div className="space-y-2">
-        <Label htmlFor="category">Категория *</Label>
-        <div className="flex gap-2">
-          {!showNewCategoryInput ? (
-            <>
-              <Select
-                value={formData.category || ""}
-                onValueChange={(value) => handleSelectChange("category", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Выберите категорию" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowNewCategoryInput(true)}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="sr-only">Add new category</span>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Input
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Новая категория"
-                className="flex-1"
-              />
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => {
-                  if (newCategory.trim()) {
-                    handleSelectChange("category", newCategory.trim());
-                  }
-                  setShowNewCategoryInput(false);
-                }}
-              >
-                Добавить
-              </Button>
-              <Button 
-                type="button" 
-                variant="ghost"
-                onClick={() => setShowNewCategoryInput(false)}
-              >
-                Отмена
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-      
-      {/* Model and Variant */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="modelName">Модель (для объединения)</Label>
-          <Input
-            id="modelName"
-            name="modelName"
-            value={formData.modelName || ""}
-            onChange={handleInputChange}
-            placeholder="Код модели для объединения товаров"
-          />
-          <p className="text-xs text-muted-foreground">
-            Товары с одинаковым кодом модели будут объединены в группу
-          </p>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="variantName">Вариант товара</Label>
-          <Input
-            id="variantName"
-            name="variantName"
-            value={formData.variantName || ""}
-            onChange={handleInputChange}
-            placeholder="Название варианта (размер, цвет и т.д.)"
-          />
-          <p className="text-xs text-muted-foreground">
-            Отображается в списке вариантов товара
-          </p>
-        </div>
-      </div>
-      
-      {/* Price */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="price">Цена (₽) *</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            value={formData.price || ""}
-            onChange={handleInputChange}
-            min="0"
-            step="0.01"
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="discountPrice">Цена со скидкой (₽)</Label>
-          <Input
-            id="discountPrice"
-            name="discountPrice"
-            type="number"
-            value={formData.discountPrice || ""}
-            onChange={handleInputChange}
-            min="0"
-            step="0.01"
-          />
-        </div>
-      </div>
-      
-      {/* Images */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Основное изображение *</Label>
-          <ImageUploader
-            initialImageUrl={formData.imageUrl}
-            onImageUploaded={handleMainImageUploaded}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label>Дополнительные изображения</Label>
-          <MultipleImageUploader
-            initialImageUrls={formData.additionalImages || []}
-            onImagesChange={handleAdditionalImagesChange}
-          />
-        </div>
-      </div>
-      
-      {/* Country of Origin */}
-      <div className="space-y-2">
-        <Label htmlFor="countryOfOrigin">Страна происхождения *</Label>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="modelName" className="text-right">
+          Модель (для объединения)
+        </Label>
         <Input
-          id="countryOfOrigin"
-          name="countryOfOrigin"
-          value={formData.countryOfOrigin || ""}
+          id="modelName"
+          name="modelName"
+          value={formData.modelName || ""}
           onChange={handleInputChange}
-          placeholder="Укажите страну происхождения"
-          required
+          className="col-span-3"
+          placeholder="Введите название модели для объединения товаров"
         />
       </div>
       
-      {/* Stock options */}
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="inStock"
-            checked={formData.inStock || false}
-            onCheckedChange={(checked) => handleCheckboxChange(checked, "inStock")}
-          />
-          <Label htmlFor="inStock">В наличии</Label>
-        </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="articleNumber" className="text-right">
+          Артикул
+        </Label>
+        <Input
+          id="articleNumber"
+          name="articleNumber"
+          value={formData.articleNumber || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="barcode" className="text-right">
+          Штрих-код
+        </Label>
+        <Input
+          id="barcode"
+          name="barcode"
+          value={formData.barcode || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="stockQuantity">Количество на складе</Label>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="category" className="text-right">
+          Категория *
+        </Label>
+        {showNewCategoryInput ? (
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="newCategory"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              placeholder="Введите новую категорию"
+              className="flex-1"
+            />
+            <button 
+              className="px-3 py-2 border rounded-md text-sm"
+              onClick={() => {
+                setShowNewCategoryInput(false);
+                setNewCategory("");
+              }}
+            >
+              Отмена
+            </button>
+          </div>
+        ) : (
+          <Select
+            value={formData.category || ""}
+            onValueChange={(value) => handleSelectChange(value, "category")}
+          >
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder="Выберите категорию" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+              <SelectItem value="new">Новая категория</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="price" className="text-right">
+          Базовая цена *
+        </Label>
+        <Input
+          id="price"
+          name="price"
+          type="number"
+          value={formData.price || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="stockQuantity" className="text-right">
+          Количество на складе
+        </Label>
         <Input
           id="stockQuantity"
           name="stockQuantity"
           type="number"
           value={formData.stockQuantity !== undefined ? formData.stockQuantity : ""}
-          onChange={handleInputChange}
+          onChange={handleStockQuantityChange}
           min="0"
-          placeholder="Количество единиц товара"
+          className="col-span-3"
         />
       </div>
       
-      {/* Product flags */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isNew"
-            checked={formData.isNew || false}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange(checked as boolean, "isNew")
-            }
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="discountPrice" className="text-right">
+          Цена со скидкой
+        </Label>
+        <Input
+          id="discountPrice"
+          name="discountPrice"
+          type="number"
+          value={formData.discountPrice || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-start gap-4">
+        <Label htmlFor="description" className="text-right">
+          Описание *
+        </Label>
+        <Textarea
+          id="description"
+          name="description"
+          value={formData.description || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+          rows={3}
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-start gap-4">
+        <Label className="text-right">
+          Основное изображение
+        </Label>
+        <div className="col-span-3">
+          <ImageUploader
+            initialImageUrl={formData.imageUrl}
+            onImageUploaded={handleMainImageUploaded}
+            onRemoveImage={() => handleMainImageUploaded("/placeholder.svg")}
           />
-          <Label htmlFor="isNew">Новинка</Label>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isBestseller"
-            checked={formData.isBestseller || false}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange(checked as boolean, "isBestseller")
-            }
+      </div>
+      
+      <div className="grid grid-cols-4 items-start gap-4">
+        <Label className="text-right">
+          Дополнительные изображения
+        </Label>
+        <div className="col-span-3">
+          <MultipleImageUploader
+            initialImageUrls={formData.additionalImages}
+            onImagesChange={handleAdditionalImagesChange}
           />
-          <Label htmlFor="isBestseller">Хит продаж</Label>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="material" className="text-right">
+          Материал
+        </Label>
+        <Input
+          id="material"
+          name="material"
+          value={formData.material || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="countryOfOrigin" className="text-right">
+          Страна происхождения
+        </Label>
+        <Input
+          id="countryOfOrigin"
+          name="countryOfOrigin"
+          value={formData.countryOfOrigin || ""}
+          onChange={handleInputChange}
+          className="col-span-3"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <div className="text-right">Опции</div>
+        <div className="col-span-3 space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="inStock"
+              checked={formData.inStock || false}
+              onCheckedChange={(checked) => 
+                handleCheckboxChange(!!checked, "inStock")
+              }
+            />
+            <Label htmlFor="inStock">В наличии</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isNew"
+              checked={formData.isNew || false}
+              onCheckedChange={(checked) => 
+                handleCheckboxChange(!!checked, "isNew")
+              }
+            />
+            <Label htmlFor="isNew">Новинка</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isBestseller"
+              checked={formData.isBestseller || false}
+              onCheckedChange={(checked) => 
+                handleCheckboxChange(!!checked, "isBestseller")
+              }
+            />
+            <Label htmlFor="isBestseller">Бестселлер</Label>
+          </div>
         </div>
       </div>
     </div>
