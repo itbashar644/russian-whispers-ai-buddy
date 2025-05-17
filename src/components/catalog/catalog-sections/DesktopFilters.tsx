@@ -1,7 +1,11 @@
 
 import React from "react";
 import { Category } from "@/types/categories";
-import CatalogFilters from "../CatalogFilters";
+import CategoryFilter from "../filters/CategoryFilter";
+import PriceFilter from "../filters/PriceFilter";
+import ColorFilter from "../filters/ColorFilter";
+import InStockFilter from "../filters/InStockFilter";
+import DisplayOptions from "../filters/DisplayOptions";
 
 interface DesktopFiltersProps {
   availableColors: string[];
@@ -22,24 +26,44 @@ interface DesktopFiltersProps {
 
 const DesktopFilters: React.FC<DesktopFiltersProps> = (props) => {
   return (
-    <div className="hidden lg:block">
-      <div className="sticky top-20">
-        <CatalogFilters
-          availableColors={props.availableColors}
+    <div className="hidden lg:block lg:col-span-1 space-y-6">
+      <div className="space-y-6">
+        <h2 className="text-lg font-semibold">Фильтры</h2>
+        
+        <CategoryFilter 
           categories={props.categories}
-          priceRange={props.priceRange}
-          maxPrice={props.maxPrice}
-          sortBy={props.sortBy}
-          inStockOnly={props.inStockOnly}
-          handlePriceChange={props.handlePriceChange}
-          handleSortChange={props.handleSortChange}
-          handleInStockChange={props.handleInStockChange}
-          handleCategoryClick={props.handleCategoryClick}
-          handleColorFilter={props.handleColorFilter}
-          colorParam={props.colorParam}
           categoryParam={props.categoryParam}
           loading={props.loading}
+          handleCategoryClick={props.handleCategoryClick}
         />
+        
+        <PriceFilter 
+          priceRange={props.priceRange}
+          handlePriceChange={props.handlePriceChange}
+          loading={props.loading}
+        />
+        
+        <ColorFilter 
+          availableColors={props.availableColors}
+          colorParam={props.colorParam}
+          handleColorFilter={props.handleColorFilter}
+          loading={props.loading}
+        />
+
+        <InStockFilter 
+          inStockOnly={props.inStockOnly}
+          handleInStockChange={props.handleInStockChange}
+          loading={props.loading}
+        />
+
+        <div className="border-t pt-6">
+          <h3 className="font-semibold mb-4">Отображение</h3>
+          <DisplayOptions 
+            showColorVariants={props.inStockOnly}
+            setShowColorVariants={props.handleInStockChange}
+            loading={props.loading}
+          />
+        </div>
       </div>
     </div>
   );

@@ -25,17 +25,17 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
           <Button
             key={category.name}
             variant="ghost"
-            className={`w-full justify-start px-2 ${
+            className={`w-full justify-start px-2 h-auto py-2 whitespace-normal text-left ${
               categoryParam === category.name ? "bg-muted" : ""
             }`}
             onClick={() => handleCategoryClick(category.name)}
             disabled={loading}
           >
-            <div className="flex items-center">
+            <div className="flex items-start">
               {categoryParam === category.name && (
-                <Check className="mr-1 h-4 w-4" />
+                <Check className="mr-1 h-4 w-4 mt-0.5 flex-shrink-0" />
               )}
-              <span>{category.name}</span>
+              <span className="line-clamp-2">{category.name}</span>
             </div>
           </Button>
         ))}

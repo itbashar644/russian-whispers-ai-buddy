@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Product } from '@/types/product';
 
 /**
@@ -13,21 +13,15 @@ export const useCategoryFilter = (
   products: Product[], 
   categoryParam: string | null
 ): Product[] => {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
-  
-  useEffect(() => {
+  // Use useMemo instead of useState + useEffect for more efficient filtering
+  return useMemo(() => {
     if (!categoryParam) {
-      setFilteredProducts(products);
-      return;
+      return products;
     }
     
     // Filter products by category
-    const filtered = products.filter(product => 
+    return products.filter(product => 
       product.category === categoryParam
     );
-    
-    setFilteredProducts(filtered);
   }, [products, categoryParam]);
-  
-  return filteredProducts;
 };

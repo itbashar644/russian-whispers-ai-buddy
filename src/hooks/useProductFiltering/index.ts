@@ -14,7 +14,7 @@ export const useProductFiltering = ({
   sortBy,
   loading,
   colorParam,
-  categoryParam, // Add category parameter here
+  categoryParam,
   inStockOnly = false,
   showColorVariants = false
 }: UseProductFilteringProps): FilteringResult => {
