@@ -16,7 +16,7 @@ interface ProductCardFullProps {
   handleColorSelect: (colorName: string, variant?: ColorVariant) => void;
   handleAddToCart: () => void;
   handleToggleWishlist: (e: React.MouseEvent) => void;
-  isInWishlist: (product: Product) => boolean;
+  isInWishlist: boolean;
 }
 
 const ProductCardFull: React.FC<ProductCardFullProps> = ({
@@ -58,7 +58,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           onClick={handleToggleWishlist}
         >
           <Heart 
-            className={cn("h-4 w-4", isInWishlist(product) ? "fill-red-500 text-red-500" : "")} 
+            className={cn("h-4 w-4", isInWishlist ? "fill-red-500 text-red-500" : "")} 
           />
           <span className="sr-only">Add to wishlist</span>
         </Button>
@@ -103,7 +103,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
             <ProductColorOptions
               product={product}
               selectedColor={selectedColor}
-              onSelectColor={handleColorSelect}
+              handleColorSelect={handleColorSelect}
               className="mt-2"
             />
           )}

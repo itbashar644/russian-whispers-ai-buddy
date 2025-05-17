@@ -58,10 +58,11 @@ export const useProductFiltering = ({
     
     // Apply filters
     result = filterProducts(result, {
-      searchTerm,
-      priceRange,
+      searchQuery: searchTerm,
+      minPrice: priceRange.min,
+      maxPrice: priceRange.max,
       inStockOnly,
-      colorParam
+      selectedColor: colorParam
     });
     
     // Apply sorting

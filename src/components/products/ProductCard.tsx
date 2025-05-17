@@ -57,7 +57,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
     toggleWishlistItem(product);
   };
 
-  // Check if product is in wishlist using the product object instead of just the ID
+  // Check if product is in wishlist
   const isProductInWishlist = isInWishlist(product);
 
   // Compact variant for smaller cards
