@@ -36,7 +36,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = (props) =>
   const [showAsList, setShowAsList] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   
-  // Рассчитываем количество активных фильтров
+  // Calculate active filters count
   const activeFiltersCount = 
     (props.categoryParam ? 1 : 0) +
     (props.colorParam ? 1 : 0) +
