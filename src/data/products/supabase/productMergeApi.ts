@@ -124,12 +124,13 @@ export const combineProductVariants = (products: Product[]): Product => {
         ozonUrl: product.ozonUrl,
         wildberriesUrl: product.wildberriesUrl,
         avitoUrl: product.avitoUrl,
-        productId: product.id // Add product ID to reference the original product
+        productId: product.id // Добавляем ID исходного продукта для возможной навигации
       };
     });
     
     // Add all color variants to the main product
     mainProduct.colorVariants = [
+      // Если у основного продукта уже есть вариант для его цвета, сохраняем его
       ...(mainProduct.colorVariants || []),
       ...colorVariants
     ];
@@ -143,6 +144,12 @@ export const combineProductVariants = (products: Product[]): Product => {
     // Add main product color
     if (mainProduct.colors && mainProduct.colors.length > 0) {
       mainProduct.colors.forEach(color => allColors.add(color));
+    } else if (mainProduct.colorVariants && mainProduct.colorVariants.length > 0) {
+      // Если у основного товара есть цветовые варианты, но нет colors, добавим его вариант
+      const mainVariantColor = mainProduct.colorVariants[0]?.color;
+      if (mainVariantColor) {
+        allColors.add(mainVariantColor);
+      }
     }
     
     // Add variant colors

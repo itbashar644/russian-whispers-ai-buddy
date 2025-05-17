@@ -15,27 +15,8 @@ export const linkProductsByColor = async (productIds: string[]): Promise<boolean
       return false;
     }
     
-    // Generate a model name if products don't have one
-    const modelName = `model_${Date.now()}`;
-    
-    // Update each product with the same model name
-    for (const id of productIds) {
-      const product = await getProductByIdBase(id);
-      if (product) {
-        product.modelName = modelName;
-        // Use the Supabase API to update the product
-        await fetch(`/api/products/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(product)
-        });
-      }
-    }
-    
-    // Invalidate cache to reflect changes
-    await refreshCacheIfNeeded(true);
-    
-    return true;
+    // Use mergeProductsByModelName from productMergeApi for better implementation
+    return await productMergeApi.mergeProductsByModelName(productIds);
   } catch (error) {
     console.error("Error linking products by color:", error);
     return false;

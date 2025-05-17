@@ -45,6 +45,7 @@ export interface ColorVariant {
   ozonUrl?: string;
   wildberriesUrl?: string;
   avitoUrl?: string;
+  productId?: string; // ID родительского продукта, если это отдельный продукт-вариант
 }
 
 export interface CartItem {

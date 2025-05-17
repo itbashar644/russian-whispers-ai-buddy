@@ -14,7 +14,14 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   selectedColorVariant, 
   onColorVariantSelect 
 }) => {
-  const [selectedImage, setSelectedImage] = useState<string>(product.imageUrl);
+  // Используем изображение из варианта, если оно есть
+  const initialImage = selectedColorVariant?.imageUrl || product.imageUrl;
+  const [selectedImage, setSelectedImage] = useState<string>(initialImage);
+
+  // При изменении продукта или выбранного варианта, обновляем изображение
+  React.useEffect(() => {
+    setSelectedImage(selectedColorVariant?.imageUrl || product.imageUrl);
+  }, [product.id, selectedColorVariant]);
 
   const handleThumbnailClick = (image: string) => {
     setSelectedImage(image);
@@ -26,6 +33,13 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     }
     onColorVariantSelect(variant);
   };
+
+  // Собираем все доступные изображения
+  const allImages = [
+    product.imageUrl,
+    ...(product.additionalImages || []),
+    ...(product.colorVariants?.map(v => v.imageUrl).filter(Boolean) || [])
+  ].filter((img, index, self) => img && self.indexOf(img) === index); // Убираем дубликаты
 
   return (
     <div className="space-y-4">
@@ -41,57 +55,28 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       </AspectRatio>
       
       {/* Миниатюры изображений */}
-      <div className="grid grid-cols-5 gap-2">
-        <button 
-          className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === product.imageUrl ? 'border-primary' : 'border-transparent'}`}
-          onClick={() => handleThumbnailClick(product.imageUrl)}
-        >
-          <img 
-            src={product.imageUrl} 
-            alt={product.title} 
-            className="object-cover w-full h-full"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
-            }}
-          />
-        </button>
-        {product.additionalImages?.map((img, index) => (
-          <button 
-            key={index}
-            className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === img ? 'border-primary' : 'border-transparent'}`}
-            onClick={() => handleThumbnailClick(img)}
-          >
-            <img 
-              src={img} 
-              alt={`${product.title} - изображение ${index + 1}`} 
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
-          </button>
-        ))}
-        
-        {/* Миниатюры изображений цветовых вариантов */}
-        {product.colorVariants?.map((variant, index) => (
-          variant.imageUrl && (
-            <button 
-              key={`variant-${index}`}
-              className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === variant.imageUrl ? 'border-primary' : 'border-transparent'}`}
-              onClick={() => handleVariantThumbnailClick(variant)}
-            >
-              <img 
-                src={variant.imageUrl} 
-                alt={`${product.title} - ${variant.color}`} 
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-              />
-            </button>
-          )
-        ))}
-      </div>
+      {allImages.length > 1 && (
+        <div className="grid grid-cols-5 gap-2">
+          {allImages.map((img, index) => (
+            img && (
+              <button 
+                key={`img-${index}`}
+                className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === img ? 'border-primary' : 'border-transparent'}`}
+                onClick={() => handleThumbnailClick(img)}
+              >
+                <img 
+                  src={img} 
+                  alt={`${product.title} - изображение ${index + 1}`} 
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              </button>
+            )
+          ))}
+        </div>
+      )}
     </div>
   );
 };

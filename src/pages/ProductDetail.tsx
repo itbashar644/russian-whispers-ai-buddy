@@ -12,12 +12,12 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { formatVideoUrl } from "@/lib/utils";
 import { Product, ColorVariant } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductDetails from "@/components/products/ProductDetails";
 import { toast } from "sonner";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
+import ProductVariantSelector from "@/components/products/ProductVariantSelector";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +31,7 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [modelVariants, setModelVariants] = useState<Product[]>([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -53,9 +54,22 @@ const ProductDetail = () => {
             setSelectedColor(productData.colors[0]);
           }
           
-          // Load related products
+          // Load related products for suggestions
           const related = await getRelatedProducts(id, 4);
           setRelatedProducts(related);
+
+          // Если есть связанные варианты товаров (одна модель, разные цвета)
+          if (productData.modelName) {
+            try {
+              const { getProductsByModelName } = await import("@/data/products/supabase/productMergeApi");
+              const variants = await getProductsByModelName(productData.modelName);
+              if (variants && variants.length > 1) {
+                setModelVariants(variants);
+              }
+            } catch (error) {
+              console.error("Failed to load product variants:", error);
+            }
+          }
         } else {
           console.error("No product data returned");
         }
@@ -178,6 +192,12 @@ const ProductDetail = () => {
   const handleColorVariantSelect = (variant: ColorVariant) => {
     setSelectedColor(variant.color);
     setSelectedColorVariant(variant);
+
+    // Если у варианта есть ID продукта и это другой продукт, перенаправляем на его страницу
+    if (variant.productId && variant.productId !== product?.id) {
+      // Поскольку перенаправление на другую страницу, просто выводим сообщение
+      console.log(`Variant with product ID ${variant.productId} was selected`);
+    }
   };
   
   // Handle wishlist toggle
@@ -403,6 +423,14 @@ const ProductDetail = () => {
                 </div>
               )}
             </div>
+
+            {/* Добавление варианта выбора в случае, если это товар с разными вариантами модели */}
+            {modelVariants.length > 1 && (
+              <ProductVariantSelector
+                product={product}
+                variants={modelVariants}
+              />
+            )}
 
             <div className="space-y-4">
               {/* Color selection */}
