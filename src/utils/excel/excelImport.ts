@@ -106,8 +106,7 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
             : 0,
           material: row.material ? String(row.material) : undefined,
           archived: false,
-          modelName: row.modelName ? String(row.modelName) : undefined,
-          variant: row.variant ? String(row.variant) : undefined
+          modelName: row.modelName ? String(row.modelName) : undefined
         };
         
         products.push(product);
@@ -285,7 +284,6 @@ export const updateProductsFromExcel = async (data: ArrayBuffer): Promise<Update
         }
         if (row.material !== undefined) updatedProduct.material = row.material ? String(row.material) : undefined;
         if (row.modelName !== undefined) updatedProduct.modelName = row.modelName ? String(row.modelName) : undefined;
-         if (row.variant !== undefined) updatedProduct.variant = row.variant ? String(row.variant) : undefined;
         
         // Add new category if needed
         if (updatedProduct.category && !existingCategories.includes(updatedProduct.category)) {

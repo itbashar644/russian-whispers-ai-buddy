@@ -32,14 +32,14 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     setShowNewCategoryInput
   } = useProductForm({ product, onSave });
 
-  // Adapter for select components since useProductForm expects (name, value)
-  const handleSelectChangeAdapter = (value: string, name: string) => {
-    handleSelectChange(name, value);
-  };
-  
   // Create an adapter function to fix the parameter order for checkbox
   const handleCheckboxChangeAdapter = (checked: boolean, name: string) => {
     handleCheckboxChange(name, checked); // Swap the parameters to match the expected order
+  };
+  
+  // Create an adapter function to fix the parameter order for select
+  const handleSelectChangeAdapter = (value: string, name: string) => {
+    handleSelectChange(name, value); // Swap the parameters to match the expected order
   };
 
   return (
@@ -59,8 +59,8 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             setNewCategory={setNewCategory}
             setShowNewCategoryInput={setShowNewCategoryInput}
             handleInputChange={handleInputChange}
-            handleSelectChange={handleSelectChangeAdapter}
-            handleCheckboxChange={handleCheckboxChangeAdapter}
+            handleSelectChange={handleSelectChangeAdapter} // Use the adapter function here
+            handleCheckboxChange={handleCheckboxChangeAdapter} // Use the adapter function here
             handleMainImageUploaded={handleMainImageUploaded}
             handleAdditionalImagesChange={handleAdditionalImagesChange}
           />
@@ -70,7 +70,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
           <AdditionalInfoTab
             formData={formData}
             handleInputChange={handleInputChange}
-            handleSelectChange={handleSelectChangeAdapter}
+            handleSelectChange={handleSelectChangeAdapter} // Use the adapter function here
           />
         </TabsContent>
       </Tabs>

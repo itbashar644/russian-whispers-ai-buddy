@@ -38,10 +38,6 @@ CREATE TABLE IF NOT EXISTS public.products (
   color_variants JSONB,
   video_url TEXT,
   video_type TEXT,
-  -- Название модели для объединения товаров
-  model_name TEXT,
-  -- Свободное поле для указания варианта товара
-  variant TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -80,7 +76,7 @@ SELECT * FROM (
 WHERE NOT EXISTS (SELECT 1 FROM public.categories LIMIT 1);
 
 -- Добавляем демо-продукты, если таблица пуста
-INSERT INTO public.products (title, description, price, discount_price, category, image_url, rating, in_stock, country_of_origin, is_bestseller, stock_quantity, model_name, variant)
+INSERT INTO public.products (title, description, price, discount_price, category, image_url, rating, in_stock, country_of_origin, is_bestseller, stock_quantity)
 SELECT * FROM (
   SELECT 
     'Кожаная сумка через плечо' as title, 
@@ -93,9 +89,7 @@ SELECT * FROM (
     TRUE as in_stock,
     'Россия' as country_of_origin,
     TRUE as is_bestseller,
-    15 as stock_quantity,
-    NULL as model_name,
-    NULL as variant
+    15 as stock_quantity
   
   UNION SELECT 
     'Керамическая ваза ручной работы',
@@ -108,9 +102,7 @@ SELECT * FROM (
     TRUE,
     'Россия',
     FALSE,
-    8,
-    NULL,
-    NULL
+    8
   
   UNION SELECT 
     'Серебряное кольцо с малахитом',
@@ -123,9 +115,7 @@ SELECT * FROM (
     TRUE,
     'Россия',
     TRUE,
-    20,
-    NULL,
-    NULL
+    20
 ) t
 WHERE NOT EXISTS (SELECT 1 FROM public.products LIMIT 1);
 

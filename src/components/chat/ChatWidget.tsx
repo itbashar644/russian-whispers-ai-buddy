@@ -4,13 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Send, X } from 'lucide-react';
+import { MessageSquare, Send, X } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { sendMessage, getMessages, markMessagesAsRead } from '@/services/chatService';
 import ChatBubble from './ChatBubble';
-import ChatButton from './ChatButton';
 import { ChatMessage } from '@/types/chat';
 
 const ChatWidget: React.FC = () => {
@@ -19,6 +18,7 @@ const ChatWidget: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSending, setIsSending] = useState(false);
+  const [configStatus, setConfigStatus] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, profile } = useAuth();
 
@@ -38,8 +38,20 @@ const ChatWidget: React.FC = () => {
     }
   };
 
-  // Fetch messages on first load
+  // Check webhook status on first load
   useEffect(() => {
+    const checkWebhookConfig = async () => {
+      try {
+        // We'll skip this for now as the function isn't fully implemented
+        console.info("Webhook status check skipped");
+      } catch (error) {
+        console.error("Error checking webhook status:", error);
+      }
+    };
+    
+    checkWebhookConfig();
+    
+    // Fetch messages immediately when component mounts
     fetchMessages();
   }, []);
 
@@ -56,6 +68,7 @@ const ChatWidget: React.FC = () => {
       const markAsRead = async () => {
         try {
           await markMessagesAsRead();
+          console.info("Messages marked as read");
           setUnreadCount(0);
           setMessages(prev => 
             prev.map(msg => ({ ...msg, is_read: true }))
@@ -72,6 +85,7 @@ const ChatWidget: React.FC = () => {
   // Poll for new messages periodically
   useEffect(() => {
     const interval = setInterval(fetchMessages, 10000);
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -115,6 +129,24 @@ const ChatWidget: React.FC = () => {
       setIsSending(false);
     }
   };
+
+  // Render the widget button with unread badge
+  const renderChatButton = () => (
+    <Button
+      onClick={handleToggleChat}
+      variant="outline"
+      size="icon"
+      className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+      aria-label="Открыть чат"
+    >
+      <MessageSquare />
+      {unreadCount > 0 && (
+        <Badge className="absolute -top-2 -right-2">
+          {unreadCount}
+        </Badge>
+      )}
+    </Button>
+  );
 
   // Render the chat window
   const renderChatWindow = () => (
@@ -167,14 +199,7 @@ const ChatWidget: React.FC = () => {
   
   return (
     <>
-      {isOpen ? 
-        renderChatWindow() : 
-        <ChatButton 
-          isOpen={isOpen} 
-          onClick={handleToggleChat} 
-          unreadCount={unreadCount} 
-        />
-      }
+      {isOpen ? renderChatWindow() : renderChatButton()}
     </>
   );
 };

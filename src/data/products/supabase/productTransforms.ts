@@ -44,8 +44,7 @@ export const transformProductToSupabase = (product: Product) => {
       video_url: product.videoUrl || null,
       video_type: product.videoType || null,
       material: product.material || "",
-      model_name: product.modelName || null,  // Add model_name field
-      variant: product.variant || null
+      model_name: product.modelName || null  // Add model_name field
     };
   } catch (error) {
     console.error("Error transforming product data for Supabase:", error);
@@ -88,8 +87,7 @@ export const transformSupabaseToProduct = (data: any): Product => {
       videoUrl: data.video_url,
       videoType: data.video_type,
       material: data.material || "",
-     modelName: data.model_name,  // Map model_name field
-      variant: data.variant || undefined
+      modelName: data.model_name  // Map model_name field
     };
   } catch (error) {
     console.error("Error transforming Supabase data to Product:", error, data);

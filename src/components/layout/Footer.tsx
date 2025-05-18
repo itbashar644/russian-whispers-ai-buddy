@@ -57,7 +57,9 @@ const Footer = () => {
               <li>
                 <Link to="/catalog?category=gaming" className="hover:underline">Игровые устройства</Link>
               </li>
-              {/* Removed "Другое" category here */}
+              <li>
+                <Link to="/catalog?category=other" className="hover:underline">Другое</Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -67,6 +69,7 @@ const Footer = () => {
         <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">&copy; 2020-2025 The X Shop. Все права защищены.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
+            <Link to="/terms" className="text-sm text-muted-foreground hover:underline">Условия использования</Link>
             <Link to="/privacy" className="text-sm text-muted-foreground hover:underline">Политика конфиденциальности</Link>
           </div>
         </div>

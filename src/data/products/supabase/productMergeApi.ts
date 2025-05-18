@@ -1,51 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
 import { transformProductToSupabase, transformSupabaseToProduct } from "./productTransforms";
 import { Json } from "@/integrations/supabase/types";
-
-/**
- * Bulk delete products
- */
-export const bulkDeleteProducts = async (productIds: string[]): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .in("id", productIds);
-
-    if (error) {
-      console.error("Ошибка при удалении товаров:", error);
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error("Ошибка при удалении товаров:", err);
-    return false;
-  }
-};
-
-/**
- * Bulk archive products
- */
-export const bulkArchiveProducts = async (productIds: string[], archive: boolean = true): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from("products")
-      .update({ archived: archive })
-      .in("id", productIds);
-
-    if (error) {
-      console.error(`Ошибка при ${archive ? 'архивации' : 'восстановлении'} товаров:`, error);
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error(`Ошибка при ${archive ? 'архивации' : 'восстановлении'} товаров:`, err);
-    return false;
-  }
-};
 
 /**
  * Merges products by model name by keeping the first product as the main one
@@ -152,9 +109,7 @@ export const combineProductVariants = (products: Product[]): Product => {
       // Extract the color if available, or use title as a fallback
       const colorName = product.colors && product.colors.length > 0 
         ? product.colors[0] 
-        : product.variant || // Use the variant field if available
-          product.title.split(' ').pop() || 
-          'Вариант';
+        : product.title.split(' ').pop() || 'Вариант';
       
       return {
         color: colorName,
@@ -194,6 +149,50 @@ export const combineProductVariants = (products: Product[]): Product => {
   }
   
   return mainProduct;
+};
+
+/**
+ * Bulk delete products
+ */
+export const bulkDeleteProducts = async (productIds: string[]): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .in("id", productIds);
+
+    if (error) {
+      console.error("Ошибка при удалении товаров:", error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Ошибка при удалении товаров:", err);
+    return false;
+  }
+};
+
+/**
+ * Bulk archive products
+ */
+export const bulkArchiveProducts = async (productIds: string[], archive: boolean = true): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("products")
+      .update({ archived: archive })
+      .in("id", productIds);
+
+    if (error) {
+      console.error(`Ошибка при ${archive ? 'архивации' : 'восстановлении'} товаров:`, error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error(`Ошибка при ${archive ? 'архивации' : 'восстановлении'} товаров:`, err);
+    return false;
+  }
 };
 
 // Export a simple reference to the API functions
