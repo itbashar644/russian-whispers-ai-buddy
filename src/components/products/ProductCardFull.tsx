@@ -47,7 +47,6 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
             className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
           <div className="absolute top-2 right-2 flex flex-col gap-1">
-            {/* Discount badge removed */}
             {product.isNew && <Badge className="bg-blue-500">Новинка</Badge>}
             {product.isBestseller && (
               <Badge className="bg-amber-500">Хит продаж</Badge>
@@ -76,20 +75,22 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           <div className="flex flex-col">
             {currentProduct.discountPrice ? (
               <>
-                <span className="text-lg font-semibold">
+                <span className="text-lg font-semibold whitespace-nowrap">
                   {formatPrice(currentProduct.discountPrice)}
                 </span>
-                <span className="text-sm line-through text-muted-foreground">
+                <span className="text-sm line-through text-muted-foreground whitespace-nowrap">
                   {formatPrice(currentProduct.price)}
                 </span>
               </>
             ) : (
-              <span className="text-lg font-semibold">
+              <span className="text-lg font-semibold whitespace-nowrap">
                 {formatPrice(currentProduct.price)}
               </span>
             )}
           </div>
-          <div className="text-sm text-muted-foreground">{product.category}</div>
+          <div className="text-sm text-muted-foreground truncate max-w-[40%] text-right">
+            {product.category}
+          </div>
         </CardDescription>
       </CardHeader>
 

@@ -26,7 +26,6 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
             alt={product.title}
             className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
           />
-          {/* Discount badge removed */}
           {!isAvailable && (
             <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
               Нет в наличии
@@ -38,13 +37,13 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
             {product.title}
           </CardTitle>
           <CardDescription className="flex justify-between items-center">
-            <span className="font-medium">
+            <span className="font-medium whitespace-nowrap">
               {currentProduct.discountPrice
                 ? formatPrice(currentProduct.discountPrice)
                 : formatPrice(currentProduct.price)}
             </span>
             {currentProduct.discountPrice && (
-              <span className="text-xs line-through text-muted-foreground">
+              <span className="text-xs line-through text-muted-foreground whitespace-nowrap">
                 {formatPrice(currentProduct.price)}
               </span>
             )}
