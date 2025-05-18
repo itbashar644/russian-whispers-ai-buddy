@@ -1,5 +1,5 @@
 
-import { Partial<Product> } from "@/types/product";
+import { Product } from "@/types/product";
 import { toast } from "sonner";
 
 export const validateForm = (
