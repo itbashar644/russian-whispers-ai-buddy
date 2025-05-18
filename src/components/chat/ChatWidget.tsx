@@ -8,7 +8,7 @@ import { MessageSquare, Send, X } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import { sendMessage, getMessages } from '@/services/chatService';
+import { sendMessage, getMessages, markMessagesAsRead } from '@/services/chatService';
 import ChatBubble from './ChatBubble';
 import { ChatMessage } from '@/types/chat';
 
@@ -50,6 +50,9 @@ const ChatWidget: React.FC = () => {
     };
     
     checkWebhookConfig();
+    
+    // Fetch messages immediately when component mounts
+    fetchMessages();
   }, []);
 
   // Scroll to bottom when messages change
@@ -64,8 +67,8 @@ const ChatWidget: React.FC = () => {
     if (isOpen && unreadCount > 0) {
       const markAsRead = async () => {
         try {
-          // We're skipping this for now as the function isn't fully implemented
-          console.info("Marking messages as read");
+          await markMessagesAsRead();
+          console.info("Messages marked as read");
           setUnreadCount(0);
           setMessages(prev => 
             prev.map(msg => ({ ...msg, is_read: true }))
@@ -81,8 +84,6 @@ const ChatWidget: React.FC = () => {
 
   // Poll for new messages periodically
   useEffect(() => {
-    fetchMessages();
-
     const interval = setInterval(fetchMessages, 10000);
     
     return () => clearInterval(interval);
@@ -115,14 +116,14 @@ const ChatWidget: React.FC = () => {
         setMessage("");
         await fetchMessages();
       } else {
-        toast.error("Error sending message", {
-          description: "Failed to send message. Please try again later."
+        toast.error("Ошибка отправки сообщения", {
+          description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
         });
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Error sending message", {
-        description: "An unexpected error occurred. Please try again later."
+      toast.error("Ошибка отправки сообщения", {
+        description: "Произошла неожиданная ошибка. Пожалуйста, попробуйте позже."
       });
     } finally {
       setIsSending(false);
@@ -136,7 +137,7 @@ const ChatWidget: React.FC = () => {
       variant="outline"
       size="icon"
       className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
-      aria-label="Open chat"
+      aria-label="Открыть чат"
     >
       <MessageSquare />
       {unreadCount > 0 && (
@@ -152,7 +153,7 @@ const ChatWidget: React.FC = () => {
     <Card className="fixed bottom-4 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] flex flex-col shadow-lg animate-in slide-in-from-bottom-5 z-50">
       <CardHeader className="p-3 border-b">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Chat Support</CardTitle>
+          <CardTitle className="text-lg">Чат с поддержкой</CardTitle>
           <Button variant="ghost" size="icon" onClick={handleToggleChat}>
             <X className="h-4 w-4" />
           </Button>
@@ -163,7 +164,7 @@ const ChatWidget: React.FC = () => {
         <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">
-              No messages yet. Start a conversation!
+              Нет сообщений. Начните разговор!
             </div>
           ) : (
             messages.map(msg => (
@@ -184,7 +185,7 @@ const ChatWidget: React.FC = () => {
           <Input
             value={message}
             onChange={handleMessageChange}
-            placeholder="Type your message..."
+            placeholder="Введите сообщение..."
             disabled={isSending}
             className="flex-1"
           />

@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessage } from "@/types/chat";
-import { toast } from "@/components/ui/use-toast";
 
 // Получение или создание ID чата
 export const getChatId = (): string => {
@@ -53,6 +52,7 @@ export const sendMessage = async (
 export const getMessages = async (): Promise<ChatMessage[]> => {
   try {
     const chatId = getChatId();
+    console.log("Fetching messages for chat ID:", chatId);
     
     const response = await supabase.functions.invoke("telegram-chat/messages", {
       body: { chatId },
@@ -68,7 +68,8 @@ export const getMessages = async (): Promise<ChatMessage[]> => {
       return [];
     }
     
-    return response.data.messages || [];
+    console.log("Messages received:", response.data?.messages || []);
+    return response.data?.messages || [];
   } catch (error) {
     console.error("Error in getMessages:", error);
     return [];

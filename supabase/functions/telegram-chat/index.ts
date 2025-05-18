@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 // Configuration for CORS
@@ -248,6 +247,118 @@ async function getWebhookStatus(req: Request) {
   }
 }
 
+// Add function to retrieve messages
+async function getMessages(req: Request) {
+  try {
+    const { chatId } = await req.json();
+    
+    if (!chatId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Chat ID is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
+    console.log(`Getting messages for chat ${chatId}`);
+    const supabase = getSupabaseClient();
+    
+    // Query messages from the database
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching messages:', error);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Database error' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+    
+    return new Response(
+      JSON.stringify({ success: true, messages: data }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    );
+  } catch (error) {
+    console.error('Error processing get messages:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+}
+
+// Add function to mark messages as read
+async function markMessagesAsRead(req: Request) {
+  try {
+    const { chatId } = await req.json();
+    
+    if (!chatId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Chat ID is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
+    console.log(`Marking messages as read for chat ${chatId}`);
+    const supabase = getSupabaseClient();
+    
+    // Update read status in the database
+    const { error } = await supabase
+      .from('chat_messages')
+      .update({ is_read: true })
+      .eq('chat_id', chatId)
+      .eq('is_from_admin', true)
+      .eq('is_read', false);
+    
+    if (error) {
+      console.error('Error marking messages as read:', error);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Database error' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+    
+    return new Response(
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    );
+  } catch (error) {
+    console.error('Error processing mark messages as read:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+}
+
+// Add function to check chat status
+async function checkChatStatus() {
+  const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  const adminChatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID');
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  const config = {
+    telegram_bot_token_set: !!botToken,
+    telegram_admin_chat_id_set: !!adminChatId,
+    supabase_url_set: !!supabaseUrl,
+    supabase_service_role_key_set: !!supabaseKey
+  };
+  
+  const allConfigSet = Object.values(config).every(value => value === true);
+  
+  return new Response(
+    JSON.stringify({ 
+      status: allConfigSet ? 'ok' : 'missing_config',
+      config 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+  );
+}
+
 // Main handler function
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -264,10 +375,16 @@ Deno.serve(async (req) => {
       return handleTelegramWebhook(req);
     case 'send':
       return handleIncomingMessage(req);
-    case 'setup':
+    case 'setup-webhook':
       return setupTelegramWebhook(req);
-    case 'status':
+    case 'webhook-status':
       return getWebhookStatus(req);
+    case 'messages':
+      return getMessages(req);
+    case 'mark-read':
+      return markMessagesAsRead(req);
+    case 'status':
+      return checkChatStatus();
     default:
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid endpoint' }),
