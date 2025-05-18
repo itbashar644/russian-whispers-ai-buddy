@@ -14,13 +14,40 @@ export const useProductFiltering = ({
   sortBy,
   loading,
   showColorVariants,
-  colorParam
+  colorParam,
+  specFilters = {}
 }: UseProductFilteringProps): FilteringResult => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
   // Extract smaller hooks for better organization
   const { availableColors } = useFilterOptions(allProducts);
   const { inStockCount, outOfStockCount } = useProductStatistics(filteredProducts);
+
+  // Get all available specifications from products
+  const availableSpecifications = useMemo(() => {
+    if (!allProducts.length) return {};
+    
+    const specs: Record<string, Set<string>> = {};
+    
+    allProducts.forEach(product => {
+      if (product.specifications) {
+        Object.entries(product.specifications).forEach(([key, value]) => {
+          if (!specs[key]) {
+            specs[key] = new Set<string>();
+          }
+          specs[key].add(value);
+        });
+      }
+    });
+    
+    // Convert sets to arrays
+    const result: Record<string, string[]> = {};
+    Object.entries(specs).forEach(([key, valueSet]) => {
+      result[key] = Array.from(valueSet).filter(Boolean).sort();
+    });
+    
+    return result;
+  }, [allProducts]);
 
   // Filter and sort products when parameters change
   useEffect(() => {
@@ -61,6 +88,22 @@ export const useProductFiltering = ({
       }
     );
     
+    // Filter by specifications
+    if (Object.keys(specFilters).length > 0) {
+      result = result.filter(product => {
+        // If product has no specifications, it doesn't match
+        if (!product.specifications) return false;
+        
+        // Check if product matches all specification filters
+        return Object.entries(specFilters).every(([specKey, specValue]) => {
+          // Skip empty filter values
+          if (!specValue) return true;
+          
+          return product.specifications?.[specKey]?.toLowerCase() === specValue.toLowerCase();
+        });
+      });
+    }
+    
     // Filter by stock status if required
     if (inStockOnly) {
       result = result.filter((p) => p.inStock);
@@ -70,13 +113,14 @@ export const useProductFiltering = ({
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam, specFilters]);
 
   return {
     filteredProducts,
     availableColors,
     inStockCount,
-    outOfStockCount
+    outOfStockCount,
+    availableSpecifications
   };
 };
 

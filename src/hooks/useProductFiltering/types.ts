@@ -10,6 +10,7 @@ export interface UseProductFilteringProps {
   loading: boolean;
   showColorVariants: boolean;  // Keeping for backward compatibility
   colorParam: string | null;
+  specFilters?: Record<string, string>; // Add specification filters
 }
 
 export interface FilteringResult {
@@ -17,4 +18,5 @@ export interface FilteringResult {
   availableColors: string[];
   inStockCount: number;
   outOfStockCount: number;
+  availableSpecifications: Record<string, string[]>; // Add available specifications
 }

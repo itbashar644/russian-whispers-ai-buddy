@@ -1,6 +1,6 @@
 
 import React from "react";
-import { X, Tag, Palette } from "lucide-react";
+import { X, Tag, Palette, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -8,9 +8,11 @@ interface CatalogActiveFiltersProps {
   categoryParam: string | null;
   colorParam: string | null;
   searchTerm: string;
+  specFilters: Record<string, string>;
   activeFiltersCount: number;
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
+  handleSpecFilter: (key: string, value: string) => void;
   handleClearAllFilters: () => void;
 }
 
@@ -18,9 +20,11 @@ const CatalogActiveFilters: React.FC<CatalogActiveFiltersProps> = ({
   categoryParam,
   colorParam,
   searchTerm,
+  specFilters,
   activeFiltersCount,
   handleCategoryClick,
   handleColorFilter,
+  handleSpecFilter,
   handleClearAllFilters
 }) => {
   if (activeFiltersCount === 0) return null;
@@ -60,6 +64,25 @@ const CatalogActiveFilters: React.FC<CatalogActiveFiltersProps> = ({
             </Button>
           </Badge>
         )}
+        
+        {/* Specification filters */}
+        {Object.entries(specFilters).map(([key, value]) => (
+          value && (
+            <Badge key={key} variant="secondary" className="flex gap-1 items-center">
+              <ListFilter className="h-3 w-3" />
+              {key}: {value}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-4 w-4 p-0 ml-1" 
+                onClick={() => handleSpecFilter(key, "")}
+              >
+                <X className="h-3 w-3" />
+                <span className="sr-only">Remove</span>
+              </Button>
+            </Badge>
+          )
+        ))}
         
         {searchTerm && (
           <Badge variant="secondary" className="flex gap-1 items-center">

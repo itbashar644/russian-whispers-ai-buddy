@@ -1,186 +1,137 @@
 
-import { CategorySpecifications } from '@/types/product';
+import { SpecificationField } from "@/types/product";
+import { CategorySpecifications } from "@/types/product";
 
-// Определение характеристик для каждой категории
+// Define specifications for each category
 export const categorySpecifications: CategorySpecifications = {
-  'Планшеты': [
-    { 
-      id: 'memory', 
-      label: 'Память', 
-      type: 'number', 
-      unit: 'ГБ' 
+  "Планшеты": [
+    {
+      id: "memory",
+      label: "Память",
+      type: "text",
+      placeholder: "напр. 64 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'ram', 
-      label: 'Оперативная память', 
-      type: 'number', 
-      unit: 'ГБ' 
+    {
+      id: "ram",
+      label: "Оперативная память",
+      type: "text",
+      placeholder: "напр. 4 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'batteryCapacity', 
-      label: 'Емкость аккумулятора', 
-      type: 'number', 
-      unit: 'мА·ч' 
+    {
+      id: "battery",
+      label: "Емкость аккумулятора",
+      type: "text",
+      placeholder: "напр. 7000 мАч",
+      unit: "мАч"
     },
-    { 
-      id: 'screenResolution', 
-      label: 'Разрешение экрана', 
-      type: 'text', 
-      placeholder: '1920x1080' 
+    {
+      id: "screen",
+      label: "Разрешение экрана",
+      type: "text",
+      placeholder: "напр. 1920x1080"
     },
-    { 
-      id: 'cpuCores', 
-      label: 'Количество ядер', 
-      type: 'number'
+    {
+      id: "cores",
+      label: "Количество ядер",
+      type: "number",
+      placeholder: "напр. 8"
     },
-    { 
-      id: 'os', 
-      label: 'Операционная система', 
-      type: 'text' 
+    {
+      id: "os",
+      label: "Операционная система",
+      type: "text",
+      placeholder: "напр. Android 13"
     }
   ],
-  'Смартфоны': [
-    { 
-      id: 'memory', 
-      label: 'Память', 
-      type: 'number', 
-      unit: 'ГБ' 
+  "Смартфоны": [
+    {
+      id: "memory",
+      label: "Память",
+      type: "text",
+      placeholder: "напр. 128 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'ram', 
-      label: 'Оперативная память', 
-      type: 'number', 
-      unit: 'ГБ' 
+    {
+      id: "ram",
+      label: "Оперативная память",
+      type: "text",
+      placeholder: "напр. 6 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'batteryCapacity', 
-      label: 'Емкость аккумулятора', 
-      type: 'number', 
-      unit: 'мА·ч' 
+    {
+      id: "screen",
+      label: "Диагональ экрана",
+      type: "text",
+      placeholder: "напр. 6,5 дюйма",
+      unit: "дюйм"
     },
-    { 
-      id: 'screen', 
-      label: 'Диагональ экрана', 
-      type: 'number', 
-      unit: '"' 
+    {
+      id: "camera",
+      label: "Основная камера",
+      type: "text",
+      placeholder: "напр. 48 Мп",
+      unit: "Мп"
     },
-    { 
-      id: 'camera', 
-      label: 'Камера', 
-      type: 'text' 
+    {
+      id: "selfie",
+      label: "Фронтальная камера",
+      type: "text",
+      placeholder: "напр. 12 Мп",
+      unit: "Мп"
+    },
+    {
+      id: "os",
+      label: "Операционная система",
+      type: "text",
+      placeholder: "напр. Android 14"
     }
   ],
-  'Для дома': [
-    { 
-      id: 'material', 
-      label: 'Материал', 
-      type: 'text' 
+  "Ноутбуки": [
+    {
+      id: "cpu",
+      label: "Процессор",
+      type: "text",
+      placeholder: "напр. Intel Core i5"
     },
-    { 
-      id: 'dimensions', 
-      label: 'Размеры', 
-      type: 'text' 
+    {
+      id: "memory",
+      label: "Объем SSD",
+      type: "text",
+      placeholder: "напр. 512 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'weight', 
-      label: 'Вес', 
-      type: 'number', 
-      unit: 'г' 
-    }
-  ],
-  'Сумки и рюкзаки': [
-    { 
-      id: 'material', 
-      label: 'Материал', 
-      type: 'text' 
+    {
+      id: "ram",
+      label: "Оперативная память",
+      type: "text",
+      placeholder: "напр. 16 ГБ",
+      unit: "ГБ"
     },
-    { 
-      id: 'size', 
-      label: 'Размеры', 
-      type: 'text', 
-      placeholder: 'ШхВхГ, см' 
+    {
+      id: "screen",
+      label: "Диагональ экрана",
+      type: "text",
+      placeholder: "напр. 15,6 дюйма",
+      unit: "дюйм"
     },
-    { 
-      id: 'capacity', 
-      label: 'Объем', 
-      type: 'number', 
-      unit: 'л' 
+    {
+      id: "gpu",
+      label: "Видеокарта",
+      type: "text",
+      placeholder: "напр. NVIDIA GeForce RTX 3060"
     },
-    { 
-      id: 'weight', 
-      label: 'Вес', 
-      type: 'number', 
-      unit: 'г' 
-    }
-  ],
-  'Украшения': [
-    { 
-      id: 'material', 
-      label: 'Материал', 
-      type: 'text' 
-    },
-    { 
-      id: 'gemstone', 
-      label: 'Камень/вставка', 
-      type: 'text' 
-    },
-    { 
-      id: 'weight', 
-      label: 'Вес', 
-      type: 'number', 
-      unit: 'г' 
-    }
-  ],
-  'Аксессуары': [
-    { 
-      id: 'material', 
-      label: 'Материал', 
-      type: 'text' 
-    },
-    { 
-      id: 'dimensions', 
-      label: 'Размеры', 
-      type: 'text' 
-    }
-  ],
-  'Одежда': [
-    { 
-      id: 'material', 
-      label: 'Материал', 
-      type: 'text' 
-    },
-    { 
-      id: 'care', 
-      label: 'Уход', 
-      type: 'text' 
-    }
-  ],
-  'Обувь': [
-    { 
-      id: 'material', 
-      label: 'Материал верха', 
-      type: 'text' 
-    },
-    { 
-      id: 'soleMaterial', 
-      label: 'Материал подошвы', 
-      type: 'text' 
-    },
-    { 
-      id: 'season', 
-      label: 'Сезон', 
-      type: 'text' 
+    {
+      id: "os",
+      label: "Операционная система",
+      type: "text",
+      placeholder: "напр. Windows 11"
     }
   ]
 };
 
-// Функция для получения спецификаций для категории
-export const getSpecificationsForCategory = (category: string) => {
+// Helper function to get specifications for a category
+export const getSpecificationsForCategory = (category: string): SpecificationField[] => {
   return categorySpecifications[category] || [];
-};
-
-// Функция для форматирования значения спецификации с единицей измерения
-export const formatSpecificationValue = (value: string, unit?: string) => {
-  if (!value) return '';
-  return unit ? `${value} ${unit}` : value;
 };
