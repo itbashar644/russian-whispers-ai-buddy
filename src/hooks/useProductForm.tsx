@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -43,21 +44,21 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
-  // Fixed: Make sure to correctly set the value in the formData
+  // Fixed: Make sure the category selection works properly
   const handleSelectChange = (value: string, name: string) => {
+    console.log(`handleSelectChange called with name: ${name}, value: ${value}`);
+    
     if (name === "category" && value === "new") {
       // Show input for new category
       setShowNewCategoryInput(true);
       return;
     }
     
-    console.log(`Setting ${name} to value: ${value}`);
-    
     // Update the form data with the selected value
-    setFormData(prevData => {
-      const newData = { ...prevData, [name]: value };
-      console.log("Updated form data:", newData);
-      return newData;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      console.log(`Updated form data for ${name}:`, updated);
+      return updated;
     });
   };
 
@@ -195,10 +196,10 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleMainImageUploaded: handleMainImageUploaded || ((url: string) => {}),
-    handleAdditionalImagesChange: handleAdditionalImagesChange || ((urls: string[]) => {}),
-    handleColorVariantsChange: handleColorVariantsChange || ((variants: ColorVariant[]) => {}),
-    handleRemoveColor: handleRemoveColor || ((color: string) => {}),
+    handleMainImageUploaded,
+    handleAdditionalImagesChange,
+    handleColorVariantsChange,
+    handleRemoveColor,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput

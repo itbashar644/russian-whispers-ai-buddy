@@ -1,7 +1,6 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Category } from "@/data/products/categoryData";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
@@ -9,6 +8,7 @@ import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalogData } from "@/hooks/useCatalogData";
 import { useProductFiltering } from "@/hooks/useProductFiltering";
+import ProductDebugInfo from "@/components/debug/ProductDebugInfo";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,11 +21,12 @@ const Catalog = () => {
     max: 5000,
   });
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
+  const [sortBy, setSortBy] = useState("in-stock");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [showDebugInfo, setShowDebugInfo] = useState(true);
 
-  // Загрузка данных каталога
+  // Load catalog data
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
   
   // Debug log the loaded products
@@ -35,6 +36,7 @@ const Catalog = () => {
       const categories = [...new Set(allProducts.map(p => p.category))];
       console.log(`Categories found: ${categories.join(', ')}`);
       
+      // Log each category's product count
       categories.forEach(category => {
         const count = allProducts.filter(p => p.category === category).length;
         console.log(`Category ${category}: ${count} products`);
@@ -58,6 +60,8 @@ const Catalog = () => {
   useEffect(() => {
     if (searchParam) {
       setSearchTerm(searchParam);
+    } else if (!searchParam) {
+      setSearchTerm("");
     }
   }, [searchParam]);
 
@@ -135,6 +139,21 @@ const Catalog = () => {
             Фильтры {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
         </div>
+
+        {/* Debug information toggle */}
+        <div className="md:hidden mb-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs"
+            onClick={() => setShowDebugInfo(!showDebugInfo)}
+          >
+            {showDebugInfo ? "Hide Debug Info" : "Show Debug Info"}
+          </Button>
+        </div>
+
+        {/* Debug information */}
+        <ProductDebugInfo products={allProducts} showDebug={showDebugInfo} />
 
         <CatalogFilters 
           availableCategories={availableCategories}

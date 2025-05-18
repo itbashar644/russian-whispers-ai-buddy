@@ -3,11 +3,12 @@ import { Product } from "@/types/product";
 
 // Transform products for color display
 export const transformProductsForColorDisplay = (products: Product[]): Product[] => {
-  console.log(`Transforming ${products.length} products for color display`);
+  console.log(`Starting transformation of ${products.length} products for color display`);
   const expandedProducts: Product[] = [];
   
   // First pass: add all base products without modifications
   products.forEach(product => {
+    // Always add the base product first
     expandedProducts.push({ ...product });
     console.log(`Added base product: ${product.id} - ${product.title} (Category: ${product.category})`);
   });
@@ -16,6 +17,7 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
   products.forEach(product => {
     if (product.colorVariants && product.colorVariants.length > 0) {
       product.colorVariants.forEach(variant => {
+        // Create a new product for each color variant
         const variantProduct: Product = {
           ...product,
           id: `${product.id}-${variant.color}`.replace(/\s+/g, '-').toLowerCase(),
@@ -29,25 +31,28 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
           ozonUrl: variant.ozonUrl || product.ozonUrl,
           wildberriesUrl: variant.wildberriesUrl || product.wildberriesUrl,
           avitoUrl: variant.avitoUrl || product.avitoUrl,
-          colorVariants: [variant],
+          colorVariants: [variant], // Keep only the current variant
           isColorVariant: true
         };
+        
         expandedProducts.push(variantProduct);
-        console.log(`Added variant: ${variantProduct.id} (Color: ${variant.color})`);
+        console.log(`Added variant product: ${variantProduct.id} - ${variant.color}`);
       });
     }
   });
   
-  console.log(`Total products after transformation: ${expandedProducts.length}`);
-  const categoriesAfter = [...new Set(expandedProducts.map(p => p.category))];
-  console.log(`Categories after transformation: ${categoriesAfter.join(', ')}`);
+  console.log(`Transformation complete. Total products after transformation: ${expandedProducts.length}`);
   
-  // Count products by category
-  const categoryCount: Record<string, number> = {};
-  categoriesAfter.forEach(category => {
-    categoryCount[category] = expandedProducts.filter(p => p.category === category).length;
+  // Debug info: log product count by category
+  const categoryCountAfter = {};
+  expandedProducts.forEach(product => {
+    if (!categoryCountAfter[product.category]) {
+      categoryCountAfter[product.category] = 0;
+    }
+    categoryCountAfter[product.category]++;
   });
-  console.log('Products per category after transformation:', categoryCount);
+  
+  console.log("Products per category after transformation:", categoryCountAfter);
   
   return expandedProducts;
 };
@@ -128,4 +133,65 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   }
   
   return sortedProducts;
+};
+
+// Filter products by color
+export const filterByColor = (products: Product[], colorParam: string | null): Product[] => {
+  if (!colorParam) return products;
+  
+  console.log(`Filtering by color: ${colorParam}`);
+  const filtered = products.filter(product => {
+    // Base products with matching color variants
+    if (product.colorVariants && product.colorVariants.length > 0) {
+      const hasMatchingColor = product.colorVariants.some(
+        variant => variant.color.toLowerCase() === colorParam.toLowerCase()
+      );
+      return hasMatchingColor;
+    }
+    return false;
+  });
+  
+  console.log(`Products after color filtering: ${filtered.length}`);
+  return filtered;
+};
+
+// Filter products by search term
+export const filterBySearchTerm = (products: Product[], searchTerm: string): Product[] => {
+  if (!searchTerm) return products;
+  
+  console.log(`Filtering by search term: ${searchTerm}`);
+  const filtered = products.filter(
+    (p) => 
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  console.log(`Products after search filtering: ${filtered.length}`);
+  return filtered;
+};
+
+// Filter products by price range
+export const filterByPriceRange = (products: Product[], priceRange: { min: number; max: number }): Product[] => {
+  console.log(`Filtering by price range: ${priceRange.min} to ${priceRange.max}`);
+  const filtered = products.filter(
+    (p) => {
+      const price = p.discountPrice !== undefined ? p.discountPrice : p.price;
+      return price >= priceRange.min && price <= priceRange.max;
+    }
+  );
+  
+  console.log(`Products after price filtering: ${filtered.length}`);
+  return filtered;
+};
+
+// Filter products by stock status
+export const filterByStockStatus = (products: Product[], inStockOnly: boolean): Product[] => {
+  if (!inStockOnly) return products;
+  
+  console.log(`Filtering by stock status: in-stock only`);
+  const filtered = products.filter((p) => p.inStock);
+  
+  console.log(`Products after in-stock filtering: ${filtered.length}`);
+  return filtered;
 };

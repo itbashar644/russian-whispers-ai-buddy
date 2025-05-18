@@ -2,7 +2,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 import { UseProductFilteringProps, FilteringResult } from "./types";
-import { transformProductsForColorDisplay, sortProducts } from "./helpers";
+import { 
+  transformProductsForColorDisplay, 
+  sortProducts,
+  filterByColor,
+  filterBySearchTerm,
+  filterByPriceRange,
+  filterByStockStatus
+} from "./helpers";
 
 export const useProductFiltering = ({
   allProducts,
@@ -64,6 +71,7 @@ export const useProductFiltering = ({
       colorParam
     });
     
+    // Start with the original list of products
     let result = [...allProducts];
     
     // Debug the original products
@@ -74,47 +82,24 @@ export const useProductFiltering = ({
       console.log(`Category ${category}: ${count} products before filtering`);
     });
     
-    // Always transform products for displaying color variants
-    result = transformProductsForColorDisplay(result);
-    console.log(`Products after transformation: ${result.length}`);
+    // Transform products for displaying color variants
+    if (showColorVariants) {
+      result = transformProductsForColorDisplay(result);
+    }
     
-    // Filter by color if color parameter is set
+    // Apply all filters in sequence
     if (colorParam) {
-      console.log(`Filtering by color: ${colorParam}`);
-      result = result.filter(product => {
-        if (product.colorVariants && product.colorVariants.length > 0) {
-          return product.colorVariants.some(v => v.color.toLowerCase() === colorParam.toLowerCase());
-        }
-        return false;
-      });
-      console.log(`Products after color filtering: ${result.length}`);
+      result = filterByColor(result, colorParam);
     }
     
-    // Filter by search term
     if (searchTerm) {
-      console.log(`Filtering by search term: ${searchTerm}`);
-      result = result.filter(
-        (p) => 
-          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      console.log(`Products after search filtering: ${result.length}`);
+      result = filterBySearchTerm(result, searchTerm);
     }
     
-    // Filter by price range
-    result = result.filter(
-      (p) => {
-        const price = p.discountPrice !== undefined ? p.discountPrice : p.price;
-        return price >= priceRange.min && price <= priceRange.max;
-      }
-    );
-    console.log(`Products after price filtering: ${result.length}`);
+    result = filterByPriceRange(result, priceRange);
     
-    // Filter by stock status if needed
     if (inStockOnly) {
-      result = result.filter((p) => p.inStock);
-      console.log(`Products after in-stock filtering: ${result.length}`);
+      result = filterByStockStatus(result, inStockOnly);
     }
     
     // Sort products
