@@ -153,6 +153,15 @@ export const combineProductVariants = (products: Product[]): Product => {
   return mainProduct;
 };
 
+// Export a simple reference to the API functions
+export const productMergeApi = {
+  mergeProductsByModelName,
+  getProductsByModelName,
+  combineProductVariants,
+  bulkDeleteProducts,
+  bulkArchiveProducts
+};
+
 /**
  * Bulk delete products
  */
@@ -195,13 +204,4 @@ export const bulkArchiveProducts = async (productIds: string[], archive: boolean
     console.error(`Ошибка при ${archive ? 'архивации' : 'восстановлении'} товаров:`, err);
     return false;
   }
-};
-
-// Export a simple reference to the API functions
-export const productMergeApi = {
-  mergeProductsByModelName,
-  getProductsByModelName,
-  combineProductVariants,
-  bulkDeleteProducts,
-  bulkArchiveProducts
 };
