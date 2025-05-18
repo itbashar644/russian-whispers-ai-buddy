@@ -16,7 +16,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
 }) => {
   return (
     <div className="border-t pt-6">
-      <h3 className="font-semibold mb-4">Цена</h3>
+      <h3 className="font-semibold mb-4">Цена, ₽</h3>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <Label htmlFor="min-price">От</Label>

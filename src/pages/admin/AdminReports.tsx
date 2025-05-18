@@ -17,6 +17,7 @@ import { fetchProductsFromSupabase } from "@/data/products/supabaseApi";
 import { Product } from "@/types/product";
 import { Download, ChevronDown, BarChart as BarChartIcon } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/utils";
 
 const AdminReports = () => {
   const [products, setProducts] = useState<Product[]>([]);
