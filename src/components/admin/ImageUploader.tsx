@@ -38,12 +38,20 @@ export default function ImageUploader({
 
     try {
       setUploading(true);
+      
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("Пожалуйста, войдите в систему для загрузки изображений");
+      }
 
+      // Upload to product-images bucket which should be public and accessible
       const { data, error } = await supabase.storage
         .from('product-images')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Change to true to overwrite existing files
         });
 
       if (error) {
@@ -59,9 +67,14 @@ export default function ImageUploader({
         setImageUrl(uploadedUrl);
         onImageUploaded(uploadedUrl);
         setPreviewError(false);
+        
+        toast.success("Изображение загружено", {
+          description: "Изображение успешно загружено и сохранено"
+        });
       }
     } catch (error: any) {
-      toast("Ошибка загрузки изображения", {
+      console.error("Error uploading image:", error);
+      toast.error("Ошибка загрузки изображения", {
         description: error.message || "Произошла ошибка при загрузке файла",
       });
     } finally {
@@ -76,6 +89,7 @@ export default function ImageUploader({
     if (externalUrl.trim()) {
       setImageUrl(externalUrl);
       onImageUploaded(externalUrl);
+      toast.success("URL изображения добавлен");
     }
   };
 

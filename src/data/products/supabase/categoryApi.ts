@@ -49,6 +49,14 @@ export const addCategoryToSupabase = async (name: string, imageUrl: string = "/p
 // Функция для обновления изображения категории
 export const updateCategoryImageInSupabase = async (name: string, imageUrl: string): Promise<boolean> => {
   try {
+    // Проверяем наличие текущей сессии пользователя
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    if (!sessionData.session) {
+      console.error("Ошибка при обновлении изображения: пользователь не авторизован");
+      return false;
+    }
+    
     const { error } = await supabase
       .from("categories")
       .update({ image_url: imageUrl })

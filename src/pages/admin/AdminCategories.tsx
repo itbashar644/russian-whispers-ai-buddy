@@ -3,15 +3,32 @@ import React, { useState, useEffect } from "react";
 import CategoryManager from "@/components/admin/CategoryManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const AdminCategories = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         setIsLoading(true);
-        // В будущем здесь может быть проверка прав админа
+        
+        // Проверка текущей сессии пользователя
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast.error("Требуется авторизация", {
+            description: "Необходимо войти в систему для доступа к панели администратора"
+          });
+          navigate("/auth/login");
+          return;
+        }
+        
+        // Проверка роли администратора (в будущем можно добавить)
+        // const { data: roleData } = await supabase.from("user_roles").select("*").eq("user_id", session.user.id);
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Ошибка при проверке статуса администратора:", error);
@@ -19,11 +36,12 @@ const AdminCategories = () => {
           description: "У вас нет прав для доступа к этой странице"
         });
         setIsLoading(false);
+        navigate("/");
       }
     };
 
     checkAdminStatus();
-  }, []);
+  }, [navigate]);
 
   if (isLoading) {
     return (
