@@ -20,7 +20,7 @@ const PriceFilter: React.FC<PriceFilterProps> = ({
         priceRange={priceRange}
         handlePriceChange={handlePriceChange}
         loading={loading}
-        maxAllowedPrice={5000}
+        maxAllowedPrice={500000000}
       />
     </div>
   );

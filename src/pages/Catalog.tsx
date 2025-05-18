@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
@@ -21,7 +20,7 @@ const Catalog = () => {
   
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: minPriceParam ? parseInt(minPriceParam, 10) : 0,
-    max: maxPriceParam ? parseInt(maxPriceParam, 10) : 5000,
+    max: maxPriceParam ? parseInt(maxPriceParam, 10) : 500000000,
   });
   
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
@@ -68,7 +67,7 @@ const Catalog = () => {
   // Update URL when price range changes (but only if user actually changed it)
   useEffect(() => {
     const minPriceChanged = priceRange.min > 0;
-    const maxPriceChanged = priceRange.max !== 5000;
+    const maxPriceChanged = priceRange.max !== 500000000;
     
     if (minPriceChanged) {
       searchParams.set("minPrice", priceRange.min.toString());
@@ -94,7 +93,7 @@ const Catalog = () => {
     
     if (categoryParam) count++;
     if (colorParam) count++;
-    if (priceRange.min > 0 || priceRange.max < 5000) count++;
+    if (priceRange.min > 0 || priceRange.max < 500000000) count++;
     if (searchTerm) count++;
     
     setActiveFiltersCount(count);
@@ -139,7 +138,7 @@ const Catalog = () => {
   
   const handleClearAllFilters = () => {
     setSearchParams(new URLSearchParams());
-    setPriceRange({ min: 0, max: 5000 });
+    setPriceRange({ min: 0, max: 500000000 });
     setSearchTerm("");
   };
 

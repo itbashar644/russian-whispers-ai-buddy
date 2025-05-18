@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   priceRange,
   handlePriceChange,
   loading,
-  maxAllowedPrice = 5000
+  maxAllowedPrice = 500000000
 }) => {
   const handleSliderChange = (value: number[]) => {
     if (value.length >= 2) {
@@ -32,7 +31,7 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           defaultValue={[priceRange.min, priceRange.max]}
           value={[priceRange.min, priceRange.max]}
           max={maxAllowedPrice}
-          step={100}
+          step={1000}
           onValueChange={handleSliderChange}
           className="my-6"
         />
