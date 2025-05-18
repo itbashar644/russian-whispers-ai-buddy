@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -336,6 +335,7 @@ const ProductDetail = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
+          {/* Left side - images */}
           <div>
             {/* Main image display */}
             <div className="border rounded-lg overflow-hidden">
@@ -375,253 +375,227 @@ const ProductDetail = () => {
             {product.videoUrl && renderVideo()}
           </div>
 
+          {/* Right side - product information */}
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-              
-              {/* Display article number if available */}
-              {displayArticleNumber && (
-                <div className="text-sm text-muted-foreground mb-2">
-                  Артикул: {displayArticleNumber}
-                </div>
-              )}
-              
-              {/* Add stock status indicator */}
-              <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
-                {getStockStatusText()}
+            {/* Product title and price */}
+            <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+            
+            {/* Display article number if available */}
+            {displayArticleNumber && (
+              <div className="text-sm text-muted-foreground mb-2">
+                Артикул: {displayArticleNumber}
               </div>
-              
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      fill={i < Math.round(product.rating) ? "currentColor" : "none"}
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className={`w-5 h-5 ${
-                        i < Math.round(product.rating) ? "text-yellow-500" : "text-gray-300"
-                      }`}
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  Рейтинг: {product.rating}/5
+            )}
+            
+            {/* Add stock status indicator */}
+            <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
+              {getStockStatusText()}
+            </div>
+            
+            {/* Pricing */}
+            {/* Show variant-specific pricing */}
+            {selectedColorVariant?.discountPrice ? (
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">{selectedColorVariant.discountPrice} ₽</span>
+                <span className="text-lg text-muted-foreground line-through">
+                  {selectedColorVariant.price} ₽
+                </span>
+                <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
+                  Скидка {Math.round(((selectedColorVariant.price - selectedColorVariant.discountPrice) / selectedColorVariant.price) * 100)}%
                 </span>
               </div>
-
-              <div className="mb-6">
-                {/* Show variant-specific pricing */}
-                {selectedColorVariant?.discountPrice ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{selectedColorVariant.discountPrice} ₽</span>
-                    <span className="text-lg text-muted-foreground line-through">
-                      {selectedColorVariant.price} ₽
-                    </span>
-                    <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
-                      Скидка {Math.round(((selectedColorVariant.price - selectedColorVariant.discountPrice) / selectedColorVariant.price) * 100)}%
-                    </span>
-                  </div>
-                ) : selectedColorVariant ? (
-                  <span className="text-2xl font-bold">{selectedColorVariant.price} ₽</span>
-                ) : product.discountPrice ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{product.discountPrice} ₽</span>
-                    <span className="text-lg text-muted-foreground line-through">
-                      {product.price} ₽
-                    </span>
-                    <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
-                      Скидка {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-2xl font-bold">{product.price} ₽</span>
-                )}
+            ) : selectedColorVariant ? (
+              <span className="text-2xl font-bold">{selectedColorVariant.price} ₽</span>
+            ) : product.discountPrice ? (
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold">{product.discountPrice} ₽</span>
+                <span className="text-lg text-muted-foreground line-through">
+                  {product.price} ₽
+                </span>
+                <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
+                  Скидка {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                </span>
               </div>
-
-              {/* Marketplace links */}
-              {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
-                <div className="flex items-center gap-3 my-4">
-                  <span className="text-sm text-muted-foreground">Доступен на:</span>
-                  <div className="flex gap-3">
-                    {product.wildberriesUrl && (
-                      <a 
-                        href={product.wildberriesUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
-                        title="Открыть на Wildberries"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                          <img 
-                            src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
-                            alt="Wildberries" 
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        <span className="hidden sm:inline">Wildberries</span>
-                      </a>
-                    )}
-                    
-                    {product.ozonUrl && (
-                      <a 
-                        href={product.ozonUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                        title="Открыть на Ozon"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                          <img 
-                            src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
-                            alt="Ozon" 
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        <span className="hidden sm:inline">Ozon</span>
-                      </a>
-                    )}
-                    
-                    {product.avitoUrl && (
-                      <a 
-                        href={product.avitoUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
-                        title="Открыть на Авито"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                          <img 
-                            src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
-                            alt="Avito" 
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                        <span className="hidden sm:inline">Авито</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              {/* Color selection */}
-              {product.colorVariants && product.colorVariants.length > 0 ? (
-                <div>
-                  <h3 className="font-medium mb-2">Цвет</h3>
-                  <RadioGroup 
-                    value={selectedColor || ''} 
-                    onValueChange={handleColorChange}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {product.colorVariants.map((variant) => (
-                      <div key={variant.color} className="flex items-center">
-                        <RadioGroupItem 
-                          value={variant.color} 
-                          id={`color-${variant.color}`} 
-                          className="peer sr-only"
-                          disabled={variant.stockQuantity === 0}
+            ) : (
+              <span className="text-2xl font-bold">{product.price} ₽</span>
+            )}
+            
+            {/* Marketplace links */}
+            {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
+              <div className="flex items-center gap-3 my-4">
+                <span className="text-sm text-muted-foreground">Доступен на:</span>
+                <div className="flex gap-3">
+                  {product.wildberriesUrl && (
+                    <a 
+                      href={product.wildberriesUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
+                      title="Открыть на Wildberries"
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+                        <img 
+                          src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
+                          alt="Wildberries" 
+                          className="w-full h-full object-contain"
                         />
-                        <Label 
-                          htmlFor={`color-${variant.color}`}
-                          className={`px-3 py-1.5 border rounded-md text-sm cursor-pointer 
-                            peer-data-[state=checked]:bg-primary 
-                            peer-data-[state=checked]:text-primary-foreground 
-                            peer-data-[state=checked]:border-primary
-                            ${variant.stockQuantity === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                          `}
-                        >
-                          {variant.color}
-                          {variant.price !== product.price && (
-                            <span className="ml-1 text-xs">
-                              ({variant.price} ₽)
-                            </span>
-                          )}
-                        </Label>
                       </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              ) : product.colors && product.colors.length > 0 ? (
-                <div>
-                  <h3 className="font-medium mb-2">Цвет</h3>
-                  <RadioGroup 
-                    value={selectedColor || ''} 
-                    onValueChange={setSelectedColor}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {product.colors.map((color) => (
-                      <div key={color} className="flex items-center">
-                        <RadioGroupItem 
-                          value={color} 
-                          id={`color-${color}`} 
-                          className="peer sr-only" 
+                      <span className="hidden sm:inline">Wildberries</span>
+                    </a>
+                  )}
+                  
+                  {product.ozonUrl && (
+                    <a 
+                      href={product.ozonUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                      title="Открыть на Ozon"
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+                        <img 
+                          src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
+                          alt="Ozon" 
+                          className="w-full h-full object-contain"
                         />
-                        <Label 
-                          htmlFor={`color-${color}`}
-                          className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                        >
-                          {color}
-                        </Label>
                       </div>
-                    ))}
-                  </RadioGroup>
+                      <span className="hidden sm:inline">Ozon</span>
+                    </a>
+                  )}
+                  
+                  {product.avitoUrl && (
+                    <a 
+                      href={product.avitoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
+                      title="Открыть на Авито"
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+                        <img 
+                          src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
+                          alt="Avito" 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <span className="hidden sm:inline">Авито</span>
+                    </a>
+                  )}
                 </div>
-              ) : null}
-
+              </div>
+            )}
+            
+            {/* Color and quantity selection */}
+            {/* Color selection */}
+            {product.colorVariants && product.colorVariants.length > 0 ? (
               <div>
-                <h3 className="font-medium mb-2">Количество</h3>
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(quantity - 1)}
-                    disabled={quantity <= 1}
-                  >
-                    -
-                  </Button>
-                  <span className="w-12 text-center">{quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(quantity + 1)}
-                    // Check against variant stock if applicable
-                    disabled={
-                      (selectedColorVariant?.stockQuantity !== undefined && 
-                       quantity >= selectedColorVariant.stockQuantity) ||
-                      (product.stockQuantity !== undefined && 
-                       quantity >= product.stockQuantity)
-                    }
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button 
-                  size="lg" 
-                  className="w-full"
-                  onClick={handleAddToCart}
-                  disabled={!hasStock()}
+                <h3 className="font-medium mb-2">Цвет</h3>
+                <RadioGroup 
+                  value={selectedColor || ''} 
+                  onValueChange={handleColorChange}
+                  className="flex flex-wrap gap-2"
                 >
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  {hasStock() ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
+                  {product.colorVariants.map((variant) => (
+                    <div key={variant.color} className="flex items-center">
+                      <RadioGroupItem 
+                        value={variant.color} 
+                        id={`color-${variant.color}`} 
+                        className="peer sr-only"
+                        disabled={variant.stockQuantity === 0}
+                      />
+                      <Label 
+                        htmlFor={`color-${variant.color}`}
+                        className={`px-3 py-1.5 border rounded-md text-sm cursor-pointer 
+                          peer-data-[state=checked]:bg-primary 
+                          peer-data-[state=checked]:text-primary-foreground 
+                          peer-data-[state=checked]:border-primary
+                          ${variant.stockQuantity === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                      >
+                        {variant.color}
+                        {variant.price !== product.price && (
+                          <span className="ml-1 text-xs">
+                            ({variant.price} ₽)
+                          </span>
+                        )}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : product.colors && product.colors.length > 0 ? (
+              <div>
+                <h3 className="font-medium mb-2">Цвет</h3>
+                <RadioGroup 
+                  value={selectedColor || ''} 
+                  onValueChange={setSelectedColor}
+                  className="flex flex-wrap gap-2"
+                >
+                  {product.colors.map((color) => (
+                    <div key={color} className="flex items-center">
+                      <RadioGroupItem 
+                        value={color} 
+                        id={`color-${color}`} 
+                        className="peer sr-only" 
+                      />
+                      <Label 
+                        htmlFor={`color-${color}`}
+                        className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
+                      >
+                        {color}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : null}
+
+            {/* Quantity selection */}
+            <div>
+              <h3 className="font-medium mb-2">Количество</h3>
+              <div className="flex items-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 1}
+                >
+                  -
+                </Button>
+                <span className="w-12 text-center">{quantity}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  // Check against variant stock if applicable
+                  disabled={
+                    (selectedColorVariant?.stockQuantity !== undefined && 
+                     quantity >= selectedColorVariant.stockQuantity) ||
+                    (product.stockQuantity !== undefined && 
+                     quantity >= product.stockQuantity)
+                  }
+                >
+                  +
                 </Button>
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-3">Описание</h3>
-              <p className="text-muted-foreground">{product.description}</p>
+            {/* Add to cart button */}
+            <div className="pt-4">
+              <Button 
+                size="lg" 
+                className="w-full"
+                onClick={handleAddToCart}
+                disabled={!hasStock()}
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                {hasStock() ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}
+              </Button>
             </div>
           </div>
         </div>
 
+        {/* Related products */}
         {relatedProducts.length > 0 && (
           <section className="mt-16">
             <h2 className="text-2xl font-bold mb-6">Похожие товары</h2>

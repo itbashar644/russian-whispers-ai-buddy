@@ -3,7 +3,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Button } from "@/components/ui/button";
 
 const About = () => {
   return (
@@ -45,16 +44,6 @@ const About = () => {
               </Link>
               , чтобы связаться с нами напрямую.
             </p>
-            
-            <div className="mt-8 p-4 bg-muted rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Для администраторов магазина</h3>
-              <p className="mb-4">
-                Если вы являетесь администратором магазина, вы можете перейти в админ-панель для управления товарами и заказами.
-              </p>
-              <Button asChild>
-                <Link to="/admin">Перейти в админ-панель</Link>
-              </Button>
-            </div>
           </div>
         </div>
       </main>
