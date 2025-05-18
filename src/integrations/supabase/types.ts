@@ -191,7 +191,6 @@ export type Database = {
           is_new: boolean | null
           material: string | null
           model_name: string | null
-            variant: string | null
           ozon_url: string | null
           price: number
           rating: number
@@ -224,7 +223,6 @@ export type Database = {
           is_new?: boolean | null
           material?: string | null
           model_name?: string | null
-            variant?: string | null
           ozon_url?: string | null
           price: number
           rating?: number
@@ -257,7 +255,6 @@ export type Database = {
           is_new?: boolean | null
           material?: string | null
           model_name?: string | null
-          variant?: string | null
           ozon_url?: string | null
           price?: number
           rating?: number
