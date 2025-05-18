@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send } from 'lucide-react';
+import { Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChatMessage } from '@/types/chat';
 import { sendMessage, markMessagesAsRead } from '@/services/chatService';
@@ -99,7 +99,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Чат с поддержкой</CardTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
-            <ChatButton isOpen={true} onClick={onClose} />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
