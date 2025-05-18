@@ -2,17 +2,22 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
 import { getProductPrice } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import ProductGrid from "@/components/products/ProductGrid";
 import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { formatVideoUrl } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductDetails from "@/components/products/ProductDetails";
+import ProductPricing from "@/components/products/ProductPricing";
+import MarketplaceLinks from "@/components/products/MarketplaceLinks";
+import StockStatus from "@/components/products/StockStatus";
+import ProductVideo from "@/components/products/ProductVideo";
+import ColorSelection from "@/components/products/ColorSelection";
+import QuantitySelector from "@/components/products/QuantitySelector";
+import ImageGallery from "@/components/products/ImageGallery";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,9 +28,6 @@ const ProductDetail = () => {
   
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
-  const [imageError, setImageError] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -77,70 +79,49 @@ const ProductDetail = () => {
     return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
   };
 
-  // Get stock status text
-  const getStockStatusText = () => {
-    if (!product) return "";
-    
-    if (!hasStock()) {
-      return "Нет в наличии";
-    }
-    
-    // If there's a selected color variant, show its stock
-    if (selectedColor && product.colorVariants?.length) {
-      const variant = product.colorVariants.find(v => v.color === selectedColor);
-      if (variant?.stockQuantity !== undefined) {
-        if (variant.stockQuantity <= 3) {
-          return `Осталось всего ${variant.stockQuantity} шт.`;
-        } else {
-          return `В наличии: ${variant.stockQuantity} шт.`;
-        }
-      }
-    }
-    
-    // Otherwise show the main product stock
-    if (product.stockQuantity !== undefined) {
-      if (product.stockQuantity <= 3) {
-        return `Осталось всего ${product.stockQuantity} шт.`;
-      } else {
-        return `В наличии: ${product.stockQuantity} шт.`;
-      }
-    }
-    
-    return "В наличии";
-  };
-  
-  // Get stock status class
-  const getStockStatusClass = () => {
-    if (!product) return "";
-    
-    if (!hasStock()) {
-      return "text-red-500";
-    }
-    
-    // If there's a selected color variant, check its stock
-    if (selectedColor && product.colorVariants?.length) {
-      const variant = product.colorVariants.find(v => v.color === selectedColor);
-      if (variant?.stockQuantity !== undefined && variant.stockQuantity <= 3) {
-        return "text-orange-500";
-      }
-    } else if (product.stockQuantity !== undefined && product.stockQuantity <= 3) {
-      return "text-orange-500";
-    }
-    
-    return "text-green-600";
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    // Reset quantity to 1 when changing color
+    setQuantity(1);
   };
 
-  // Effect to update image when color changes
-  useEffect(() => {
+  const handleAddToCart = () => {
+    if (product && hasStock()) {
+      addItem({
+        product,
+        quantity,
+        color: selectedColor,
+        selectedColorVariant
+      });
+    }
+  };
+
+  // Get variant-specific image if available, otherwise use the main product image
+  const getVariantImage = () => {
     if (selectedColor && product?.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
       if (variant?.imageUrl) {
-        // If the variant has an image, set it as the current image
-        setCurrentImageIndex(0);
-        setImageError(false);
+        return variant.imageUrl;
       }
     }
-  }, [selectedColor, product]);
+    return product?.imageUrl || "";
+  };
+
+  // Get article number to display - use variant-specific article number if available
+  const getArticleNumber = () => {
+    if (selectedColor && product?.colorVariants) {
+      const variant = product.colorVariants.find(v => v.color === selectedColor);
+      if (variant?.articleNumber) {
+        return variant.articleNumber;
+      }
+    }
+    return product?.articleNumber;
+  };
+
+  const displayArticleNumber = getArticleNumber();
+  
+  // Get the price to display
+  const displayPrice = product ? getProductPrice(product, selectedColor) : 0;
 
   // Force scroll to top when component mounts
   useEffect(() => {
@@ -191,135 +172,6 @@ const ProductDetail = () => {
     );
   }
 
-  const handleQuantityChange = (value: number) => {
-    if (value >= 1) {
-      // Check against the selected color variant's stock if applicable
-      if (selectedColor && product.colorVariants?.length) {
-        const variant = product.colorVariants.find(v => v.color === selectedColor);
-        if (variant?.stockQuantity !== undefined && value > variant.stockQuantity) {
-          setQuantity(variant.stockQuantity);
-          return;
-        }
-      }
-      
-      // Otherwise check against the main product stock
-      if (product.stockQuantity !== undefined && value > product.stockQuantity) {
-        setQuantity(product.stockQuantity);
-      } else {
-        setQuantity(value);
-      }
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (hasStock()) {
-      addItem({
-        product,
-        quantity,
-        color: selectedColor,
-        selectedColorVariant
-      });
-    }
-  };
-
-  const handleColorChange = (color: string) => {
-    setSelectedColor(color);
-    // Reset quantity to 1 when changing color
-    setQuantity(1);
-  };
-
-  // Get variant-specific image if available, otherwise use the main product image
-  const getVariantImage = () => {
-    if (selectedColor && product.colorVariants) {
-      const variant = product.colorVariants.find(v => v.color === selectedColor);
-      if (variant?.imageUrl) {
-        return variant.imageUrl;
-      }
-    }
-    return product.imageUrl;
-  };
-
-  // Get all available images (main image + additional images)
-  const allImages = [
-    getVariantImage(),
-    ...(product.additionalImages || [])
-  ].filter(Boolean);
-
-  // Current image to display
-  const currentImage = allImages[currentImageIndex] || "/placeholder.svg";
-
-  // Функция для обработки ошибок загрузки изображения
-  const handleImageError = () => {
-    console.error("Ошибка загрузки изображения:", currentImage);
-    setImageError(true);
-  };
-
-  // Функция для обработки ошибок загрузки видео
-  const handleVideoError = () => {
-    console.error("Ошибка загрузки видео:", product.videoUrl);
-    setVideoError(true);
-  };
-
-  // Функция для определения типа рендера видео в зависимости от типа
-  const renderVideo = () => {
-    if (!product.videoUrl) return null;
-    
-    // Если произошла ошибка загрузки видео, не показываем блок
-    if (videoError) return null;
-
-    // Определяем тип видео (по умолчанию mp4 для обратной совместимости)
-    const videoType = product.videoType || 'mp4';
-    
-    switch (videoType) {
-      case 'vk':
-      case 'youtube':
-        const formattedUrl = formatVideoUrl(product.videoUrl, videoType);
-        return (
-          <div className="mt-4 border rounded-lg overflow-hidden aspect-video">
-            <iframe 
-              src={formattedUrl}
-              className="w-full h-full"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-              allowFullScreen
-              title={product.title}
-              onError={handleVideoError}
-            />
-          </div>
-        );
-      case 'mp4':
-      default:
-        return (
-          <div className="mt-4 border rounded-lg overflow-hidden">
-            <video 
-              controls 
-              className="w-full h-auto"
-              poster={imageError ? "/placeholder.svg" : product.imageUrl}
-              onError={handleVideoError}
-            >
-              <source src={product.videoUrl} type="video/mp4" />
-              Ваш браузер не поддерживает видео.
-            </video>
-          </div>
-        );
-    }
-  };
-
-  // Get article number to display - use variant-specific article number if available
-  const getArticleNumber = () => {
-    if (selectedColor && product.colorVariants) {
-      const variant = product.colorVariants.find(v => v.color === selectedColor);
-      if (variant?.articleNumber) {
-        return variant.articleNumber;
-      }
-    }
-    return product.articleNumber;
-  };
-
-  const displayArticleNumber = getArticleNumber();
-  
-  // Get the price to display
-  const displayPrice = getProductPrice(product, selectedColor);
-
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -337,42 +189,19 @@ const ProductDetail = () => {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left side - images */}
           <div>
-            {/* Main image display */}
-            <div className="border rounded-lg overflow-hidden">
-              <img 
-                src={imageError ? "/placeholder.svg" : currentImage} 
-                alt={product.title} 
-                className="w-full h-auto object-cover aspect-square" 
-                onError={handleImageError}
-              />
-            </div>
-            
-            {/* Thumbnails gallery */}
-            {allImages.length > 1 && (
-              <div className="mt-4 grid grid-cols-5 gap-2">
-                {allImages.map((img, index) => (
-                  <button 
-                    key={index}
-                    className={`border rounded overflow-hidden aspect-square ${
-                      index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  >
-                    <img 
-                      src={img} 
-                      alt={`${product.title} - изображение ${index + 1}`}
-                      className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+            <ImageGallery 
+              mainImage={getVariantImage()} 
+              additionalImages={product.additionalImages} 
+            />
             
             {/* Видео, если есть */}
-            {product.videoUrl && renderVideo()}
+            {product.videoUrl && (
+              <ProductVideo 
+                videoUrl={product.videoUrl} 
+                videoType={product.videoType} 
+                imageUrl={product.imageUrl} 
+              />
+            )}
           </div>
 
           {/* Right side - product information */}
@@ -388,197 +217,35 @@ const ProductDetail = () => {
             )}
             
             {/* Add stock status indicator */}
-            <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
-              {getStockStatusText()}
-            </div>
+            <StockStatus 
+              product={product} 
+              selectedColor={selectedColor} 
+              hasStock={hasStock()} 
+            />
             
             {/* Pricing */}
-            {/* Show variant-specific pricing */}
-            {selectedColorVariant?.discountPrice ? (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{selectedColorVariant.discountPrice} ₽</span>
-                <span className="text-lg text-muted-foreground line-through">
-                  {selectedColorVariant.price} ₽
-                </span>
-                <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
-                  Скидка {Math.round(((selectedColorVariant.price - selectedColorVariant.discountPrice) / selectedColorVariant.price) * 100)}%
-                </span>
-              </div>
-            ) : selectedColorVariant ? (
-              <span className="text-2xl font-bold">{selectedColorVariant.price} ₽</span>
-            ) : product.discountPrice ? (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{product.discountPrice} ₽</span>
-                <span className="text-lg text-muted-foreground line-through">
-                  {product.price} ₽
-                </span>
-                <span className="bg-red-500 text-white px-2 py-0.5 text-xs rounded">
-                  Скидка {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-                </span>
-              </div>
-            ) : (
-              <span className="text-2xl font-bold">{product.price} ₽</span>
-            )}
+            <ProductPricing 
+              product={product} 
+              selectedColorVariant={selectedColorVariant} 
+            />
             
             {/* Marketplace links */}
-            {(product.ozonUrl || product.wildberriesUrl || product.avitoUrl) && (
-              <div className="flex items-center gap-3 my-4">
-                <span className="text-sm text-muted-foreground">Доступен на:</span>
-                <div className="flex gap-3">
-                  {product.wildberriesUrl && (
-                    <a 
-                      href={product.wildberriesUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
-                      title="Открыть на Wildberries"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                        <img 
-                          src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
-                          alt="Wildberries" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <span className="hidden sm:inline">Wildberries</span>
-                    </a>
-                  )}
-                  
-                  {product.ozonUrl && (
-                    <a 
-                      href={product.ozonUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                      title="Открыть на Ozon"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                        <img 
-                          src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
-                          alt="Ozon" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <span className="hidden sm:inline">Ozon</span>
-                    </a>
-                  )}
-                  
-                  {product.avitoUrl && (
-                    <a 
-                      href={product.avitoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
-                      title="Открыть на Авито"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
-                        <img 
-                          src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
-                          alt="Avito" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <span className="hidden sm:inline">Авито</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
+            <MarketplaceLinks product={product} />
             
-            {/* Color and quantity selection */}
             {/* Color selection */}
-            {product.colorVariants && product.colorVariants.length > 0 ? (
-              <div>
-                <h3 className="font-medium mb-2">Цвет</h3>
-                <RadioGroup 
-                  value={selectedColor || ''} 
-                  onValueChange={handleColorChange}
-                  className="flex flex-wrap gap-2"
-                >
-                  {product.colorVariants.map((variant) => (
-                    <div key={variant.color} className="flex items-center">
-                      <RadioGroupItem 
-                        value={variant.color} 
-                        id={`color-${variant.color}`} 
-                        className="peer sr-only"
-                        disabled={variant.stockQuantity === 0}
-                      />
-                      <Label 
-                        htmlFor={`color-${variant.color}`}
-                        className={`px-3 py-1.5 border rounded-md text-sm cursor-pointer 
-                          peer-data-[state=checked]:bg-primary 
-                          peer-data-[state=checked]:text-primary-foreground 
-                          peer-data-[state=checked]:border-primary
-                          ${variant.stockQuantity === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                        `}
-                      >
-                        {variant.color}
-                        {variant.price !== product.price && (
-                          <span className="ml-1 text-xs">
-                            ({variant.price} ₽)
-                          </span>
-                        )}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            ) : product.colors && product.colors.length > 0 ? (
-              <div>
-                <h3 className="font-medium mb-2">Цвет</h3>
-                <RadioGroup 
-                  value={selectedColor || ''} 
-                  onValueChange={setSelectedColor}
-                  className="flex flex-wrap gap-2"
-                >
-                  {product.colors.map((color) => (
-                    <div key={color} className="flex items-center">
-                      <RadioGroupItem 
-                        value={color} 
-                        id={`color-${color}`} 
-                        className="peer sr-only" 
-                      />
-                      <Label 
-                        htmlFor={`color-${color}`}
-                        className="px-3 py-1.5 border rounded-md text-sm cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                      >
-                        {color}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            ) : null}
+            <ColorSelection 
+              product={product} 
+              selectedColor={selectedColor} 
+              onColorChange={handleColorChange} 
+            />
 
             {/* Quantity selection */}
-            <div>
-              <h3 className="font-medium mb-2">Количество</h3>
-              <div className="flex items-center">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </Button>
-                <span className="w-12 text-center">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  // Check against variant stock if applicable
-                  disabled={
-                    (selectedColorVariant?.stockQuantity !== undefined && 
-                     quantity >= selectedColorVariant.stockQuantity) ||
-                    (product.stockQuantity !== undefined && 
-                     quantity >= product.stockQuantity)
-                  }
-                >
-                  +
-                </Button>
-              </div>
-            </div>
+            <QuantitySelector 
+              quantity={quantity} 
+              onChange={setQuantity} 
+              product={product} 
+              selectedColorVariant={selectedColorVariant} 
+            />
 
             {/* Add to cart button */}
             <div className="pt-4">
@@ -594,6 +261,9 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Product description */}
+        <ProductDetails product={product} />
 
         {/* Related products */}
         {relatedProducts.length > 0 && (
