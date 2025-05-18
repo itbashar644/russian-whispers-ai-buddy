@@ -14,8 +14,8 @@ const SpecificationsFilter: React.FC<SpecificationsFilterProps> = ({
   specFilters,
   handleSpecFilter
 }) => {
-  // If no specifications available, don't render anything
-  if (Object.keys(availableSpecifications).length === 0) {
+  // If no specifications available or availableSpecifications is undefined/null, don't render anything
+  if (!availableSpecifications || Object.keys(availableSpecifications).length === 0) {
     return null;
   }
 

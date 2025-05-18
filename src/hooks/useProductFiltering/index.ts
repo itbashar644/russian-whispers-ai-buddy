@@ -25,7 +25,7 @@ export const useProductFiltering = ({
 
   // Get all available specifications from products
   const availableSpecifications = useMemo(() => {
-    if (!allProducts.length) return {};
+    if (!allProducts || !allProducts.length) return {};
     
     const specs: Record<string, Set<string>> = {};
     
@@ -35,7 +35,9 @@ export const useProductFiltering = ({
           if (!specs[key]) {
             specs[key] = new Set<string>();
           }
-          specs[key].add(value);
+          if (value) { // Only add the value if it's not null or empty
+            specs[key].add(value);
+          }
         });
       }
     });
@@ -89,7 +91,7 @@ export const useProductFiltering = ({
     );
     
     // Filter by specifications
-    if (Object.keys(specFilters).length > 0) {
+    if (specFilters && Object.keys(specFilters).length > 0) {
       result = result.filter(product => {
         // If product has no specifications, it doesn't match
         if (!product.specifications) return false;
