@@ -23,7 +23,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     isSubmitting,
     setActiveTab,
     handleInputChange,
-    handleCheckboxChange,
+    handleCheckboxChange, // This is the function with parameter order mismatch
     handleSelectChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,
@@ -31,6 +31,11 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     setNewCategory,
     setShowNewCategoryInput
   } = useProductForm({ product, onSave });
+
+  // Create an adapter function to fix the parameter order
+  const handleCheckboxChangeAdapter = (checked: boolean, name: string) => {
+    handleCheckboxChange(name, checked); // Swap the parameters to match the expected order
+  };
 
   return (
     <div className="space-y-4">
@@ -50,7 +55,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             setShowNewCategoryInput={setShowNewCategoryInput}
             handleInputChange={handleInputChange}
             handleSelectChange={handleSelectChange}
-            handleCheckboxChange={handleCheckboxChange}
+            handleCheckboxChange={handleCheckboxChangeAdapter} // Use the adapter function here
             handleMainImageUploaded={handleMainImageUploaded}
             handleAdditionalImagesChange={handleAdditionalImagesChange}
           />
