@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 
@@ -59,7 +60,15 @@ export const useProductFiltering = ({
   useEffect(() => {
     if (loading) return;
     
+    // Начинаем с оригинального списка продуктов
     let result = [...allProducts];
+    
+    // Debug original products count by category
+    const categoryCount = {};
+    [...new Set(result.map(p => p.category))].forEach(category => {
+      categoryCount[category] = result.filter(p => p.category === category).length;
+    });
+    console.log("Original products count by category:", categoryCount);
     
     // Transform products for color display if needed
     if (showColorVariants) {
@@ -73,6 +82,7 @@ export const useProductFiltering = ({
     // Filter by color if color parameter is set
     if (colorParam) {
       result = result.filter(product => {
+        // If product has color variants, check if any match the color param
         if (product.colorVariants && product.colorVariants.length > 0) {
           return product.colorVariants.some(v => v.color.toLowerCase() === colorParam.toLowerCase());
         }
@@ -107,11 +117,11 @@ export const useProductFiltering = ({
     result = sortProducts(result, sortBy);
     
     // Final check for tablets
-    if (result.some(p => p.category === "Планшеты")) {
-      console.log("Tablets found in final filtered data:", result.filter(p => p.category === "Планшеты").length);
-    } else {
-      console.log("No tablets in final filtered result!");
-    }
+    const finalCategoryCount = {};
+    [...new Set(result.map(p => p.category))].forEach(category => {
+      finalCategoryCount[category] = result.filter(p => p.category === category).length;
+    });
+    console.log("Final products count by category:", finalCategoryCount);
     
     setFilteredProducts(result);
   }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
@@ -121,10 +131,10 @@ export const useProductFiltering = ({
     const expandedProducts: Product[] = [];
     
     products.forEach(product => {
-      // Always add the base product first to ensure all products appear
+      // ИСПРАВЛЕНО: Всегда сначала добавляем базовый продукт, чтобы гарантировать, что все продукты появятся
       expandedProducts.push({ ...product });
       
-      // If product has color variants, create virtual products for each variant
+      // Затем добавляем варианты цветов в виде отдельных продуктов
       if (product.colorVariants && product.colorVariants.length > 0) {
         product.colorVariants.forEach(variant => {
           const variantProduct: Product = {
