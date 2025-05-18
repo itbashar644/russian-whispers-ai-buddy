@@ -108,3 +108,9 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   
   return sortedProducts;
 };
+
+// Format specification value for display
+export const formatSpecificationValue = (key: string, value: string): string => {
+  // This could be extended with domain-specific formatting logic
+  return value;
+};
