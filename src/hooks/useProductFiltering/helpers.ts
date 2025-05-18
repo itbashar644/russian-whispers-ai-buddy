@@ -3,27 +3,28 @@ import { Product } from "@/types/product";
 
 // Transform products for color display
 export const transformProductsForColorDisplay = (products: Product[]): Product[] => {
+  console.log(`Transforming ${products.length} products for color display`);
   const expandedProducts: Product[] = [];
   
-  // First add all the base products
+  // First pass: add all base products without modifications
   products.forEach(product => {
-    // Always add the base product first
     expandedProducts.push({ ...product });
+    console.log(`Added base product: ${product.id} - ${product.title} (Category: ${product.category})`);
   });
   
-  // Then add all color variants
+  // Second pass: add color variants as separate products
   products.forEach(product => {
     if (product.colorVariants && product.colorVariants.length > 0) {
       product.colorVariants.forEach(variant => {
         const variantProduct: Product = {
           ...product,
           id: `${product.id}-${variant.color}`.replace(/\s+/g, '-').toLowerCase(),
-          price: variant.price,
-          discountPrice: variant.discountPrice,
+          price: variant.price !== undefined ? variant.price : product.price,
+          discountPrice: variant.discountPrice !== undefined ? variant.discountPrice : product.discountPrice,
           imageUrl: variant.imageUrl || product.imageUrl,
           articleNumber: variant.articleNumber || product.articleNumber,
           barcode: variant.barcode || product.barcode,
-          stockQuantity: variant.stockQuantity,
+          stockQuantity: variant.stockQuantity !== undefined ? variant.stockQuantity : product.stockQuantity,
           inStock: variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : product.inStock,
           ozonUrl: variant.ozonUrl || product.ozonUrl,
           wildberriesUrl: variant.wildberriesUrl || product.wildberriesUrl,
@@ -32,9 +33,21 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
           isColorVariant: true
         };
         expandedProducts.push(variantProduct);
+        console.log(`Added variant: ${variantProduct.id} (Color: ${variant.color})`);
       });
     }
   });
+  
+  console.log(`Total products after transformation: ${expandedProducts.length}`);
+  const categoriesAfter = [...new Set(expandedProducts.map(p => p.category))];
+  console.log(`Categories after transformation: ${categoriesAfter.join(', ')}`);
+  
+  // Count products by category
+  const categoryCount: Record<string, number> = {};
+  categoriesAfter.forEach(category => {
+    categoryCount[category] = expandedProducts.filter(p => p.category === category).length;
+  });
+  console.log('Products per category after transformation:', categoryCount);
   
   return expandedProducts;
 };
@@ -44,6 +57,15 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
   
+  // Always sort by in-stock first, regardless of other sortings
+  sortedProducts.sort((a, b) => {
+    if (a.inStock !== b.inStock) {
+      return a.inStock ? -1 : 1;
+    }
+    return 0;
+  });
+  
+  // Then apply additional sorting on top of the in-stock priority
   switch (sortByOption) {
     case "price-asc":
       sortedProducts.sort((a, b) => {
@@ -52,8 +74,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
+        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
         return priceA - priceB;
       });
       break;
@@ -64,8 +86,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price descending
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
+        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
         return priceB - priceA;
       });
       break;
@@ -102,7 +124,6 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
     case "in-stock":
     default:
       // Just maintain the stock sort that was already applied
-      sortedProducts.sort((a, b) => (a.inStock ? -1 : 1) - (b.inStock ? -1 : 1));
       break;
   }
   

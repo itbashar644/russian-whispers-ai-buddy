@@ -9,10 +9,10 @@ interface UseProductFormProps {
 
 export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   const [formData, setFormData] = useState<Partial<Product>>(product);
-  const [newCategory, setNewCategory] = useState("");
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("general");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Update form data when product changes
   useEffect(() => {
@@ -20,22 +20,30 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   }, [product]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === "price" || name === "discountPrice" || name === "rating" || name === "stockQuantity"
-        ? parseFloat(value)
-        : value,
-    });
+    const { name, value, type } = e.target;
+    
+    // Handle number inputs
+    if (type === "number") {
+      setFormData({
+        ...formData,
+        [name]: value === "" ? "" : Number(value)
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData({
       ...formData,
-      [name]: checked,
+      [name]: checked
     });
   };
 
+  // Fixed: Make sure to correctly set the value in the formData
   const handleSelectChange = (value: string, name: string) => {
     if (name === "category" && value === "new") {
       // Show input for new category
@@ -43,13 +51,14 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
       return;
     }
     
-    // Fix: Directly update the form data with selected category value
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
+    console.log(`Setting ${name} to value: ${value}`);
     
-    console.log(`Category selected: ${value}`);
+    // Update the form data with the selected value
+    setFormData(prevData => {
+      const newData = { ...prevData, [name]: value };
+      console.log("Updated form data:", newData);
+      return newData;
+    });
   };
 
   // Helper functions definitions
@@ -109,35 +118,60 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     return true;
   }
 
+  const validateForm = (): boolean => {
+    // Validate required fields
+    if (!formData.title) {
+      toast.error("Необходимо указать название товара");
+      setActiveTab("general");
+      return false;
+    }
+    
+    if (!formData.category && !newCategory) {
+      toast.error("Необходимо указать категорию товара");
+      setActiveTab("general");
+      return false;
+    }
+    
+    if (!formData.price || formData.price <= 0) {
+      toast.error("Необходимо указать корректную цену товара");
+      setActiveTab("general");
+      return false;
+    }
+    
+    // Check for duplicate article numbers in color variants
+    if (formData.colorVariants && formData.colorVariants.length > 0) {
+      const articleNumbers = formData.colorVariants
+        .map(v => v.articleNumber)
+        .filter(a => a && a.trim() !== "");
+      
+      const uniqueArticleNumbers = new Set(articleNumbers);
+      
+      if (articleNumbers.length !== uniqueArticleNumbers.size) {
+        toast.error("Найдены дублирующиеся артикулы в цветовых вариантах");
+        setActiveTab("colors");
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const validateAndSubmitForm = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
-      let finalFormData = { ...formData };
+      // If new category was entered, use it
+      const finalProduct = {
+        ...formData,
+        category: showNewCategoryInput && newCategory ? newCategory : formData.category
+      };
       
-      // Use the new category if provided
-      if (showNewCategoryInput && newCategory.trim()) {
-        finalFormData.category = newCategory.trim();
-      }
-      
-      if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
-        toast.error("Ошибка", {
-          description: "Пожалуйста, заполните все обязательные поля",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Validate image URLs
-      if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
-        toast.error("Ошибка URL изображений", {
-          description: "Пожалуйста, укажите корректные URL изображений",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("Form submission - data being sent to parent:", finalFormData);
-      await onSave(finalFormData);
+      console.log("Form submission - data being sent to parent:", finalProduct);
+      await onSave(finalProduct);
       
       // Only reset submission state if we're still mounted
       setTimeout(() => {
@@ -145,10 +179,8 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
       }, 500);
       
     } catch (error) {
-      console.error("Error submitting product form:", error);
-      toast.error("Не удалось сохранить товар", {
-        description: error instanceof Error ? error.message : "Произошла ошибка при сохранении товара"
-      });
+      console.error("Error saving product:", error);
+      toast.error("Ошибка при сохранении товара");
       setIsSubmitting(false);
     }
   };

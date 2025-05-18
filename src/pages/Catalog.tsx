@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Category } from "@/data/products/categoryData";
@@ -27,38 +28,40 @@ const Catalog = () => {
   // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
   
-  // Debug - log the products when they load
+  // Debug log the loaded products
   useEffect(() => {
     if (!loading && allProducts.length > 0) {
       console.log(`Loaded ${allProducts.length} products from the API`);
-      console.log(`Categories found: ${[...new Set(allProducts.map(p => p.category))].join(', ')}`);
+      const categories = [...new Set(allProducts.map(p => p.category))];
+      console.log(`Categories found: ${categories.join(', ')}`);
       
-      // Check specific categories
-      const tabletCount = allProducts.filter(p => p.category === "Планшеты").length;
-      console.log(`Tablets found: ${tabletCount}`);
+      categories.forEach(category => {
+        const count = allProducts.filter(p => p.category === category).length;
+        console.log(`Category ${category}: ${count} products`);
+      });
     }
   }, [allProducts, loading]);
   
-  // Фильтрация и сортировка продуктов
+  // Use the product filtering hook
   const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
     allProducts,
     searchTerm,
     priceRange,
-    inStockOnly: false, // Always false now
+    inStockOnly: false,
     sortBy,
     loading,
-    showColorVariants: true, // Always true now
+    showColorVariants: true,
     colorParam
   });
 
+  // Update search term when search param changes
   useEffect(() => {
-    // Update searchTerm when searchParam changes
     if (searchParam) {
       setSearchTerm(searchParam);
     }
   }, [searchParam]);
 
-  // Подсчет количества активных фильтров
+  // Count active filters
   useEffect(() => {
     let count = 0;
     
@@ -113,7 +116,7 @@ const Catalog = () => {
     setSearchTerm("");
   };
 
-  // Находим объект категории по имени
+  // Find category by name
   const findCategoryByName = (name: string) => {
     return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
   };
