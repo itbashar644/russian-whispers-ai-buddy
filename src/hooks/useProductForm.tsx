@@ -10,10 +10,10 @@ interface UseProductFormProps {
 
 export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   const [formData, setFormData] = useState<Partial<Product>>(product);
-  const [newCategory, setNewCategory] = useState<string>("");
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>("general");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form data when product changes
   useEffect(() => {
@@ -21,77 +21,65 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   }, [product]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    
-    // Handle number inputs
-    if (type === "number") {
-      setFormData({
-        ...formData,
-        [name]: value === "" ? "" : Number(value)
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-  };
-
-  const handleCheckboxChange = (name: string, checked: boolean) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: checked
+      [name]: name === "price" || name === "discountPrice" || name === "rating" || name === "stockQuantity"
+        ? parseFloat(value)
+        : value,
     });
   };
 
-  // Fixed: Make sure the category selection works properly
+  const handleCheckboxChange = (checked: boolean, name: string) => {
+    setFormData({
+      ...formData,
+      [name]: checked,
+    });
+  };
+
   const handleSelectChange = (value: string, name: string) => {
-    console.log(`handleSelectChange called with name: ${name}, value: ${value}`);
-    
     if (name === "category" && value === "new") {
       // Show input for new category
       setShowNewCategoryInput(true);
+      setNewCategory("");
       return;
     }
     
-    // Update the form data with the selected value
-    setFormData(prev => {
-      const updated = { ...prev, [name]: value };
-      console.log(`Updated form data for ${name}:`, updated);
-      return updated;
+    setFormData({
+      ...formData,
+      [name]: value,
     });
   };
 
-  // Helper functions definitions
-  function handleRemoveColor(colorToRemove: string) {
+  const handleRemoveColor = (colorToRemove: string) => {
     setFormData({
       ...formData,
       colors: formData.colors?.filter(color => color !== colorToRemove),
     });
-  }
+  };
 
-  function handleMainImageUploaded(url: string) {
+  const handleMainImageUploaded = (url: string) => {
     setFormData({
       ...formData,
       imageUrl: url,
     });
-  }
+  };
 
-  function handleAdditionalImagesChange(urls: string[]) {
+  const handleAdditionalImagesChange = (urls: string[]) => {
     setFormData({
       ...formData,
       additionalImages: urls,
     });
-  }
+  };
 
-  function handleColorVariantsChange(variants: ColorVariant[]) {
+  const handleColorVariantsChange = (variants: ColorVariant[]) => {
     setFormData({
       ...formData,
       colorVariants: variants
     });
-  }
+  };
 
-  function validateImageUrl(url: string): boolean {
+  const validateImageUrl = (url: string): boolean => {
     if (!url) return true; // Empty URL is considered valid (will use default)
     
     // Basic URL validation
@@ -101,9 +89,9 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     } catch (e) {
       return false;
     }
-  }
+  };
 
-  function validateAllImageUrls(mainImageUrl: string, additionalImages: string[] = []): boolean {
+  const validateAllImageUrls = (mainImageUrl: string, additionalImages: string[] = []): boolean => {
     if (mainImageUrl && mainImageUrl !== "/placeholder.svg" && !validateImageUrl(mainImageUrl)) {
       return false;
     }
@@ -117,62 +105,37 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     }
     
     return true;
-  }
-
-  const validateForm = (): boolean => {
-    // Validate required fields
-    if (!formData.title) {
-      toast.error("Необходимо указать название товара");
-      setActiveTab("general");
-      return false;
-    }
-    
-    if (!formData.category && !newCategory) {
-      toast.error("Необходимо указать категорию товара");
-      setActiveTab("general");
-      return false;
-    }
-    
-    if (!formData.price || formData.price <= 0) {
-      toast.error("Необходимо указать корректную цену товара");
-      setActiveTab("general");
-      return false;
-    }
-    
-    // Check for duplicate article numbers in color variants
-    if (formData.colorVariants && formData.colorVariants.length > 0) {
-      const articleNumbers = formData.colorVariants
-        .map(v => v.articleNumber)
-        .filter(a => a && a.trim() !== "");
-      
-      const uniqueArticleNumbers = new Set(articleNumbers);
-      
-      if (articleNumbers.length !== uniqueArticleNumbers.size) {
-        toast.error("Найдены дублирующиеся артикулы в цветовых вариантах");
-        setActiveTab("colors");
-        return false;
-      }
-    }
-    
-    return true;
   };
 
   const validateAndSubmitForm = async () => {
-    if (!validateForm()) {
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
     try {
-      // If new category was entered, use it
-      const finalProduct = {
-        ...formData,
-        category: showNewCategoryInput && newCategory ? newCategory : formData.category
-      };
+      setIsSubmitting(true);
+      let finalFormData = { ...formData };
       
-      console.log("Form submission - data being sent to parent:", finalProduct);
-      await onSave(finalProduct);
+      // Use the new category if provided
+      if (showNewCategoryInput && newCategory.trim()) {
+        finalFormData.category = newCategory.trim();
+      }
+      
+      if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
+        toast.error("Ошибка", {
+          description: "Пожалуйста, заполните все обязательные поля",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate image URLs
+      if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
+        toast.error("Ошибка URL изображений", {
+          description: "Пожалуйста, укажите корректные URL изображений",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log("Form submission - data being sent to parent:", finalFormData);
+      await onSave(finalFormData);
       
       // Only reset submission state if we're still mounted
       setTimeout(() => {
@@ -180,8 +143,10 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
       }, 500);
       
     } catch (error) {
-      console.error("Error saving product:", error);
-      toast.error("Ошибка при сохранении товара");
+      console.error("Error submitting product form:", error);
+      toast.error("Не удалось сохранить товар", {
+        description: error instanceof Error ? error.message : "Произошла ошибка при сохранении товара"
+      });
       setIsSubmitting(false);
     }
   };

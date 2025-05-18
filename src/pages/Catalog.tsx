@@ -1,6 +1,6 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Category } from "@/data/products/categoryData";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
@@ -8,7 +8,6 @@ import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalogData } from "@/hooks/useCatalogData";
 import { useProductFiltering } from "@/hooks/useProductFiltering";
-import ProductDebugInfo from "@/components/debug/ProductDebugInfo";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,51 +20,45 @@ const Catalog = () => {
     max: 5000,
   });
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [sortBy, setSortBy] = useState("in-stock");
+  const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
-  const [showDebugInfo, setShowDebugInfo] = useState(true);
 
-  // Load catalog data
+  // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
   
-  // Debug log the loaded products
+  // Debug - log the products when they load
   useEffect(() => {
     if (!loading && allProducts.length > 0) {
       console.log(`Loaded ${allProducts.length} products from the API`);
-      const categories = [...new Set(allProducts.map(p => p.category))];
-      console.log(`Categories found: ${categories.join(', ')}`);
+      console.log(`Categories found: ${[...new Set(allProducts.map(p => p.category))].join(', ')}`);
       
-      // Log each category's product count
-      categories.forEach(category => {
-        const count = allProducts.filter(p => p.category === category).length;
-        console.log(`Category ${category}: ${count} products`);
-      });
+      // Check specific categories
+      const tabletCount = allProducts.filter(p => p.category === "Планшеты").length;
+      console.log(`Tablets found: ${tabletCount}`);
     }
   }, [allProducts, loading]);
   
-  // Use the product filtering hook
+  // Фильтрация и сортировка продуктов
   const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
     allProducts,
     searchTerm,
     priceRange,
-    inStockOnly: false,
+    inStockOnly: false, // Always false now
     sortBy,
     loading,
-    showColorVariants: true,
+    showColorVariants: true, // Always true now
     colorParam
   });
 
-  // Update search term when search param changes
   useEffect(() => {
+    // Update searchTerm when searchParam changes
     if (searchParam) {
       setSearchTerm(searchParam);
-    } else if (!searchParam) {
-      setSearchTerm("");
     }
   }, [searchParam]);
 
-  // Count active filters
+  // Подсчет количества активных фильтров
   useEffect(() => {
     let count = 0;
     
@@ -120,7 +113,7 @@ const Catalog = () => {
     setSearchTerm("");
   };
 
-  // Find category by name
+  // Находим объект категории по имени
   const findCategoryByName = (name: string) => {
     return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
   };
@@ -139,21 +132,6 @@ const Catalog = () => {
             Фильтры {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
         </div>
-
-        {/* Debug information toggle */}
-        <div className="md:hidden mb-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs"
-            onClick={() => setShowDebugInfo(!showDebugInfo)}
-          >
-            {showDebugInfo ? "Hide Debug Info" : "Show Debug Info"}
-          </Button>
-        </div>
-
-        {/* Debug information */}
-        <ProductDebugInfo products={allProducts} showDebug={showDebugInfo} />
 
         <CatalogFilters 
           availableCategories={availableCategories}
