@@ -17,7 +17,7 @@ export interface UseProductFormResult {
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCheckboxChange: (name: string, checked: boolean) => void;
   handleSelectChange: (name: string, value: string) => void;
-  handleSpecificationChange: (id: string, value: string) => void;
+  handleSpecificationChange: (id: string, value: string) => void;  // Added this line
   handleMainImageUploaded: (url: string) => void;
   handleAdditionalImagesChange: (urls: string[]) => void;
   handleColorVariantsChange: (variants: any[]) => void;
