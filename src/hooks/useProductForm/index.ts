@@ -62,7 +62,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps): UsePro
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleSpecificationChange, // Make sure this is included in the return object
+    handleSpecificationChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,
     handleColorVariantsChange,
