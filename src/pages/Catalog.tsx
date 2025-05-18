@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Category } from "@/data/products/categoryData";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
@@ -15,10 +15,15 @@ const Catalog = () => {
   const searchParam = searchParams.get("search");
   const colorParam = searchParams.get("color");
   
+  // Get price range from URL parameters or use defaults
+  const minPriceParam = searchParams.get("minPrice");
+  const maxPriceParam = searchParams.get("maxPrice");
+  
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
-    min: 0,
-    max: 5000,
+    min: minPriceParam ? parseInt(minPriceParam, 10) : 0,
+    max: maxPriceParam ? parseInt(maxPriceParam, 10) : 5000,
   });
+  
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
   const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -55,8 +60,33 @@ const Catalog = () => {
     // Update searchTerm when searchParam changes
     if (searchParam) {
       setSearchTerm(searchParam);
+    } else if (searchParam === null) {
+      setSearchTerm("");
     }
   }, [searchParam]);
+  
+  // Update URL when price range changes (but only if user actually changed it)
+  useEffect(() => {
+    const minPriceChanged = priceRange.min > 0;
+    const maxPriceChanged = priceRange.max !== 5000;
+    
+    if (minPriceChanged) {
+      searchParams.set("minPrice", priceRange.min.toString());
+    } else {
+      searchParams.delete("minPrice");
+    }
+    
+    if (maxPriceChanged) {
+      searchParams.set("maxPrice", priceRange.max.toString());
+    } else {
+      searchParams.delete("maxPrice");
+    }
+    
+    // Only update URL if price actually changed to avoid unnecessary history entries
+    if (minPriceChanged || maxPriceChanged) {
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [priceRange, searchParams, setSearchParams]);
 
   // Подсчет количества активных фильтров
   useEffect(() => {

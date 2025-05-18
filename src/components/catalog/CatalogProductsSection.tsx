@@ -1,16 +1,10 @@
 
 import React from "react";
 import { Product } from "@/types/product";
-import { Button } from "@/components/ui/button";
 import ProductGrid from "@/components/products/ProductGrid";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import CatalogActiveFilters from "./CatalogActiveFilters";
+import CatalogHeader from "./CatalogHeader";
+import CatalogProductsInfo from "./CatalogProductsInfo";
 import { SearchForm } from "./SearchForm";
 
 interface CatalogProductsSectionProps {
@@ -39,6 +33,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   availableCategories,
   loading,
   filteredProducts,
+  inStockCount,
   outOfStockCount,
   activeFiltersCount,
   sortBy,
@@ -51,39 +46,18 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
 }) => {
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">
-          {categoryParam 
-            ? availableCategories.includes(categoryParam) ? categoryParam : "Каталог"
-            : searchTerm ? `Поиск: ${searchTerm}` : "Каталог товаров"}
-          {colorParam && ` / Цвет: ${colorParam}`}
-        </h1>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
-          <SearchForm
-            searchTerm={searchTerm}
-            handleSearchChange={handleSearchChange}
-            handleSearchSubmit={handleSearchSubmit}
-            loading={loading}
-          />
-          <Select 
-            value={sortBy}
-            onValueChange={setSortBy}
-            disabled={loading}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Сортировать по" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="in-stock">Сначала в наличии</SelectItem>
-              <SelectItem value="price-asc">Цена (по возрастанию)</SelectItem>
-              <SelectItem value="price-desc">Цена (по убыванию)</SelectItem>
-              <SelectItem value="name-asc">Название (А-Я)</SelectItem>
-              <SelectItem value="name-desc">Название (Я-А)</SelectItem>
-              <SelectItem value="rating">По рейтингу</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/* Header section */}
+      <CatalogHeader
+        categoryParam={categoryParam}
+        searchTerm={searchTerm}
+        colorParam={colorParam}
+        availableCategories={availableCategories}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        loading={loading}
+        handleSearchChange={handleSearchChange}
+        handleSearchSubmit={handleSearchSubmit}
+      />
       
       {/* Active filters display */}
       <CatalogActiveFilters
@@ -97,32 +71,28 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
       />
 
       {/* Products count */}
-      <div className="flex items-center gap-4 mb-4">
-        <div className="text-sm">
-          <span className="font-medium">Всего товаров:</span> {filteredProducts.length}
-        </div>
-        {outOfStockCount > 0 && (
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium">Нет в наличии:</span> {outOfStockCount}
-          </div>
-        )}
-      </div>
+      <CatalogProductsInfo 
+        filteredProducts={filteredProducts}
+        inStockCount={inStockCount}
+        outOfStockCount={outOfStockCount}
+      />
 
       {loading ? (
-        // Заглушки при загрузке
+        // Loading placeholders
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({length: 8}).map((_, i) => (
             <div key={i} className="h-[300px] bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
       ) : (
-        // Отображение товаров
+        // Product grid display
         <ProductGrid 
           products={filteredProducts} 
           showAsColorVariants={true}
         />
       )}
       
+      {/* Empty state */}
       {!loading && filteredProducts.length === 0 && (
         <div className="py-8 text-center">
           <h2 className="text-xl font-semibold mb-2">Товары не найдены</h2>

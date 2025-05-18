@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -44,11 +43,21 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
     });
   };
 
+  // Fixed this function to properly handle category selection
   const handleSelectChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
+    console.log(`Select changed: ${name} = ${value}`);
+    
+    if (name === "category" && value === "new") {
+      // Show input for new category
+      setShowNewCategoryInput(true);
+      setNewCategory("");
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleMainImageUploaded = (url: string) => {
@@ -145,6 +154,7 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
         category: showNewCategoryInput && newCategory ? newCategory : formData.category
       };
       
+      console.log("Submitting product with category:", finalProduct.category);
       await onSave(finalProduct);
     } catch (error) {
       console.error("Error saving product:", error);
@@ -165,10 +175,33 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
     handleCheckboxChange,
     handleSelectChange,
     handleMainImageUploaded,
-    handleAdditionalImagesChange,
-    handleColorVariantsChange,
-    handleRemoveColor,
-    handleRelatedColorProductsChange,
+    handleAdditionalImagesChange: (urls: string[]) => {
+      setFormData({
+        ...formData,
+        additionalImages: urls
+      });
+    },
+    handleColorVariantsChange: (variants: ColorVariant[]) => {
+      setFormData({
+        ...formData,
+        colorVariants: variants
+      });
+    },
+    handleRemoveColor: (colorToRemove: string) => {
+      // Handling legacy colors array 
+      const updatedColors = formData.colors ? formData.colors.filter(color => color !== colorToRemove) : [];
+      
+      setFormData({
+        ...formData,
+        colors: updatedColors
+      });
+    },
+    handleRelatedColorProductsChange: (productIds: string[]) => {
+      setFormData({
+        ...formData,
+        relatedColorProducts: productIds
+      });
+    },
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
