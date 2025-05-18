@@ -23,7 +23,7 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     isSubmitting,
     setActiveTab,
     handleInputChange,
-    handleCheckboxChange, // This is the function with parameter order mismatch
+    handleCheckboxChange,
     handleSelectChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,

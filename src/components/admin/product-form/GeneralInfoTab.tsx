@@ -268,17 +268,6 @@ const GeneralInfoTab = ({
         <div className="col-span-3 space-y-2">
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="inStock"
-              checked={formData.inStock || false}
-              onCheckedChange={(checked) => 
-                handleCheckboxChange(!!checked, "inStock")
-              }
-            />
-            <Label htmlFor="inStock">В наличии</Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
               id="isNew"
               checked={formData.isNew || false}
               onCheckedChange={(checked) => 

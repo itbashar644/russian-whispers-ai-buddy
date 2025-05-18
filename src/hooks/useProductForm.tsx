@@ -10,34 +10,44 @@ interface UseProductFormProps {
 
 export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   const [formData, setFormData] = useState<Partial<Product>>(product);
-  const [newCategory, setNewCategory] = useState("");
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("general");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Update form data when product changes
+  // Initialize form data whenever product changes
   useEffect(() => {
     setFormData(product);
   }, [product]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    
+    // Handle number inputs
+    if (type === "number") {
+      setFormData({
+        ...formData,
+        [name]: value === "" ? "" : Number(value)
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+
+  const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData({
       ...formData,
-      [name]: name === "price" || name === "discountPrice" || name === "rating" || name === "stockQuantity"
-        ? parseFloat(value)
-        : value,
+      [name]: checked
     });
   };
 
-  const handleCheckboxChange = (checked: boolean, name: string) => {
-    setFormData({
-      ...formData,
-      [name]: checked,
-    });
-  };
-
+  // Fix this function to properly handle category selection
   const handleSelectChange = (value: string, name: string) => {
+    console.log(`Select changed: ${name} = ${value}`);
+    
     if (name === "category" && value === "new") {
       // Show input for new category
       setShowNewCategoryInput(true);
@@ -45,30 +55,23 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
       return;
     }
     
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleRemoveColor = (colorToRemove: string) => {
-    setFormData({
-      ...formData,
-      colors: formData.colors?.filter(color => color !== colorToRemove),
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleMainImageUploaded = (url: string) => {
     setFormData({
       ...formData,
-      imageUrl: url,
+      imageUrl: url
     });
   };
 
   const handleAdditionalImagesChange = (urls: string[]) => {
     setFormData({
       ...formData,
-      additionalImages: urls,
+      additionalImages: urls
     });
   };
 
@@ -79,28 +82,55 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
-  const validateImageUrl = (url: string): boolean => {
-    if (!url) return true; // Empty URL is considered valid (will use default)
+  const handleRemoveColor = (colorToRemove: string) => {
+    // Handling legacy colors array 
+    const updatedColors = formData.colors ? formData.colors.filter(color => color !== colorToRemove) : [];
     
-    // Basic URL validation
-    try {
-      new URL(url);
-      return true;
-    } catch (e) {
-      return false;
-    }
+    setFormData({
+      ...formData,
+      colors: updatedColors
+    });
   };
 
-  const validateAllImageUrls = (mainImageUrl: string, additionalImages: string[] = []): boolean => {
-    if (mainImageUrl && mainImageUrl !== "/placeholder.svg" && !validateImageUrl(mainImageUrl)) {
+  const handleRelatedColorProductsChange = (productIds: string[]) => {
+    setFormData({
+      ...formData,
+      relatedColorProducts: productIds
+    });
+  };
+
+  const validateForm = (): boolean => {
+    // Validate required fields
+    if (!formData.title) {
+      toast.error("Необходимо указать название товара");
+      setActiveTab("general");
       return false;
     }
     
-    if (additionalImages && additionalImages.length > 0) {
-      for (const url of additionalImages) {
-        if (!validateImageUrl(url)) {
-          return false;
-        }
+    if (!formData.category && !newCategory) {
+      toast.error("Необходимо указать категорию товара");
+      setActiveTab("general");
+      return false;
+    }
+    
+    if (!formData.price || formData.price <= 0) {
+      toast.error("Необходимо указать корректную цену товара");
+      setActiveTab("general");
+      return false;
+    }
+    
+    // Check for duplicate article numbers in color variants
+    if (formData.colorVariants && formData.colorVariants.length > 0) {
+      const articleNumbers = formData.colorVariants
+        .map(v => v.articleNumber)
+        .filter(a => a && a.trim() !== "");
+      
+      const uniqueArticleNumbers = new Set(articleNumbers);
+      
+      if (articleNumbers.length !== uniqueArticleNumbers.size) {
+        toast.error("Найдены дублирующиеся артикулы в цветовых вариантах");
+        setActiveTab("colors");
+        return false;
       }
     }
     
@@ -108,45 +138,32 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
   };
 
   const validateAndSubmitForm = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
-      let finalFormData = { ...formData };
+      // If new category was entered, use it
+      const finalFormData = {
+        ...formData,
+        category: showNewCategoryInput && newCategory ? newCategory : formData.category
+      };
       
-      // Use the new category if provided
-      if (showNewCategoryInput && newCategory.trim()) {
-        finalFormData.category = newCategory.trim();
+      // Set inStock status based on stockQuantity
+      if (finalFormData.stockQuantity !== undefined) {
+        finalFormData.inStock = finalFormData.stockQuantity > 0;
+      } else {
+        finalFormData.inStock = false;
       }
       
-      if (!finalFormData.title || !finalFormData.description || !finalFormData.category) {
-        toast.error("Ошибка", {
-          description: "Пожалуйста, заполните все обязательные поля",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Validate image URLs
-      if (!validateAllImageUrls(finalFormData.imageUrl || "", finalFormData.additionalImages)) {
-        toast.error("Ошибка URL изображений", {
-          description: "Пожалуйста, укажите корректные URL изображений",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("Form submission - data being sent to parent:", finalFormData);
+      console.log("Submitting product with category:", finalFormData.category);
       await onSave(finalFormData);
-      
-      // Only reset submission state if we're still mounted
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 500);
-      
     } catch (error) {
-      console.error("Error submitting product form:", error);
-      toast.error("Не удалось сохранить товар", {
-        description: error instanceof Error ? error.message : "Произошла ошибка при сохранении товара"
-      });
+      console.error("Error saving product:", error);
+      toast.error("Ошибка при сохранении товара");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -165,6 +182,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     handleAdditionalImagesChange,
     handleColorVariantsChange,
     handleRemoveColor,
+    handleRelatedColorProductsChange,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
