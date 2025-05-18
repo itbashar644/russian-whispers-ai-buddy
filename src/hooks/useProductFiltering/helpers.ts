@@ -45,13 +45,14 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
   
-  // Always sort by in-stock first - this is the key change!
+  // FIXED: Always sort by in-stock first with proper comparison
+  // This is the key fix - we need to make sure in-stock items come first
   sortedProducts.sort((a, b) => {
-    // Important: Reverse the order to put in-stock products first
-    if (a.inStock !== b.inStock) {
-      // This was incorrect! We need to make sure in-stock items are first
-      return a.inStock ? -1 : 1; // -1 puts a before b when a is in stock
-    }
+    // When a is in stock and b is not, a should come first (-1)
+    if (a.inStock && !b.inStock) return -1;
+    // When b is in stock and a is not, b should come first (1)
+    if (!a.inStock && b.inStock) return 1;
+    // If both have same stock status, maintain original order
     return 0;
   });
   
