@@ -1,14 +1,18 @@
 
 import { Product } from "@/types/product";
 
-/**
- * Transform products for color display
- */
+// Transform products for color display
 export const transformProductsForColorDisplay = (products: Product[]): Product[] => {
   const expandedProducts: Product[] = [];
   
+  // First add all the base products
   products.forEach(product => {
-    // If product has color variants, create virtual products for each variant
+    // Always add the base product first
+    expandedProducts.push({ ...product });
+  });
+  
+  // Then add all color variants
+  products.forEach(product => {
     if (product.colorVariants && product.colorVariants.length > 0) {
       product.colorVariants.forEach(variant => {
         const variantProduct: Product = {
@@ -29,26 +33,17 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
         };
         expandedProducts.push(variantProduct);
       });
-    } else {
-      // Product has no color variants, add as is
-      expandedProducts.push(product);
     }
   });
   
   return expandedProducts;
 };
 
-/**
- * Sort products based on selected sortBy option
- */
+// Sort products based on selected sortBy option
 export const sortProducts = (products: Product[], sortByOption: string): Product[] => {
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
   
-  // Always sort by in-stock first, regardless of other sortings
-  sortedProducts.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
-  
-  // Then apply additional sorting on top of the in-stock priority
   switch (sortByOption) {
     case "price-asc":
       sortedProducts.sort((a, b) => {
@@ -107,6 +102,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
     case "in-stock":
     default:
       // Just maintain the stock sort that was already applied
+      sortedProducts.sort((a, b) => (a.inStock ? -1 : 1) - (b.inStock ? -1 : 1));
       break;
   }
   

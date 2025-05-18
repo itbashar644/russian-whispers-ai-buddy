@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -30,7 +29,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     });
   };
 
-  const handleCheckboxChange = (checked: boolean, name: string) => {
+  const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData({
       ...formData,
       [name]: checked,
@@ -41,45 +40,48 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     if (name === "category" && value === "new") {
       // Show input for new category
       setShowNewCategoryInput(true);
-      setNewCategory("");
       return;
     }
     
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    // Fix: Directly update the form data with selected category value
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+    
+    console.log(`Category selected: ${value}`);
   };
 
-  const handleRemoveColor = (colorToRemove: string) => {
+  // Helper functions definitions
+  function handleRemoveColor(colorToRemove: string) {
     setFormData({
       ...formData,
       colors: formData.colors?.filter(color => color !== colorToRemove),
     });
-  };
+  }
 
-  const handleMainImageUploaded = (url: string) => {
+  function handleMainImageUploaded(url: string) {
     setFormData({
       ...formData,
       imageUrl: url,
     });
-  };
+  }
 
-  const handleAdditionalImagesChange = (urls: string[]) => {
+  function handleAdditionalImagesChange(urls: string[]) {
     setFormData({
       ...formData,
       additionalImages: urls,
     });
-  };
+  }
 
-  const handleColorVariantsChange = (variants: ColorVariant[]) => {
+  function handleColorVariantsChange(variants: ColorVariant[]) {
     setFormData({
       ...formData,
       colorVariants: variants
     });
-  };
+  }
 
-  const validateImageUrl = (url: string): boolean => {
+  function validateImageUrl(url: string): boolean {
     if (!url) return true; // Empty URL is considered valid (will use default)
     
     // Basic URL validation
@@ -89,9 +91,9 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     } catch (e) {
       return false;
     }
-  };
+  }
 
-  const validateAllImageUrls = (mainImageUrl: string, additionalImages: string[] = []): boolean => {
+  function validateAllImageUrls(mainImageUrl: string, additionalImages: string[] = []): boolean {
     if (mainImageUrl && mainImageUrl !== "/placeholder.svg" && !validateImageUrl(mainImageUrl)) {
       return false;
     }
@@ -105,7 +107,7 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     }
     
     return true;
-  };
+  }
 
   const validateAndSubmitForm = async () => {
     try {
@@ -161,10 +163,10 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps) => {
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleMainImageUploaded,
-    handleAdditionalImagesChange,
-    handleColorVariantsChange,
-    handleRemoveColor,
+    handleMainImageUploaded: handleMainImageUploaded || ((url: string) => {}),
+    handleAdditionalImagesChange: handleAdditionalImagesChange || ((urls: string[]) => {}),
+    handleColorVariantsChange: handleColorVariantsChange || ((variants: ColorVariant[]) => {}),
+    handleRemoveColor: handleRemoveColor || ((color: string) => {}),
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput

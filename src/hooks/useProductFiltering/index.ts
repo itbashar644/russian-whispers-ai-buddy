@@ -39,8 +39,17 @@ export const useProductFiltering = ({
     
     let result = [...allProducts];
     
+    // Debug the original data
+    console.log("Filtering products, original count:", result.length);
+    const categoryCountBefore = {};
+    [...new Set(result.map(p => p.category))].forEach(category => {
+      categoryCountBefore[category] = result.filter(p => p.category === category).length;
+    });
+    console.log("Categories before filtering:", categoryCountBefore);
+    
     // Always transform products for color display
     result = transformProductsForColorDisplay(result);
+    console.log("Products after transformation:", result.length);
     
     // Filter by color if color parameter is set
     if (colorParam) {
@@ -70,13 +79,25 @@ export const useProductFiltering = ({
       }
     );
     
+    // Filter by stock status if needed
+    if (inStockOnly) {
+      result = result.filter((p) => p.inStock);
+    }
+    
     // Sort products
     result = sortProducts(result, sortBy);
     
+    // Debug the final result
+    const categoryCountAfter = {};
+    [...new Set(result.map(p => p.category))].forEach(category => {
+      categoryCountAfter[category] = result.filter(p => p.category === category).length;
+    });
+    console.log("Categories after filtering:", categoryCountAfter);
+    
     setFilteredProducts(result);
-  }, [allProducts, priceRange, searchTerm, sortBy, loading, colorParam]);
+  }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
 
-  // Calculate counts for stock status using stockQuantity for accuracy
+  // Calculate counts for stock status
   const inStockCount = useMemo(() => {
     return filteredProducts.filter(p => {
       if (p.stockQuantity !== undefined) {

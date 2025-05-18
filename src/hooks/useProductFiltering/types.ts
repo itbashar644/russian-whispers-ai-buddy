@@ -5,10 +5,10 @@ export interface UseProductFilteringProps {
   allProducts: Product[];
   searchTerm: string;
   priceRange: { min: number; max: number };
-  inStockOnly: boolean;  // Keeping for backward compatibility
+  inStockOnly: boolean;
   sortBy: string;
   loading: boolean;
-  showColorVariants: boolean;  // Keeping for backward compatibility
+  showColorVariants: boolean;
   colorParam: string | null;
 }
 
