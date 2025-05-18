@@ -57,9 +57,7 @@ const Footer = () => {
               <li>
                 <Link to="/catalog?category=gaming" className="hover:underline">Игровые устройства</Link>
               </li>
-              <li>
-                <Link to="/catalog?category=other" className="hover:underline">Другое</Link>
-              </li>
+              <!-- Removed "Другое" category here -->
             </ul>
           </div>
           <div>
