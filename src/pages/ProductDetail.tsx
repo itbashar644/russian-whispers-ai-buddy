@@ -18,6 +18,7 @@ import ProductVideo from "@/components/products/ProductVideo";
 import ColorSelection from "@/components/products/ColorSelection";
 import QuantitySelector from "@/components/products/QuantitySelector";
 import ImageGallery from "@/components/products/ImageGallery";
+import { trackPageView, trackProductView, trackAddToCart } from "@/utils/metrika";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +40,14 @@ const ProductDetail = () => {
         setProduct(productData || null);
         
         if (productData) {
+          // Track product page view after data is loaded
+          trackProductView({
+            id: productData.id,
+            name: productData.title,
+            price: productData.discountPrice || productData.price,
+            category: productData.category
+          });
+          
           // Set default color when product is loaded
           if (productData.colorVariants && productData.colorVariants.length > 0) {
             setSelectedColor(productData.colorVariants[0].color);
@@ -58,6 +67,13 @@ const ProductDetail = () => {
     };
     
     fetchProduct();
+  }, [id]);
+
+  // Track page view when product ID changes
+  useEffect(() => {
+    if (id) {
+      trackPageView();
+    }
   }, [id]);
 
   // Find the selected color variant if it exists
@@ -93,6 +109,16 @@ const ProductDetail = () => {
         color: selectedColor,
         selectedColorVariant
       });
+      
+      // Track add to cart event
+      trackAddToCart({
+        id: product.id,
+        name: product.title,
+        price: selectedColorVariant ? 
+          (selectedColorVariant.discountPrice || selectedColorVariant.price) : 
+          (product.discountPrice || product.price),
+        category: product.category
+      }, quantity);
     }
   };
 

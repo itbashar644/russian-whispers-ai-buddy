@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts, getRelatedColorProducts } from "@/data/products";
@@ -11,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
 import ProductInfo from "@/components/products/ProductInfo";
 import ProductDetails from "@/components/products/ProductDetails";
+import { trackPageView, trackProductView } from "@/utils/metrika";
 
 const Product = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +20,13 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<string>("description");
   const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(null);
+
+  // Track page view when product ID changes
+  useEffect(() => {
+    if (id) {
+      trackPageView();
+    }
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +38,14 @@ const Product = () => {
         const productData = await getProductById(id);
         if (productData) {
           setProduct(productData);
+          
+          // Track product view after data is loaded
+          trackProductView({
+            id: productData.id,
+            name: productData.title,
+            price: productData.discountPrice || productData.price,
+            category: productData.category
+          });
           
           // Если у товара есть цветовые варианты, устанавливаем первый по умолчанию
           if (productData.colorVariants && productData.colorVariants.length > 0) {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
@@ -7,6 +6,7 @@ import { toast } from "sonner";
 import { decreaseProductStock } from "@/data/products";
 import StockNotification from './StockNotification';
 import AlternativeProducts from './AlternativeProducts';
+import { trackAddToCart } from "@/utils/metrika";
 
 interface ProductInfoProps {
   product: Product;
@@ -53,6 +53,16 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
       const success = await decreaseProductStock(productId, quantity, colorVariant);
       
       if (success) {
+        // Track add to cart event
+        trackAddToCart({
+          id: product.id,
+          name: product.title,
+          price: selectedColorVariant ? 
+            (selectedColorVariant.price) : 
+            (product.discountPrice || product.price),
+          category: product.category
+        }, quantity);
+        
         // Add to cart logic (replace with your actual cart logic)
         toast("Товар добавлен в корзину", {
           description: `${product.title} (${quantity} шт.)`,
