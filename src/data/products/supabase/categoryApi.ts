@@ -122,3 +122,62 @@ export const updateProductsCategoryInSupabase = async (oldCategory: string, newC
     return false;
   }
 };
+
+// Функция для удаления категории "Другое"
+export const removeOtherCategory = async (): Promise<boolean> => {
+  try {
+    // Проверяем, существует ли категория "Другое"
+    const { data: categoryData } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("name", "Другое")
+      .single();
+    
+    if (!categoryData) {
+      console.log("Категория 'Другое' не найдена");
+      return false;
+    }
+    
+    // Проверяем, есть ли товары в этой категории
+    const { data: products } = await supabase
+      .from("products")
+      .select("id")
+      .eq("category", "Другое");
+    
+    // Если есть товары, то перемещаем их в категорию "Разное" или создаем ее
+    if (products && products.length > 0) {
+      // Проверяем, существует ли категория "Разное"
+      const { data: miscCategory } = await supabase
+        .from("categories")
+        .select("name")
+        .eq("name", "Разное")
+        .single();
+      
+      if (!miscCategory) {
+        // Если нет, то создаем ее
+        await supabase
+          .from("categories")
+          .insert({ name: "Разное", image_url: "/placeholder.svg" });
+      }
+      
+      // Перемещаем товары из "Другое" в "Разное"
+      await updateProductsCategoryInSupabase("Другое", "Разное");
+    }
+    
+    // Удаляем категорию "Другое"
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("name", "Другое");
+    
+    if (error) {
+      console.error("Ошибка при удалении категории 'Другое':", error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.error("Ошибка при удалении категории 'Другое':", err);
+    return false;
+  }
+};

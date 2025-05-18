@@ -3,6 +3,7 @@ import React from "react";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ChatButtonProps {
   isOpen: boolean;
@@ -12,27 +13,26 @@ interface ChatButtonProps {
 
 const ChatButton = ({ isOpen, onClick, unreadCount = 0 }: ChatButtonProps) => {
   return (
-    <Button
-      onClick={onClick}
-      className={cn(
-        "fixed bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full p-0 shadow-lg transition-all",
-        isOpen ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
-      )}
-      aria-label={isOpen ? "Закрыть чат" : "Открыть чат"}
-    >
+    <div className="inline-flex items-center">
       {isOpen ? (
-        <X className="h-6 w-6" />
+        <X className="h-4 w-4" />
       ) : (
-        <>
-          <MessageCircle className="h-6 w-6" />
+        <Button
+          onClick={onClick}
+          variant="outline"
+          size="icon"
+          className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+          aria-label="Открыть чат"
+        >
+          <MessageCircle />
           {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white">
+            <Badge className="absolute -top-2 -right-2">
               {unreadCount}
-            </span>
+            </Badge>
           )}
-        </>
+        </Button>
       )}
-    </Button>
+    </div>
   );
 };
 
