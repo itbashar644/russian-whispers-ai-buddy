@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { Product } from "@/types/product";
 
@@ -42,6 +41,20 @@ export const useProductFiltering = ({
     return Array.from(colorSet).sort();
   }, [allProducts]);
 
+  // Add debug logging to see what's happening with products
+  useEffect(() => {
+    if (!loading) {
+      console.log("Total products from API:", allProducts.length);
+      console.log("Categories found:", [...new Set(allProducts.map(p => p.category))]);
+      
+      if (allProducts.some(p => p.category === "Планшеты")) {
+        console.log("Tablets found in initial data:", allProducts.filter(p => p.category === "Планшеты").length);
+      } else {
+        console.log("No tablets found in initial data!");
+      }
+    }
+  }, [allProducts, loading]);
+
   // Фильтруем и сортируем продукты при изменении параметров
   useEffect(() => {
     if (loading) return;
@@ -52,6 +65,10 @@ export const useProductFiltering = ({
     if (showColorVariants) {
       result = transformProductsForColorDisplay(result);
     }
+    
+    // Debug the result after transformation
+    console.log("Products after transformation:", result.length);
+    console.log("Categories after transformation:", [...new Set(result.map(p => p.category))]);
     
     // Filter by color if color parameter is set
     if (colorParam) {
@@ -89,6 +106,13 @@ export const useProductFiltering = ({
     // Always sort by in-stock first
     result = sortProducts(result, sortBy);
     
+    // Final check for tablets
+    if (result.some(p => p.category === "Планшеты")) {
+      console.log("Tablets found in final filtered data:", result.filter(p => p.category === "Планшеты").length);
+    } else {
+      console.log("No tablets in final filtered result!");
+    }
+    
     setFilteredProducts(result);
   }, [allProducts, priceRange, searchTerm, inStockOnly, sortBy, loading, showColorVariants, colorParam]);
 
@@ -97,6 +121,9 @@ export const useProductFiltering = ({
     const expandedProducts: Product[] = [];
     
     products.forEach(product => {
+      // Always add the base product first to ensure all products appear
+      expandedProducts.push({ ...product });
+      
       // If product has color variants, create virtual products for each variant
       if (product.colorVariants && product.colorVariants.length > 0) {
         product.colorVariants.forEach(variant => {
@@ -118,9 +145,6 @@ export const useProductFiltering = ({
           };
           expandedProducts.push(variantProduct);
         });
-      } else {
-        // Product has no color variants, add as is
-        expandedProducts.push(product);
       }
     });
     

@@ -88,7 +88,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
               </span>
             )}
           </div>
-          <div className="text-sm text-muted-foreground truncate max-w-[40%] text-right">
+          <div className="text-sm text-muted-foreground text-right">
             {product.category}
           </div>
         </CardDescription>

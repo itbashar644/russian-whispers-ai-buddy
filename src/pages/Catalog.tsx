@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Category } from "@/data/products/categoryData";
@@ -27,6 +26,18 @@ const Catalog = () => {
 
   // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
+  
+  // Debug - log the products when they load
+  useEffect(() => {
+    if (!loading && allProducts.length > 0) {
+      console.log(`Loaded ${allProducts.length} products from the API`);
+      console.log(`Categories found: ${[...new Set(allProducts.map(p => p.category))].join(', ')}`);
+      
+      // Check specific categories
+      const tabletCount = allProducts.filter(p => p.category === "Планшеты").length;
+      console.log(`Tablets found: ${tabletCount}`);
+    }
+  }, [allProducts, loading]);
   
   // Фильтрация и сортировка продуктов
   const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
