@@ -62,7 +62,7 @@ export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
             asChild
             className="flex items-center gap-2"
           >
-            <Link to="/login">
+            <Link to="/auth/login">
               <LogIn className="h-4 w-4" />
               <span className="hidden md:inline-block">Войти</span>
             </Link>
