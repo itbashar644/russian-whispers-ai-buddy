@@ -2,6 +2,41 @@
 import { Product } from "@/types/product";
 import { toast } from "sonner";
 
+export const validateProduct = (formData: Partial<Product>) => {
+  const errors: string[] = [];
+  
+  // Validate required fields
+  if (!formData.title) {
+    errors.push("Необходимо указать название товара");
+  }
+  
+  if (!formData.category) {
+    errors.push("Необходимо указать категорию товара");
+  }
+  
+  if (!formData.price || formData.price <= 0) {
+    errors.push("Необходимо указать корректную цену товара");
+  }
+  
+  // Check for duplicate article numbers in color variants
+  if (formData.colorVariants && formData.colorVariants.length > 0) {
+    const articleNumbers = formData.colorVariants
+      .map(v => v.articleNumber)
+      .filter(a => a && a.trim() !== "");
+    
+    const uniqueArticleNumbers = new Set(articleNumbers);
+    
+    if (articleNumbers.length !== uniqueArticleNumbers.size) {
+      errors.push("Найдены дублирующиеся артикулы в цветовых вариантах");
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+};
+
 export const validateForm = (
   formData: Partial<Product>, 
   newCategory: string,

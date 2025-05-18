@@ -2,14 +2,14 @@
 import { useMemo } from "react";
 import { Product } from "@/types/product";
 
-export const useFilterOptions = (products: Product[]) => {
+export const useFilterOptions = (allProducts: Product[]) => {
   // Get all available colors from products
   const availableColors = useMemo(() => {
-    if (!products.length) return [];
+    if (!allProducts || !allProducts.length) return [];
     
     const colorSet = new Set<string>();
     
-    products.forEach(product => {
+    allProducts.forEach(product => {
       if (product.colorVariants && product.colorVariants.length > 0) {
         product.colorVariants.forEach(variant => {
           colorSet.add(variant.color);
@@ -18,9 +18,7 @@ export const useFilterOptions = (products: Product[]) => {
     });
     
     return Array.from(colorSet).sort();
-  }, [products]);
-  
-  return {
-    availableColors
-  };
+  }, [allProducts]);
+
+  return { availableColors };
 };

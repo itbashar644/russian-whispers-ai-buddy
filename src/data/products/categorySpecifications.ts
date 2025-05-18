@@ -135,3 +135,9 @@ export const categorySpecifications: CategorySpecifications = {
 export const getSpecificationsForCategory = (category: string): SpecificationField[] => {
   return categorySpecifications[category] || [];
 };
+
+// Helper function to format specification values with units
+export const formatSpecificationValue = (value: string, unit?: string): string => {
+  if (!value) return '';
+  return unit ? `${value} ${unit}` : value;
+};
