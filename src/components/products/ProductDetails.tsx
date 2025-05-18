@@ -2,6 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product } from "@/types/product";
+import { formatSpecificationValue, getSpecificationsForCategory } from '@/data/products/categorySpecifications';
 
 interface ProductDetailsProps {
   product: Product;
@@ -10,6 +11,47 @@ interface ProductDetailsProps {
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ product, selectedTab, setSelectedTab }) => {
+  const categorySpecs = getSpecificationsForCategory(product.category);
+  
+  const renderSpecifications = () => {
+    if (!product.specifications || Object.keys(product.specifications).length === 0) {
+      return (
+        <div className="py-4 text-center text-muted-foreground">
+          Характеристики отсутствуют
+        </div>
+      );
+    }
+
+    const specs = Object.entries(product.specifications).filter(([_, value]) => value && value.trim() !== '');
+    if (specs.length === 0) {
+      return (
+        <div className="py-4 text-center text-muted-foreground">
+          Характеристики отсутствуют
+        </div>
+      );
+    }
+
+    return (
+      <div className="divide-y">
+        {specs.map(([key, value]) => {
+          // Find spec definition to get label and unit
+          const specDefinition = categorySpecs.find(s => s.id === key);
+          const label = specDefinition?.label || key;
+          const unit = specDefinition?.unit;
+          
+          const displayValue = formatSpecificationValue(value, unit);
+          
+          return (
+            <div key={key} className="grid grid-cols-2 py-2 text-sm">
+              <span className="font-medium">{label}</span>
+              <span>{displayValue}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mt-8">
       <TabsList className="w-full">
@@ -25,23 +67,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product, selectedTab, s
       </TabsContent>
       <TabsContent value="specifications" className="mt-4">
         <div className="space-y-2">
-          {product.specifications && Object.keys(product.specifications).length > 0 ? (
-            <div className="divide-y">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="grid grid-cols-2 py-2 text-sm">
-                  <span className="font-medium">{key}</span>
-                  <span>{value}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-4 text-center text-muted-foreground">
-              Характеристики отсутствуют
-            </div>
-          )}
+          {/* Рендерим спецификации */}
+          {renderSpecifications()}
           
           {/* Дополнительная информация */}
-          <div className="grid grid-cols-2 py-2 text-sm">
+          <div className="grid grid-cols-2 py-2 text-sm border-t">
             <span className="font-medium">Страна производства</span>
             <span>{product.countryOfOrigin}</span>
           </div>
@@ -50,6 +80,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product, selectedTab, s
             <div className="grid grid-cols-2 py-2 text-sm">
               <span className="font-medium">Материал</span>
               <span>{product.material}</span>
+            </div>
+          )}
+
+          {product.variant && (
+            <div className="grid grid-cols-2 py-2 text-sm">
+              <span className="font-medium">Вариант</span>
+              <span>{product.variant}</span>
             </div>
           )}
         </div>

@@ -10,118 +10,115 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Product } from "@/types/product";
+import { FormRow } from './FormRow';
+import { FormSection } from './FormSection';
+import SpecificationsSection from './SpecificationsSection';
 
 interface AdditionalInfoTabProps {
   formData: Partial<Product>;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (value: string, name: string) => void;
+  handleSpecificationChange?: (id: string, value: string) => void;
 }
 
 const AdditionalInfoTab = ({
   formData,
   handleInputChange,
-  handleSelectChange
+  handleSelectChange,
+  handleSpecificationChange
 }: AdditionalInfoTabProps) => {
-  return (
-    <div className="space-y-4">
-      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-        <h3 className="text-sm font-medium">Ссылки на маркетплейсы</h3>
-        
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="ozonUrl" className="text-right">
-            Ссылка на Ozon
-          </Label>
-          <Input
-            id="ozonUrl"
-            name="ozonUrl"
-            placeholder="https://www.ozon.ru/product/..."
-            value={formData.ozonUrl || ""}
-            onChange={handleInputChange}
-            className="col-span-3"
-          />
-        </div>
-        
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="wildberriesUrl" className="text-right">
-            Ссылка на Wildberries
-          </Label>
-          <Input
-            id="wildberriesUrl"
-            name="wildberriesUrl"
-            placeholder="https://www.wildberries.ru/catalog/..."
-            value={formData.wildberriesUrl || ""}
-            onChange={handleInputChange}
-            className="col-span-3"
-          />
-        </div>
-        
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="avitoUrl" className="text-right">
-            Ссылка на Авито
-          </Label>
-          <Input
-            id="avitoUrl"
-            name="avitoUrl"
-            placeholder="https://www.avito.ru/..."
-            value={formData.avitoUrl || ""}
-            onChange={handleInputChange}
-            className="col-span-3"
-          />
-        </div>
-      </div>
+  // Handler for specification changes
+  const onSpecificationChange = (id: string, value: string) => {
+    if (handleSpecificationChange) {
+      handleSpecificationChange(id, value);
+    } else {
+      // Fallback implementation if the parent doesn't provide a handler
+      const updatedSpecs = {
+        ...(formData.specifications || {}),
+        [id]: value
+      };
       
-      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-        <h3 className="text-sm font-medium">Видео товара</h3>
-        
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="videoType" className="text-right">
-            Тип видео
-          </Label>
-          <Select
-            value={formData.videoType || "mp4"}
-            onValueChange={(value) => handleSelectChange(value, "videoType")}
-          >
-            <SelectTrigger className="col-span-3">
-              <SelectValue placeholder="Выберите тип видео" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mp4">MP4 (прямая ссылка)</SelectItem>
-              <SelectItem value="vk">ВКонтакте</SelectItem>
-              <SelectItem value="youtube">YouTube</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="videoUrl" className="text-right">
-            URL видео
-          </Label>
+      // Создаем синтетическое событие для обработчика
+      const syntheticEvent = {
+        target: {
+          name: "specifications",
+          value: updatedSpecs
+        }
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      
+      handleInputChange(syntheticEvent);
+    }
+  };
+
+  return (
+    <div className="grid gap-4">
+      <FormSection>
+        <FormRow label="URL видео" htmlFor="videoUrl">
           <Input
             id="videoUrl"
             name="videoUrl"
             value={formData.videoUrl || ""}
             onChange={handleInputChange}
-            placeholder={
-              formData.videoType === "vk"
-                ? "https://vkvideo.ru/video-123456_789012 или с video_ext.php"
-                : formData.videoType === "youtube"
-                ? "https://youtube.com/watch?v=AbCdEfG или https://youtu.be/AbCdEfG"
-                : "https://example.com/video.mp4"
-            }
-            className="col-span-3"
+            placeholder="Ссылка на видео"
           />
-        </div>
+        </FormRow>
         
-        <div className="col-span-4 text-xs text-muted-foreground pl-4 md:pl-[calc(25%+1rem)]">
-          {formData.videoType === "vk" ? (
-            <p>Принимаются ссылки на видео ВКонтакте в форматах: vkvideo.ru/video-ID_ID, vk.com/video-ID_ID или с video_ext.php</p>
-          ) : formData.videoType === "youtube" ? (
-            <p>Принимаются ссылки на видео YouTube в форматах: youtube.com/watch?v=ID или youtu.be/ID</p>
-          ) : (
-            <p>Укажите прямую ссылку на MP4-видеофайл</p>
-          )}
-        </div>
-      </div>
+        <FormRow label="Тип видео" htmlFor="videoType">
+          <Select
+            value={formData.videoType || "mp4"}
+            onValueChange={(value) => handleSelectChange(value, "videoType")}
+          >
+            <SelectTrigger id="videoType">
+              <SelectValue placeholder="Выберите тип видео" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mp4">MP4</SelectItem>
+              <SelectItem value="youtube">YouTube</SelectItem>
+              <SelectItem value="vk">ВКонтакте</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormRow>
+      </FormSection>
+      
+      <FormSection>
+        <FormRow label="ID товара на Ozon" htmlFor="ozonUrl">
+          <Input
+            id="ozonUrl"
+            name="ozonUrl"
+            value={formData.ozonUrl || ""}
+            onChange={handleInputChange}
+            placeholder="URL товара на Ozon"
+          />
+        </FormRow>
+        
+        <FormRow label="ID товара на Wildberries" htmlFor="wildberriesUrl">
+          <Input
+            id="wildberriesUrl"
+            name="wildberriesUrl"
+            value={formData.wildberriesUrl || ""}
+            onChange={handleInputChange}
+            placeholder="URL товара на Wildberries"
+          />
+        </FormRow>
+        
+        <FormRow label="ID товара на Avito" htmlFor="avitoUrl">
+          <Input
+            id="avitoUrl"
+            name="avitoUrl"
+            value={formData.avitoUrl || ""}
+            onChange={handleInputChange}
+            placeholder="URL товара на Avito"
+          />
+        </FormRow>
+      </FormSection>
+      
+      {formData.category && (
+        <SpecificationsSection 
+          category={formData.category}
+          specifications={formData.specifications || {}}
+          onSpecificationChange={onSpecificationChange}
+        />
+      )}
     </div>
   );
 };

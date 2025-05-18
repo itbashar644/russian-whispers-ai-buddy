@@ -41,9 +41,28 @@ export const useFormHandlers = (
       return;
     }
     
+    // If category changed, reset specifications if they exist
+    if (name === "category" && formData.specifications) {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        specifications: {} // Reset specifications for the new category
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleSpecificationChange = (id: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      specifications: {
+        ...(prev.specifications || {}),
+        [id]: value
+      }
     }));
   };
 
@@ -90,6 +109,7 @@ export const useFormHandlers = (
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
+    handleSpecificationChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,
     handleColorVariantsChange,

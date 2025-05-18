@@ -31,6 +31,7 @@ export interface Product {
   isColorVariant?: boolean; // Flag to indicate if this is a color variant of another product
   parentProductId?: string; // Reference to the parent product if this is a color variant
   modelName?: string; // New field for grouping products of the same model
+  variant?: string; // Field to specify the variant type for this product
 }
 
 export interface ColorVariant {
@@ -61,4 +62,17 @@ export interface DeliveryMethod {
   price: number;
   estimatedDays: string;
   icon: string;
+}
+
+// Category-specific specification definitions
+export interface CategorySpecifications {
+  [category: string]: SpecificationField[];
+}
+
+export interface SpecificationField {
+  id: string;
+  label: string;
+  type: 'text' | 'number';
+  placeholder?: string;
+  unit?: string;
 }
