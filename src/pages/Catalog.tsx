@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
@@ -7,41 +8,26 @@ import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalogData } from "@/hooks/useCatalogData";
 import { useProductFiltering } from "@/hooks/useProductFiltering";
+import { useActiveFilters } from "@/hooks/useCatalog/useActiveFilters";
+import { useUrlParams } from "@/hooks/useCatalog/useUrlParams";
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category");
-  const searchParam = searchParams.get("search");
-  const colorParam = searchParams.get("color");
-  
-  // Get price range from URL parameters or use defaults
-  const minPriceParam = searchParams.get("minPrice");
-  const maxPriceParam = searchParams.get("maxPrice");
-  
-  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
-    min: minPriceParam ? parseInt(minPriceParam, 10) : 0,
-    max: maxPriceParam ? parseInt(maxPriceParam, 10) : 500000000,
-  });
+  const { 
+    categoryParam, 
+    searchParam, 
+    colorParam, 
+    priceRange, 
+    setPriceRange, 
+    updatePriceInUrl 
+  } = useUrlParams(searchParams, setSearchParams);
   
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
   const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
-  
-  // Debug - log the products when they load
-  useEffect(() => {
-    if (!loading && allProducts.length > 0) {
-      console.log(`Loaded ${allProducts.length} products from the API`);
-      console.log(`Categories found: ${[...new Set(allProducts.map(p => p.category))].join(', ')}`);
-      
-      // Check specific categories
-      const tabletCount = allProducts.filter(p => p.category === "Планшеты").length;
-      console.log(`Tablets found: ${tabletCount}`);
-    }
-  }, [allProducts, loading]);
   
   // Фильтрация и сортировка продуктов
   const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
@@ -55,6 +41,14 @@ const Catalog = () => {
     colorParam
   });
 
+  // Calculate active filters count
+  const { activeFiltersCount } = useActiveFilters({
+    categoryParam,
+    colorParam,
+    priceRange,
+    searchTerm
+  });
+
   useEffect(() => {
     // Update searchTerm when searchParam changes
     if (searchParam) {
@@ -64,40 +58,10 @@ const Catalog = () => {
     }
   }, [searchParam]);
   
-  // Update URL when price range changes (but only if user actually changed it)
+  // Update URL when price range changes
   useEffect(() => {
-    const minPriceChanged = priceRange.min > 0;
-    const maxPriceChanged = priceRange.max !== 500000000;
-    
-    if (minPriceChanged) {
-      searchParams.set("minPrice", priceRange.min.toString());
-    } else {
-      searchParams.delete("minPrice");
-    }
-    
-    if (maxPriceChanged) {
-      searchParams.set("maxPrice", priceRange.max.toString());
-    } else {
-      searchParams.delete("maxPrice");
-    }
-    
-    // Only update URL if price actually changed to avoid unnecessary history entries
-    if (minPriceChanged || maxPriceChanged) {
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [priceRange, searchParams, setSearchParams]);
-
-  // Подсчет количества активных фильтров
-  useEffect(() => {
-    let count = 0;
-    
-    if (categoryParam) count++;
-    if (colorParam) count++;
-    if (priceRange.min > 0 || priceRange.max < 500000000) count++;
-    if (searchTerm) count++;
-    
-    setActiveFiltersCount(count);
-  }, [categoryParam, colorParam, priceRange, searchTerm]);
+    updatePriceInUrl();
+  }, [priceRange]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
