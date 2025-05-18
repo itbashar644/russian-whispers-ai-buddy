@@ -1,6 +1,5 @@
 
-import { Product } from "@/types/product";
-import React from "react";
+import { Product, ColorVariant } from "@/types/product";
 
 export interface UseProductFormProps {
   product: Partial<Product>;
@@ -13,17 +12,16 @@ export interface UseProductFormResult {
   showNewCategoryInput: boolean;
   activeTab: string;
   isSubmitting: boolean;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  setActiveTab: (tab: string) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCheckboxChange: (name: string, checked: boolean) => void;
   handleSelectChange: (name: string, value: string) => void;
-  handleSpecificationChange: (id: string, value: string) => void;  // Added this line
   handleMainImageUploaded: (url: string) => void;
   handleAdditionalImagesChange: (urls: string[]) => void;
-  handleColorVariantsChange: (variants: any[]) => void;
-  handleRemoveColor: (color: string) => void;
+  handleColorVariantsChange: (variants: ColorVariant[]) => void;
+  handleRemoveColor: (colorToRemove: string) => void;
   handleRelatedColorProductsChange: (productIds: string[]) => void;
   validateAndSubmitForm: () => Promise<void>;
-  setNewCategory: React.Dispatch<React.SetStateAction<string>>;
-  setShowNewCategoryInput: React.Dispatch<React.SetStateAction<boolean>>;
+  setNewCategory: (category: string) => void;
+  setShowNewCategoryInput: (show: boolean) => void;
 }

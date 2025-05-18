@@ -5,7 +5,6 @@ import { Category } from "@/data/products/categoryData";
 import CategoryFilter from "./filters/CategoryFilter";
 import ColorFilter from "./filters/ColorFilter";
 import PriceFilter from "./filters/PriceFilter";
-import SpecificationsFilter from "./filters/SpecificationsFilter";
 
 interface CatalogFiltersProps {
   availableCategories: string[];
@@ -16,12 +15,9 @@ interface CatalogFiltersProps {
   showMobileFilters: boolean;
   activeFiltersCount: number;
   availableColors: string[];
-  availableSpecifications: Record<string, string[]>;
-  specFilters: Record<string, string>;
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
   handlePriceChange: (type: "min" | "max", value: string) => void;
-  handleSpecFilter: (key: string, value: string) => void;
   handleClearAllFilters: () => void;
   findCategoryByName: (name: string) => Category;
 }
@@ -35,12 +31,9 @@ const CatalogFilters: React.FC<CatalogFiltersProps> = ({
   showMobileFilters,
   activeFiltersCount,
   availableColors,
-  availableSpecifications,
-  specFilters,
   handleCategoryClick,
   handleColorFilter,
   handlePriceChange,
-  handleSpecFilter,
   handleClearAllFilters,
   findCategoryByName,
 }) => {
@@ -71,13 +64,6 @@ const CatalogFilters: React.FC<CatalogFiltersProps> = ({
         availableColors={availableColors}
         colorParam={colorParam}
         handleColorFilter={handleColorFilter}
-      />
-
-      {/* Specifications filter */}
-      <SpecificationsFilter
-        availableSpecifications={availableSpecifications}
-        specFilters={specFilters}
-        handleSpecFilter={handleSpecFilter}
       />
 
       <PriceFilter 

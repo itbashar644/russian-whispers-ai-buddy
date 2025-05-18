@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
@@ -19,23 +18,6 @@ const Catalog = () => {
   const minPriceParam = searchParams.get("minPrice");
   const maxPriceParam = searchParams.get("maxPrice");
   
-  // Parse specification filters from URL
-  const [specFilters, setSpecFilters] = useState<Record<string, string>>({});
-  
-  useEffect(() => {
-    const newSpecFilters: Record<string, string> = {};
-    
-    // Look for params that start with "spec_"
-    searchParams.forEach((value, key) => {
-      if (key.startsWith("spec_") && value) {
-        const specKey = key.replace("spec_", "");
-        newSpecFilters[specKey] = value;
-      }
-    });
-    
-    setSpecFilters(newSpecFilters);
-  }, [searchParams]);
-  
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: minPriceParam ? parseInt(minPriceParam, 10) : 0,
     max: maxPriceParam ? parseInt(maxPriceParam, 10) : 500000000,
@@ -49,8 +31,20 @@ const Catalog = () => {
   // Загрузка данных каталога
   const { allProducts, availableCategories, categoryObjects, loading } = useCatalogData(categoryParam);
   
+  // Debug - log the products when they load
+  useEffect(() => {
+    if (!loading && allProducts.length > 0) {
+      console.log(`Loaded ${allProducts.length} products from the API`);
+      console.log(`Categories found: ${[...new Set(allProducts.map(p => p.category))].join(', ')}`);
+      
+      // Check specific categories
+      const tabletCount = allProducts.filter(p => p.category === "Планшеты").length;
+      console.log(`Tablets found: ${tabletCount}`);
+    }
+  }, [allProducts, loading]);
+  
   // Фильтрация и сортировка продуктов
-  const { filteredProducts, availableColors, availableSpecifications, inStockCount, outOfStockCount } = useProductFiltering({
+  const { filteredProducts, availableColors, inStockCount, outOfStockCount } = useProductFiltering({
     allProducts,
     searchTerm,
     priceRange,
@@ -58,8 +52,7 @@ const Catalog = () => {
     sortBy,
     loading,
     showColorVariants: true, // Always true now
-    colorParam,
-    specFilters
+    colorParam
   });
 
   useEffect(() => {
@@ -103,11 +96,8 @@ const Catalog = () => {
     if (priceRange.min > 0 || priceRange.max < 500000000) count++;
     if (searchTerm) count++;
     
-    // Count specification filters
-    count += Object.values(specFilters).filter(Boolean).length;
-    
     setActiveFiltersCount(count);
-  }, [categoryParam, colorParam, priceRange, searchTerm, specFilters]);
+  }, [categoryParam, colorParam, priceRange, searchTerm]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
@@ -123,15 +113,6 @@ const Catalog = () => {
       searchParams.set("color", color);
     } else {
       searchParams.delete("color");
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleSpecFilter = (key: string, value: string) => {
-    if (value) {
-      searchParams.set(`spec_${key}`, value);
-    } else {
-      searchParams.delete(`spec_${key}`);
     }
     setSearchParams(searchParams);
   };
@@ -159,7 +140,6 @@ const Catalog = () => {
     setSearchParams(new URLSearchParams());
     setPriceRange({ min: 0, max: 500000000 });
     setSearchTerm("");
-    setSpecFilters({});
   };
 
   // Находим объект категории по имени
@@ -191,12 +171,9 @@ const Catalog = () => {
           showMobileFilters={showMobileFilters}
           activeFiltersCount={activeFiltersCount}
           availableColors={availableColors}
-          availableSpecifications={availableSpecifications}
-          specFilters={specFilters}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
           handlePriceChange={handlePriceChange}
-          handleSpecFilter={handleSpecFilter}
           handleClearAllFilters={handleClearAllFilters}
           findCategoryByName={findCategoryByName}
         />
@@ -205,7 +182,6 @@ const Catalog = () => {
           categoryParam={categoryParam}
           searchTerm={searchTerm}
           colorParam={colorParam}
-          specFilters={specFilters}
           availableCategories={availableCategories}
           loading={loading}
           filteredProducts={filteredProducts}
@@ -218,7 +194,6 @@ const Catalog = () => {
           setSortBy={setSortBy}
           handleCategoryClick={handleCategoryClick}
           handleColorFilter={handleColorFilter}
-          handleSpecFilter={handleSpecFilter}
           handleClearAllFilters={handleClearAllFilters}
         />
       </div>

@@ -11,7 +11,6 @@ interface CatalogProductsSectionProps {
   categoryParam: string | null;
   searchTerm: string;
   colorParam: string | null;
-  specFilters: Record<string, string>;
   availableCategories: string[];
   loading: boolean;
   filteredProducts: Product[];
@@ -24,7 +23,6 @@ interface CatalogProductsSectionProps {
   setSortBy: (value: string) => void;
   handleCategoryClick: (categoryId: string | null) => void;
   handleColorFilter: (color: string | null) => void;
-  handleSpecFilter: (key: string, value: string) => void;
   handleClearAllFilters: () => void;
 }
 
@@ -32,7 +30,6 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   categoryParam,
   searchTerm,
   colorParam,
-  specFilters,
   availableCategories,
   loading,
   filteredProducts,
@@ -45,7 +42,6 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   setSortBy,
   handleCategoryClick,
   handleColorFilter,
-  handleSpecFilter,
   handleClearAllFilters
 }) => {
   return (
@@ -68,11 +64,9 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
         categoryParam={categoryParam}
         colorParam={colorParam}
         searchTerm={searchTerm}
-        specFilters={specFilters}
         activeFiltersCount={activeFiltersCount}
         handleCategoryClick={handleCategoryClick}
         handleColorFilter={handleColorFilter}
-        handleSpecFilter={handleSpecFilter}
         handleClearAllFilters={handleClearAllFilters}
       />
 

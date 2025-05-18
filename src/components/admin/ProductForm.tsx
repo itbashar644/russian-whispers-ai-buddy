@@ -25,7 +25,6 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
     handleInputChange,
     handleCheckboxChange,
     handleSelectChange,
-    handleSpecificationChange,
     handleMainImageUploaded,
     handleAdditionalImagesChange,
     validateAndSubmitForm,
@@ -72,7 +71,6 @@ const ProductForm = ({ product, categories, onSave, onCancel }: ProductFormProps
             formData={formData}
             handleInputChange={handleInputChange}
             handleSelectChange={handleSelectChangeAdapter} // Use the adapter function here
-            handleSpecificationChange={handleSpecificationChange}
           />
         </TabsContent>
       </Tabs>

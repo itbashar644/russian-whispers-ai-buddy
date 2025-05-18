@@ -1,14 +1,13 @@
 
 import { Product } from "@/types/product";
 
-// Transform products for color display
+/**
+ * Transform products for color display
+ */
 export const transformProductsForColorDisplay = (products: Product[]): Product[] => {
   const expandedProducts: Product[] = [];
   
   products.forEach(product => {
-    // Always add the base product first to ensure all products appear
-    expandedProducts.push({ ...product });
-    
     // If product has color variants, create virtual products for each variant
     if (product.colorVariants && product.colorVariants.length > 0) {
       product.colorVariants.forEach(variant => {
@@ -30,13 +29,18 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
         };
         expandedProducts.push(variantProduct);
       });
+    } else {
+      // Product has no color variants, add as is
+      expandedProducts.push(product);
     }
   });
   
   return expandedProducts;
 };
 
-// Sort products based on selected sortBy option
+/**
+ * Sort products based on selected sortBy option
+ */
 export const sortProducts = (products: Product[], sortByOption: string): Product[] => {
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
@@ -53,8 +57,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price
-        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
-        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
+        const priceA = a.discountPrice || a.price;
+        const priceB = b.discountPrice || b.price;
         return priceA - priceB;
       });
       break;
@@ -65,8 +69,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price descending
-        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
-        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
+        const priceA = a.discountPrice || a.price;
+        const priceB = b.discountPrice || b.price;
         return priceB - priceA;
       });
       break;
@@ -107,10 +111,4 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   }
   
   return sortedProducts;
-};
-
-// Format specification value for display
-export const formatSpecificationValue = (key: string, value: string): string => {
-  // This could be extended with domain-specific formatting logic
-  return value;
 };

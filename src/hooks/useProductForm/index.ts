@@ -1,52 +1,48 @@
 
 import { useState, useEffect } from "react";
 import { Product } from "@/types/product";
-import { UseProductFormProps, UseProductFormResult } from "./types";
+import { toast } from "sonner";
 import { useFormHandlers } from "./handlers";
-import { validateProduct } from "./validation";
+import { validateForm, prepareFinalProduct } from "./validation";
+import { UseProductFormProps, UseProductFormResult } from "./types";
 
-export const useProductForm = ({ product, onSave }: UseProductFormProps): UseProductFormResult => {
-  const [formData, setFormData] = useState<Partial<Product>>(product || {});
-  const [newCategory, setNewCategory] = useState("");
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function useProductForm({ product, onSave }: UseProductFormProps): UseProductFormResult {
+  const [formData, setFormData] = useState<Partial<Product>>(product);
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("general");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const {
-    handleInputChange,
-    handleCheckboxChange,
-    handleSelectChange,
-    handleSpecificationChange,
-    handleMainImageUploaded,
-    handleAdditionalImagesChange,
-    handleColorVariantsChange,
-    handleRemoveColor,
-    handleRelatedColorProductsChange,
-  } = useFormHandlers(setFormData, formData, setShowNewCategoryInput, setNewCategory);
+  // Initialize form data whenever product changes
+  useEffect(() => {
+    setFormData(product);
+  }, [product]);
 
+  // Get all the form handlers
+  const handlers = useFormHandlers(
+    setFormData,
+    formData,
+    setShowNewCategoryInput,
+    setNewCategory
+  );
+
+  // Validate and submit form
   const validateAndSubmitForm = async () => {
+    if (!validateForm(formData, newCategory, setActiveTab)) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // If new category is specified, use it
-      if (showNewCategoryInput && newCategory.trim()) {
-        formData.category = newCategory.trim();
-      }
+      // Prepare final product with all necessary data
+      const finalProduct = prepareFinalProduct(formData, showNewCategoryInput, newCategory);
       
-      // Validate product data
-      const validationResult = validateProduct(formData);
-      
-      if (!validationResult.valid) {
-        alert(validationResult.errors.join("\n"));
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Call onSave callback with the form data
-      await onSave(formData);
+      console.log("Submitting product with category:", finalProduct.category);
+      await onSave(finalProduct);
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Ошибка при сохранении товара");
+      toast.error("Ошибка при сохранении товара");
     } finally {
       setIsSubmitting(false);
     }
@@ -59,17 +55,9 @@ export const useProductForm = ({ product, onSave }: UseProductFormProps): UsePro
     activeTab,
     isSubmitting,
     setActiveTab,
-    handleInputChange,
-    handleCheckboxChange,
-    handleSelectChange,
-    handleSpecificationChange,
-    handleMainImageUploaded,
-    handleAdditionalImagesChange,
-    handleColorVariantsChange,
-    handleRemoveColor,
-    handleRelatedColorProductsChange,
+    ...handlers,
     validateAndSubmitForm,
     setNewCategory,
-    setShowNewCategoryInput,
+    setShowNewCategoryInput
   };
-};
+}

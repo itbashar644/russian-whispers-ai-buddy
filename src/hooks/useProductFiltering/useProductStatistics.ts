@@ -2,16 +2,28 @@
 import { useMemo } from "react";
 import { Product } from "@/types/product";
 
-export const useProductStatistics = (filteredProducts: Product[]) => {
-  // Count in-stock products
+export const useProductStatistics = (products: Product[]) => {
+  // Calculate counts for stock status using stockQuantity for accuracy
   const inStockCount = useMemo(() => {
-    return filteredProducts.filter(p => p.inStock).length;
-  }, [filteredProducts]);
+    return products.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity > 0;
+      }
+      return p.inStock;
+    }).length;
+  }, [products]);
   
-  // Count out-of-stock products
   const outOfStockCount = useMemo(() => {
-    return filteredProducts.filter(p => !p.inStock).length;
-  }, [filteredProducts]);
-
-  return { inStockCount, outOfStockCount };
+    return products.filter(p => {
+      if (p.stockQuantity !== undefined) {
+        return p.stockQuantity <= 0;
+      }
+      return !p.inStock;
+    }).length;
+  }, [products]);
+  
+  return {
+    inStockCount,
+    outOfStockCount
+  };
 };
