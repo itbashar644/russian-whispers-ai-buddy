@@ -45,8 +45,14 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
   
-  // Always sort by in-stock first, regardless of other sortings
-  sortedProducts.sort((a, b) => (b.inStock ? 1 : 0) - (a.inStock ? 1 : 0));
+  // Always sort by in-stock first - this is the key change!
+  sortedProducts.sort((a, b) => {
+    // In-stock products always come first
+    if (a.inStock !== b.inStock) {
+      return a.inStock ? -1 : 1;
+    }
+    return 0;
+  });
   
   // Then apply additional sorting on top of the in-stock priority
   switch (sortByOption) {
@@ -57,8 +63,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
+        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
         return priceA - priceB;
       });
       break;
@@ -69,8 +75,8 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
           return a.inStock ? -1 : 1;
         }
         // Then by price descending
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice !== undefined ? a.discountPrice : a.price;
+        const priceB = b.discountPrice !== undefined ? b.discountPrice : b.price;
         return priceB - priceA;
       });
       break;

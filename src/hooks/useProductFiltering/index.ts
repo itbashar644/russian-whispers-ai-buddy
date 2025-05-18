@@ -66,7 +66,7 @@ export const useProductFiltering = ({
       result = result.filter((p) => p.inStock);
     }
     
-    // Sort products
+    // Always sort products with in-stock items first
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);

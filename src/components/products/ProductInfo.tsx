@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
@@ -7,6 +8,7 @@ import { decreaseProductStock } from "@/data/products";
 import StockNotification from './StockNotification';
 import AlternativeProducts from './AlternativeProducts';
 import { trackAddToCart } from "@/utils/metrika";
+import StockStatus from './StockStatus';
 
 interface ProductInfoProps {
   product: Product;
@@ -104,73 +106,60 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
         )}
       </div>
     
-    {/* Availability section */}
-    <div className="mt-4">
-      {isProductAvailable ? (
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-          В наличии
-        </div>
-      ) : (
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-          Нет в наличии
-        </div>
-      )}
-    </div>
+      {/* Stock status - replaced with StockStatus component */}
+      <StockStatus 
+        product={product} 
+        selectedColor={selectedColor} 
+        hasStock={isProductAvailable} 
+      />
     
-    {/* Подробности запаса если есть stockQuantity */}
-    {product.stockQuantity !== undefined && (
-      <div className="mt-2 text-sm text-muted-foreground">
-        Доступно: {product.stockQuantity} шт.
-      </div>
-    )}
-    
-    {/* Product actions */}
-    <div className="mt-6 space-y-4">
-      {isProductAvailable ? (
-        <div className="flex flex-col space-y-4">
-          {/* Quantity selector */}
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium">Количество:</span>
-            <div className="flex items-center border rounded-md">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 border-r"
-                aria-label="Уменьшить количество"
-              >
-                −
-              </button>
-              <span className="px-4 py-2">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 border-l"
-                aria-label="Увеличить количество"
-              >
-                +
-              </button>
+      {/* Product actions */}
+      <div className="mt-6 space-y-4">
+        {isProductAvailable ? (
+          <div className="flex flex-col space-y-4">
+            {/* Quantity selector */}
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium">Количество:</span>
+              <div className="flex items-center border rounded-md">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-2 border-r"
+                  aria-label="Уменьшить количество"
+                >
+                  −
+                </button>
+                <span className="px-4 py-2">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-3 py-2 border-l"
+                  aria-label="Увеличить количество"
+                >
+                  +
+                </button>
+              </div>
             </div>
+            
+            <Button
+              onClick={handleAddToCart}
+              className="w-full"
+              disabled={isAddingToCart}
+            >
+              {isAddingToCart ? "Добавляем..." : "Добавить в корзину"}
+            </Button>
           </div>
-          
-          <Button
-            onClick={handleAddToCart}
-            className="w-full"
-            disabled={isAddingToCart}
-          >
-            {isAddingToCart ? "Добавляем..." : "Добавить в корзину"}
-          </Button>
-        </div>
-      ) : (
-        <StockNotification 
-          productId={product.id} 
-          productName={product.title} 
-          variant={selectedColor}
-        />
-      )}
-    </div>
+        ) : (
+          <StockNotification 
+            productId={product.id} 
+            productName={product.title} 
+            variant={selectedColor}
+          />
+        )}
+      </div>
     
-    {/* Show alternative products if current one is not available */}
-    {!isProductAvailable && (
-      <AlternativeProducts productId={product.id} title="Похожие товары в наличии" />
-    )}
+      {/* Show alternative products if current one is not available */}
+      {!isProductAvailable && (
+        <AlternativeProducts productId={product.id} title="Похожие товары в наличии" />
+      )}
     
       {/* Color variants */}
       {product.colors && product.colors.length > 0 && (
