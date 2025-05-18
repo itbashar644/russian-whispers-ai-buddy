@@ -61,7 +61,7 @@ const Catalog = () => {
   // Update URL when price range changes
   useEffect(() => {
     updatePriceInUrl();
-  }, [priceRange]);
+  }, [priceRange, updatePriceInUrl]);
 
   const handleCategoryClick = (categoryId: string | null) => {
     if (categoryId) {
