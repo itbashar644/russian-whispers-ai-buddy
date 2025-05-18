@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Product, ColorVariant } from "@/types/product";
 import { toast } from "sonner";
@@ -85,10 +86,6 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
     // Handling legacy colors array 
     const updatedColors = formData.colors ? formData.colors.filter(color => color !== colorToRemove) : [];
     
-    if (colorToRemove && !updatedColors.includes(colorToRemove)) {
-      updatedColors.push(colorToRemove);
-    }
-    
     setFormData({
       ...formData,
       colors: updatedColors
@@ -154,6 +151,9 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
         category: showNewCategoryInput && newCategory ? newCategory : formData.category
       };
       
+      // Set inStock status based on stockQuantity
+      finalProduct.inStock = finalProduct.stockQuantity !== undefined && finalProduct.stockQuantity > 0;
+      
       console.log("Submitting product with category:", finalProduct.category);
       await onSave(finalProduct);
     } catch (error) {
@@ -175,33 +175,10 @@ export function useProductForm({ product, onSave }: UseProductFormProps) {
     handleCheckboxChange,
     handleSelectChange,
     handleMainImageUploaded,
-    handleAdditionalImagesChange: (urls: string[]) => {
-      setFormData({
-        ...formData,
-        additionalImages: urls
-      });
-    },
-    handleColorVariantsChange: (variants: ColorVariant[]) => {
-      setFormData({
-        ...formData,
-        colorVariants: variants
-      });
-    },
-    handleRemoveColor: (colorToRemove: string) => {
-      // Handling legacy colors array 
-      const updatedColors = formData.colors ? formData.colors.filter(color => color !== colorToRemove) : [];
-      
-      setFormData({
-        ...formData,
-        colors: updatedColors
-      });
-    },
-    handleRelatedColorProductsChange: (productIds: string[]) => {
-      setFormData({
-        ...formData,
-        relatedColorProducts: productIds
-      });
-    },
+    handleAdditionalImagesChange,
+    handleColorVariantsChange,
+    handleRemoveColor,
+    handleRelatedColorProductsChange,
     validateAndSubmitForm,
     setNewCategory,
     setShowNewCategoryInput
