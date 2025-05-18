@@ -9,6 +9,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WishlistProvider } from "./context/WishlistContext";
 import { AuthProvider } from "./context/AuthContext";
+import ChatWidget from "./components/chat/ChatWidget";
 
 // Lazy-loaded pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -104,6 +105,7 @@ function App() {
                 </Suspense>
                 
                 <Toaster position="top-right" richColors />
+                <ChatWidget />
               </BrowserRouter>
             </CartProvider>
           </WishlistProvider>
