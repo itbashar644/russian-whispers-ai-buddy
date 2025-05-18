@@ -47,7 +47,9 @@ export const useUrlParams = (
     
     // Only update URL if price actually changed to avoid unnecessary history entries
     if (minPriceChanged || maxPriceChanged) {
-      setSearchParams(searchParams, { replace: true });
+      // Fixed: Pass searchParams as a single object without the replace option
+      // The newer version of react-router-dom expects only one argument
+      setSearchParams(searchParams);
     }
   }, [priceRange, searchParams, setSearchParams]);
   
