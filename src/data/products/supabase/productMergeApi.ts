@@ -109,7 +109,9 @@ export const combineProductVariants = (products: Product[]): Product => {
       // Extract the color if available, or use title as a fallback
       const colorName = product.colors && product.colors.length > 0 
         ? product.colors[0] 
-        : product.title.split(' ').pop() || 'Вариант';
+        : product.variant || // Use the variant field if available
+          product.title.split(' ').pop() || 
+          'Вариант';
       
       return {
         color: colorName,

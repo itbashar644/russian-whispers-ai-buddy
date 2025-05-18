@@ -31,6 +31,7 @@ export interface Product {
   isColorVariant?: boolean; // Flag to indicate if this is a color variant of another product
   parentProductId?: string; // Reference to the parent product if this is a color variant
   modelName?: string; // New field for grouping products of the same model
+  variant?: string; // New field to store variant information
 }
 
 export interface ColorVariant {

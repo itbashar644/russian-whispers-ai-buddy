@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -14,6 +13,7 @@ import Footer from "@/components/layout/Footer";
 import { formatVideoUrl } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductVariantsButton from "@/components/products/ProductVariantsButton";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -379,6 +379,13 @@ const ProductDetail = () => {
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
               
+              {/* Display variant info if available */}
+              {product.variant && (
+                <div className="text-sm font-medium text-muted-foreground mb-2">
+                  Вариант: {product.variant}
+                </div>
+              )}
+              
               {/* Display article number if available */}
               {displayArticleNumber && (
                 <div className="text-sm text-muted-foreground mb-2">
@@ -390,6 +397,13 @@ const ProductDetail = () => {
               <div className={`${getStockStatusClass()} font-medium text-sm mb-4`}>
                 {getStockStatusText()}
               </div>
+              
+              {/* Show product variants button if this product is part of a model */}
+              {product.modelName && (
+                <div className="mb-4">
+                  <ProductVariantsButton product={product} />
+                </div>
+              )}
               
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex">

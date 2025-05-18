@@ -134,6 +134,16 @@ const BasicInformationSection = ({
       />
     </FormRow>
     
+    <FormRow label="Вариант товара" htmlFor="variant">
+      <Input
+        id="variant"
+        name="variant"
+        value={formData.variant || ""}
+        onChange={handleInputChange}
+        placeholder="Например: цвет, размер, комплектация и т.д."
+      />
+    </FormRow>
+    
     <FormRow label="Артикул" htmlFor="articleNumber">
       <Input
         id="articleNumber"
