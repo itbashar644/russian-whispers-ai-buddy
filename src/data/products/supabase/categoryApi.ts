@@ -49,6 +49,8 @@ export const addCategoryToSupabase = async (name: string, imageUrl: string = "/p
 // Функция для обновления изображения категории
 export const updateCategoryImageInSupabase = async (name: string, imageUrl: string): Promise<boolean> => {
   try {
+    console.log("Attempting to update category image for:", name, "with URL:", imageUrl);
+    
     // Проверяем наличие текущей сессии пользователя
     const { data: sessionData } = await supabase.auth.getSession();
     
@@ -56,6 +58,9 @@ export const updateCategoryImageInSupabase = async (name: string, imageUrl: stri
       console.error("Ошибка при обновлении изображения: пользователь не авторизован");
       return false;
     }
+
+    // Логируем информацию о текущем пользователе
+    console.log("Current user:", sessionData.session.user.id, sessionData.session.user.email);
     
     const { error } = await supabase
       .from("categories")
@@ -67,6 +72,7 @@ export const updateCategoryImageInSupabase = async (name: string, imageUrl: stri
       return false;
     }
     
+    console.log("Category image updated successfully");
     return true;
   } catch (err) {
     console.error("Ошибка при обновлении изображения категории:", err);
@@ -130,3 +136,24 @@ export const updateProductsCategoryInSupabase = async (oldCategory: string, newC
     return false;
   }
 };
+
+// Функция для получения продуктов по категории
+export const getProductsByCategoryFromSupabase = async (category: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("category", category);
+
+    if (error) {
+      console.error("Ошибка при получении продуктов по категории:", error);
+      return [];
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Ошибка при получении продуктов по категории:", err);
+    return [];
+  }
+};
+

@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,16 +38,13 @@ export default function ImageUploader({
     try {
       setUploading(true);
       
-      // First create a storage bucket if it doesn't exist (this should be done in SQL, but for now)
-      // We'll use the 'product-images' bucket which has public access
-      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error("Пожалуйста, войдите в систему для загрузки изображений");
       }
 
-      // Upload to product-images bucket which should be public and accessible
+      // Make sure we're uploading to the correct bucket
       const { data, error } = await supabase.storage
         .from('product-images')
         .upload(filePath, file, {
@@ -57,6 +53,7 @@ export default function ImageUploader({
         });
 
       if (error) {
+        console.error("Upload error details:", error);
         throw error;
       }
 

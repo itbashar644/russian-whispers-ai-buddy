@@ -61,7 +61,7 @@ const AdminPanel = () => {
             <Route path="customers/*" element={<AdminCustomers />} />
             <Route path="marketing" element={<NewsletterManager />} />
             <Route path="reports/*" element={<AdminReports />} />
-            <Route path="settings/*" element={<AdminSettings />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Routes>
         </main>
       </div>
