@@ -34,8 +34,8 @@ export const transformProductsForColorDisplay = (products: Product[]): Product[]
           wildberriesUrl: variant.wildberriesUrl || product.wildberriesUrl,
           avitoUrl: variant.avitoUrl || product.avitoUrl,
           isColorVariant: true,
-          parentProductId: product.id,
-          selectedColor: variant.color
+          parentProductId: product.id
+          // Removed the selectedColor property that was causing the error
         };
         
         transformedProducts.push(variantProduct);
