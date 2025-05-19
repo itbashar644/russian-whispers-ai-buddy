@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Helmet } from 'react-helmet-async';
 import { Settings } from 'lucide-react';
 import AdminManager from '@/components/admin/AdminManager';
@@ -22,14 +22,7 @@ const AdminSettings = () => {
       </div>
       
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>User Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdminManager />
-          </CardContent>
-        </Card>
+        <AdminManager />
       </div>
     </div>
   );

@@ -9,11 +9,11 @@ interface RegisterPageLayoutProps {
 const RegisterPageLayout: React.FC<RegisterPageLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex">
-      <div className="hidden md:block md:w-1/2 bg-black">
+      <div className="hidden md:block md:w-1/2 bg-gray-100">
         <div className="h-full flex items-center justify-center p-8">
           <img
-            src="/lovable-uploads/96c6e31d-3cd8-496b-8495-1b63a8577aeb.png"
-            alt="The X Shop"
+            src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png"
+            alt="Shop Logo"
             className="max-w-sm w-full"
           />
         </div>
@@ -23,9 +23,9 @@ const RegisterPageLayout: React.FC<RegisterPageLayoutProps> = ({ children }) => 
           <div className="mb-8 text-center">
             <Link to="/" className="inline-block mb-6 md:hidden">
               <img
-                src="/lovable-uploads/96c6e31d-3cd8-496b-8495-1b63a8577aeb.png"
+                src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png"
                 alt="Logo"
-                className="h-12 mx-auto"
+                className="h-16 mx-auto"
               />
             </Link>
             <h1 className="text-2xl font-bold">Регистрация</h1>
