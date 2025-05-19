@@ -37,6 +37,16 @@ const AdminLogin = () => {
     checkAdminAccess();
   }, [isAuthenticated, hasRole, navigate]);
 
+  // Helper function to extract error message
+  const getErrorMessage = (error: string | { message?: string } | undefined): string => {
+    if (typeof error === 'string') {
+      return error;
+    } else if (error && typeof error === 'object' && 'message' in error) {
+      return error.message || "Неизвестная ошибка";
+    }
+    return "Неизвестная ошибка";
+  };
+
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -49,7 +59,7 @@ const AdminLogin = () => {
       
       if (!result.success) {
         toast.error("Ошибка авторизации", {
-          description: result.error || "Неверное имя пользователя или пароль",
+          description: getErrorMessage(result.error),
         });
         setIsLoading(false);
         return;

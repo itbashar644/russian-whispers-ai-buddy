@@ -60,6 +60,16 @@ const Login = () => {
     },
   });
 
+  // Helper function to extract error message
+  const getErrorMessage = (error: string | { message?: string } | undefined): string => {
+    if (typeof error === 'string') {
+      return error;
+    } else if (error && typeof error === 'object' && 'message' in error) {
+      return error.message || "Неизвестная ошибка";
+    }
+    return "Неизвестная ошибка";
+  };
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
@@ -79,7 +89,7 @@ const Login = () => {
         }, 500);
       } else {
         toast.error("Ошибка авторизации", {
-          description: result.error || "Неверное имя пользователя или пароль",
+          description: getErrorMessage(result.error),
         });
       }
     } catch (error: any) {
