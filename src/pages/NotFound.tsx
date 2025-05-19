@@ -1,23 +1,59 @@
 
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const NotFound = () => {
   const location = useLocation();
 
+  // Check if this might be a failed auth redirect with access token
+  const hasAccessToken = location.hash.includes("access_token");
+  
   useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname,
-      "with search params:",
-      location.search,
-      "and hash:",
-      location.hash
-    );
-  }, [location.pathname, location.search, location.hash]);
+    // Handle potential auth callback
+    if (hasAccessToken) {
+      const handleAuthCallback = async () => {
+        // This helps clean up any potential token issues
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (data?.session) {
+            console.log("Session recovered from hash params");
+            window.location.href = "/account";
+          }
+        } catch (e) {
+          console.error("Error processing auth callback on 404 page:", e);
+        }
+      };
+      handleAuthCallback();
+    } else {
+      console.error(
+        "404 Error: User attempted to access non-existent route:",
+        location.pathname,
+        "with search params:",
+        location.search,
+        "and hash:",
+        location.hash
+      );
+    }
+  }, [location.pathname, location.search, location.hash, hasAccessToken]);
 
+  // If there's an access token in the URL, let's show a loading state while we process it
+  if (hasAccessToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold mb-4">Обработка авторизации...</h2>
+          <p className="text-gray-600 mb-4">
+            Пожалуйста, подождите, мы обрабатываем данные вашей авторизации.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   // Check if this might be a failed password reset
   const isLikelyPasswordReset = location.pathname.includes("reset") || 
                                location.pathname.includes("password") || 
@@ -54,7 +90,7 @@ const NotFound = () => {
           </Button>
           
           <Button asChild variant="outline">
-            <Link to="/login" className="flex items-center justify-center">
+            <Link to="/auth/login" className="flex items-center justify-center">
               Перейти на страницу входа
             </Link>
           </Button>

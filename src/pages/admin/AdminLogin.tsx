@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const AdminLogin = () => {
         try {
           const isAdmin = await hasRole('admin');
           if (isAdmin && isMounted) {
-            navigate('/admin');
+            navigate('/admin', { replace: true });
           }
         } catch (error) {
           console.error("Ошибка при проверке роли администратора:", error);
@@ -93,8 +94,8 @@ const AdminLogin = () => {
           description: "Добро пожаловать в административную панель",
         });
         
-        // Используем полную перезагрузку страницы для обеспечения чистого состояния
-        window.location.href = "/admin";
+        // Используем явную навигацию вместо полной перезагрузки
+        navigate('/admin', { replace: true });
       } else {
         // Если роль не админ, выполняем выход
         await supabase.auth.signOut();
@@ -157,7 +158,7 @@ const AdminLogin = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="password">Пароль</Label>
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
                   Забыли пароль?
                 </Link>
               </div>
@@ -195,7 +196,7 @@ const AdminLogin = () => {
         </CardContent>
         <CardFooter className="border-t pt-4">
           <Button variant="outline" className="w-full" asChild>
-            <a href="/">Вернуться на главную страницу</a>
+            <Link to="/">Вернуться на главную страницу</Link>
           </Button>
         </CardFooter>
       </Card>
