@@ -55,7 +55,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { session, user, loading, setSession, setUser } = useAuthCore();
-  const { profile, updateProfile } = useUserProfile(user);
+  const { profile, setProfile, updateProfile } = useUserProfile(user);
   const { 
     loginWithEmail,
     logout,
