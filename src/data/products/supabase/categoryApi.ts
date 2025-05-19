@@ -137,8 +137,8 @@ export const updateProductsCategoryInSupabase = async (oldCategory: string, newC
   }
 };
 
-// Функция для получения продуктов по категории
-export const getProductsByCategoryFromSupabase = async (category: string) => {
+// Функция для получения продуктов по категории - переименована для избежания конфликта
+export const getProductsByCategoryNameFromSupabase = async (category: string) => {
   try {
     const { data, error } = await supabase
       .from("products")
@@ -156,4 +156,3 @@ export const getProductsByCategoryFromSupabase = async (category: string) => {
     return [];
   }
 };
-

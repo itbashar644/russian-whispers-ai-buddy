@@ -5,4 +5,4 @@ export * from './supabase/categoryApi';
 export * from './supabase/migrationApi';
 export * from './supabase/importApi';
 export * from './supabase/productTransforms';
-export * from './supabase/productMergeApi'; // Add export for new API functions
+export * from './supabase/productMergeApi';
