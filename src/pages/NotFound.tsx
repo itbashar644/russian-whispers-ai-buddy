@@ -1,12 +1,14 @@
 
 import { useLocation, Link, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const NotFound = () => {
   const location = useLocation();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
   // Check if this might be a failed auth redirect with access token
   const hasAccessToken = location.hash.includes("access_token");
@@ -15,6 +17,7 @@ const NotFound = () => {
     // Handle potential auth callback
     if (hasAccessToken) {
       const handleAuthCallback = async () => {
+        setIsRedirecting(true);
         // This helps clean up any potential token issues
         try {
           const { data, error } = await supabase.auth.getSession();
@@ -22,13 +25,17 @@ const NotFound = () => {
             console.log("Session recovered from hash params");
             // Determine where to redirect based on potential patterns in the URL
             if (location.pathname.includes('admin')) {
-              window.location.href = "/admin";
+              setRedirectPath("/admin");
             } else {
-              window.location.href = "/account";
+              setRedirectPath("/account");
             }
+          } else {
+            console.error("Failed to get session from hash params:", error);
+            setIsRedirecting(false);
           }
         } catch (e) {
           console.error("Error processing auth callback on 404 page:", e);
+          setIsRedirecting(false);
         }
       };
       handleAuthCallback();
@@ -43,6 +50,11 @@ const NotFound = () => {
       );
     }
   }, [location.pathname, location.search, location.hash, hasAccessToken]);
+
+  // If redirecting to a valid path, use Navigate
+  if (redirectPath) {
+    return <Navigate to={redirectPath} replace />;
+  }
 
   // If there's an access token in the URL, let's show a loading state while we process it
   if (hasAccessToken) {

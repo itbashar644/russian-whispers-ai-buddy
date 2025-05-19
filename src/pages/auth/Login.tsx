@@ -1,13 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Eye, EyeOff, Key, Mail, ArrowRight, 
-  ChevronRight 
-} from "lucide-react";
+import { Eye, EyeOff, Key, Mail, ArrowRight } from "lucide-react";
 import { type Provider } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
@@ -32,7 +29,8 @@ import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Введите корректный email"),
@@ -47,11 +45,12 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Если пользователь уже аутентифицирован, перенаправляем на главную
-  if (isAuthenticated) {
-    navigate('/account');
-    return null;
-  }
+  // Check if already authenticated and redirect if needed
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/account', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -64,10 +63,30 @@ const Login = () => {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const success = await login(data.email, data.password);
-      if (success) {
-        navigate("/account");
+      // Clean up any existing auth state
+      cleanupAuthState();
+
+      const result = await login(data.email, data.password);
+      
+      if (result.success) {
+        toast.success("Авторизация успешна", {
+          description: "Вы успешно вошли в систему",
+        });
+
+        // Small delay before redirecting
+        setTimeout(() => {
+          navigate("/account");
+        }, 500);
+      } else {
+        toast.error("Ошибка авторизации", {
+          description: result.error || "Неверное имя пользователя или пароль",
+        });
       }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error("Ошибка авторизации", {
+        description: error.message || "Произошла ошибка при входе в систему",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +95,10 @@ const Login = () => {
   const handleSocialLogin = async (provider: Provider) => {
     setIsLoading(true);
     try {
-      let { data, error } = await supabase.auth.signInWithOAuth({
+      // Clean up any existing auth state
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
@@ -88,9 +110,17 @@ const Login = () => {
       }
     } catch (error: any) {
       console.error(`Ошибка авторизации через ${provider}:`, error);
+      toast.error("Ошибка входа через социальную сеть", {
+        description: error.message || "Произошла ошибка при входе через социальную сеть",
+      });
       setIsLoading(false);
     }
   };
+
+  // If already authenticated, don't render the login form
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -138,7 +168,7 @@ const Login = () => {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Пароль</FormLabel>
-                        <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                        <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
                           Забыли пароль?
                         </Link>
                       </div>

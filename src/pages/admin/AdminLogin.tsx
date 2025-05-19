@@ -8,108 +8,79 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { LockIcon, User, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
+import { cleanupAuthState } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setIsLoading] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const navigate = useNavigate();
-  const { isAuthenticated, hasRole } = useAuth();
+  const { isAuthenticated, hasRole, login } = useAuth();
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const checkAdminRole = async () => {
+    const checkAdminAccess = async () => {
       if (isAuthenticated) {
         try {
           const isAdmin = await hasRole('admin');
-          if (isAdmin && isMounted) {
+          if (isAdmin) {
             navigate('/admin', { replace: true });
+            return;
           }
         } catch (error) {
-          console.error("Ошибка при проверке роли администратора:", error);
-        } finally {
-          if (isMounted) {
-            setIsCheckingAdmin(false);
-          }
-        }
-      } else {
-        if (isMounted) {
-          setIsCheckingAdmin(false);
+          console.error("Error checking admin role:", error);
         }
       }
+      setIsCheckingAdmin(false);
     };
     
-    checkAdminRole();
-    
-    return () => {
-      isMounted = false;
-    };
+    checkAdminAccess();
   }, [isAuthenticated, hasRole, navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      // Очистка предыдущего состояния авторизации
+      // Clean up any existing auth state before login
       cleanupAuthState();
       
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-
-      if (error) {
+      const result = await login(email, password);
+      
+      if (!result.success) {
         toast.error("Ошибка авторизации", {
-          description: error.message || "Неверное имя пользователя или пароль",
+          description: result.error || "Неверное имя пользователя или пароль",
         });
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
-      // Проверяем роль пользователя
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id);
-
-      if (rolesError) {
-        toast.error("Ошибка авторизации", {
-          description: "Не удалось проверить роль пользователя",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Проверяем, есть ли среди ролей роль админа
-      const isAdmin = rolesData.some(r => r.role === 'admin');
-
+      // Check if user has admin role
+      const isAdmin = await hasRole('admin');
+      
       if (isAdmin) {
         toast.success("Авторизация успешна", {
           description: "Добро пожаловать в административную панель",
         });
         
-        // Добавляем небольшую задержку перед перенаправлением
+        // Small delay before redirecting
         setTimeout(() => {
-          window.location.href = '/admin';
-        }, 100);
+          navigate('/admin');
+        }, 500);
       } else {
-        // Если роль не админ, выполняем выход
-        await supabase.auth.signOut();
+        // If not admin, logout
+        cleanupAuthState();
         toast.error("Ошибка авторизации", {
-          description: "У вас нет прав доступа к админ-панели. Для назначения прав администратора обратитесь к существующему администратору.",
+          description: "У вас нет прав доступа к админ-панели",
         });
-        setLoading(false);
+        setIsLoading(false);
       }
     } catch (error: any) {
-      console.error("Ошибка при входе:", error);
+      console.error("Login error:", error);
       toast.error("Ошибка авторизации", {
         description: error.message || "Произошла ошибка при входе в систему",
       });
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -139,7 +110,7 @@ const AdminLogin = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleAdminLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -152,6 +123,7 @@ const AdminLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -172,6 +144,7 @@ const AdminLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -191,7 +164,6 @@ const AdminLogin = () => {
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Доступ только для администраторов системы</p>
-            <p className="mt-2">Чтобы получить права администратора, зарегистрируйтесь как обычный пользователь и обратитесь к администратору системы.</p>
           </div>
         </CardContent>
         <CardFooter className="border-t pt-4">
