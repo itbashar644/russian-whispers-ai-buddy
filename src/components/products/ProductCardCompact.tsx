@@ -5,6 +5,7 @@ import { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardCompactProps {
   product: Product;
@@ -20,12 +21,14 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
   return (
     <Card className={`h-full ${!isAvailable ? 'opacity-75' : ''}`}>
       <Link to={`/product/${product.id}`} className="block h-full">
-        <div className="relative h-40 overflow-hidden">
-          <img
-            src={currentProduct.imageUrl || "/placeholder.svg"}
-            alt={product.title}
-            className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
-          />
+        <div className="relative overflow-hidden">
+          <AspectRatio ratio={3/4} className="bg-white">
+            <img
+              src={currentProduct.imageUrl || "/placeholder.svg"}
+              alt={product.title}
+              className={`h-full w-full object-contain transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
+            />
+          </AspectRatio>
           {!isAvailable && (
             <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
               Нет в наличии

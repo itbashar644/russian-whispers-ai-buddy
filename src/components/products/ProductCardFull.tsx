@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardFullProps {
   product: Product;
@@ -40,12 +41,14 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
         to={`/product/${product.id}`}
         className="block flex-grow overflow-hidden"
       >
-        <div className="relative h-56 overflow-hidden">
-          <img
-            src={currentProduct.imageUrl || "/placeholder.svg"}
-            alt={product.title}
-            className={`h-full w-full object-cover transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
-          />
+        <div className="relative overflow-hidden">
+          <AspectRatio ratio={3/4} className="bg-white">
+            <img
+              src={currentProduct.imageUrl || "/placeholder.svg"}
+              alt={product.title}
+              className={`w-full h-full object-contain transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
+            />
+          </AspectRatio>
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {product.isNew && <Badge className="bg-blue-500">Новинка</Badge>}
             {product.isBestseller && (
@@ -67,6 +70,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           </button>
         </div>
       </Link>
+      
       <CardHeader className="p-4 pb-0">
         <Link to={`/product/${product.id}`} className="block">
           <CardTitle className="line-clamp-2 text-lg">{product.title}</CardTitle>

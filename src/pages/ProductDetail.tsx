@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
-import { getProductPrice } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
-import ProductGrid from "@/components/products/ProductGrid";
+import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Product } from "@/types/product";
-import { Skeleton } from "@/components/ui/skeleton";
+import ProductSkeleton from "@/components/products/ProductSkeleton";
+import ProductNotFound from "@/components/products/ProductNotFound";
+import ProductHeader from "@/components/products/ProductHeader";
 import ProductDetails from "@/components/products/ProductDetails";
 import ProductPricing from "@/components/products/ProductPricing";
 import MarketplaceLinks from "@/components/products/MarketplaceLinks";
@@ -18,7 +16,11 @@ import ProductVideo from "@/components/products/ProductVideo";
 import ColorSelection from "@/components/products/ColorSelection";
 import QuantitySelector from "@/components/products/QuantitySelector";
 import ImageGallery from "@/components/products/ImageGallery";
+import RelatedProducts from "@/components/products/RelatedProducts";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { trackPageView, trackProductView, trackAddToCart } from "@/utils/metrika";
+import { getProductPrice } from "@/lib/utils";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,12 +78,17 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  // Force scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   // Find the selected color variant if it exists
   const selectedColorVariant = product?.colorVariants?.find(
     v => v.color === selectedColor
   );
 
-  // Check stock availability - now needs to check the specific variant
+  // Check stock availability
   const hasStock = () => {
     if (!product) return false;
     
@@ -133,7 +140,7 @@ const ProductDetail = () => {
     return product?.imageUrl || "";
   };
 
-  // Get article number to display - use variant-specific article number if available
+  // Get article number to display
   const getArticleNumber = () => {
     if (selectedColor && product?.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
@@ -149,53 +156,12 @@ const ProductDetail = () => {
   // Get the price to display
   const displayPrice = product ? getProductPrice(product, selectedColor) : 0;
 
-  // Force scroll to top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-
   if (loading) {
-    return (
-      <div className="min-h-screen">
-        <Navbar />
-        <div className="container px-4 py-8 md:px-6">
-          <div className="mb-6">
-            <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <div className="border rounded-lg overflow-hidden">
-                <div className="w-full aspect-square bg-gray-200 animate-pulse"></div>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <div className="h-10 w-3/4 bg-gray-200 rounded animate-pulse mb-4"></div>
-                <div className="h-6 w-1/4 bg-gray-200 rounded animate-pulse mb-4"></div>
-                <div className="h-6 w-1/2 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <ProductSkeleton />;
   }
 
   if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Товар не найден</h1>
-          <p className="text-muted-foreground mb-4">
-            Запрашиваемый товар не существует или был удален
-          </p>
-          <Button asChild>
-            <Link to="/catalog">Вернуться в каталог</Link>
-          </Button>
-        </div>
-      </div>
-    );
+    return <ProductNotFound />;
   }
 
   return (
@@ -203,14 +169,7 @@ const ProductDetail = () => {
       <Navbar />
 
       <main className="flex-grow container px-4 py-8 md:px-6">
-        <div className="mb-6">
-          <Link 
-            to="/catalog" 
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            Назад к каталогу
-          </Link>
-        </div>
+        <ProductHeader title={product.title} category={product.category} />
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left side - images */}
@@ -220,7 +179,7 @@ const ProductDetail = () => {
               additionalImages={product.additionalImages} 
             />
             
-            {/* Видео, если есть */}
+            {/* Video if available */}
             {product.videoUrl && (
               <ProductVideo 
                 videoUrl={product.videoUrl} 
@@ -292,12 +251,7 @@ const ProductDetail = () => {
         <ProductDetails product={product} />
 
         {/* Related products */}
-        {relatedProducts.length > 0 && (
-          <section className="mt-16">
-            <h2 className="text-2xl font-bold mb-6">Похожие товары</h2>
-            <ProductGrid products={relatedProducts} />
-          </section>
-        )}
+        <RelatedProducts products={relatedProducts} />
       </main>
 
       <Footer />
