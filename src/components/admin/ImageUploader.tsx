@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,20 @@ export default function ImageUploader({
         throw new Error("Пожалуйста, войдите в систему для загрузки изображений");
       }
 
+      console.log("Загрузка файла...", {
+        fileName,
+        bucket: 'product-images',
+        userId: session.user.id
+      });
+
+      // Определяем роли пользователя для логирования
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role, is_super_admin')
+        .eq('user_id', session.user.id);
+      
+      console.log("Роли пользователя:", roles);
+
       // Make sure we're uploading to the correct bucket
       const { data, error } = await supabase.storage
         .from('product-images')
@@ -53,7 +68,7 @@ export default function ImageUploader({
         });
 
       if (error) {
-        console.error("Upload error details:", error);
+        console.error("Детали ошибки загрузки:", error);
         throw error;
       }
 
@@ -72,7 +87,7 @@ export default function ImageUploader({
         });
       }
     } catch (error: any) {
-      console.error("Error uploading image:", error);
+      console.error("Ошибка при загрузке изображения:", error);
       toast.error("Ошибка загрузки изображения", {
         description: error.message || "Произошла ошибка при загрузке файла",
       });

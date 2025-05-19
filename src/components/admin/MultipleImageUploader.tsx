@@ -30,6 +30,25 @@ export default function MultipleImageUploader({
     setUploading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("Пожалуйста, войдите в систему для загрузки изображений");
+      }
+
+      console.log("Начало загрузки множественных изображений", {
+        userId: session.user.id,
+        fileCount: e.target.files.length
+      });
+
+      // Логирование информации о ролях пользователя
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role, is_super_admin')
+        .eq('user_id', session.user.id);
+      
+      console.log("Роли пользователя:", roles);
+
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i];
         const fileExt = file.name.split('.').pop();
@@ -44,6 +63,7 @@ export default function MultipleImageUploader({
           });
 
         if (error) {
+          console.error(`Ошибка при загрузке файла ${i+1}/${e.target.files.length}:`, error);
           throw error;
         }
 
@@ -58,11 +78,18 @@ export default function MultipleImageUploader({
             onImagesChange(newUrls);
             return newUrls;
           });
+          
+          console.log(`Файл ${i+1}/${e.target.files.length} успешно загружен:`, filePath);
         }
       }
+      
+      toast.success(`Изображения загружены`, {
+        description: `Успешно загружено ${e.target.files.length} изображений`
+      });
     } catch (error: any) {
-      toast("Ошибка загрузки изображения", {
-        description: error.message || "Произошла ошибка при загрузке файла",
+      console.error("Ошибка при загрузке изображений:", error);
+      toast.error("Ошибка загрузки изображений", {
+        description: error.message || "Произошла ошибка при загрузке файлов",
       });
     } finally {
       setUploading(false);
