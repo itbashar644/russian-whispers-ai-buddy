@@ -23,13 +23,6 @@ const Product = lazy(() => import("./pages/Product"));
 const Cart = lazy(() => import("./pages/Cart"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminPanel = lazy(() => import("./pages/admin/AdminPanel"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
-const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
-const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const Account = lazy(() => import("./pages/account/Account"));
 const UserOrders = lazy(() => import("./pages/account/UserOrders"));
@@ -75,17 +68,9 @@ function App() {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/wishlist" element={<Wishlist />} />
                     
-                    {/* Admin Routes */}
+                    {/* Admin Routes - Fixed to match exact paths used in navigation */}
                     <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<AdminPanel />}>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="products" element={<AdminProducts />} />
-                      <Route path="orders" element={<AdminOrders />} />
-                      <Route path="categories" element={<AdminCategories />} />
-                      <Route path="settings" element={<AdminSettings />} />
-                      <Route path="reports" element={<AdminReports />} />
-                      <Route path="customers" element={<AdminCustomers />} />
-                    </Route>
+                    <Route path="/admin/*" element={<AdminPanel />} />
                     
                     {/* Account Routes */}
                     <Route path="/account" element={<Account />} />

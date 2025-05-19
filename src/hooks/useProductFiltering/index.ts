@@ -6,6 +6,9 @@ import { transformProductsForColorDisplay, sortProducts } from "./helpers";
 import { useFilterOptions } from "./useFilterOptions";
 import { useProductStatistics } from "./useProductStatistics";
 
+/**
+ * Hook for filtering and sorting products based on various criteria
+ */
 export const useProductFiltering = ({
   allProducts,
   searchTerm,
@@ -66,7 +69,7 @@ export const useProductFiltering = ({
       result = result.filter((p) => p.inStock);
     }
     
-    // Always sort products with in-stock items first
+    // Apply sorting with in-stock items first
     result = sortProducts(result, sortBy);
     
     setFilteredProducts(result);

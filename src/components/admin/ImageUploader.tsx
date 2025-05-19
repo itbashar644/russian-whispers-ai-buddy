@@ -39,7 +39,9 @@ export default function ImageUploader({
     try {
       setUploading(true);
       
-      // Check if user is authenticated
+      // First create a storage bucket if it doesn't exist (this should be done in SQL, but for now)
+      // We'll use the 'product-images' bucket which has public access
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -51,7 +53,7 @@ export default function ImageUploader({
         .from('product-images')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true // Change to true to overwrite existing files
+          upsert: true
         });
 
       if (error) {

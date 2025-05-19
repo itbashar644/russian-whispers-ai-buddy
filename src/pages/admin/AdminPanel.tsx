@@ -9,60 +9,63 @@ import AdminCustomers from "./AdminCustomers";
 import AdminReports from "./AdminReports";
 import AdminSettings from "./AdminSettings";
 import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
+import AdminAuth from "@/components/admin/AdminAuth";
 
 const AdminPanel = () => {
   const location = useLocation();
   
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 hidden md:block bg-white shadow-sm pt-6">
-        <div className="px-6 pb-6 mb-6 border-b">
-          <h2 className="text-xl font-bold">Админ панель</h2>
-        </div>
+    <AdminAuth>
+      <div className="flex min-h-screen bg-gray-100">
+        {/* Sidebar */}
+        <aside className="w-64 hidden md:block bg-white shadow-sm pt-6">
+          <div className="px-6 pb-6 mb-6 border-b">
+            <h2 className="text-xl font-bold">Админ панель</h2>
+          </div>
+          
+          <nav className="px-3">
+            <NavItem to="/admin" end path={location.pathname}>
+              Дашборд
+            </NavItem>
+            <NavItem to="/admin/products" path={location.pathname}>
+              Товары
+            </NavItem>
+            <NavItem to="/admin/categories" path={location.pathname}>
+              Категории
+            </NavItem>
+            <NavItem to="/admin/orders" path={location.pathname}>
+              Заказы
+            </NavItem>
+            <NavItem to="/admin/customers" path={location.pathname}>
+              Клиенты
+            </NavItem>
+            <NavItem to="/admin/marketing" path={location.pathname}>
+              Рассылки
+            </NavItem>
+            <NavItem to="/admin/reports" path={location.pathname}>
+              Отчеты
+            </NavItem>
+            <NavItem to="/admin/settings" path={location.pathname}>
+              Настройки
+            </NavItem>
+          </nav>
+        </aside>
         
-        <nav className="px-3">
-          <NavItem to="/admin" end path={location.pathname}>
-            Дашборд
-          </NavItem>
-          <NavItem to="/admin/products" path={location.pathname}>
-            Товары
-          </NavItem>
-          <NavItem to="/admin/categories" path={location.pathname}>
-            Категории
-          </NavItem>
-          <NavItem to="/admin/orders" path={location.pathname}>
-            Заказы
-          </NavItem>
-          <NavItem to="/admin/customers" path={location.pathname}>
-            Клиенты
-          </NavItem>
-          <NavItem to="/admin/marketing" path={location.pathname}>
-            Рассылки
-          </NavItem>
-          <NavItem to="/admin/reports" path={location.pathname}>
-            Отчеты
-          </NavItem>
-          <NavItem to="/admin/settings" path={location.pathname}>
-            Настройки
-          </NavItem>
-        </nav>
-      </aside>
-      
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8">
-        <Routes>
-          <Route path="/" element={<AdminDashboard />} />
-          <Route path="/products/*" element={<AdminProducts />} />
-          <Route path="/categories/*" element={<AdminCategories />} />
-          <Route path="/orders/*" element={<AdminOrders />} />
-          <Route path="/customers/*" element={<AdminCustomers />} />
-          <Route path="/marketing" element={<NewsletterManager />} />
-          <Route path="/reports/*" element={<AdminReports />} />
-          <Route path="/settings/*" element={<AdminSettings />} />
-        </Routes>
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-8">
+          <Routes>
+            <Route index element={<AdminDashboard />} />
+            <Route path="products/*" element={<AdminProducts />} />
+            <Route path="categories/*" element={<AdminCategories />} />
+            <Route path="orders/*" element={<AdminOrders />} />
+            <Route path="customers/*" element={<AdminCustomers />} />
+            <Route path="marketing" element={<NewsletterManager />} />
+            <Route path="reports/*" element={<AdminReports />} />
+            <Route path="settings/*" element={<AdminSettings />} />
+          </Routes>
+        </main>
+      </div>
+    </AdminAuth>
   );
 };
 

@@ -46,7 +46,7 @@ const AdminPanelLink: React.FC = () => {
       </CardHeader>
       <CardContent>
         <Button asChild className="w-full" variant="default">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
+          <Link to="/admin" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Перейти в панель администратора
           </Link>

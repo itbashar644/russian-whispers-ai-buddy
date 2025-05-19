@@ -22,9 +22,14 @@ const AdminSettings = () => {
       </div>
       
       <div className="grid gap-6">
-        <AdminManager />
-        
-        {/* Additional settings sections can be added here */}
+        <Card>
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AdminManager />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

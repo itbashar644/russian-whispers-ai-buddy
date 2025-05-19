@@ -45,22 +45,22 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
   // Create a copy to avoid mutating the original array
   const sortedProducts = [...products];
   
-  // FIXED: Always sort by in-stock first with proper comparison
-  // This is the key fix - we need to make sure in-stock items come first
+  // First apply in-stock sorting for ALL sorting options
+  // This is critical - we need to make sure in-stock items come first regardless of sort option
   sortedProducts.sort((a, b) => {
     // When a is in stock and b is not, a should come first (-1)
     if (a.inStock && !b.inStock) return -1;
     // When b is in stock and a is not, b should come first (1)
     if (!a.inStock && b.inStock) return 1;
-    // If both have same stock status, maintain original order
+    // Both have same stock status, let additional sort criteria decide
     return 0;
   });
   
-  // Then apply additional sorting on top of the in-stock priority
+  // Then apply additional sorting within each group (in-stock and out-of-stock)
   switch (sortByOption) {
     case "price-asc":
       sortedProducts.sort((a, b) => {
-        // First by stock
+        // First by stock (overriding priority)
         if (a.inStock !== b.inStock) {
           return a.inStock ? -1 : 1;
         }
@@ -72,7 +72,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
       break;
     case "price-desc":
       sortedProducts.sort((a, b) => {
-        // First by stock
+        // First by stock (overriding priority)
         if (a.inStock !== b.inStock) {
           return a.inStock ? -1 : 1;
         }
@@ -84,7 +84,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
       break;
     case "name-asc":
       sortedProducts.sort((a, b) => {
-        // First by stock
+        // First by stock (overriding priority)
         if (a.inStock !== b.inStock) {
           return a.inStock ? -1 : 1;
         }
@@ -94,7 +94,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
       break;
     case "name-desc":
       sortedProducts.sort((a, b) => {
-        // First by stock
+        // First by stock (overriding priority)
         if (a.inStock !== b.inStock) {
           return a.inStock ? -1 : 1;
         }
@@ -104,7 +104,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
       break;
     case "rating":
       sortedProducts.sort((a, b) => {
-        // First by stock
+        // First by stock (overriding priority)
         if (a.inStock !== b.inStock) {
           return a.inStock ? -1 : 1;
         }
@@ -114,7 +114,7 @@ export const sortProducts = (products: Product[], sortByOption: string): Product
       break;
     case "in-stock":
     default:
-      // Just maintain the stock sort that was already applied
+      // The default in-stock sorting was already applied above
       break;
   }
   
