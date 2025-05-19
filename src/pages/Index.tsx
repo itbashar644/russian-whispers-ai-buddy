@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -110,9 +109,8 @@ const Index = () => {
                         (e.target as HTMLImageElement).src = "/placeholder.svg";
                       }}
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/40">
-                      <Box className="h-8 w-8 mb-2" />
-                      <h3 className="text-xl font-bold text-white">{category.name}</h3>
+                    <div className="absolute inset-x-0 bottom-0 bg-black/50 p-3">
+                      <h3 className="text-center text-xl font-bold text-white">{category.name}</h3>
                     </div>
                   </Link>
                 ))}

@@ -38,29 +38,16 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         Все товары
       </Button>
       
-      {availableCategories.map((category) => {
-        const categoryObj = findCategoryByName(category);
-        return (
-          <Button
-            key={category}
-            variant={categoryParam === category ? "default" : "outline"}
-            className="w-full justify-start flex items-center"
-            onClick={() => handleCategoryClick(category)}
-          >
-            <span className="w-4 h-4 mr-2 overflow-hidden flex-shrink-0">
-              <img 
-                src={categoryObj.imageUrl} 
-                className="w-full h-full object-cover" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-                alt=""
-              />
-            </span>
-            <span>{category}</span>
-          </Button>
-        );
-      })}
+      {availableCategories.map((category) => (
+        <Button
+          key={category}
+          variant={categoryParam === category ? "default" : "outline"}
+          className="w-full justify-start"
+          onClick={() => handleCategoryClick(category)}
+        >
+          <span>{category}</span>
+        </Button>
+      ))}
     </div>
   );
 };
