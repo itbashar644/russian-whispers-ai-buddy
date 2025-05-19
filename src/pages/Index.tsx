@@ -92,7 +92,9 @@ const Index = () => {
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="aspect-[3/4] bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div key={i} className="bg-gray-200 animate-pulse rounded-lg">
+                    <div style={{ paddingTop: "133.33%" }} className="relative"></div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -103,19 +105,19 @@ const Index = () => {
                     to={`/catalog?category=${category.name}`}
                     className="group relative overflow-hidden rounded-lg"
                   >
-                    <AspectRatio ratio={3/4} className="bg-gray-100">
+                    <div className="relative" style={{ paddingTop: "133.33%" }}>
                       <img
                         alt={category.name}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        className="absolute top-0 left-0 h-full w-full object-cover transition-transform group-hover:scale-105"
                         src={category.imageUrl}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/placeholder.svg";
                         }}
                       />
-                      <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 px-2">
-                        <h3 className="text-center text-lg font-semibold text-white">{category.name}</h3>
+                      <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1 px-2">
+                        <h3 className="text-center text-base font-medium text-white">{category.name}</h3>
                       </div>
-                    </AspectRatio>
+                    </div>
                   </Link>
                 ))}
               </div>

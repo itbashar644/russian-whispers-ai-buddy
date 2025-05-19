@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import ImageLightbox from '@/components/ui/image-lightbox';
 
 interface ImageGalleryProps {
   mainImage: string;
@@ -9,6 +10,7 @@ interface ImageGalleryProps {
 const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages = [] }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   
   const allImages = [mainImage, ...additionalImages].filter(Boolean);
   const currentImage = allImages[currentImageIndex] || "/placeholder.svg";
@@ -20,8 +22,9 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
         <img 
           src={imageError ? "/placeholder.svg" : currentImage} 
           alt="Product" 
-          className="w-full h-auto object-cover aspect-square" 
+          className="w-full h-auto object-cover aspect-square cursor-pointer" 
           onError={() => setImageError(true)}
+          onClick={() => setLightboxOpen(true)}
         />
       </div>
       
@@ -48,6 +51,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
           ))}
         </div>
       )}
+
+      {/* Image lightbox for full-screen gallery */}
+      <ImageLightbox 
+        images={allImages}
+        initialIndex={currentImageIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+      />
     </>
   );
 };

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Product, ColorVariant } from "@/types/product";
+import ImageLightbox from '@/components/ui/image-lightbox';
 
 interface ProductImageGalleryProps {
   product: Product;
@@ -15,16 +16,41 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   onColorVariantSelect 
 }) => {
   const [selectedImage, setSelectedImage] = useState<string>(product.imageUrl);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Collect all available images
+  const allImages = [
+    product.imageUrl,
+    ...(product.additionalImages || []),
+    ...(product.colorVariants?.filter(v => v.imageUrl)?.map(v => v.imageUrl as string) || [])
+  ].filter(Boolean);
 
   const handleThumbnailClick = (image: string) => {
     setSelectedImage(image);
+    const index = allImages.indexOf(image);
+    if (index !== -1) {
+      setLightboxIndex(index);
+    }
   };
 
   const handleVariantThumbnailClick = (variant: ColorVariant) => {
     if (variant.imageUrl) {
       setSelectedImage(variant.imageUrl);
+      const index = allImages.indexOf(variant.imageUrl);
+      if (index !== -1) {
+        setLightboxIndex(index);
+      }
     }
     onColorVariantSelect(variant);
+  };
+
+  const handleMainImageClick = () => {
+    const index = allImages.indexOf(selectedImage);
+    if (index !== -1) {
+      setLightboxIndex(index);
+    }
+    setLightboxOpen(true);
   };
 
   return (
@@ -33,7 +59,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <img 
           src={selectedImage} 
           alt={product.title} 
-          className="object-cover w-full h-full"
+          className="object-cover w-full h-full cursor-pointer"
+          onClick={handleMainImageClick}
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/placeholder.svg";
           }}
@@ -92,6 +119,14 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           )
         ))}
       </div>
+
+      {/* Image lightbox */}
+      <ImageLightbox 
+        images={allImages}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+      />
     </div>
   );
 };

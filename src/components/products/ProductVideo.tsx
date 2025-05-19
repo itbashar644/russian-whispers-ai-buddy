@@ -1,56 +1,84 @@
 
 import React, { useState } from 'react';
-import { formatVideoUrl } from "@/lib/utils";
+import { Play } from 'lucide-react';
 
 interface ProductVideoProps {
-  videoUrl?: string;
-  videoType?: string;
-  imageUrl?: string;
+  videoUrl: string;
+  videoType: string;
+  imageUrl: string;
 }
 
-const ProductVideo: React.FC<ProductVideoProps> = ({ videoUrl, videoType, imageUrl }) => {
-  const [videoError, setVideoError] = useState(false);
+const ProductVideo: React.FC<ProductVideoProps> = ({ 
+  videoUrl, 
+  videoType = 'mp4',
+  imageUrl 
+}) => {
+  const [playing, setPlaying] = useState(false);
 
-  if (!videoUrl || videoError) return null;
+  if (!videoUrl) return null;
 
-  // Функция для определения типа рендера видео в зависимости от типа
-  const renderVideo = () => {
-    // Определяем тип видео (по умолчанию mp4 для обратной совместимости)
-    const type = videoType || 'mp4';
-    
-    switch (type) {
-      case 'vk':
-      case 'youtube':
-        const formattedUrl = formatVideoUrl(videoUrl, type);
-        return (
-          <iframe 
-            src={formattedUrl}
-            className="w-full h-full"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowFullScreen
-            title="Product video"
-            onError={() => setVideoError(true)}
-          />
-        );
-      case 'mp4':
-      default:
-        return (
-          <video 
-            controls 
-            className="w-full h-auto"
-            poster={imageUrl}
-            onError={() => setVideoError(true)}
-          >
-            <source src={videoUrl} type="video/mp4" />
-            Ваш браузер не поддерживает видео.
-          </video>
-        );
+  const getEmbedUrl = () => {
+    if (videoType === 'youtube') {
+      // Convert regular YouTube URL to embed URL if needed
+      if (videoUrl.includes('watch?v=')) {
+        const videoId = videoUrl.split('watch?v=')[1].split('&')[0];
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      }
+      if (videoUrl.includes('youtu.be/')) {
+        const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      }
+      return videoUrl;
     }
+    if (videoType === 'vk') {
+      // Handle VK videos
+      return videoUrl;
+    }
+    
+    // Default to the original URL for mp4
+    return videoUrl;
+  };
+  
+  const handlePlay = () => {
+    setPlaying(true);
   };
 
   return (
-    <div className="mt-4 border rounded-lg overflow-hidden aspect-video">
-      {renderVideo()}
+    <div className="mt-4 border rounded-lg overflow-hidden">
+      <div className="relative aspect-video">
+        {!playing ? (
+          <>
+            <img 
+              src={imageUrl || "/placeholder.svg"} 
+              alt="Video thumbnail"
+              className="w-full h-full object-cover"
+            />
+            <button 
+              className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors"
+              onClick={handlePlay}
+            >
+              <div className="h-16 w-16 bg-primary/90 hover:bg-primary rounded-full flex items-center justify-center">
+                <Play className="h-8 w-8 text-white ml-1" />
+              </div>
+            </button>
+          </>
+        ) : videoType === 'mp4' ? (
+          <video 
+            src={videoUrl} 
+            controls 
+            autoPlay 
+            className="absolute inset-0 w-full h-full" 
+          />
+        ) : (
+          <iframe 
+            src={getEmbedUrl()} 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+            title="Product video"
+          ></iframe>
+        )}
+      </div>
     </div>
   );
 };
