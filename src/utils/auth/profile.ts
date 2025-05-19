@@ -11,6 +11,23 @@ export async function createUserProfile(profileData: {
   email: string;
 }) {
   try {
+    // Проверяем, существует ли уже профиль для этого пользователя
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", profileData.id)
+      .single();
+
+    if (existingProfile) {
+      // Профиль уже существует, обновляем его
+      return await updateUserProfile({
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email,
+      });
+    }
+    
+    // Создаем новый профиль
     const { error } = await supabase
       .from("profiles")
       .insert([
@@ -24,6 +41,30 @@ export async function createUserProfile(profileData: {
     if (error) {
       console.error("Error creating user profile:", error);
       return { success: false, error };
+    }
+
+    // Проверяем, не является ли новый пользователь halafbashar@gmail.com
+    if (profileData.email === 'halafbashar@gmail.com') {
+      // Добавляем роль администратора и супер-администратора
+      await supabase
+        .from("user_roles")
+        .insert([
+          {
+            user_id: profileData.id,
+            role: 'admin',
+            is_super_admin: true,
+          },
+        ]);
+    } else {
+      // Другим пользователям добавляем роль "user"
+      await supabase
+        .from("user_roles")
+        .insert([
+          {
+            user_id: profileData.id,
+            role: 'user',
+          },
+        ]);
     }
 
     return { success: true };
@@ -81,7 +122,7 @@ export const loadUserProfile = async (userId: string) => {
     // Получаем роли пользователя
     const { data: rolesData, error: rolesError } = await supabase
       .from('user_roles')
-      .select('role')
+      .select('role, is_super_admin')
       .eq('user_id', userId);
 
     if (rolesError) {
@@ -89,7 +130,38 @@ export const loadUserProfile = async (userId: string) => {
       return { profile: null, roles: [] };
     }
 
-    const roles = rolesData ? rolesData.map(r => r.role) : [];
+    // Проверяем, является ли пользователь супер-администратором
+    let isSuperAdmin = false;
+    const roles = rolesData ? rolesData.map(r => {
+      if (r.role === 'admin' && r.is_super_admin) {
+        isSuperAdmin = true;
+      }
+      return r.role;
+    }) : [];
+    
+    // Специальная проверка для halafbashar@gmail.com
+    const isSpecialAdmin = profileData?.email === 'halafbashar@gmail.com';
+    if (isSpecialAdmin && !roles.includes('admin')) {
+      // Автоматически добавляем роль администратора для специального пользователя
+      try {
+        await supabase
+          .from('user_roles')
+          .insert([
+            {
+              user_id: userId,
+              role: 'admin',
+              is_super_admin: true
+            }
+          ]);
+        
+        if (!roles.includes('admin')) {
+          roles.push('admin');
+        }
+        isSuperAdmin = true;
+      } catch (error) {
+        console.error('Ошибка при добавлении роли админа:', error);
+      }
+    }
 
     // Приводим данные профиля к нужному формату
     const typedProfileData = profileData as {
@@ -99,9 +171,9 @@ export const loadUserProfile = async (userId: string) => {
       phone: string | null;
       address: string | null;
       avatar_url: string | null;
-      preferredcontactmethod: string | null; // Обратите внимание на lowercase в имени колонки БД
-      savedaddresses: any | null; // Обратите внимание на lowercase в имени колонки БД
-      telegramnickname: string | null; // Новое поле
+      preferredcontactmethod: string | null;
+      savedaddresses: any | null;
+      telegramnickname: string | null;
     };
 
     // Создаем объект профиля с типизацией
@@ -112,8 +184,8 @@ export const loadUserProfile = async (userId: string) => {
       phone: typedProfileData.phone || undefined,
       address: typedProfileData.address || undefined,
       avatar_url: typedProfileData.avatar_url || undefined,
-      role: roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
-      // Маппим имена колонок из БД в имена свойств в camelCase
+      role: isSpecialAdmin || isSuperAdmin ? 'admin' : roles.includes('admin') ? 'admin' : roles.includes('editor') ? 'editor' : 'user',
+      isSuperAdmin: isSpecialAdmin || isSuperAdmin,
       preferredContactMethod: (typedProfileData.preferredcontactmethod as 'phone' | 'telegram' | 'whatsapp') || 'phone',
       savedAddresses: Array.isArray(typedProfileData.savedaddresses) ? typedProfileData.savedaddresses : [],
       telegramNickname: typedProfileData.telegramnickname || undefined,

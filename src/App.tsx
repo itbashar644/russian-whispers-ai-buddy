@@ -80,6 +80,7 @@ function App() {
                     {/* Auth Routes */}
                     <Route path="/auth/login" element={<Login />} />
                     <Route path="/auth/register" element={<Register />} />
+                    <Route path="/register" element={<Register />} /> {/* Добавлен дополнительный маршрут для /register */}
                     <Route path="/auth/forgot-password" element={<ForgotPassword />} />
                     <Route path="/auth/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />

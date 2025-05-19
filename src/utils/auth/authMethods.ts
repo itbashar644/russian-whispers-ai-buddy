@@ -151,6 +151,21 @@ export const signupWithEmail = async (
   metadata?: { name?: string }
 ): Promise<AuthResult> => {
   try {
+    // Проверка, существует ли уже пользователь с таким email
+    const { data: existingUsers } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (existingUsers) {
+      return { 
+        success: false, 
+        error: "This email is already registered. Please log in instead.", 
+        isExistingUser: true 
+      };
+    }
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -164,11 +179,18 @@ export const signupWithEmail = async (
       return { success: false, error: error.message };
     }
 
+    // Проверяем, не существует ли уже пользователь (через identities)
+    if (data.user?.identities?.length === 0) {
+      return { 
+        success: false, 
+        error: "This email is already registered. Please log in instead.", 
+        isExistingUser: true 
+      };
+    }
+
     return { 
       success: true,
-      message: data.user?.identities?.length === 0 
-        ? "This email is already registered. Please log in instead."
-        : "Registration successful. Please check your email to confirm your account."
+      message: "Registration successful. Please check your email to confirm your account."
     };
   } catch (e) {
     console.error("Signup exception:", e);

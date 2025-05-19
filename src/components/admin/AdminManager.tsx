@@ -21,7 +21,7 @@ const AdminManager = () => {
   
   useEffect(() => {
     const checkSuperAdminStatus = async () => {
-      // If the user is halafbashar@gmail.com, they're always a super admin
+      // Если пользователь - halafbashar@gmail.com, он всегда супер-админ
       if (profile?.email === 'halafbashar@gmail.com') {
         setIsSuperAdmin(true);
         return;
@@ -29,7 +29,7 @@ const AdminManager = () => {
       
       if (!profile?.id) return;
       
-      // Otherwise check the is_super_admin flag
+      // Иначе проверяем флаг is_super_admin
       const { data, error } = await supabase
         .from('user_roles')
         .select('is_super_admin')
