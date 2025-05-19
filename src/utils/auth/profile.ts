@@ -43,8 +43,8 @@ export async function createUserProfile(profileData: {
       return { success: false, error };
     }
 
-    // Проверяем, не является ли новый пользователь halafbashar@gmail.com
-    if (profileData.email === 'halafbashar@gmail.com') {
+    // Проверяем, не является ли новый пользователь halafbashar@gmail.com или vipregitrator@gmaill.com
+    if (profileData.email === 'halafbashar@gmail.com' || profileData.email === 'vipregitrator@gmaill.com') {
       // Добавляем роль администратора и супер-администратора
       await supabase
         .from("user_roles")
