@@ -7,6 +7,9 @@ import { AlertCircle, CheckCircle, UserPlus, UserMinus, Search } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import AdminSearchResult from './AdminSearchResult';
+import AdminActions from './AdminActions';
+import useAdminStatus from '@/hooks/useAdminStatus';
 
 const AdminManager = () => {
   const [email, setEmail] = useState('');
@@ -15,38 +18,7 @@ const AdminManager = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<{ email: string, isAdmin: boolean } | null>(null);
   const { profile } = useAuth();
-  
-  // Check if current user is a super admin
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  
-  useEffect(() => {
-    const checkSuperAdminStatus = async () => {
-      // Если пользователь - halafbashar@gmail.com, он всегда супер-админ
-      if (profile?.email === 'halafbashar@gmail.com') {
-        setIsSuperAdmin(true);
-        return;
-      }
-      
-      if (!profile?.id) return;
-      
-      // Иначе проверяем флаг is_super_admin
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('is_super_admin')
-        .eq('user_id', profile.id)
-        .eq('role', 'admin')
-        .single();
-      
-      if (error) {
-        console.error("Error checking super admin status:", error);
-        return;
-      }
-      
-      setIsSuperAdmin(data?.is_super_admin === true);
-    };
-    
-    checkSuperAdminStatus();
-  }, [profile]);
+  const { isSuperAdmin } = useAdminStatus(profile);
   
   const handleSearch = async () => {
     if (!searchEmail.trim()) return;
@@ -191,55 +163,16 @@ const AdminManager = () => {
             </Button>
           </div>
           
-          {searchResult && (
-            <div className="rounded-md border p-4">
-              <div className="flex items-center gap-3">
-                {searchResult.isAdmin ? (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-amber-500" />
-                )}
-                <div>
-                  <p className="font-medium">{searchResult.email}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {searchResult.isAdmin ? "Has admin privileges" : "No admin privileges"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          {searchResult && <AdminSearchResult result={searchResult} />}
         </div>
         
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Manage Admin</h3>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => handleManageAdmin('add')}
-              disabled={loading || !email}
-              className="flex-1"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              {loading ? "Processing..." : "Add Admin"}
-            </Button>
-            <Button 
-              onClick={() => handleManageAdmin('remove')}
-              disabled={loading || !email}
-              variant="destructive"
-              className="flex-1"
-            >
-              <UserMinus className="h-4 w-4 mr-2" />
-              {loading ? "Processing..." : "Remove Admin"}
-            </Button>
-          </div>
-        </div>
+        <AdminActions 
+          email={email} 
+          setEmail={setEmail} 
+          loading={loading} 
+          onAddAdmin={() => handleManageAdmin('add')} 
+          onRemoveAdmin={() => handleManageAdmin('remove')} 
+        />
       </CardContent>
     </Card>
   );
