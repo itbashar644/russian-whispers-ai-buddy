@@ -9,6 +9,7 @@ import Footer from "@/components/layout/Footer";
 import { Box } from "lucide-react";
 import { Product } from "@/types/product";
 import { Category } from "@/data/products/categoryData";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Index = () => {
   const [bestsellers, setBestsellers] = useState<Product[]>([]);
@@ -91,7 +92,7 @@ const Index = () => {
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="aspect-square bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div key={i} className="aspect-[3/4] bg-gray-200 animate-pulse rounded-lg"></div>
                 ))}
               </div>
             ) : (
@@ -100,19 +101,21 @@ const Index = () => {
                   <Link
                     key={category.name}
                     to={`/catalog?category=${category.name}`}
-                    className="group relative aspect-square overflow-hidden rounded-lg"
+                    className="group relative overflow-hidden rounded-lg"
                   >
-                    <img
-                      alt={category.name}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      src={category.imageUrl}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                    <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 px-2">
-                      <h3 className="text-center text-lg font-semibold text-white">{category.name}</h3>
-                    </div>
+                    <AspectRatio ratio={3/4} className="bg-gray-100">
+                      <img
+                        alt={category.name}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        src={category.imageUrl}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 px-2">
+                        <h3 className="text-center text-lg font-semibold text-white">{category.name}</h3>
+                      </div>
+                    </AspectRatio>
                   </Link>
                 ))}
               </div>
