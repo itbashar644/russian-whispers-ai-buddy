@@ -6,11 +6,13 @@ import AdminManager from '@/components/admin/AdminManager';
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import useAdminStatus from "@/hooks/useAdminStatus";
 
 const AdminSettings = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { hasRole } = useAuth();
+  const { hasRole, profile } = useAuth();
+  const { isSuperAdmin } = useAdminStatus(profile);
 
   useEffect(() => {
     const checkAdminAccess = async () => {

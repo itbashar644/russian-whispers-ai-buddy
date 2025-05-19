@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { Toaster } from 'sonner';
@@ -10,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WishlistProvider } from "./context/WishlistContext";
 import { AuthProvider } from "./context/AuthContext";
 import ChatWidget from "./components/chat/ChatWidget";
+import { HelmetProvider } from 'react-helmet-async';
 
 // Lazy-loaded pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -48,56 +48,58 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="x-shop-theme">
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <BrowserRouter>
-                <ScrollToTop />
-                <Suspense fallback={<Loading />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/delivery" element={<Delivery />} />
-                    <Route path="/catalog" element={<Catalog />} />
-                    <Route path="/product/:id" element={<Product />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    
-                    {/* Admin Routes - Fixed to match exact paths used in navigation */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin/*" element={<AdminPanel />} />
-                    
-                    {/* Account Routes */}
-                    <Route path="/account" element={<Account />} />
-                    <Route path="/account/orders" element={<UserOrders />} />
-                    <Route path="/account/security" element={<AccountSecurity />} />
-                    
-                    {/* Auth Routes */}
-                    <Route path="/auth/login" element={<Login />} />
-                    <Route path="/auth/register" element={<Register />} />
-                    <Route path="/register" element={<Register />} /> {/* Добавлен дополнительный маршрут для /register */}
-                    <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/auth/reset-password" element={<ResetPassword />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
-                    
-                    {/* 404 */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-                
-                <Toaster position="top-right" richColors />
-                <ChatWidget />
-              </BrowserRouter>
-            </CartProvider>
-          </WishlistProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider defaultTheme="light" storageKey="x-shop-theme">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <Suspense fallback={<Loading />}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contacts" element={<Contacts />} />
+                      <Route path="/terms" element={<Terms />} />
+                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/delivery" element={<Delivery />} />
+                      <Route path="/catalog" element={<Catalog />} />
+                      <Route path="/product/:id" element={<Product />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      
+                      {/* Admin Routes - Fixed to match exact paths used in navigation */}
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/admin/*" element={<AdminPanel />} />
+                      
+                      {/* Account Routes */}
+                      <Route path="/account" element={<Account />} />
+                      <Route path="/account/orders" element={<UserOrders />} />
+                      <Route path="/account/security" element={<AccountSecurity />} />
+                      
+                      {/* Auth Routes */}
+                      <Route path="/auth/login" element={<Login />} />
+                      <Route path="/auth/register" element={<Register />} />
+                      <Route path="/register" element={<Register />} /> {/* Добавлен дополнительный маршрут для /register */}
+                      <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/auth/reset-password" element={<ResetPassword />} />
+                      <Route path="/auth/callback" element={<AuthCallback />} />
+                      
+                      {/* 404 */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                  
+                  <Toaster position="top-right" richColors />
+                  <ChatWidget />
+                </BrowserRouter>
+              </CartProvider>
+            </WishlistProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 

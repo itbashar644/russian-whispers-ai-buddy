@@ -18,7 +18,6 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { isAuthenticated, hasRole } = useAuth();
 
-  // Проверка, авторизован ли пользователь и является ли он админом
   useEffect(() => {
     let isMounted = true;
     
@@ -58,14 +57,13 @@ const AdminLogin = () => {
       // Очистка предыдущего состояния авторизации
       cleanupAuthState();
       
-      // Используем основной метод входа, а затем проверяем роль
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
         password 
       });
 
       if (error) {
-        toast("Ошибка авторизации", {
+        toast.error("Ошибка авторизации", {
           description: error.message || "Неверное имя пользователя или пароль",
         });
         setLoading(false);
@@ -79,7 +77,7 @@ const AdminLogin = () => {
         .eq('user_id', data.user.id);
 
       if (rolesError) {
-        toast("Ошибка авторизации", {
+        toast.error("Ошибка авторизации", {
           description: "Не удалось проверить роль пользователя",
         });
         setLoading(false);
@@ -90,23 +88,25 @@ const AdminLogin = () => {
       const isAdmin = rolesData.some(r => r.role === 'admin');
 
       if (isAdmin) {
-        toast("Авторизация успешна", {
+        toast.success("Авторизация успешна", {
           description: "Добро пожаловать в административную панель",
         });
         
-        // Используем явную навигацию вместо полной перезагрузки
-        navigate('/admin', { replace: true });
+        // Добавляем небольшую задержку перед перенаправлением
+        setTimeout(() => {
+          window.location.href = '/admin';
+        }, 100);
       } else {
         // Если роль не админ, выполняем выход
         await supabase.auth.signOut();
-        toast("Ошибка авторизации", {
+        toast.error("Ошибка авторизации", {
           description: "У вас нет прав доступа к админ-панели. Для назначения прав администратора обратитесь к существующему администратору.",
         });
         setLoading(false);
       }
     } catch (error: any) {
       console.error("Ошибка при входе:", error);
-      toast("Ошибка авторизации", {
+      toast.error("Ошибка авторизации", {
         description: error.message || "Произошла ошибка при входе в систему",
       });
       setLoading(false);

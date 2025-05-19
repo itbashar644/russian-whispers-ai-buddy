@@ -20,7 +20,12 @@ const NotFound = () => {
           const { data, error } = await supabase.auth.getSession();
           if (data?.session) {
             console.log("Session recovered from hash params");
-            window.location.href = "/account";
+            // Determine where to redirect based on potential patterns in the URL
+            if (location.pathname.includes('admin')) {
+              window.location.href = "/admin";
+            } else {
+              window.location.href = "/account";
+            }
           }
         } catch (e) {
           console.error("Error processing auth callback on 404 page:", e);
