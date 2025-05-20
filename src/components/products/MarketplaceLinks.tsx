@@ -14,7 +14,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
   return (
     <div className="flex items-center gap-3 my-4">
       <span className="text-xs text-muted-foreground">Доступен на:</span>
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {product.wildberriesUrl && (
           <a 
             href={product.wildberriesUrl} 
