@@ -55,11 +55,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
   return (
     <div className="space-y-4">
-      <AspectRatio ratio={1/1} className="bg-muted overflow-hidden rounded-lg border">
-        <img 
-          src={selectedImage} 
-          alt={product.title} 
-          className="object-cover w-full h-full cursor-pointer"
+      <AspectRatio ratio={3/4} className="bg-muted overflow-hidden rounded-lg border">
+        <img
+          src={selectedImage}
+          alt={product.title}
+          className="object-contain w-full h-auto cursor-pointer"
           onClick={handleMainImageClick}
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/placeholder.svg";

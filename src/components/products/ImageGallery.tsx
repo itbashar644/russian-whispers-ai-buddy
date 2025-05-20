@@ -19,10 +19,10 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
     <>
       {/* Main image display */}
       <div className="border rounded-lg overflow-hidden">
-        <img 
-          src={imageError ? "/placeholder.svg" : currentImage} 
-          alt="Product" 
-          className="w-full h-auto object-cover aspect-square cursor-pointer" 
+       <img
+          src={imageError ? "/placeholder.svg" : currentImage}
+          alt="Product"
+            className="object-contain w-full h-auto cursor-pointer"
           onError={() => setImageError(true)}
           onClick={() => setLightboxOpen(true)}
         />
