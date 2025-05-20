@@ -22,7 +22,7 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
     <Card className={`h-full ${!isAvailable ? 'opacity-75' : ''}`}>
       <Link to={`/product/${product.id}`} className="block h-full">
         <div className="relative overflow-hidden">
-          <AspectRatio ratio={3/4} className="bg-white">
+          <AspectRatio ratio={1/1} className="bg-white">
             <img
               src={currentProduct.imageUrl || "/placeholder.svg"}
               alt={product.title}
@@ -30,18 +30,18 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
             />
           </AspectRatio>
           {!isAvailable && (
-            <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white">
+            <Badge variant="outline" className="absolute top-2 left-2 bg-gray-700 text-white text-xs">
               Нет в наличии
             </Badge>
           )}
           
         </div>
         <CardHeader className="p-2">
-          <CardTitle className="line-clamp-1 text-sm">
+          <CardTitle className="line-clamp-1 text-xs sm:text-sm">
             {product.title}
           </CardTitle>
           <CardDescription className="flex justify-between items-center">
-            <span className="font-medium whitespace-nowrap">
+            <span className="font-medium whitespace-nowrap text-xs sm:text-sm">
               {currentProduct.discountPrice
                 ? formatPrice(currentProduct.discountPrice)
                 : formatPrice(currentProduct.price)}

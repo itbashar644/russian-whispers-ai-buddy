@@ -25,10 +25,10 @@ const ProductGridView = ({
   mode
 }: ProductGridViewProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {products.map((product) => (
         <Card key={product.id} className="overflow-hidden">
-          <div className="h-48 overflow-hidden">
+          <div className="h-40 overflow-hidden">
             <img
               src={product.imageUrl}
               alt={product.title}

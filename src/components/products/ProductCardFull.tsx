@@ -43,64 +43,65 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
         className="block flex-grow overflow-hidden"
       >
         <div className="relative overflow-hidden">
-          <AspectRatio ratio={3/4} className="bg-white">
+          <AspectRatio ratio={1/1} className="bg-white">
             <img
               src={currentProduct.imageUrl || "/placeholder.svg"}
               alt={product.title}
               className={`w-full h-full object-contain transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
             />
           </AspectRatio>
-          <div className="absolute top-2 right-2 flex flex-col gap-1">
-            {product.isNew && <Badge className="bg-blue-500">Новинка</Badge>}
+          <div className="absolute top-1 right-1 flex flex-col gap-1">
+            {product.isNew && <Badge className="bg-blue-500 text-xs py-0">Новинка</Badge>}
             {product.isBestseller && (
-              <Badge className="bg-amber-500">Хит продаж</Badge>
+              <Badge className="bg-amber-500 text-xs py-0">Хит продаж</Badge>
             )}
             {!isAvailable && (
-              <Badge variant="secondary" className="bg-gray-500">Нет в наличии</Badge>
+              <Badge variant="secondary" className="bg-gray-500 text-xs py-0">Нет в наличии</Badge>
             )}
           </div>
           
-          
           <button 
             onClick={handleToggleWishlist}
-            className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
+            className="absolute top-1 left-1 bg-white/80 p-1 rounded-full hover:bg-white transition-colors"
             aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
           >
             <Heart 
-              className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+              className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
             />
           </button>
         </div>
       </Link>
       
-      <CardHeader className="p-4 pb-0">
+      <CardHeader className="p-2 pb-0">
         <Link to={`/product/${product.id}`} className="block">
-          <CardTitle className="line-clamp-2 text-lg">{product.title}</CardTitle>
+          <CardTitle className="line-clamp-2 text-sm">
+            {product.title}
+          </CardTitle>
         </Link>
-        <CardDescription className="flex items-center justify-between mt-2">
+        <CardDescription className="flex items-center justify-between mt-1">
           <div className="flex flex-col">
             {currentProduct.discountPrice ? (
               <>
-                <span className="text-lg font-semibold whitespace-nowrap">
+                <span className="text-sm font-semibold whitespace-nowrap">
                   {formatPrice(currentProduct.discountPrice)}
                 </span>
-                <span className="text-sm line-through text-muted-foreground whitespace-nowrap">
+                <span className="text-xs line-through text-muted-foreground whitespace-nowrap">
                   {formatPrice(currentProduct.price)}
                 </span>
               </>
             ) : (
-              <span className="text-lg font-semibold whitespace-nowrap">
+              <span className="text-sm font-semibold whitespace-nowrap">
                 {formatPrice(currentProduct.price)}
               </span>
             )}
           </div>
-          <div className="text-sm text-muted-foreground text-right">
+          <div className="text-xs text-muted-foreground text-right">
             {product.category}
           </div>
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-4 pt-2 flex-grow">
+      <CardContent className="p-2 pt-1 flex-grow">
         {/* Display color options if available */}
         <ProductColorOptions 
           product={product}
@@ -108,21 +109,22 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           onColorSelect={handleColorSelect}
         />
 
-           {/* Marketplace links */}
+        {/* Marketplace links */}
         <MarketplaceLinks product={product} />
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-2 pt-0">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="w-full"
+                className="w-full text-xs h-8"
                 onClick={handleAddToCart}
                 disabled={!isAvailable}
                 variant={!isAvailable ? "outline" : "default"}
+                size="sm"
               >
-                <ShoppingCart className="mr-2 h-4 w-4" />
+                <ShoppingCart className="mr-1 h-3 w-3" />
                 {isAvailable ? "В корзину" : "Нет в наличии"}
               </Button>
             </TooltipTrigger>
