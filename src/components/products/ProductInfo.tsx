@@ -49,7 +49,7 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
-    await addItem({
+     await addItem({
         product,
         quantity,
         color: selectedColor || undefined,

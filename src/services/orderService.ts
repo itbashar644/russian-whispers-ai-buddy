@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CartItem } from "@/types/product";
-import { decreaseProductStock } from "@/data/products/product/productServiceSpecialized";
+import { checkProductStock, decreaseProductStock } from "@/data/products/product/productServiceSpecialized";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { handleGuestCheckout } from "@/utils/auth/guestCheckout";
@@ -131,9 +131,9 @@ export async function placeOrder(orderData: {
     // Check stock availability for all items before placing the order
     for (const item of orderData.items) {
       const colorVariant = item.color || undefined;
-      const stockAvailable = await decreaseProductStock(item.product.id, item.quantity, colorVariant);
-      
-      if (!stockAvailable) {
+      const stockAvailable = await checkProductStock(item.product.id, colorVariant);
+
+      if (!stockAvailable || item.quantity <= 0) {
         return {
           success: false,
           error: {
@@ -173,8 +173,13 @@ export async function placeOrder(orderData: {
 
     if (error) {
       console.error('Error creating order:', error);
-      // We don't need to revert stock decreases since they are now handled before insertion
       return { success: false, error };
+    }
+
+       // Decrease stock only after the order is successfully created
+    for (const item of orderData.items) {
+      const colorVariant = item.color || undefined;
+      await decreaseProductStock(item.product.id, item.quantity, colorVariant);
     }
 
     console.log('Order created successfully:', data);
