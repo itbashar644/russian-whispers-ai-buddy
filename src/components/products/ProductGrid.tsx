@@ -11,6 +11,11 @@ interface ProductGridProps {
   showAsColorVariants?: boolean;
   limit?: number;
   showExpand?: boolean;
+    /**
+   * Optional CSS classes to control grid columns layout.
+   * Defaults to showing up to five columns on large screens.
+   */
+  columnsClass?: string;
 }
 
 const ProductGrid = ({ 
@@ -18,7 +23,8 @@ const ProductGrid = ({
   title, 
   showAsColorVariants = false, 
   limit,
-  showExpand = false
+  showExpand = false,
+  columnsClass
 }: ProductGridProps) => {
   const [expanded, setExpanded] = useState(false);
   
@@ -41,7 +47,11 @@ const ProductGrid = ({
   return (
     <div className="space-y-6">
       {title && <h2 className="text-2xl font-bold mb-6">{title}</h2>}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div
+        className={`grid ${
+          columnsClass ?? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        } gap-4`}
+      >
         {displayProducts.map((product) => (
           <ProductCard 
             key={product.id} 

@@ -79,15 +79,17 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
 
       {loading ? (
         // Loading placeholders
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
           {Array.from({length: 10}).map((_, i) => (
             <div key={i} className="h-[280px] bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
       ) : (
         // Product grid display
-        <ProductGrid 
-          products={filteredProducts} 
+        <ProductGrid
+          products={filteredProducts}
+          showAsColorVariants={true}
+          columnsClass="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4"
           showAsColorVariants={true}
         />
       )}
