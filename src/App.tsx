@@ -36,6 +36,7 @@ import UserOrders from "@/pages/account/UserOrders";
 import Wishlist from "@/pages/Wishlist";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
+import ChatWidget from "@/components/chat/ChatWidget";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./App.css";
 
@@ -87,6 +88,7 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster />
+                <ChatWidget />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
