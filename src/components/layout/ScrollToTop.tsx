@@ -8,6 +8,11 @@ export default function ScrollToTop() {
   const { pathname, search, hash } = useLocation();
 
   useEffect(() => {
+    // Если страница начинается с /admin, не прокручиваем вверх
+    if (pathname.startsWith("/admin")) {
+      return;
+    }
+    
     // Когда меняется маршрут, прокручиваем страницу в самое начало
     if (!hash) {
       window.scrollTo({

@@ -38,7 +38,7 @@ const AdminPanel = () => {
   return (
     <AdminAuth>
       <SidebarProvider defaultOpen={true}>
-        <div className="grid min-h-screen w-full">
+        <div className="flex h-screen w-full">
           <Sidebar>
             <div className="px-6 py-5 border-b">
               <h2 className="text-xl font-bold">Админ панель</h2>
@@ -65,18 +65,20 @@ const AdminPanel = () => {
             </SidebarContent>
           </Sidebar>
           
-          <SidebarInset className="p-4 md:p-8">
-            <Routes>
-              <Route index element={<AdminDashboard />} />
-              <Route path="products/*" element={<AdminProducts />} />
-              <Route path="categories/*" element={<AdminCategories />} />
-              <Route path="orders/*" element={<AdminOrders />} />
-              <Route path="customers/*" element={<AdminCustomers />} />
-              <Route path="marketing" element={<NewsletterManager />} />
-              <Route path="reports/*" element={<AdminReports />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Routes>
-          </SidebarInset>
+          <div className="flex-1 overflow-auto">
+            <SidebarInset className="p-4 md:p-8">
+              <Routes>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products/*" element={<AdminProducts />} />
+                <Route path="categories/*" element={<AdminCategories />} />
+                <Route path="orders/*" element={<AdminOrders />} />
+                <Route path="customers/*" element={<AdminCustomers />} />
+                <Route path="marketing" element={<NewsletterManager />} />
+                <Route path="reports/*" element={<AdminReports />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Routes>
+            </SidebarInset>
+          </div>
         </div>
       </SidebarProvider>
     </AdminAuth>
