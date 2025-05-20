@@ -1,19 +1,10 @@
 
 import React, { useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, 
-  AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { decreaseProductStock } from "@/data/products/product/services/productStockService";
-import { updateProductStockApiEndpoint } from "@/api/admin/productStockApi";
-import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle, Link, ExternalLink } from "lucide-react";
 import { Product } from "@/types/product";
-import MarketplaceLinks from "../products/MarketplaceLinks";
+import ProductTableHeader, { SortField } from "./products/table/ProductTableHeader";
+import ProductTableRow from "./products/table/ProductTableRow";
 
 interface ProductListProps {
   products: Product[];
@@ -27,129 +18,6 @@ interface ProductListProps {
   onSelectProduct?: (productId: string, selected: boolean) => void;
   onSelectAll?: (selected: boolean) => void;
 }
-
-type SortField = "id" | "articleNumber" | "title" | "modelName" | "category" | "price" | "stockQuantity";
-
-// A component for stock quantity editing
-const StockQuantityEditor = ({ 
-  product, 
-  onClose 
-}: { 
-  product: Product, 
-  onClose: (updated: boolean) => void 
-}) => {
-  const [stockQuantity, setStockQuantity] = useState<number>(product.stockQuantity || 0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Handle stock change
-  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setStockQuantity(isNaN(value) ? 0 : value);
-  };
-
-  // Increment/decrement stock
-  const adjustStock = (increment: boolean) => {
-    setStockQuantity(prev => increment ? prev + 1 : Math.max(0, prev - 1));
-  };
-
-  // Save stock updates
-  const saveStockUpdate = async () => {
-    if (stockQuantity < 0) {
-      toast.error("Количество товара не может быть отрицательным");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    try {
-      // Calculate difference to determine if we need to increase or decrease stock
-      const difference = stockQuantity - (product.stockQuantity || 0);
-      
-      if (difference !== 0) {
-        // Update the product's stock by difference
-        if (difference < 0) {
-          // Need to decrease stock
-          const success = await decreaseProductStock(product.id, Math.abs(difference));
-          if (!success) {
-            throw new Error("Failed to update stock quantity");
-          }
-        } else {
-          // Need to increase stock
-          const response = await updateProductStockApiEndpoint(product.id, stockQuantity);
-          
-          if (!response.success) {
-            throw new Error(response.error || "Failed to update stock quantity");
-          }
-        }
-        
-        toast.success(`Остаток товара обновлен до ${stockQuantity}`);
-        
-        // Update the local product object
-        product.stockQuantity = stockQuantity;
-        product.inStock = stockQuantity > 0;
-        
-        onClose(true);
-      } else {
-        // No change in quantity
-        onClose(false);
-      }
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      toast.error("Ошибка при обновлении остатка товара");
-      onClose(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-7 w-7"
-        onClick={() => adjustStock(false)}
-        disabled={isSubmitting}
-      >
-        <MinusCircle className="h-4 w-4" />
-      </Button>
-      <Input
-        type="number"
-        value={stockQuantity}
-        onChange={handleStockChange}
-        min="0"
-        className="w-16 h-7 text-center"
-        disabled={isSubmitting}
-      />
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-7 w-7"
-        onClick={() => adjustStock(true)}
-        disabled={isSubmitting}
-      >
-        <PlusCircle className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        className="ml-1 h-7"
-        onClick={saveStockUpdate}
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "..." : "ОК"}
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7"
-        onClick={() => onClose(false)}
-        disabled={isSubmitting}
-      >
-        Отмена
-      </Button>
-    </div>
-  );
-};
 
 const ProductList = ({ 
   products, 
@@ -165,7 +33,6 @@ const ProductList = ({
 }: ProductListProps) => {
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [editingStockId, setEditingStockId] = useState<string | null>(null);
   
   // Sort products based on the selected field and direction
   const sortedProducts = [...products].sort((a, b) => {
@@ -222,40 +89,6 @@ const ProductList = ({
     }
   };
 
-  // Get sort icon for column header
-  const getSortIcon = (field: SortField) => {
-    if (field === sortField) {
-      return (
-        <ArrowUpDown className={`ml-2 h-4 w-4 inline ${sortDirection === "desc" ? "transform rotate-180" : ""}`} />
-      );
-    }
-    return <ArrowUpDown className="ml-2 h-4 w-4 text-gray-300 inline" />;
-  };
-
-  // Get delete button classes based on color prop
-  const getDeleteButtonClasses = () => {
-    switch (deleteButtonColor) {
-      case "green":
-        return "text-green-500 hover:text-green-600 hover:bg-green-50";
-      case "orange":
-        return "text-orange-500 hover:text-orange-600 hover:bg-orange-50";
-      default:
-        return "text-red-500 hover:text-red-600 hover:bg-red-50";
-    }
-  };
-
-  // Get delete button icon based on color prop
-  const getDeleteButtonIcon = () => {
-    switch (deleteButtonColor) {
-      case "green":
-        return <RefreshCcw className="h-4 w-4" />;
-      case "orange":
-        return <ArchiveX className="h-4 w-4" />;
-      default:
-        return <Trash className="h-4 w-4" />;
-    }
-  };
-
   // Calculate if all products are selected
   const allSelected = products.length > 0 && selectedProducts?.length === products.length;
   const someSelected = selectedProducts && selectedProducts.length > 0 && selectedProducts.length < products.length;
@@ -265,28 +98,6 @@ const ProductList = ({
     if (onSelectAll) {
       onSelectAll(checked);
     }
-  };
-
-  // Handle individual product selection
-  const handleSelectProduct = (productId: string, checked: boolean) => {
-    if (onSelectProduct) {
-      onSelectProduct(productId, checked);
-    }
-  };
-
-  // Start editing stock
-  const startEditStock = (productId: string) => {
-    setEditingStockId(productId);
-  };
-
-  // Handle stock editor close
-  const handleStockEditorClose = (updated: boolean) => {
-    setEditingStockId(null);
-  };
-
-  // Helper function to check if product has any marketplace links
-  const hasMarketplaceLinks = (product: Product) => {
-    return Boolean(product.ozonUrl || product.wildberriesUrl || product.avitoUrl);
   };
 
   return (
@@ -305,254 +116,36 @@ const ProductList = ({
       <CardContent>
         <div className="border rounded-md">
           <Table>
-            <TableHeader>
-              <TableRow>
-                {onSelectProduct && (
-                  <TableHead className="w-12">
-                    <Checkbox 
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onCheckedChange={handleSelectAllChange}
-                      aria-label="Выбрать все товары"
-                    />
-                  </TableHead>
-                )}
-                <TableHead className="cursor-pointer" onClick={() => handleSort("id")}>
-                  ID {getSortIcon("id")}
-                </TableHead>
-                <TableHead className="w-16">Фото</TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("articleNumber")}>
-                  Артикул {getSortIcon("articleNumber")}
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("title")}>
-                  Название {getSortIcon("title")}
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("modelName")}>
-                  Модель {getSortIcon("modelName")}
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("category")}>
-                  Категория {getSortIcon("category")}
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("price")}>
-                  Цена (₽) {getSortIcon("price")}
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort("stockQuantity")}>
-                  Остаток {getSortIcon("stockQuantity")}
-                </TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Маркетплейсы</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
+            <ProductTableHeader 
+              onSelectProduct={!!onSelectProduct}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              handleSort={handleSort}
+              allSelected={allSelected}
+              someSelected={someSelected}
+              handleSelectAllChange={handleSelectAllChange}
+            />
             <TableBody>
               {sortedProducts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={onSelectProduct ? 12 : 11} className="text-center py-4">
+                <tr>
+                  <td colSpan={onSelectProduct ? 12 : 11} className="text-center py-4">
                     {mode === "active" ? "Товары не найдены" : "Архив пуст"}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ) : (
                 sortedProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    {onSelectProduct && (
-                      <TableCell>
-                        <Checkbox 
-                          checked={selectedProducts?.includes(product.id)}
-                          onCheckedChange={(checked) => handleSelectProduct(product.id, !!checked)}
-                          aria-label={`Выбрать товар ${product.title}`}
-                        />
-                      </TableCell>
-                    )}
-                    <TableCell className="font-medium">{product.id}</TableCell>
-                    <TableCell>
-                      <div className="w-12 h-12 border rounded overflow-hidden">
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = "/placeholder.svg";
-                          }}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.articleNumber || "-"}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{product.title}</div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[250px]">
-                        {product.description}
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.modelName || "-"}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>
-                      {product.discountPrice ? (
-                        <div>
-                          <span className="font-medium">{product.discountPrice.toLocaleString()}</span>{" "}
-                          <span className="text-muted-foreground line-through text-sm">
-                            {product.price.toLocaleString()}
-                          </span>
-                        </div>
-                      ) : (
-                        product.price.toLocaleString()
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingStockId === product.id ? (
-                        <StockQuantityEditor 
-                          product={product}
-                          onClose={handleStockEditorClose}
-                        />
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="px-2 h-7"
-                          onClick={() => startEditStock(product.id)}
-                        >
-                          {product.stockQuantity !== undefined ? product.stockQuantity : "-"}
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.inStock ? (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                            В наличии
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
-                            Нет в наличии
-                          </span>
-                        )}
-                        {product.isNew && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                            Новинка
-                          </span>
-                        )}
-                        {mode === "archived" && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
-                            В архиве
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {hasMarketplaceLinks(product) ? (
-                        <div className="flex gap-1">
-                          {product.wildberriesUrl && (
-                            <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center" title="Доступен на Wildberries">
-                              <span className="text-purple-700 text-xs font-bold">W</span>
-                            </div>
-                          )}
-                          {product.ozonUrl && (
-                            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center" title="Доступен на Ozon">
-                              <span className="text-blue-700 text-xs font-bold">O</span>
-                            </div>
-                          )}
-                          {product.avitoUrl && (
-                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center" title="Доступен на Авито">
-                              <span className="text-green-700 text-xs font-bold">А</span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Нет</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        {mode === "active" && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => onEdit(product)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        )}
-                        
-                        {hasMarketplaceLinks(product) && (
-                          <div className="relative group">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="text-blue-500"
-                            >
-                              <Link className="h-4 w-4" />
-                            </Button>
-                            <div className="absolute right-0 top-full mt-2 z-50 hidden group-hover:block bg-white p-2 rounded-md shadow-md border">
-                              <MarketplaceLinks product={product} showLabels={true} />
-                            </div>
-                          </div>
-                        )}
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className={getDeleteButtonClasses()}
-                            >
-                              {getDeleteButtonIcon()}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Вы уверены?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {mode === "active" 
-                                  ? "Товар будет перемещен в архив и скрыт с сайта. Вы сможете восстановить его позже."
-                                  : "Товар будет восстановлен из архива и станет снова доступен на сайте."
-                                }
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Отмена</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDelete(product.id)}>
-                                {deleteButtonText}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                        
-                        {mode === "archived" && onPermanentDelete && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Удалить навсегда?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Товар будет удален навсегда без возможности восстановления. Это действие нельзя будет отменить.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => onPermanentDelete(product.id)}
-                                  className="bg-red-500 hover:bg-red-600"
-                                >
-                                  Удалить навсегда
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <ProductTableRow
+                    key={product.id}
+                    product={product}
+                    onSelectProduct={onSelectProduct}
+                    isSelected={selectedProducts?.includes(product.id)}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onPermanentDelete={onPermanentDelete}
+                    deleteButtonText={deleteButtonText}
+                    deleteButtonColor={deleteButtonColor}
+                    mode={mode}
+                  />
                 ))
               )}
             </TableBody>
