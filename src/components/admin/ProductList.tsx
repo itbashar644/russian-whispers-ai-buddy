@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { decreaseProductStock } from "@/data/products/product/services/productStockService";
 import { updateProductStockApiEndpoint } from "@/api/admin/productStockApi";
-import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle } from "lucide-react";
+import { Pencil, Trash, RefreshCcw, ArchiveX, ArrowUpDown, PlusCircle, MinusCircle, Link, ExternalLink } from "lucide-react";
 import { Product } from "@/types/product";
+import MarketplaceLinks from "../products/MarketplaceLinks";
 
 interface ProductListProps {
   products: Product[];
@@ -283,6 +284,11 @@ const ProductList = ({
     setEditingStockId(null);
   };
 
+  // Helper function to check if product has any marketplace links
+  const hasMarketplaceLinks = (product: Product) => {
+    return Boolean(product.ozonUrl || product.wildberriesUrl || product.avitoUrl);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -314,6 +320,7 @@ const ProductList = ({
                 <TableHead className="cursor-pointer" onClick={() => handleSort("id")}>
                   ID {getSortIcon("id")}
                 </TableHead>
+                <TableHead className="w-16">Фото</TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort("articleNumber")}>
                   Артикул {getSortIcon("articleNumber")}
                 </TableHead>
@@ -333,13 +340,14 @@ const ProductList = ({
                   Остаток {getSortIcon("stockQuantity")}
                 </TableHead>
                 <TableHead>Статус</TableHead>
+                <TableHead>Маркетплейсы</TableHead>
                 <TableHead className="text-right">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={onSelectProduct ? 10 : 9} className="text-center py-4">
+                  <TableCell colSpan={onSelectProduct ? 12 : 11} className="text-center py-4">
                     {mode === "active" ? "Товары не найдены" : "Архив пуст"}
                   </TableCell>
                 </TableRow>
@@ -356,6 +364,18 @@ const ProductList = ({
                       </TableCell>
                     )}
                     <TableCell className="font-medium">{product.id}</TableCell>
+                    <TableCell>
+                      <div className="w-12 h-12 border rounded overflow-hidden">
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
+                    </TableCell>
                     <TableCell>{product.articleNumber || "-"}</TableCell>
                     <TableCell>
                       <div className="font-medium">{product.title}</div>
@@ -417,6 +437,29 @@ const ProductList = ({
                         )}
                       </div>
                     </TableCell>
+                    <TableCell>
+                      {hasMarketplaceLinks(product) ? (
+                        <div className="flex gap-1">
+                          {product.wildberriesUrl && (
+                            <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center" title="Доступен на Wildberries">
+                              <span className="text-purple-700 text-xs font-bold">W</span>
+                            </div>
+                          )}
+                          {product.ozonUrl && (
+                            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center" title="Доступен на Ozon">
+                              <span className="text-blue-700 text-xs font-bold">O</span>
+                            </div>
+                          )}
+                          {product.avitoUrl && (
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center" title="Доступен на Авито">
+                              <span className="text-green-700 text-xs font-bold">А</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Нет</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         {mode === "active" && (
@@ -427,6 +470,21 @@ const ProductList = ({
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
+                        )}
+                        
+                        {hasMarketplaceLinks(product) && (
+                          <div className="relative group">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="text-blue-500"
+                            >
+                              <Link className="h-4 w-4" />
+                            </Button>
+                            <div className="absolute right-0 top-full mt-2 z-50 hidden group-hover:block bg-white p-2 rounded-md shadow-md border">
+                              <MarketplaceLinks product={product} showLabels={true} />
+                            </div>
+                          </div>
                         )}
                         
                         <AlertDialog>
