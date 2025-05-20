@@ -2,6 +2,7 @@
 import React from "react";
 import { CartItem as CartItemType } from "@/types/product";
 import CartItem from "./CartItem";
+import CartItemMobile from "./CartItemMobile";
 import { AlertTriangle } from "lucide-react";
 
 interface CartTableProps {
@@ -33,7 +34,7 @@ const CartTable = ({ items, updateQuantity, removeItem }: CartTableProps) => {
       )}
       
       <div className="rounded-lg border overflow-hidden">
-        <table className="w-full">
+          <table className="w-full hidden sm:table">
           <thead className="bg-muted">
             <tr>
               <th className="text-left p-4">Товар</th>
@@ -54,6 +55,16 @@ const CartTable = ({ items, updateQuantity, removeItem }: CartTableProps) => {
             ))}
           </tbody>
         </table>
+         <div className="sm:hidden divide-y">
+          {items.map((item) => (
+            <CartItemMobile
+              key={`${item.product.id}-${item.color || "default"}`}
+              item={item}
+              updateQuantity={(id, quantity) => updateQuantity(id, quantity, item.color)}
+              removeItem={(id) => removeItem(id, item.color)}
+            />
+          ))}
+        </div>
       </div>
     </>
   );
