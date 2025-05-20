@@ -4,7 +4,7 @@ import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { decreaseProductStock } from "@/data/products";
+import { useCart } from "@/context/CartContext";
 import StockNotification from './StockNotification';
 import AlternativeProducts from './AlternativeProducts';
 import { trackAddToCart } from "@/utils/metrika";
@@ -23,6 +23,7 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedColorVariant, setSelectedColorVariant] = useState<ColorVariant | null>(propSelectedColorVariant);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const { addItem } = useCart();
 
   useEffect(() => {
     // Reset selected color when product changes
@@ -48,32 +49,26 @@ const ProductInfo = ({ product, selectedColorVariant: propSelectedColorVariant =
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
-      // Decrease stock
-      const productId = product.id;
-      const colorVariant = selectedColor;
-      
-      const success = await decreaseProductStock(productId, quantity, colorVariant);
-      
-      if (success) {
-        // Track add to cart event
-        trackAddToCart({
-          id: product.id,
-          name: product.title,
-          price: selectedColorVariant ? 
-            (selectedColorVariant.price) : 
-            (product.discountPrice || product.price),
-          category: product.category
-        }, quantity);
-        
-        // Add to cart logic (replace with your actual cart logic)
-        toast("Товар добавлен в корзину", {
-          description: `${product.title} (${quantity} шт.)`,
-        });
-      } else {
-        toast("Ошибка", {
-          description: "Не удалось добавить товар в корзину. Пожалуйста, попробуйте позже.",
-        });
-      }
+    await addItem({
+        product,
+        quantity,
+        color: selectedColor || undefined,
+        selectedColorVariant: selectedColorVariant || undefined
+      });
+
+      // Track add to cart event
+      trackAddToCart({
+        id: product.id,
+        name: product.title,
+        price: selectedColorVariant ?
+          (selectedColorVariant.price) :
+          (product.discountPrice || product.price),
+        category: product.category
+      }, quantity);
+
+      toast("Товар добавлен в корзину", {
+        description: `${product.title} (${quantity} шт.)`,
+      });
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast("Ошибка", {
