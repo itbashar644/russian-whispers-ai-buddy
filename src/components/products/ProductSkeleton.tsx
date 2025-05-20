@@ -3,6 +3,7 @@ import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const ProductSkeleton = () => {
   return (
@@ -15,7 +16,9 @@ const ProductSkeleton = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <div className="border rounded-lg overflow-hidden">
-              <div className="w-full aspect-square bg-gray-200 animate-pulse"></div>
+              <AspectRatio ratio={3/4}>
+                <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+              </AspectRatio>
             </div>
           </div>
           <div className="space-y-6">

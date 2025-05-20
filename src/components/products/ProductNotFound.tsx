@@ -1,9 +1,17 @@
 
-import React from 'react';
-import { Link } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { trackGoal } from '@/utils/metrika';
 
 const ProductNotFound = () => {
+  const { id } = useParams<{ id: string }>();
+  
+  // Отслеживаем обращение к несуществующим товарам
+  useEffect(() => {
+    trackGoal('product_not_found', { product_id: id });
+  }, [id]);
+  
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
