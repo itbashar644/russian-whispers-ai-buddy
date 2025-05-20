@@ -3,6 +3,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { generatePassword } from "./passwordUtils";
 import { toast } from "sonner";
 
+// Helper to wait until the profile record is created after sign up
+async function waitForProfileCreation(userId: string, attempts = 10, delayMs = 500) {
+  for (let i = 0; i < attempts; i++) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .single();
+    if (data) {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  return false;
+}
+
 // Function to register a guest user and place an order
 export async function handleGuestCheckout(email: string, name: string): Promise<{
   success: boolean;
@@ -48,15 +64,19 @@ export async function handleGuestCheckout(email: string, name: string): Promise<
       };
     }
 
-    // Wait a short time to ensure the user is created in the database
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const newUserId = data.user?.id;
+
+    if (newUserId) {
+      // Wait until the profile row is available to satisfy FK constraints
+      await waitForProfileCreation(newUserId);
+    }
 
     // Send welcome email with password
     await sendWelcomeEmail(email, name, password);
     
     return {
       success: true,
-      userId: data.user?.id,
+         userId: newUserId,
       password,
     };
   } catch (error) {
