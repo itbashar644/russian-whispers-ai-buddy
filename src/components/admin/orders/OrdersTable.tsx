@@ -17,6 +17,7 @@ interface OrderItem {
   quantity: number;
   color?: string;
   size?: string;
+  articleNumber?: string;
 }
 
 interface Order {

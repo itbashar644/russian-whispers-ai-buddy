@@ -25,6 +25,7 @@ export interface OrderItem {
   quantity: number;
   color?: string;
   size?: string;
+  articleNumber?: string;
 }
 
 export interface Order {

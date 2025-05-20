@@ -143,8 +143,18 @@ export async function placeOrder(orderData: {
       }
     }
 
-    // Convert CartItem array to JSON-compatible format
-    const jsonItems = JSON.parse(JSON.stringify(orderData.items));
+     // Convert CartItem array to simplified order item format including article number
+    const orderItems = orderData.items.map(item => ({
+      productId: item.product.id,
+      productName: item.product.title,
+      price: item.selectedColorVariant
+        ? (item.selectedColorVariant.discountPrice ?? item.selectedColorVariant.price)
+        : (item.product.discountPrice ?? item.product.price),
+      quantity: item.quantity,
+      color: item.color,
+      size: item.size,
+      articleNumber: item.selectedColorVariant?.articleNumber || item.product.articleNumber || ''
+    }));
     
     // Generate a unique ID for the order
     const orderId = uuidv4();
@@ -160,7 +170,7 @@ export async function placeOrder(orderData: {
         id: orderId,
         order_number: 0, // Placeholder value, will be replaced by the trigger
         user_id: orderData.user_id || null, // Ensure null for guest checkout
-        items: jsonItems,
+        items: orderItems,
         total: orderData.total,
         delivery_method: orderData.delivery_method,
         customer_name: orderData.customer_name,

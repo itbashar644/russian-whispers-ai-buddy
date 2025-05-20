@@ -56,6 +56,7 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
               const imageUrl = product?.imageUrl || "";
               const color = item?.color || null;
               const size = item?.size || null;
+              const articleNumber = item?.articleNumber || product?.articleNumber || null;
               
               return (
                 <TableRow key={index}>
@@ -84,6 +85,9 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
                         )}
                         {size && (
                           <p className="text-xs text-muted-foreground">Размер: {size}</p>
+                        )}
+                        {articleNumber && (
+                          <p className="text-xs text-muted-foreground">Артикул: {articleNumber}</p>
                         )}
                       </div>
                     </div>
