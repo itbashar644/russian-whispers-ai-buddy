@@ -35,19 +35,6 @@ const ProductCardCompact: React.FC<ProductCardCompactProps> = ({ product, curren
             </Badge>
           )}
           
-          {/* Marketplace badges */}
-          <div className="absolute bottom-2 right-2 flex flex-row gap-1">
-            {product.wildberriesUrl && (
-              <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300 text-xs">
-                WB
-              </Badge>
-            )}
-            {product.ozonUrl && (
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
-                OZON
-              </Badge>
-            )}
-          </div>
         </div>
         <CardHeader className="p-2">
           <CardTitle className="line-clamp-1 text-sm">
