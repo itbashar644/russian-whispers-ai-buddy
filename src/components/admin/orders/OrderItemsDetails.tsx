@@ -9,6 +9,7 @@ interface OrderItem {
   quantity: number;
   color?: string;
   size?: string;
+  articleNumber?: string;
   product?: {
     title?: string;
     imageUrl?: string;
@@ -72,9 +73,10 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
                     
                     <div>
                       <div className="font-medium">{productName}</div>
-                      <div className="text-xs space-x-2">
+                    <div className="text-xs space-x-2">
                         {item.color && <span>Цвет: {item.color}</span>}
                         {item.size && <span>Размер: {item.size}</span>}
+                      {item.articleNumber && <span>Артикул: {item.articleNumber}</span>}
                       </div>
                     </div>
                   </div>
