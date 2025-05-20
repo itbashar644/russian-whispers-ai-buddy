@@ -1,14 +1,27 @@
+
+# Allow crawling of all content
+User-agent: *
+Allow: /
+
+# Disallow admin paths
+Disallow: /admin
+Disallow: /admin/*
+
+# Sitemap
+Sitemap: https://the-x.shop/sitemap.xml
+
+# Specific rules for major bots
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
+User-agent: Yandex
+Allow: /
+
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /

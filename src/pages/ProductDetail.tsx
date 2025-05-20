@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -17,6 +18,7 @@ import ColorSelection from "@/components/products/ColorSelection";
 import QuantitySelector from "@/components/products/QuantitySelector";
 import ImageGallery from "@/components/products/ImageGallery";
 import RelatedProducts from "@/components/products/RelatedProducts";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trackPageView, trackProductView, trackAddToCart } from "@/utils/metrika";
@@ -42,6 +44,9 @@ const ProductDetail = () => {
         setProduct(productData || null);
         
         if (productData) {
+          // Установка заголовка страницы для SEO
+          document.title = `${productData.title} | The X Shop`;
+          
           // Track product page view after data is loaded
           trackProductView({
             id: productData.id,
@@ -76,11 +81,6 @@ const ProductDetail = () => {
     if (id) {
       trackPageView();
     }
-  }, [id]);
-
-  // Force scroll to top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
   }, [id]);
 
   // Find the selected color variant if it exists
@@ -164,11 +164,55 @@ const ProductDetail = () => {
     return <ProductNotFound />;
   }
 
+  // Подготовка SEO данных для товара
+  const productSEO = {
+    title: product.title,
+    description: product.description ? 
+      (product.description.length > 160 ? product.description.substring(0, 157) + '...' : product.description)
+      : `${product.title} - купить в The X Shop. Доставка по всей России.`,
+    keywords: `${product.title}, ${product.category}, купить ${product.title}, товары из Китая`,
+    ogImage: product.imageUrl,
+    ogType: 'product' as const,
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <SEOHead 
+        title={productSEO.title}
+        description={productSEO.description}
+        keywords={productSEO.keywords}
+        ogImage={productSEO.ogImage}
+        ogType={productSEO.ogType}
+      >
+        {/* Дополнительные микроданные для товара */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.title,
+            "image": product.imageUrl,
+            "description": product.description,
+            "sku": product.articleNumber || product.id,
+            "mpn": product.articleNumber,
+            "brand": {
+              "@type": "Brand",
+              "name": "The X Shop"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": window.location.href,
+              "priceCurrency": "RUB",
+              "price": product.discountPrice || product.price,
+              "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+              "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            }
+          })}
+        </script>
+      </SEOHead>
+
       <Navbar />
 
-      <main className="flex-grow container px-4 py-8 md:px-6">
+      <main className="flex-grow container px-4 py-8 md:px-6" itemScope itemType="https://schema.org/Product">
         <ProductHeader title={product.title} category={product.category} />
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -192,12 +236,12 @@ const ProductDetail = () => {
           {/* Right side - product information */}
           <div className="space-y-6">
             {/* Product title and price */}
-            <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+            <h1 className="text-3xl font-bold mb-2" itemProp="name">{product.title}</h1>
             
             {/* Display article number if available */}
             {displayArticleNumber && (
               <div className="text-sm text-muted-foreground mb-2">
-                Артикул: {displayArticleNumber}
+                Артикул: <span itemProp="sku">{displayArticleNumber}</span>
               </div>
             )}
             
@@ -209,10 +253,15 @@ const ProductDetail = () => {
             />
             
             {/* Pricing */}
-            <ProductPricing 
-              product={product} 
-              selectedColorVariant={selectedColorVariant} 
-            />
+            <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+              <meta itemProp="priceCurrency" content="RUB" />
+              <meta itemProp="price" content={String(displayPrice)} />
+              <link itemProp="availability" href={hasStock() ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+              <ProductPricing 
+                product={product} 
+                selectedColorVariant={selectedColorVariant} 
+              />
+            </div>
             
             {/* Marketplace links */}
             <MarketplaceLinks product={product} />
@@ -248,10 +297,12 @@ const ProductDetail = () => {
         </div>
 
         {/* Product description */}
-        <ProductDetails product={product} />
+        <div itemProp="description">
+          <ProductDetails product={product} />
+        </div>
 
         {/* Related products */}
-        <RelatedProducts products={relatedProducts} />
+        <RelatedProducts products={relatedProducts} currentProductId={id} />
       </main>
 
       <Footer />

@@ -1,15 +1,37 @@
 
+"use client";
+
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, search, hash } = useLocation();
 
   useEffect(() => {
-    // When the route changes, scroll to top
-    window.scrollTo(0, 0);
-     document.getElementById("root")?.scrollTo(0, 0);
-  }, [pathname]);
+    // Когда меняется маршрут, прокручиваем страницу в самое начало
+    if (!hash) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant" // Мгновенная прокрутка без анимации
+      });
+      
+      // На мобильных устройствах и при прокрутке внутри контейнера
+      const rootElement = document.getElementById("root");
+      if (rootElement) {
+        rootElement.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "instant"
+        });
+      }
+      
+      // Сброс состояния фокуса для скринридеров
+      document.body.setAttribute("tabindex", "-1");
+      document.body.focus();
+      document.body.removeAttribute("tabindex");
+    }
+  }, [pathname, search, hash]);
 
   return null;
 }

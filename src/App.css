@@ -1,6 +1,6 @@
 
 #root {
-margin: 0;
+  margin: 0;
   padding: 0;
   max-width: none;
   text-align: inherit;
@@ -55,7 +55,8 @@ html, body {
 
 body {
   min-height: 100vh;
-   overflow-y: auto;
+  overflow-y: auto;
+  scroll-padding-top: 64px; /* Размер верхней навигации для якорных ссылок */
 }
 
 /* Ensure content always starts at the top */
@@ -73,4 +74,37 @@ body {
 /* Additional reset for route changes */
 .min-h-screen {
   min-height: 100vh;
+}
+
+/* Улучшения для SEO - добавляем стили для семантических элементов */
+main {
+  display: block;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+article {
+  margin-bottom: 1.5rem;
+}
+
+/* Для доступности - фокус на интерактивных элементах */
+a:focus, button:focus, input:focus, textarea:focus, select:focus, 
+[role="button"]:focus, [tabindex]:focus {
+  outline: 2px solid rgba(66, 153, 225, 0.5);
+  outline-offset: 2px;
+}
+
+/* Скрываем элементы только визуально, но не от скринридеров */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

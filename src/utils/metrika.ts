@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for Yandex Metrika tracking
  */
@@ -17,7 +16,31 @@ export function trackPageView(url?: string, options?: {
   params?: Record<string, any>;
 }) {
   if (typeof window !== 'undefined' && (window as any).ym) {
-    (window as any).ym(COUNTER_ID, 'hit', url || window.location.href, options);
+    try {
+      // Убедимся что счетчик инициализирован
+      if (!(window as any)._ymCounterInitialized) {
+        console.warn('Yandex Metrika counter might not be initialized yet');
+      }
+      
+      // Добавляем текущее время для уникализации хитов
+      const trackParams = {
+        ...options,
+        params: {
+          ...(options?.params || {}),
+          timestamp: new Date().getTime()
+        }
+      };
+      
+      // Отправляем хит в метрику
+      (window as any).ym(COUNTER_ID, 'hit', url || window.location.href, trackParams);
+      
+      // Отладка
+      console.debug('[Metrika] Tracked page view:', url || window.location.href, trackParams);
+    } catch (error) {
+      console.error('[Metrika] Error tracking page view:', error);
+    }
+  } else {
+    console.warn('[Metrika] ym object is not available');
   }
 }
 
@@ -67,15 +90,33 @@ export function trackProductView(product: {
   category?: string;
 }) {
   if (typeof window !== 'undefined' && (window as any).ym) {
-    trackPageView(undefined, {
-      title: `Просмотр товара: ${product.name}`,
-      params: {
+    try {
+      // Отслеживаем просмотр товара как отдельное событие
+      trackGoal('product_view', {
         product_id: product.id,
         product_name: product.name,
         product_price: product.price,
         product_category: product.category
+      });
+      
+      // Также отправляем данные для электронной коммерции
+      if ((window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          'ecommerce': {
+            'detail': {
+              'products': [{
+                'name': product.name,
+                'id': product.id,
+                'price': product.price,
+                'category': product.category
+              }]
+            }
+          }
+        });
       }
-    });
+    } catch (error) {
+      console.error('[Metrika] Error tracking product view:', error);
+    }
   }
 }
 
@@ -91,13 +132,34 @@ export function trackAddToCart(product: {
   category?: string;
 }, quantity: number = 1) {
   if (typeof window !== 'undefined' && (window as any).ym) {
-    trackGoal('add_to_cart', {
-      product_id: product.id,
-      product_name: product.name,
-      product_price: product.price,
-      product_quantity: quantity,
-      product_category: product.category,
-      order_price: product.price ? product.price * quantity : undefined
-    });
+    try {
+      trackGoal('add_to_cart', {
+        product_id: product.id,
+        product_name: product.name,
+        product_price: product.price,
+        product_quantity: quantity,
+        product_category: product.category,
+        order_price: product.price ? product.price * quantity : undefined
+      });
+      
+      // Также отправляем данные в формате электронной коммерции
+      if ((window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          'ecommerce': {
+            'add': {
+              'products': [{
+                'name': product.name,
+                'id': product.id,
+                'price': product.price,
+                'category': product.category,
+                'quantity': quantity
+              }]
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('[Metrika] Error tracking add to cart:', error);
+    }
   }
 }

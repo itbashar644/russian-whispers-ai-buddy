@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import CatalogProductsSection from "@/components/catalog/CatalogProductsSection";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCatalogData } from "@/hooks/useCatalogData";
@@ -23,7 +24,7 @@ const Catalog = () => {
   } = useUrlParams(searchParams, setSearchParams);
   
   const [searchTerm, setSearchTerm] = useState(searchParam || "");
-  const [sortBy, setSortBy] = useState("in-stock"); // Default sort by in-stock
+  const [sortBy, setSortBy] = useState("in-stock");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Загрузка данных каталога
@@ -34,10 +35,10 @@ const Catalog = () => {
     allProducts,
     searchTerm,
     priceRange,
-    inStockOnly: false, // Always false now
+    inStockOnly: false,
     sortBy,
     loading,
-    showColorVariants: true, // Always true now
+    showColorVariants: true,
     colorParam
   });
 
@@ -48,6 +49,24 @@ const Catalog = () => {
     priceRange,
     searchTerm
   });
+  
+  useEffect(() => {
+    // Установка заголовка и мета-тегов для страницы
+    let pageTitle = "Каталог товаров";
+    let pageDescription = "Товары из Китая для вашего дома. Качественные товары по доступным ценам.";
+    
+    if (categoryParam) {
+      pageTitle = `${categoryParam} - Каталог`;
+      pageDescription = `Категория ${categoryParam} - товары из Китая для вашего дома по доступным ценам.`;
+    }
+    
+    if (searchParam) {
+      pageTitle = `Поиск: ${searchParam}`;
+      pageDescription = `Результаты поиска по запросу "${searchParam}" - The X Shop`;
+    }
+    
+    document.title = `${pageTitle} | The X Shop`;
+  }, [categoryParam, searchParam]);
 
   useEffect(() => {
     // Update searchTerm when searchParam changes
@@ -110,10 +129,39 @@ const Catalog = () => {
   const findCategoryByName = (name: string) => {
     return categoryObjects.find(cat => cat.name === name) || { name, imageUrl: "/placeholder.svg" };
   };
+  
+  // Готовим мета-информацию в зависимости от фильтров
+  const getSEOData = () => {
+    let title = "Каталог товаров";
+    let description = "Большой выбор товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены.";
+    
+    if (categoryParam) {
+      title = `${categoryParam} - каталог`;
+      description = `Товары категории ${categoryParam}. Доступно ${filteredProducts.length} товаров.`;
+    }
+    
+    if (searchParam) {
+      title = `Поиск: ${searchParam}`;
+      description = `Результаты поиска по запросу "${searchParam}" - найдено ${filteredProducts.length} товаров.`;
+    }
+    
+    return { title, description };
+  };
+  
+  const seoData = getSEOData();
 
   return (
     <CatalogLayout>
-      <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
+      <SEOHead
+        title={seoData.title}
+        description={seoData.description}
+        keywords={categoryParam ? `${categoryParam}, товары из Китая, минимализм` : "каталог товаров, товары из Китая, минималистичный дизайн"}
+      />
+      
+      <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8" itemScope itemType="https://schema.org/CollectionPage">
+        <meta itemProp="name" content={seoData.title} />
+        <meta itemProp="description" content={seoData.description} />
+        
         {/* Mobile filters toggle */}
         <div className="md:hidden mb-4">
           <Button 
@@ -142,24 +190,27 @@ const Catalog = () => {
           findCategoryByName={findCategoryByName}
         />
 
-        <CatalogProductsSection
-          categoryParam={categoryParam}
-          searchTerm={searchTerm}
-          colorParam={colorParam}
-          availableCategories={availableCategories}
-          loading={loading}
-          filteredProducts={filteredProducts}
-          inStockCount={inStockCount}
-          outOfStockCount={outOfStockCount}
-          activeFiltersCount={activeFiltersCount}
-          sortBy={sortBy}
-          handleSearchSubmit={handleSearchSubmit}
-          handleSearchChange={handleSearchChange}
-          setSortBy={setSortBy}
-          handleCategoryClick={handleCategoryClick}
-          handleColorFilter={handleColorFilter}
-          handleClearAllFilters={handleClearAllFilters}
-        />
+        <div itemScope itemType="https://schema.org/ItemList">
+          <meta itemProp="numberOfItems" content={String(filteredProducts.length)} />
+          <CatalogProductsSection
+            categoryParam={categoryParam}
+            searchTerm={searchTerm}
+            colorParam={colorParam}
+            availableCategories={availableCategories}
+            loading={loading}
+            filteredProducts={filteredProducts}
+            inStockCount={inStockCount}
+            outOfStockCount={outOfStockCount}
+            activeFiltersCount={activeFiltersCount}
+            sortBy={sortBy}
+            handleSearchSubmit={handleSearchSubmit}
+            handleSearchChange={handleSearchChange}
+            setSortBy={setSortBy}
+            handleCategoryClick={handleCategoryClick}
+            handleColorFilter={handleColorFilter}
+            handleClearAllFilters={handleClearAllFilters}
+          />
+        </div>
       </div>
     </CatalogLayout>
   );

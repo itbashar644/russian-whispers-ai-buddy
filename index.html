@@ -1,11 +1,64 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Магазин ручной работы</title>
+    <title>The X Shop | Товары из Китая для вашего дома</title>
+    <meta name="description" content="Интернет-магазин товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены." />
+    <meta name="keywords" content="товары из китая, интернет-магазин, минималистичный дизайн, товары для дома" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://the-x.shop/" />
+    <meta property="og:title" content="The X Shop | Товары из Китая для вашего дома" />
+    <meta property="og:description" content="Интернет-магазин товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены." />
+    <meta property="og:image" content="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://the-x.shop/" />
+    <meta name="twitter:title" content="The X Shop | Товары из Китая для вашего дома" />
+    <meta name="twitter:description" content="Интернет-магазин товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены." />
+    <meta name="twitter:image" content="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png" />
+    
+    <!-- Robots and Canonical -->
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://the-x.shop/" />
+    
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "The X Shop",
+        "url": "https://the-x.shop",
+        "logo": "https://the-x.shop/favicon.ico",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "",
+          "contactType": "customer service"
+        },
+        "sameAs": []
+      }
+    </script>
+    
+    <!-- Website Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://the-x.shop",
+        "name": "The X Shop",
+        "description": "Интернет-магазин товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://the-x.shop/catalog?search={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -22,11 +75,21 @@
             clickmap:true,
             trackLinks:true,
             accurateTrackBounce:true,
-            webvisor:true
+            webvisor:true,
+            ecommerce:"dataLayer"
        });
+       
+       // Устанавливаем флаг инициализации счетчика
+       window._ymCounterInitialized = true;
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
+    
+    <!-- dataLayer для электронной коммерции -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+    </script>
+    
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

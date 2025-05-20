@@ -4,7 +4,7 @@ import App from './App.tsx'
 import './index.css'
 
 // Устанавливаем заголовок страницы
-document.title = 'The X Shop';
+document.title = 'The X Shop | Товары из Китая для вашего дома';
 
 // Удаляем скрипт Lovable, если он существует
 const lovableScript = document.querySelector('script[src="https://cdn.gpteng.co/gptengineer.js"]');
@@ -26,5 +26,8 @@ allLovableElements.forEach(el => {
   el.remove();
   console.log("Дополнительный элемент Lovable удален:", el);
 });
+
+// Добавляем атрибут lang для лучшего SEO
+document.documentElement.lang = 'ru';
 
 createRoot(document.getElementById("root")!).render(<App />);
