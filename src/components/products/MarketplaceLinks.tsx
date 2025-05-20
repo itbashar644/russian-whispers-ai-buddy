@@ -66,7 +66,6 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="hidden sm:inline">Авито</span>
           </a>
         )}
       </div>
