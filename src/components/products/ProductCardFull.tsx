@@ -43,7 +43,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
         className="block flex-grow overflow-hidden"
       >
         <div className="relative overflow-hidden">
-          <AspectRatio ratio={1/1} className="bg-white">
+           <AspectRatio ratio={3/4} className="bg-white">
             <img
               src={currentProduct.imageUrl || "/placeholder.svg"}
               alt={product.title}
