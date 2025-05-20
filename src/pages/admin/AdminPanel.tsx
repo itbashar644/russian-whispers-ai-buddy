@@ -16,9 +16,12 @@ const AdminPanel = () => {
   
   return (
     <AdminAuth>
-       <div className="flex flex-row min-h-screen bg-gray-100">
+       <div
+        className="grid min-h-screen w-full bg-gray-100"
+        style={{ gridTemplateColumns: "16rem 1fr" }}
+      >
         {/* Sidebar */}
-         <aside className="w-64 flex-shrink-0 bg-white shadow-sm pt-6">
+         <aside className="w-64 flex-shrink-0 bg-white shadow-sm pt-6 border-r">
           <div className="px-6 pb-6 mb-6 border-b">
             <h2 className="text-xl font-bold">Админ панель</h2>
           </div>
