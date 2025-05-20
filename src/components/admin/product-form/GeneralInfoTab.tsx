@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,8 +10,8 @@ import { Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import MultipleImageUploader from "../MultipleImageUploader";
 import ImageUploader from "../ImageUploader";
-import FormRow from "./FormRow";
-import FormSection from "./FormSection";
+import { FormRow } from "./FormRow";
+import { FormSection } from "./FormSection";
 
 interface GeneralInfoTabProps {
   formData: Partial<Product>;
@@ -43,7 +44,7 @@ const GeneralInfoTab = ({
   return (
     <div className="space-y-6">
       {/* Main Product Information */}
-      <FormSection title="Основная информация">
+      <FormSection>
         <FormRow label="Название товара*" htmlFor="title">
           <Input
             id="title"
@@ -56,7 +57,7 @@ const GeneralInfoTab = ({
           />
         </FormRow>
 
-        <FormRow label="Описание товара*" htmlFor="description">
+        <FormRow label="Описание товара*" htmlFor="description" isTextArea>
           <Textarea
             id="description"
             name="description"
@@ -117,7 +118,7 @@ const GeneralInfoTab = ({
       </FormSection>
 
       {/* Product Pricing and Inventory */}
-      <FormSection title="Цена и наличие">
+      <FormSection>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormRow label="Цена*" htmlFor="price">
             <div className="relative">
@@ -208,7 +209,7 @@ const GeneralInfoTab = ({
       </FormSection>
 
       {/* Product Flags */}
-      <FormSection title="Метки товара">
+      <FormSection>
         <div className="flex flex-wrap gap-6">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -241,15 +242,14 @@ const GeneralInfoTab = ({
       </FormSection>
 
       {/* Product Images */}
-      <FormSection title="Изображения товара">
+      <FormSection>
         <div className="flex flex-col space-y-4">
           <div>
             <Label htmlFor="mainImage">Главное изображение*</Label>
             <div className="mt-2">
               <ImageUploader
-                initialImage={formData.imageUrl || "/placeholder.svg"}
+                initialImageUrl={formData.imageUrl || "/placeholder.svg"}
                 onImageUploaded={handleMainImageUploaded}
-                className="h-[200px] w-[200px]"
               />
             </div>
           </div>
@@ -258,8 +258,8 @@ const GeneralInfoTab = ({
             <Label htmlFor="additionalImages">Дополнительные изображения</Label>
             <div className="mt-2">
               <MultipleImageUploader
-                images={formData.additionalImages || []}
-                onChange={handleAdditionalImagesChange}
+                initialImageUrls={formData.additionalImages || []}
+                onImagesChange={handleAdditionalImagesChange}
               />
             </div>
           </div>
