@@ -13,7 +13,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
   
   return (
     <div className="flex items-center gap-3 my-4">
-      <span className="text-sm text-muted-foreground">Доступен на:</span>
+      <span className="text-xs text-muted-foreground">Доступен на:</span>
       <div className="flex gap-3">
         {product.wildberriesUrl && (
           <a 
@@ -30,7 +30,6 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="hidden sm:inline">Wildberries</span>
           </a>
         )}
         
@@ -49,7 +48,6 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="hidden sm:inline">Ozon</span>
           </a>
         )}
         
