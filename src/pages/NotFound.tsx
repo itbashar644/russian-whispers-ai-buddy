@@ -91,7 +91,7 @@ const NotFound = () => {
               Если вы пытаетесь сбросить пароль, пожалуйста, перейдите на страницу сброса пароля.
             </p>
             <Button asChild className="mb-4">
-              <Link to="/auth/reset-password">
+              <Link to="/reset-password">
                 Перейти к сбросу пароля
               </Link>
             </Button>
@@ -107,7 +107,7 @@ const NotFound = () => {
           </Button>
           
           <Button asChild variant="outline">
-            <Link to="/auth/login" className="flex items-center justify-center">
+            <Link to="/login" className="flex items-center justify-center">
               Перейти на страницу входа
             </Link>
           </Button>

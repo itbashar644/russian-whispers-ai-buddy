@@ -1,3 +1,4 @@
+
 #root {
   margin: 0;
   padding: 0;
@@ -143,4 +144,43 @@ a:focus, button:focus, input:focus, textarea:focus, select:focus,
 .admin-content-area {
   flex: 1;
   overflow-y: auto;
+}
+
+/* Исправление для мобильных уведомлений об добавлении в корзину */
+@media (max-width: 768px) {
+  [role="toast"] {
+    max-width: 80vw;
+  }
+  
+  .sonner-toast {
+    max-width: 90%;
+    width: auto !important;
+    animation: toast-in-right 0.6s !important;
+    animation-fill-mode: forwards !important;
+  }
+  
+  .sonner-toast-container {
+    position: fixed !important;
+    z-index: 100;
+  }
+  
+  /* Добавляем анимацию автоматического исчезновения для мобильных уведомлений */
+  @keyframes toast-auto-hide {
+    0% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  
+  @keyframes toast-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  .sonner-toast-viewport {
+    margin: 0 !important;
+  }
 }

@@ -17,14 +17,14 @@ export const FormRow = ({
   isTextArea = false,
   isImage = false
 }: FormRowProps) => (
-  <div className="grid grid-cols-4 items-center gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
     <Label 
       htmlFor={htmlFor} 
-      className="text-right"
+      className="text-right md:pt-2"
     >
       {label}
     </Label>
-    <div className={`col-span-3 ${isTextArea || isImage ? 'items-start' : ''}`}>
+    <div className={`col-span-1 md:col-span-3 ${isTextArea || isImage ? 'items-start' : ''}`}>
       {children}
     </div>
   </div>
