@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,16 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   priceRange,
   handlePriceChange,
   loading,
-  maxAllowedPrice = 500000000
+  maxAllowedPrice = 15000
 }) => {
+    const [localMin, setLocalMin] = useState(priceRange.min);
+  const [localMax, setLocalMax] = useState(priceRange.max);
+
+  useEffect(() => {
+    setLocalMin(priceRange.min);
+    setLocalMax(priceRange.max);
+  }, [priceRange.min, priceRange.max]);
+
   const handleSliderChange = (value: number[]) => {
     if (value.length >= 2) {
       handlePriceChange("min", value[0].toString());
@@ -43,8 +51,9 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           <Input
             id="min-price"
             type="number"
-            value={priceRange.min}
-            onChange={(e) => handlePriceChange("min", e.target.value)}
+            value={localMin}
+            onChange={(e) => setLocalMin(parseInt(e.target.value || "0", 10))}
+            onBlur={() => handlePriceChange("min", localMin.toString())}
             min={0}
             max={priceRange.max}
             disabled={loading}
@@ -56,8 +65,9 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           <Input
             id="max-price"
             type="number"
-            value={priceRange.max}
-            onChange={(e) => handlePriceChange("max", e.target.value)}
+             value={localMax}
+            onChange={(e) => setLocalMax(parseInt(e.target.value || "0", 10))}
+            onBlur={() => handlePriceChange("max", localMax.toString())}
             min={priceRange.min}
             max={maxAllowedPrice}
             disabled={loading}
