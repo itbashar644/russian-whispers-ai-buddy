@@ -89,9 +89,6 @@ const Cart = () => {
     
     setIsSubmitting(true);
     
-    // Get current authenticated user if available
-    const { user } = useAuth();
-    
     // Create order data object
     const orderData = {
       user_id: user?.id, // Will be undefined for guest checkout
