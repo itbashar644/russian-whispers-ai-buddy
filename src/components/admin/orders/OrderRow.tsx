@@ -68,6 +68,9 @@ const OrderRow: React.FC<OrderRowProps> = ({
           <div className="text-sm text-muted-foreground">
             {order.customerEmail}
           </div>
+          <div className="text-sm text-muted-foreground">
+            {order.customerPhone}
+          </div>
         </TableCell>
         <TableCell>
           {new Date(order.date).toLocaleDateString()}
@@ -153,6 +156,10 @@ const OrderRow: React.FC<OrderRowProps> = ({
               <div className="mt-4 bg-white p-4 border rounded-md">
                 <h4 className="text-sm font-medium mb-1">Адрес доставки:</h4>
                 <p className="text-sm text-muted-foreground">{order.address}</p>
+              </div>
+              <div className="mt-2 bg-white p-4 border rounded-md">
+                <h4 className="text-sm font-medium mb-1">Телефон:</h4>
+                <p className="text-sm text-muted-foreground">{order.customerPhone}</p>
               </div>
             </div>
           </TableCell>
