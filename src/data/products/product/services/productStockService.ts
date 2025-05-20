@@ -1,8 +1,8 @@
 
 import { Product } from "@/types/product";
 import { addOrUpdateProductInSupabase } from "../../supabaseApi";
-import { refreshCacheIfNeeded } from "../../cache/productCache";
 import { invalidateCache } from "./productCacheService";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import the getProductById directly from productServiceBase to avoid circular dependency
 import { getProductById as getBaseProductById } from "../productServiceBase";
@@ -50,71 +50,38 @@ export const checkProductStock = async (productId: string, colorVariant?: string
 /**
  * Decrease product stock
  */
-export const decreaseProductStock = async (productId: string, quantity = 1, colorVariant?: string): Promise<boolean> => {
+export const decreaseProductStock = async (
+  productId: string,
+  quantity = 1,
+  colorVariant?: string
+): Promise<boolean> => {
   try {
-    console.log(`Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`);
-    const product = await getBaseProductById(productId);
-    
-    if (!product) {
-      console.error(`Product with ID ${productId} not found`);
-      return false;
-    }
-    
-    // Handle color variants
-    if (colorVariant && product.colorVariants) {
-      const variant = product.colorVariants.find(v => v.color === colorVariant);
-      if (variant) {
-        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
-        if (variant.stockQuantity !== undefined) {
-          variant.stockQuantity = Math.max(0, variant.stockQuantity - quantity);
-          console.log(`Updated variant stock to: ${variant.stockQuantity}`);
-        } else {
-          variant.stockQuantity = 0;
-          console.log(`Variant had no stock quantity, setting to 0`);
-        }
-        
-        // Update product's inStock status based on stock quantities
-        const hasStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
-        product.inStock = hasStock;
-        
-        // Update product with modified color variant
-        const result = await addOrUpdateProductInSupabase({
-          ...product,
-          colorVariants: product.colorVariants
-        });
-        
-        // Force refresh cache after stock update
-        await invalidateCache();
-        
-        console.log(`Stock update result for variant: ${result.success ? 'Success' : 'Failed'}`);
-        return result.success;
+   console.log(
+      `Attempting to decrease stock for product ${productId}, quantity ${quantity}, color ${colorVariant || 'none'}`
+    );
+
+    const { data, error } = await supabase.functions.invoke('update-stock', {
+      body: {
+        productId,
+        quantity,
+        colorVariant
       }
-    }
-    
-    // Handle main product stock
-    if (product.stockQuantity !== undefined) {
-      console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
-      product.stockQuantity = Math.max(0, product.stockQuantity - quantity);
-      // Set inStock based on actual quantity
-      product.inStock = product.stockQuantity > 0;
-      
-      console.log("Updating product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);
-      
-      // Update product with new stock quantity
-      const result = await addOrUpdateProductInSupabase(product);
-      
-      // Force refresh cache after stock update
-      await invalidateCache();
-      
-      console.log("Stock update result:", result);
-      
-      return result.success;
-    } else {
-      console.log(`Product ${productId} has no stock quantity defined`);
+        });
+
+    if (error) {
+      console.error('Error invoking update-stock function:', error);
       return false;
     }
+    
+    if (!data || !data.success) {
+      console.error('update-stock function returned failure:', data);
+    return false;
+    }
+    
+    await invalidateCache();
+    return true;
   } catch (error) {
-    console.error("Error decreasing product stock:", error);
+     console.error('Error decreasing product stock:', error);
     return false;
   }
 };
