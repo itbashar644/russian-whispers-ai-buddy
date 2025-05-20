@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
+import MarketplaceLinks from "./MarketplaceLinks";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
@@ -106,6 +107,9 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
           selectedColor={selectedColor}
           onColorSelect={handleColorSelect}
         />
+
+           {/* Marketplace links */}
+        <MarketplaceLinks product={product} />
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
