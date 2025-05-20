@@ -23,7 +23,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
             className="flex items-center gap-1 text-sm text-purple-700 hover:text-purple-800"
             title="Открыть на Wildberries"
           >
-            <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+            <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
                 src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
                 alt="Wildberries" 
@@ -41,7 +41,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
             className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
             title="Открыть на Ozon"
           >
-            <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+            <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
                 src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
                 alt="Ozon" 
@@ -59,7 +59,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({ product }) => {
             className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
             title="Открыть на Авито"
           >
-            <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+            <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
                 src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
                 alt="Avito" 
