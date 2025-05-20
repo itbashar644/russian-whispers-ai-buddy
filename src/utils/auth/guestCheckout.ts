@@ -69,6 +69,17 @@ export async function handleGuestCheckout(email: string, name: string): Promise<
     if (newUserId) {
       // Wait until the profile row is available to satisfy FK constraints
       await waitForProfileCreation(newUserId);
+      
+      // Sign the newly created user in so that subsequent requests
+      // (like stock updates) are performed under an authenticated session
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) {
+        console.error('Error signing in guest user:', signInError);
+      }
     }
 
     // Send welcome email with password
