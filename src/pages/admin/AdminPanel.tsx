@@ -16,9 +16,9 @@ const AdminPanel = () => {
   
   return (
     <AdminAuth>
-      <div className="flex min-h-screen bg-gray-100">
+       <div className="flex flex-row min-h-screen bg-gray-100">
         {/* Sidebar */}
-        <aside className="w-64 hidden md:block bg-white shadow-sm pt-6">
+         <aside className="w-64 flex-shrink-0 bg-white shadow-sm pt-6">
           <div className="px-6 pb-6 mb-6 border-b">
             <h2 className="text-xl font-bold">Админ панель</h2>
           </div>
