@@ -8,6 +8,7 @@ export default function ScrollToTop() {
   useEffect(() => {
     // When the route changes, scroll to top
     window.scrollTo(0, 0);
+     document.getElementById("root")?.scrollTo(0, 0);
   }, [pathname]);
 
   return null;
