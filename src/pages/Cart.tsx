@@ -18,18 +18,16 @@ const Cart = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const { 
-    items, 
-    deliveryMethod, 
-    updateQuantity, 
-    removeItem, 
+  const {
+    items,
+    deliveryMethod,
+    updateQuantity,
+    removeItem,
     setDeliveryMethod,
-    subtotal, 
+    subtotal,
     total,
     clearCart
   } = useCart();
-
-  const { decreaseStockForItems } = useCart();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -102,22 +100,7 @@ const Cart = () => {
     };
     
     try {
-      // First decrease the stock quantities
-      console.log("Decreasing stock quantities before placing order");
-      const stockUpdateSuccess = await decreaseStockForItems(items);
-      
-      if (!stockUpdateSuccess) {
-        console.error("Failed to update stock quantities");
-        toast({
-          title: "Ошибка",
-          description: "Произошла ошибка при обновлении остатков товаров. Пожалуйста, попробуйте снова.",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Then process the order
+       // Process the order
       const result = await placeOrder(orderData);
       
       if (result.success) {
