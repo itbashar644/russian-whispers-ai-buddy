@@ -59,6 +59,20 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
             )}
           </div>
           
+          {/* Marketplace badges */}
+          <div className="absolute bottom-2 right-2 flex flex-col gap-1">
+            {product.wildberriesUrl && (
+              <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">
+                WB
+              </Badge>
+            )}
+            {product.ozonUrl && (
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                OZON
+              </Badge>
+            )}
+          </div>
+          
           <button 
             onClick={handleToggleWishlist}
             className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
