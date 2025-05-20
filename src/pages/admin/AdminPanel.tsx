@@ -10,96 +10,76 @@ import AdminReports from "./AdminReports";
 import AdminSettings from "./AdminSettings";
 import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
 import AdminAuth from "@/components/admin/AdminAuth";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarInset
+} from "@/components/ui/sidebar";
+import { LayoutDashboard, Package, LayoutList, ShoppingBag, Users, Mail, BarChart, Settings } from "lucide-react";
 
 const AdminPanel = () => {
   const location = useLocation();
   
-  return (
-    <AdminAuth>
-       <div
-        className="grid min-h-screen w-full bg-gray-100"
-        style={{ gridTemplateColumns: "16rem 1fr" }}
-      >
-        {/* Sidebar */}
-         <aside className="w-64 flex-shrink-0 bg-white shadow-sm pt-6 border-r">
-          <div className="px-6 pb-6 mb-6 border-b">
-            <h2 className="text-xl font-bold">Админ панель</h2>
-          </div>
-          
-          <nav className="px-3">
-            <NavItem to="/admin" end path={location.pathname}>
-              Дашборд
-            </NavItem>
-            <NavItem to="/admin/products" path={location.pathname}>
-              Товары
-            </NavItem>
-            <NavItem to="/admin/categories" path={location.pathname}>
-              Категории
-            </NavItem>
-            <NavItem to="/admin/orders" path={location.pathname}>
-              Заказы
-            </NavItem>
-            <NavItem to="/admin/customers" path={location.pathname}>
-              Клиенты
-            </NavItem>
-            <NavItem to="/admin/marketing" path={location.pathname}>
-              Рассылки
-            </NavItem>
-            <NavItem to="/admin/reports" path={location.pathname}>
-              Отчеты
-            </NavItem>
-            <NavItem to="/admin/settings" path={location.pathname}>
-              Настройки
-            </NavItem>
-          </nav>
-        </aside>
-        
-        {/* Main Content */}
-        <main className="p-4 md:p-8">
-          <Routes>
-            <Route index element={<AdminDashboard />} />
-            <Route path="products/*" element={<AdminProducts />} />
-            <Route path="categories/*" element={<AdminCategories />} />
-            <Route path="orders/*" element={<AdminOrders />} />
-            <Route path="customers/*" element={<AdminCustomers />} />
-            <Route path="marketing" element={<NewsletterManager />} />
-            <Route path="reports/*" element={<AdminReports />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Routes>
-        </main>
-      </div>
-    </AdminAuth>
-  );
-};
-
-const NavItem = ({ 
-  children, 
-  to, 
-  path, 
-  end = false 
-}: { 
-  children: React.ReactNode; 
-  to: string; 
-  path: string;
-  end?: boolean;
-}) => {
-  const isActive = end 
-    ? path === to 
-    : path.startsWith(to);
+  const menuItems = [
+    { path: "/admin", label: "Дашборд", icon: LayoutDashboard, exact: true },
+    { path: "/admin/products", label: "Товары", icon: Package },
+    { path: "/admin/categories", label: "Категории", icon: LayoutList },
+    { path: "/admin/orders", label: "Заказы", icon: ShoppingBag },
+    { path: "/admin/customers", label: "Клиенты", icon: Users },
+    { path: "/admin/marketing", label: "Рассылки", icon: Mail },
+    { path: "/admin/reports", label: "Отчеты", icon: BarChart },
+    { path: "/admin/settings", label: "Настройки", icon: Settings }
+  ];
   
   return (
-    <NavLink
-      to={to}
-      end={end}
-      className={cn(
-        "flex items-center px-3 py-2 my-1 text-sm font-medium rounded-md",
-        isActive 
-          ? "bg-gray-100 text-gray-900" 
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-      )}
-    >
-      {children}
-    </NavLink>
+    <AdminAuth>
+      <SidebarProvider defaultOpen={true}>
+        <div className="grid min-h-screen w-full">
+          <Sidebar>
+            <div className="px-6 py-5 border-b">
+              <h2 className="text-xl font-bold">Админ панель</h2>
+            </div>
+            <SidebarContent>
+              <SidebarMenu>
+                {menuItems.map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={item.exact 
+                        ? location.pathname === item.path
+                        : location.pathname.startsWith(item.path)}
+                      tooltip={item.label}
+                    >
+                      <NavLink to={item.path} end={item.exact}>
+                        <item.icon className="mr-2" />
+                        <span>{item.label}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarContent>
+          </Sidebar>
+          
+          <SidebarInset className="p-4 md:p-8">
+            <Routes>
+              <Route index element={<AdminDashboard />} />
+              <Route path="products/*" element={<AdminProducts />} />
+              <Route path="categories/*" element={<AdminCategories />} />
+              <Route path="orders/*" element={<AdminOrders />} />
+              <Route path="customers/*" element={<AdminCustomers />} />
+              <Route path="marketing" element={<NewsletterManager />} />
+              <Route path="reports/*" element={<AdminReports />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Routes>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </AdminAuth>
   );
 };
 
