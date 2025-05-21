@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Если мы на странице корзины, рендерим корзину
-  if (window.location.pathname === '/cart.html') {
+  if (window.location.pathname.endsWith('cart.html')) {
     renderCart();
   }
 });
