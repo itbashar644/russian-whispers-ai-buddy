@@ -43,7 +43,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
           >
             <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
-                src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png"
+                src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png"
                 alt="Wildberries" 
                 className="w-full h-full object-contain"
               />
@@ -63,7 +63,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
           >
             <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
-                src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png"
+                src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png"
                 alt="Ozon" 
                 className="w-full h-full object-contain"
               />
@@ -83,7 +83,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
           >
             <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
-                src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png"
+                src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png"
                 alt="Avito" 
                 className="w-full h-full object-contain"
               />

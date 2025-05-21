@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     loadCatalogProducts(categoryParam);
-        // Загружаем список категорий для сайдбара каталога
+    // Загружаем список категорий для сайдбара каталога
     loadCategories();
   }
   
@@ -49,4 +49,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.location.pathname.endsWith('cart.html')) {
     renderCart();
   }
+  
+  // Убедимся, что иконка профиля ведёт на страницу авторизации
+  const profileLinks = document.querySelectorAll('a[href="login.html"]');
+  profileLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      // Предотвращаем действие по умолчанию и явно перенаправляем на login.html
+      e.preventDefault();
+      window.location.href = 'login.html';
+    });
+  });
 });
