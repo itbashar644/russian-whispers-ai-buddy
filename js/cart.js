@@ -186,8 +186,9 @@ function renderCart() {
   }
   
   // Рассчитываем общую стоимость - убедимся, что у нас числа
+    // Учитываем возможность хранения цены строкой
   const totalPrice = cart.reduce((total, item) => {
-    const itemPrice = typeof item.price === 'number' ? item.price : 0;
+    const itemPrice = parsePrice(item.price);
     return total + itemPrice * item.quantity;
   }, 0);
   
@@ -211,7 +212,7 @@ function renderCart() {
               <button class="quantity-btn increase" data-id="${item.id}">+</button>
             </div>
             <div class="cart-item-total">
-              ${formatPrice(item.price * item.quantity)}
+              ${formatPrice(parsePrice(item.price) * item.quantity)}
             </div>
             <button class="cart-item-remove" data-id="${item.id}">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -343,7 +344,7 @@ function submitOrder(formData) {
         delivery_method: formData.delivery_method || 'cdek',
         payment_method: formData.payment_method || 'cash'
       },
-      totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
+      totalPrice: cart.reduce((total, item) => total + parsePrice(item.price) * item.quantity, 0),
       status: 'new',
       created: new Date().toISOString()
     };
@@ -402,7 +403,7 @@ async function sendOrderToTelegram(order) {
 ${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
 🛒 Товары:
-${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPrice(item.price * item.quantity)}`).join('\n')}
+ ${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPrice(parsePrice(item.price) * item.quantity)}`).join('\n')}
 
 💰 Итого: ${formatPrice(order.totalPrice)}
     `;
