@@ -1,84 +1,143 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Product, ColorVariant } from "@/types/product";
-import { formatPrice } from "@/lib/utils";
+import { Heart, ShoppingCart } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import ProductCardCompact from "./ProductCardCompact";
-import ProductCardFull from "./ProductCardFull";
+import { Product } from "@/types/product";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardProps {
   product: Product;
-  variant?: "default" | "compact";
-  isColorVariant?: boolean;
+  showAsColorVariant?: boolean;
+  className?: string;
+  parentId?: string;
+  compact?: boolean;
+  hideBadges?: boolean;
 }
 
-const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  showAsColorVariant = false,
+  className,
+  parentId,
+  compact = false,
+  hideBadges = false,
+}) => {
   const { addItem } = useCart();
-  const { toggleWishlistItem, isInWishlist } = useWishlist();
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product.colors && product.colors.length > 0 ? product.colors[0] : undefined
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(product.id);
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    inWishlist ? removeFromWishlist(product.id) : addToWishlist(product);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+  };
+
+  const imageUrl = product.images?.[0] || "/placeholder.svg";
+  const productUrl = parentId
+    ? `/product/${parentId}?color=${product.id}`
+    : `/product/${product.id}`;
+  const productName = showAsColorVariant
+    ? `${product.name} - ${product.color || "Стандартный"}`
+    : product.name;
+
+  // Настроим размер карточки, чтобы их было 5 в ряду
+  const cardClasses = cn(
+    "group h-full transition-transform hover:shadow-md overflow-hidden",
+    compact ? "w-full md:w-48 lg:w-52" : "w-full",
+    className
   );
-  const [selectedVariant, setSelectedVariant] = useState<ColorVariant | undefined>();
 
-  // Use current variant or main product for display
-  const currentProduct = selectedVariant 
-    ? { 
-        ...product, 
-        imageUrl: selectedVariant.imageUrl || product.imageUrl,
-        price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice,
-        stockQuantity: selectedVariant.stockQuantity,
-        // Устанавливаем inStock на основе stockQuantity для варианта
-        inStock: selectedVariant.stockQuantity !== undefined ? selectedVariant.stockQuantity > 0 : product.inStock
-      } 
-    : product;
-
-  const handleColorSelect = (colorName: string, variant?: ColorVariant) => {
-    setSelectedColor(colorName);
-    setSelectedVariant(variant);
-  };
-
-  const handleAddToCart = () => {
-    if (selectedVariant) {
-      addItem({
-        product, 
-        quantity: 1, 
-        color: selectedColor,
-        selectedColorVariant: selectedVariant
-      });
-    } else {
-      addItem({ product, quantity: 1, color: selectedColor });
-    }
-  };
-
-  const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation when clicking the heart
-    toggleWishlistItem(product);
-  };
-
-  // Compact variant for smaller cards
-  if (variant === "compact") {
-    return (
-      <ProductCardCompact 
-        product={product} 
-        currentProduct={currentProduct} 
-      />
-    );
-  }
-
-  // Default variant for regular sized cards
   return (
-    <ProductCardFull
-      product={product}
-      currentProduct={currentProduct}
-      selectedColor={selectedColor}
-      handleColorSelect={handleColorSelect}
-      handleAddToCart={handleAddToCart}
-      handleToggleWishlist={handleToggleWishlist}
-      isInWishlist={isInWishlist}
-    />
+    <Link to={productUrl}>
+      <Card className={cardClasses}>
+        <CardContent className="p-0">
+          <div className="relative">
+            <AspectRatio ratio={1 / 1}>
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className="object-cover h-full w-full transition-transform group-hover:scale-105"
+                loading="lazy"
+              />
+            </AspectRatio>
+            {!hideBadges && (
+              <div className="absolute top-2 left-2 flex flex-col gap-1">
+                {product.isNew && (
+                  <Badge className="bg-green-500 hover:bg-green-600">Новинка</Badge>
+                )}
+                {product.isBestseller && (
+                  <Badge className="bg-amber-500 hover:bg-amber-600">Хит продаж</Badge>
+                )}
+                {product.discountPercent > 0 && (
+                  <Badge className="bg-red-500 hover:bg-red-600">
+                    -{product.discountPercent}%
+                  </Badge>
+                )}
+              </div>
+            )}
+            <div className="absolute top-2 right-2">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90"
+                onClick={handleWishlist}
+              >
+                <Heart
+                  size={16}
+                  fill={inWishlist ? "currentColor" : "none"}
+                  className={cn(inWishlist ? "text-red-500" : "text-gray-600")}
+                />
+                <span className="sr-only">
+                  {inWishlist ? "Удалить из избранного" : "Добавить в избранное"}
+                </span>
+              </Button>
+            </div>
+          </div>
+          <div className="p-3">
+            <h3 className="font-medium text-sm line-clamp-2 mb-1">
+              {productName}
+            </h3>
+            <div className="flex justify-between items-baseline">
+              {product.discountPrice ? (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                  <span className="font-bold text-primary text-sm">
+                    {product.discountPrice} ₽
+                  </span>
+                  <span className="text-muted-foreground line-through text-xs">
+                    {product.price} ₽
+                  </span>
+                </div>
+              ) : (
+                <span className="font-bold text-primary text-sm">{product.price} ₽</span>
+              )}
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="p-3 pt-0">
+          <Button
+            size="sm"
+            className="w-full text-xs h-8"
+            onClick={handleAddToCart}
+            disabled={!product.inStock}
+          >
+            <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+            {product.inStock ? "В корзину" : "Нет в наличии"}
+          </Button>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 };
 

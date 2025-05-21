@@ -30,4 +30,10 @@ allLovableElements.forEach(el => {
 // Добавляем атрибут lang для лучшего SEO
 document.documentElement.lang = 'ru';
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Проверяем, существует ли корневой элемент
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
+} else {
+  console.error("Корневой элемент #root не найден в DOM");
+}

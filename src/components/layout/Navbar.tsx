@@ -13,18 +13,15 @@ const Navbar = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Don't show the navbar on admin pages
-  if (isAdminRoute) return null;
-
-  const handleScroll = () => {
-    if (window.scrollY > 10) {
-      setScrolled(true);
-    } else {
-      setScrolled(false);
-    }
-  };
-
   useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -34,6 +31,9 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Don't show the navbar on admin pages
+  if (isAdminRoute) return null;
 
   return (
     <header

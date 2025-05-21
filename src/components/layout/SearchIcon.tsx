@@ -1,18 +1,21 @@
 
-import React from 'react';
-import { Search } from 'lucide-react';
-import { useSearch } from '@/hooks/useSearch';
+import React from "react";
+import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSearch } from "@/hooks/useSearch";
 
 export const SearchIcon: React.FC = () => {
   const { navigateToSearch } = useSearch();
   
   return (
-    <button 
-      onClick={navigateToSearch}
-      className="flex items-center justify-center text-primary hover:text-primary/80 transition-colors"
-      aria-label="Поиск товаров"
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={navigateToSearch} 
+      aria-label="Поиск"
     >
       <Search className="h-5 w-5" />
-    </button>
+      <span className="sr-only">Поиск</span>
+    </Button>
   );
 };
