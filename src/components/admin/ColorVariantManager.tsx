@@ -168,7 +168,7 @@ const ColorVariantManager: React.FC<ColorVariantManagerProps> = ({
                     <div className="mt-1 flex items-center">
                       <div className="rounded-md border overflow-hidden mr-3 w-16 h-16">
                         {variant.imageUrl ? (
-                          <AspectRatio ratio={1/1}>
+                          <AspectRatio ratio={3/4}>
                             <img 
                               src={variant.imageUrl} 
                               alt={variant.color} 

@@ -69,8 +69,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       
       {/* Миниатюры изображений */}
       <div className="grid grid-cols-5 gap-2">
-        <button 
-          className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === product.imageUrl ? 'border-primary' : 'border-transparent'}`}
+         <button
+          className={`aspect-[3/4] rounded-md overflow-hidden border-2 ${selectedImage === product.imageUrl ? 'border-primary' : 'border-transparent'}`}
           onClick={() => handleThumbnailClick(product.imageUrl)}
         >
           <img 
@@ -83,9 +83,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           />
         </button>
         {product.additionalImages?.map((img, index) => (
-          <button 
+          <button
             key={index}
-            className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === img ? 'border-primary' : 'border-transparent'}`}
+            className={`aspect-[3/4] rounded-md overflow-hidden border-2 ${selectedImage === img ? 'border-primary' : 'border-transparent'}`}
             onClick={() => handleThumbnailClick(img)}
           >
             <img 
@@ -102,9 +102,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         {/* Миниатюры изображений цветовых вариантов */}
         {product.colorVariants?.map((variant, index) => (
           variant.imageUrl && (
-            <button 
+            <button
               key={`variant-${index}`}
-              className={`aspect-square rounded-md overflow-hidden border-2 ${selectedImage === variant.imageUrl ? 'border-primary' : 'border-transparent'}`}
+              className={`aspect-[3/4] rounded-md overflow-hidden border-2 ${selectedImage === variant.imageUrl ? 'border-primary' : 'border-transparent'}`}
               onClick={() => handleVariantThumbnailClick(variant)}
             >
               <img 

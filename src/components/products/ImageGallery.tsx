@@ -34,7 +34,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
           {allImages.map((img, index) => (
             <button 
               key={index}
-              className={`border rounded overflow-hidden aspect-square ${
+              className={`border rounded overflow-hidden aspect-[3/4] ${
                 index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
               }`}
               onClick={() => setCurrentImageIndex(index)}

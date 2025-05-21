@@ -174,7 +174,7 @@ export default function MultipleImageUploader({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
           {imageUrls.map((url, index) => (
             <div key={index} className="relative group border rounded-md overflow-hidden">
-              <div className="aspect-square">
+              <div className="aspect-[3/4]">
                 <img
                   src={url}
                   alt={`Изображение ${index + 1}`}
