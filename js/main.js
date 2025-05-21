@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initWishlistButtons();
   }
   
+  // Инициализация поиска
+  if (typeof initSearch === 'function') {
+    initSearch();
+  }
   // Загрузка товаров с Supabase, если мы находимся на главной странице
   if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
     loadCategories(); // Сначала загружаем категории

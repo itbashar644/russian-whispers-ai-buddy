@@ -7,6 +7,14 @@
 function initFilters() {
   const urlParams = new URLSearchParams(window.location.search);
   
+  // Focus search input if requested via URL
+  if (urlParams.get('focus') === 'search') {
+    const searchField = document.getElementById('search-input');
+    if (searchField) {
+      searchField.focus();
+    }
+  }
+  
   // Фильтр по цене
   const priceMinInput = document.getElementById('price-min');
   const priceMaxInput = document.getElementById('price-max');
@@ -27,7 +35,7 @@ function initFilters() {
   }
   
   // Фильтр по наличию
-  const inStockCheckbox = document.getElementById('in-stock-only');
+  const inStockCheckbox = document.getElementById('in-stock-filter') || document.getElementById('in-stock-only');
   if (inStockCheckbox) {
     // Восстанавливаем состояние из URL
     const inStockParam = urlParams.get('in_stock');
@@ -110,7 +118,7 @@ function applyFilters() {
   }
   
   // Добавляем фильтр по наличию
-  const inStockCheckbox = document.getElementById('in-stock-only');
+  const inStockCheckbox = document.getElementById('in-stock-filter') || document.getElementById('in-stock-only');
   if (inStockCheckbox && inStockCheckbox.checked) {
     newParams.set('in_stock', 'true');
   }
