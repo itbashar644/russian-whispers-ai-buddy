@@ -279,9 +279,26 @@ function renderCart() {
     }
   });
   
-  // Обработчик отправки формы оформления заказа
+  // Обработчики для формы заказа
   const checkoutForm = document.getElementById('checkout-form');
   if (checkoutForm) {
+    // Обработчик изменения способа связи
+    const contactMethodRadios = document.querySelectorAll('input[name="contact_method"]');
+    const telegramNicknameField = document.getElementById('telegram-nickname-field');
+    
+    contactMethodRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        if (this.value === 'telegram') {
+          telegramNicknameField.style.display = 'block';
+          document.getElementById('telegram-nickname').setAttribute('required', 'required');
+        } else {
+          telegramNicknameField.style.display = 'none';
+          document.getElementById('telegram-nickname').removeAttribute('required');
+        }
+      });
+    });
+    
+    // Обработчик отправки формы
     checkoutForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
@@ -296,6 +313,16 @@ function renderCart() {
         return;
       }
       
+      // Проверка поля никнейма в Telegram при выборе этого способа связи
+      const contactMethod = document.querySelector('input[name="contact_method"]:checked').value;
+      if (contactMethod === 'telegram') {
+        const telegramNickname = document.getElementById('telegram-nickname').value.trim();
+        if (!telegramNickname) {
+          showNotification('Пожалуйста, укажите ваш никнейм в Telegram', 'error');
+          return;
+        }
+      }
+      
       // Собираем данные формы
       const formData = {
         name: name,
@@ -303,8 +330,14 @@ function renderCart() {
         email: email,
         address: address,
         comment: document.getElementById('comment').value.trim(),
-        payment_method: document.querySelector('input[name="payment_method"]:checked').value
+        contact_method: contactMethod,
+        delivery_method: document.querySelector('input[name="delivery_method"]:checked').value
       };
+      
+      // Добавляем никнейм в Telegram, если выбран этот способ связи
+      if (contactMethod === 'telegram') {
+        formData.telegram_nickname = document.getElementById('telegram-nickname').value.trim();
+      }
       
       // Отправляем заказ
       submitOrder(formData);
@@ -380,17 +413,35 @@ function submitOrder(formData) {
 async function sendOrderToTelegram(order) {
   try {
     // Формируем текст сообщения
-    const message = `
+    let message = `
 📦 Новый заказ #${order.id}
 
 👤 Клиент:
 - ФИО: ${order.customer.name}
 - Телефон: ${order.customer.phone}
 - Email: ${order.customer.email}
-- Адрес: ${order.customer.address}
-- Способ оплаты: ${order.customer.payment_method === 'cash' ? 'Наличными при получении' : 'Картой при получении'}
-${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
+- Адрес: ${order.customer.address}`;
 
+    // Добавляем способ связи
+    message += `\n- Предпочтительный способ связи: ${
+      order.customer.contact_method === 'telegram' ? 'Telegram' + (order.customer.telegram_nickname ? ` (${order.customer.telegram_nickname})` : '') :
+      order.customer.contact_method === 'whatsapp' ? 'WhatsApp' :
+      'Телефон'
+    }`;
+
+    // Добавляем способ доставки
+    message += `\n- Способ доставки: ${
+      order.customer.delivery_method === 'cdek' ? 'СДЭК' :
+      order.customer.delivery_method === 'russian-post' ? 'Почта России' :
+      'WB Track'
+    }`;
+
+    // Добавляем комментарий, если он есть
+    if (order.customer.comment) {
+      message += `\n- Комментарий: ${order.customer.comment}`;
+    }
+
+    message += `\n
 🛒 Товары:
 ${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPrice(item.price * item.quantity)}`).join('\n')}
 

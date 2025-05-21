@@ -3,103 +3,106 @@
  * Функционал для работы с категориями
  */
 
-// Функция для загрузки категорий с Supabase
+// Функция для загрузки категорий
 async function loadCategories() {
-  const sectionContainer = document.querySelector('.categories-section');
-  const listContainer = document.getElementById('categories-list');
-
+  const categoriesContainer = document.getElementById('categories');
+  const catalogCategoriesContainer = document.querySelector('.catalog-categories');
+  
+  if (!categoriesContainer && !catalogCategoriesContainer) return;
+  
   try {
-    if (!sectionContainer && !listContainer) return;
-
-    // Показываем состояние загрузки
-    if (sectionContainer) {
-      sectionContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
-    }
-    if (listContainer) {
-      listContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
-    }
+    // Получаем категории
+    const categories = await fetchCategories();
     
-    // Загружаем категории с Supabase
-    const response = await fetch('https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/categories?select=*', {
-      headers: {
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Не удалось загрузить категории');
-    }
-    
-    const categories = await response.json();
-    
-    if (categories.length === 0) {
-      if (sectionContainer) {
-        sectionContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
-      }
-      if (listContainer) {
-        listContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
-      }
+    // Если ничего не получили, выходим
+    if (!categories || categories.length === 0) {
+      console.log('Категории не найдены');
       return;
     }
-
-    // Создаем HTML для секции с карточками категорий
-    if (sectionContainer) {
-      const sectionHTML = `
-        <h2 class="section-title">Категории</h2>
+    
+    // Если мы на главной странице и есть контейнер для категорий
+    if (categoriesContainer) {
+      const categoriesHTML = `
+        <h2 class="section-title">Категории товаров</h2>
         <div class="categories-grid">
           ${categories.map(category => `
             <a href="catalog.html?category=${category.name}" class="category-card">
               <div class="category-image">
-                <img src="${category.image_url || '/placeholder.svg'}" alt="${category.name}">
+                <img src="${category.image}" alt="${category.name}" loading="lazy">
               </div>
-              <h3>${category.name}</h3>
+              <div class="category-name">${category.name}</div>
             </a>
           `).join('')}
         </div>
       `;
-      sectionContainer.innerHTML = sectionHTML;
+      
+      categoriesContainer.innerHTML = categoriesHTML;
     }
-
-    // Создаем HTML для списка категорий в каталоге
-    if (listContainer) {
-      const listHTML = `
-        <a href="catalog.html" class="category-link">Все категории</a>
-        ${categories
-          .map(category => `<a href="catalog.html?category=${category.name}" class="category-link">${category.name}</a>`)
-          .join('')}
-      `;
-      listContainer.innerHTML = listHTML;
-      
-      // Выделяем активную категорию
+    
+    // Если мы в каталоге и есть контейнер для категорий
+    if (catalogCategoriesContainer) {
       const urlParams = new URLSearchParams(window.location.search);
-      const activeCategory = urlParams.get('category');
+      const currentCategory = urlParams.get('category');
       
-      if (activeCategory) {
-        const activeLink = listContainer.querySelector(`a[href="catalog.html?category=${activeCategory}"]`);
-        if (activeLink) {
-          activeLink.classList.add('active');
-        }
-      } else {
-        // Если категория не выбрана, выделяем "Все категории"
-        const allCategoriesLink = listContainer.querySelector(`a[href="catalog.html"]`);
-        if (allCategoriesLink) {
-          allCategoriesLink.classList.add('active');
-        }
-      }
+      const catalogCategoriesHTML = `
+        <h2 class="sidebar-title">Категории</h2>
+        <ul class="category-list">
+          <li>
+            <a href="catalog.html" class="category-link ${!currentCategory ? 'active' : ''}">
+              Все категории
+            </a>
+          </li>
+          ${categories.map(category => `
+            <li>
+              <a href="catalog.html?category=${category.name}" class="category-link ${currentCategory === category.name ? 'active' : ''}">
+                ${category.name}
+              </a>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      
+      catalogCategoriesContainer.innerHTML = catalogCategoriesHTML;
     }
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
-    if (sectionContainer) {
-      sectionContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
-    }
-    if (listContainer) {
-      listContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
-    }
   }
 }
 
-// Инициализация при загрузке страницы
+// Функция для получения категорий из базы данных
+async function fetchCategories() {
+  try {
+    // Для демонстрационных целей используем моковые данные
+    // В реальном проекте здесь будет запрос к API
+    return [
+      {
+        id: '1',
+        name: 'Электроника',
+        image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      },
+      {
+        id: '2',
+        name: 'Дом и сад',
+        image: 'https://images.unsplash.com/photo-1517705008128-361805f42e86?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      },
+      {
+        id: '3',
+        name: 'Аксессуары',
+        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      },
+      {
+        id: '4',
+        name: 'Одежда',
+        image: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      }
+    ];
+  } catch (error) {
+    console.error('Ошибка при получении категорий:', error);
+    return [];
+  }
+}
+
+// Загружаем категории при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
   loadCategories();
 });

@@ -3,142 +3,202 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>О нас | The X Shop</title>
-    <meta name="description" content="Узнайте больше о компании The X Shop, поставляющей товары из Китая для вашего дома" />
-    <meta name="keywords" content="о нас, the x shop, товары из китая, интернет-магазин, контакты" />
-    
-    <!-- CSS стили -->
+    <meta name="description" content="О магазине The X Shop - товары из Китая высокого качества по доступным ценам.">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
   <body>
-    <header class="header">
-      <div class="container header-container">
-        <div class="header-left">
-          <a href="index.html" class="logo">The X Shop</a>
+    <header class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <a href="index.html">The X Shop</a>
+          </div>
+          
           <nav class="main-nav">
-            <ul>
-              <li><a href="index.html">Главная</a></li>
-              <li><a href="catalog.html">Каталог</a></li>
-              <li><a href="about.html" class="active">О нас</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
+            <ul class="nav-list">
+              <li><a href="index.html" class="nav-link">Главная</a></li>
+              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+              <li><a href="about.html" class="nav-link active">О нас</a></li>
+              <li><a href="contact.html" class="nav-link">Контакты</a></li>
             </ul>
           </nav>
-        </div>
-        <div class="header-actions">
-          <button class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          
+          <div class="header-actions">
+            <a href="search.html" class="action-icon search-icon" title="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </a>
+            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </a>
+            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              <span id="cart-counter" class="counter">0</span>
+            </a>
+            <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </a>
+          </div>
+          
+          <button class="mobile-menu-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
           </button>
-          <a href="wishlist.html" class="icon-button" aria-label="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
-          <a href="cart.html" class="icon-button" aria-label="Корзина">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-          </a>
-          <a href="/login" class="icon-button" aria-label="Личный кабинет">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </a>
         </div>
       </div>
     </header>
 
     <main>
-      <section class="container page-content">
-        <h1 class="page-title">О нас</h1>
-        
-        <div class="about-content">
-          <p class="lead-text">
-            Компания The X Shop уже более 5 лет занимается поставкой и реализацией товаров из Китая.
-          </p>
-          
-          <p>
-            Мы напрямую сотрудничаем с производителями, что позволяет предлагать нашим клиентам 
-            качественные товары по доступным ценам без лишних наценок.
-          </p>
-          
-          <p>
-            За годы работы мы зарекомендовали себя как надёжный партнёр, поставляющий 
-            широкий ассортимент электроники и товаров для дома.
-          </p>
-          
-          <h2>Наши преимущества:</h2>
-          
-          <ul class="about-list">
-            <li>Прямые поставки из Китая</li>
-            <li>Оригинальная продукция с гарантией</li>
-            <li>Доставка по всей России различными способами</li>
-            <li>Более 5 лет успешной работы на рынке</li>
-            <li>Тщательный отбор только надёжных поставщиков</li>
-          </ul>
-          
-          <p class="contact-link-text">
-            Если у вас остались вопросы, вы можете ознакомиться с разделом 
-            <a href="delivery.html" class="text-link">Доставка</a> 
-            или посетить страницу
-            <a href="contacts.html" class="text-link">Контакты</a>,
-            чтобы связаться с нами напрямую.
-          </p>
+      <!-- About Header -->
+      <section class="section-padding-sm bg-light">
+        <div class="container">
+          <h1>О нашем магазине</h1>
+          <div class="breadcrumbs">
+            <a href="index.html">Главная</a> / <span>О нас</span>
+          </div>
         </div>
       </section>
-    </main>
-    
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-grid">
-          <div class="footer-column">
-            <h4>The X Shop</h4>
-            <p>Товары из Китая для вашего дома</p>
-          </div>
-          <div class="footer-column">
-            <h4>Информация</h4>
-            <ul>
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
-            </ul>
-          </div>
-          <div class="footer-column">
-            <h4>Помощь</h4>
-            <ul>
-              <li><a href="terms.html">Условия использования</a></li>
-              <li><a href="privacy.html">Политика конфиденциальности</a></li>
-            </ul>
-          </div>
-         
+      
+      <!-- About Content -->
+      <section class="about-section section-padding">
+        <div class="container">
+          <div class="about-content">
+            <div class="about-image">
+              <img src="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="О нашем магазине">
+            </div>
+            <div class="about-text">
+              <h2>The X Shop - магазин товаров из Китая</h2>
+              <p>Мы предлагаем широкий ассортимент товаров из Китая высокого качества по доступным ценам. Наша команда тщательно отбирает каждый товар, чтобы обеспечить нашим клиентам только лучшее.</p>
+              <p>Мы работаем напрямую с производителями, что позволяет нам предлагать конкурентные цены и гарантировать качество наших товаров.</p>
+              <h3>Наши преимущества:</h3>
+              <ul>
+                <li>Быстрая доставка по всей России</li>
+                <li>Гарантия качества товаров</li>
+                <li>Отличный сервис и поддержка клиентов</li>
+                <li>Возможность возврата и обмена</li>
+                <li>Регулярные акции и скидки</li>
+              </ul>
+              <p>Наша миссия — сделать качественные товары доступными для каждого. Мы верим, что хорошие вещи не должны стоить дорого.</p>
+            </div>
           </div>
         </div>
+      </section>
+      
+      <!-- Our Team Section -->
+      <section class="team-section section-padding bg-light">
+        <div class="container">
+          <h2 class="section-title">Наша команда</h2>
+          <div class="team-grid">
+            <div class="team-member">
+              <div class="team-member-image">
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Анна Смирнова">
+              </div>
+              <div class="team-member-info">
+                <h3>Анна Смирнова</h3>
+                <p class="team-member-position">Генеральный директор</p>
+                <p class="team-member-description">
+                  Основатель The X Shop с более чем 10-летним опытом работы с китайскими производителями.
+                </p>
+              </div>
+            </div>
+            
+            <div class="team-member">
+              <div class="team-member-image">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Иван Петров">
+              </div>
+              <div class="team-member-info">
+                <h3>Иван Петров</h3>
+                <p class="team-member-position">Руководитель отдела закупок</p>
+                <p class="team-member-description">
+                  Отвечает за подбор товаров и контроль качества. Регулярно посещает выставки и фабрики в Китае.
+                </p>
+              </div>
+            </div>
+            
+            <div class="team-member">
+              <div class="team-member-image">
+                <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Екатерина Новикова">
+              </div>
+              <div class="team-member-info">
+                <h3>Екатерина Новикова</h3>
+                <p class="team-member-position">Менеджер по работе с клиентами</p>
+                <p class="team-member-description">
+                  Обеспечивает высокий уровень сервиса и решает любые вопросы клиентов оперативно и профессионально.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Chat Button -->
+      <div class="chat-widget">
+        <button id="chat-button" class="chat-toggle-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+        <div id="chat-container" class="chat-container hidden">
+          <!-- Chat interface will be loaded here -->
+        </div>
+      </div>
+    </main>
+
+    <footer class="main-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-column">
+            <h3 class="footer-title">The X Shop</h3>
+            <p>Качественные товары из Китая по доступным ценам</p>
+            <div class="social-icons">
+              <a href="#" class="social-icon" title="Telegram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 2.73a2.5 2.5 0 0 0-3.53 0l-13 13a.75.75 0 0 0-.2.34l-1 5a.75.75 0 0 0 .9.9l5-1a.75.75 0 0 0 .34-.2l13-13a2.5 2.5 0 0 0 0-3.54Z"/><path d="m16 6 2 2"/></svg>
+              </a>
+              <a href="#" class="social-icon" title="WhatsApp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4"/><path d="M17 8l-5 5-5-5"/><path d="M7 3h10"/></svg>
+              </a>
+            </div>
+          </div>
+          
+          <div class="footer-column">
+            <h4 class="footer-title">Каталог</h4>
+            <ul class="footer-links">
+              <li><a href="catalog.html">Все товары</a></li>
+              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
+              <li><a href="catalog.html?category=Дом и сад">Дом и сад</a></li>
+              <li><a href="catalog.html?category=Аксессуары">Аксессуары</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-column">
+            <h4 class="footer-title">Информация</h4>
+            <ul class="footer-links">
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="contact.html">Контакты</a></li>
+              <li><a href="delivery.html">Доставка и оплата</a></li>
+              <li><a href="returns.html">Возврат и обмен</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-column">
+            <h4 class="footer-title">Контакты</h4>
+            <address class="footer-contact">
+              <p>Телефон: <a href="tel:+79001234567">+7 (900) 123-45-67</a></p>
+              <p>Email: <a href="mailto:info@thexshop.ru">info@thexshop.ru</a></p>
+              <p>Адрес: г. Москва, ул. Примерная, д. 123</p>
+            </address>
+          </div>
+        </div>
+        
         <div class="footer-bottom">
           <p>&copy; 2024 The X Shop. Все права защищены.</p>
         </div>
       </div>
     </footer>
 
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-       ym(101964387, "init", {
-            defer: true,
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true,
-            webvisor:true,
-            ecommerce:"dataLayer"
-       });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-    
-    <!-- Необходимый скрипт для Lovable -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    
-    <!-- Скрипты для функциональности страницы -->
-    <script src="scripts.js"></script>
-     <script src="js/chat.js"></script>
-    </body>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>
