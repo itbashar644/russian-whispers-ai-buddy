@@ -1,120 +1,229 @@
 
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Корзина | The X Shop</title>
-    <meta name="description" content="Корзина покупок в The X Shop - оформите заказ на товары из Китая" />
-    <meta name="keywords" content="корзина, оформление заказа, the x shop, товары из китая" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Корзина | Товары из Китая для вашего дома</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-container">
+      <div class="header-left">
+        <a href="index.html" class="logo">The X Shop</a>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="catalog.html">Каталог</a></li>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="contact.html">Контакты</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" aria-label="Поиск">
+          <i class="fas fa-search"></i>
+        </button>
+        <a href="account.html" class="icon-button" aria-label="Личный кабинет">
+          <i class="fas fa-user"></i>
+        </a>
+        <a href="wishlist.html" class="icon-button" aria-label="Избранное">
+          <i class="fas fa-heart"></i>
+        </a>
+        <a href="cart.html" class="icon-button" aria-label="Корзина">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-counter" id="cart-counter">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-8">
+    <h1 class="page-title">Корзина</h1>
     
-    <!-- CSS стили -->
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <header class="header">
-      <div class="container header-container">
-        <div class="header-left">
-          <a href="index.html" class="logo">The X Shop</a>
-          <nav class="main-nav">
-            <ul>
-              <li><a href="index.html">Главная</a></li>
-              <li><a href="catalog.html">Каталог</a></li>
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
-            </ul>
-          </nav>
-        </div>
-        <div class="header-actions">
-          <button class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </button>
-          <a href="wishlist.html" class="icon-button" aria-label="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
-          <a href="cart.html" class="icon-button" aria-label="Корзина">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-            <span class="cart-counter"></span>
-          </a>
-           <a href="/login" class="icon-button" aria-label="Личный кабинет">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </a>
+    <div id="empty-cart" style="display: none;" class="text-center py-12">
+      <h2 class="text-xl font-semibold mb-4">Ваша корзина пуста</h2>
+      <p class="mb-6 text-gray-500">Добавьте товары в корзину, чтобы продолжить покупки</p>
+      <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+    
+    <div id="cart-content" class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
+      <!-- Корзина и форма заказа -->
+      <div>
+        <!-- Товары в корзине -->
+        <div class="cart-items" id="cart-items">
+          <!-- Товары будут добавлены динамически через JavaScript -->
         </div>
       </div>
-    </header>
-
-    <main>
-      <div class="container py-8">
-        <h1 class="page-title">Корзина</h1>
-        
-        <div id="cart-container">
-          <!-- Содержимое будет загружено с помощью JavaScript -->
-          <div class="loading">Загрузка корзины...</div>
+      
+      <!-- Заказ -->
+      <div>
+        <div class="sticky top-8">
+          <div class="border rounded-lg p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4">Оформление заказа</h2>
+            
+            <form id="checkout-form" class="space-y-4">
+              <!-- Данные покупателя -->
+              <div>
+                <h3 class="font-medium text-base mb-2">Данные покупателя</h3>
+                <div class="form-group">
+                  <label for="name">Имя *</label>
+                  <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                  <label for="email">Email *</label>
+                  <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Телефон *</label>
+                  <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                  <label for="address">Адрес доставки *</label>
+                  <input type="text" id="address" name="address" required>
+                </div>
+                <div class="form-group">
+                  <label for="contactMethod">Предпочтительный способ связи</label>
+                  <select id="contactMethod" name="contactMethod">
+                    <option value="phone">Телефон</option>
+                    <option value="email">Email</option>
+                    <option value="telegram">Telegram</option>
+                  </select>
+                </div>
+                <div class="form-group" id="telegram-field" style="display: none;">
+                  <label for="telegramNickname">Ваш Telegram</label>
+                  <input type="text" id="telegramNickname" name="telegramNickname" placeholder="@username">
+                </div>
+              </div>
+              
+              <!-- Способ доставки -->
+              <div>
+                <h3 class="font-medium text-base mb-2">Способ доставки</h3>
+                <div class="space-y-2">
+                  <label class="block">
+                    <input type="radio" name="deliveryMethod" value="courier" checked>
+                    <span>Курьерская доставка</span>
+                  </label>
+                  <label class="block">
+                    <input type="radio" name="deliveryMethod" value="pickup">
+                    <span>Самовывоз</span>
+                  </label>
+                  <label class="block">
+                    <input type="radio" name="deliveryMethod" value="post">
+                    <span>Почта России</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Способ оплаты -->
+              <div>
+                <h3 class="font-medium text-base mb-2">Способ оплаты</h3>
+                <div class="space-y-2">
+                  <label class="block">
+                    <input type="radio" name="paymentMethod" value="card" checked>
+                    <span>Оплата картой при получении</span>
+                  </label>
+                  <label class="block">
+                    <input type="radio" name="paymentMethod" value="cash">
+                    <span>Наличными при получении</span>
+                  </label>
+                  <label class="block">
+                    <input type="radio" name="paymentMethod" value="online">
+                    <span>Онлайн оплата</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Итоги -->
+              <div class="cart-summary">
+                <div class="flex justify-between mb-2">
+                  <span>Сумма товаров:</span>
+                  <span id="order-subtotal">0 ₽</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                  <span>Доставка:</span>
+                  <span id="delivery-cost">0 ₽</span>
+                </div>
+                <div class="cart-total">
+                  <span>Итого:</span>
+                  <span id="order-total">0 ₽</span>
+                </div>
+              </div>
+              
+              <!-- Согласие с условиями -->
+              <div class="form-group">
+                <label class="block">
+                  <input type="checkbox" name="terms" required>
+                  <span>Согласен с условиями покупки</span>
+                </label>
+                <label class="block mt-2">
+                  <input type="checkbox" name="saveInfo">
+                  <span>Сохранить информацию для следующих покупок</span>
+                </label>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-full">Оформить заказ</button>
+            </form>
+          </div>
         </div>
       </div>
-    </main>
-    
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-grid">
-          <div class="footer-column">
-            <h4>The X Shop</h4>
-            <p>Товары из Китая для вашего дома</p>
-          </div>
-          <div class="footer-column">
-            <h4>Информация</h4>
-            <ul>
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
-            </ul>
-          </div>
-          <div class="footer-column">
-            <h4>Помощь</h4>
-            <ul>
-              <li><a href="terms.html">Условия использования</a></li>
-              <li><a href="privacy.html">Политика конфиденциальности</a></li>
-            </ul>
-          </div>
-          
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4>Информация</h4>
+          <ul>
+            <li><a href="about.html">О компании</a></li>
+            <li><a href="contact.html">Контакты</a></li>
+            <li><a href="#">Доставка и оплата</a></li>
+            <li><a href="#">Возврат и обмен</a></li>
+          </ul>
         </div>
-        <div class="footer-bottom">
-          <p>&copy; 2024 The X Shop. Все права защищены.</p>
+        <div class="footer-column">
+          <h4>Каталог</h4>
+          <ul>
+            <li><a href="catalog.html?category=Посуда">Посуда</a></li>
+            <li><a href="catalog.html?category=Текстиль">Текстиль</a></li>
+            <li><a href="catalog.html?category=Хранение">Хранение</a></li>
+            <li><a href="catalog.html?category=Декор">Декор</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Личный кабинет</h4>
+          <ul>
+            <li><a href="account.html">Мои заказы</a></li>
+            <li><a href="wishlist.html">Избранное</a></li>
+            <li><a href="cart.html">Корзина</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="mailto:info@example.com">info@example.com</a></li>
+            <li><a href="tel:+71234567890">+7 (123) 456-78-90</a></li>
+            <li>Адрес: г. Москва, ул. Примерная, д. 1</li>
+          </ul>
         </div>
       </div>
-    </footer>
-
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-       ym(101964387, "init", {
-            defer: true,
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true,
-            webvisor:true,
-            ecommerce:"dataLayer"
-       });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-    
-    <!-- Необходимый скрипт для Lovable -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    
-    <!-- Модульные скрипты для функциональности страницы -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/wishlist.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/main.js"></script>
-  </body>
+      <div class="footer-bottom">
+        <p>© 2024 The X Shop. Все права защищены.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Скрипты -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/chat.js"></script>
+</body>
 </html>

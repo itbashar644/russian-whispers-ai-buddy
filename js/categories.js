@@ -60,10 +60,30 @@ async function loadCategories() {
 
     // Создаем HTML для списка категорий в каталоге
     if (listContainer) {
-      const listHTML = categories
-        .map(category => `<a href="catalog.html?category=${category.name}" class="category-link">${category.name}</a>`)
-        .join('');
+      const listHTML = `
+        <a href="catalog.html" class="category-link">Все категории</a>
+        ${categories
+          .map(category => `<a href="catalog.html?category=${category.name}" class="category-link">${category.name}</a>`)
+          .join('')}
+      `;
       listContainer.innerHTML = listHTML;
+      
+      // Выделяем активную категорию
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeCategory = urlParams.get('category');
+      
+      if (activeCategory) {
+        const activeLink = listContainer.querySelector(`a[href="catalog.html?category=${activeCategory}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      } else {
+        // Если категория не выбрана, выделяем "Все категории"
+        const allCategoriesLink = listContainer.querySelector(`a[href="catalog.html"]`);
+        if (allCategoriesLink) {
+          allCategoriesLink.classList.add('active');
+        }
+      }
     }
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
@@ -75,3 +95,8 @@ async function loadCategories() {
     }
   }
 }
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  loadCategories();
+});
