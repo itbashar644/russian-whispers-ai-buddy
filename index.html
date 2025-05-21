@@ -27,6 +27,9 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://the-x.shop/" />
     
+    <!-- CSS стили -->
+    <link rel="stylesheet" href="styles.css">
+    
     <!-- Organization Schema -->
     <script type="application/ld+json">
       {
@@ -54,14 +57,311 @@
         "description": "Интернет-магазин товаров из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены.",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://the-x.shop/catalog?search={search_term_string}",
+          "target": "https://the-x.shop/catalog.html?search={search_term_string}",
           "query-input": "required name=search_term_string"
         }
       }
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <header class="header">
+      <div class="container header-container">
+        <div class="header-left">
+          <a href="index.html" class="logo">The X Shop</a>
+          <nav class="main-nav">
+            <ul>
+              <li><a href="index.html" class="active">Главная</a></li>
+              <li><a href="catalog.html">Каталог</a></li>
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="contacts.html">Контакты</a></li>
+            </ul>
+          </nav>
+        </div>
+        <div class="header-actions">
+          <button class="icon-button search-button" aria-label="Поиск">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </button>
+          <a href="wishlist.html" class="icon-button" aria-label="Избранное">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+          </a>
+          <a href="cart.html" class="icon-button" aria-label="Корзина">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          </a>
+          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-text">
+              <h1>The X Shop:<br>Товары из Китая для вашего дома</h1>
+              <p>Минималистичный дизайн, высокое качество, доступные цены.</p>
+              <div class="hero-buttons">
+                <a href="catalog.html" class="btn btn-primary">Смотреть каталог</a>
+                <a href="catalog.html?category=Электроника" class="btn btn-outline">Электроника</a>
+              </div>
+            </div>
+            <div class="hero-image">
+              <img src="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png" alt="Современные технологические товары">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Categories Section -->
+      <section class="categories">
+        <div class="container">
+          <h2>Категории</h2>
+          <div class="category-grid">
+            <a href="catalog.html?category=Электроника" class="category-card">
+              <img src="/lovable-uploads/2382cf41-b25e-4a18-b0ed-379ed4b92f63.png" alt="Электроника">
+              <div class="category-title">Электроника</div>
+            </a>
+            <a href="catalog.html?category=Для дома" class="category-card">
+              <img src="/lovable-uploads/6fc205ab-6c5e-4d07-97bf-08052b285a4f.png" alt="Для дома">
+              <div class="category-title">Для дома</div>
+            </a>
+            <a href="catalog.html?category=Аксессуары" class="category-card">
+              <img src="/lovable-uploads/ab959231-fd7d-4a09-9b4e-428144a0b03d.png" alt="Аксессуары">
+              <div class="category-title">Аксессуары</div>
+            </a>
+            <a href="catalog.html?category=Посуда" class="category-card">
+              <img src="/lovable-uploads/df8ec6c9-6d3f-4ec5-b65f-72e13df2ea76.png" alt="Посуда">
+              <div class="category-title">Посуда</div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bestsellers Section -->
+      <section class="products-section bestsellers">
+        <div class="container">
+          <div class="section-header">
+            <h2>Бестселлеры</h2>
+            <a href="catalog.html" class="view-all">Смотреть все</a>
+          </div>
+          <div class="products-grid">
+            <div class="product-card">
+              <a href="product.html?id=1" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/0b04b72a-65f0-4115-9cea-5a0f215b83d4.png" alt="Умная лампа Xiaomi">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Умная лампа Xiaomi</h3>
+                  <div class="product-price">
+                    <span class="current-price">1 299 ₽</span>
+                    <span class="old-price">1 799 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=2" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/2a6149e2-4731-4f83-bcc9-e00d95412f6c.png" alt="Беспроводные наушники">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Беспроводные наушники</h3>
+                  <div class="product-price">
+                    <span class="current-price">2 490 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=3" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/96c6e31d-3cd8-496b-8495-1b63a8577aeb.png" alt="Увлажнитель воздуха">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Увлажнитель воздуха</h3>
+                  <div class="product-price">
+                    <span class="current-price">1 990 ₽</span>
+                    <span class="old-price">2 590 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=4" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/eeca568c-aa0a-4169-8a72-46a1d9746536.png" alt="Умные часы">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Умные часы</h3>
+                  <div class="product-price">
+                    <span class="current-price">5 990 ₽</span>
+                    <span class="old-price">7 590 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- New Products Section -->
+      <section class="products-section new-products">
+        <div class="container">
+          <div class="section-header">
+            <h2>Новинки</h2>
+            <a href="catalog.html" class="view-all">Смотреть все</a>
+          </div>
+          <div class="products-grid">
+            <div class="product-card">
+              <a href="product.html?id=5" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/b1cb4ce9-8bc4-48a9-83c3-f578212965a7.png" alt="Беспроводная зарядка">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Беспроводная зарядка</h3>
+                  <div class="product-price">
+                    <span class="current-price">1 890 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=6" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/2d6239d5-f8e0-47da-94ea-53c5c11cd869.png" alt="Термокружка">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Термокружка</h3>
+                  <div class="product-price">
+                    <span class="current-price">990 ₽</span>
+                    <span class="old-price">1 290 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=7" class="product-link">
+                <div class="product-image">
+                  <img src="/lovable-uploads/c08f9eab-dd00-4949-baa0-82ab4bad889b.png" alt="Настольная лампа">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Настольная лампа</h3>
+                  <div class="product-price">
+                    <span class="current-price">2 490 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+            <div class="product-card">
+              <a href="product.html?id=8" class="product-link">
+                <div class="product-image">
+                  <img src="/placeholder.svg" alt="Умная колонка">
+                  <button class="wishlist-button" aria-label="Добавить в избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                  </button>
+                </div>
+                <div class="product-info">
+                  <h3>Умная колонка</h3>
+                  <div class="product-price">
+                    <span class="current-price">3 990 ₽</span>
+                    <span class="old-price">4 990 ₽</span>
+                  </div>
+                </div>
+              </a>
+              <button class="add-to-cart-btn">В корзину</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Benefits Section -->
+      <section class="benefits">
+        <div class="container">
+          <h2>Почему выбирают нас</h2>
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <h3>Прямые поставки</h3>
+              <p>Мы работаем напрямую с производителями из Китая, минуя посредников</p>
+            </div>
+            <div class="benefit-card">
+              <h3>Контроль качества</h3>
+              <p>Каждый товар проходит проверку перед отправкой клиенту</p>
+            </div>
+            <div class="benefit-card">
+              <h3>Гарантия</h3>
+              <p>Мы предоставляем гарантию на все товары и возможность возврата</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-column">
+            <h4>The X Shop</h4>
+            <p>Товары из Китая для вашего дома</p>
+          </div>
+          <div class="footer-column">
+            <h4>Информация</h4>
+            <ul>
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="delivery.html">Доставка</a></li>
+              <li><a href="contacts.html">Контакты</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h4>Помощь</h4>
+            <ul>
+              <li><a href="terms.html">Условия использования</a></li>
+              <li><a href="privacy.html">Политика конфиденциальности</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h4>Связаться с нами</h4>
+            <div class="contact-methods">
+              <a href="mailto:info@the-x.shop" class="contact-link">info@the-x.shop</a>
+              <a href="https://t.me/thexshop" class="contact-link">Telegram</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2024 The X Shop. Все права защищены.</p>
+        </div>
+      </div>
+    </footer>
+
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -90,7 +390,10 @@
       window.dataLayer = window.dataLayer || [];
     </script>
     
+    <!-- Необходимый скрипт для Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Скрипты для функциональности страницы -->
+    <script src="scripts.js"></script>
   </body>
 </html>
