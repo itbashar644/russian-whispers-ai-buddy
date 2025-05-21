@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,25 @@ const CartItemMobile = ({ item, updateQuantity, removeItem }: CartItemMobileProp
     item.product.stockQuantity : 99;
   const isOutOfStock = item.product.stockQuantity !== undefined &&
     item.quantity > item.product.stockQuantity;
+
+  // Get the correct price
+  const getItemPrice = (): number => {
+    if (item.selectedColorVariant) {
+      return item.selectedColorVariant.discountPrice || item.selectedColorVariant.price || 0;
+    }
+    
+    if (item.color && item.product.colorVariants) {
+      const variant = item.product.colorVariants.find(v => v.color === item.color);
+      if (variant) {
+        return variant.discountPrice || variant.price || 0;
+      }
+    }
+    
+    return item.product.discountPrice || item.product.price || 0;
+  };
+
+  const price = getItemPrice();
+  const totalPrice = price * item.quantity;
 
   return (
     <div className="border-t py-4 flex flex-col gap-4">
@@ -56,7 +76,7 @@ const CartItemMobile = ({ item, updateQuantity, removeItem }: CartItemMobileProp
       </div>
       <div className="flex items-center justify-between">
         <p className="font-medium">
-          {(item.product.discountPrice || item.product.price) * item.quantity} ₽
+          {totalPrice} ₽
         </p>
         <div className="flex items-center gap-1">
           <Button

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DeliveryMethod } from "@/types/product";
@@ -179,6 +178,10 @@ const OrderSummary = ({
     }
   };
   
+  // Ensure the values are numbers
+  const formattedSubtotal = typeof subtotal === 'number' ? subtotal : 0;
+  const formattedTotal = typeof total === 'number' ? total : 0;
+  
   // Render summary
   return (
     <div className="rounded-lg border p-6 sticky top-20">
@@ -187,16 +190,16 @@ const OrderSummary = ({
       <div className="space-y-2 mb-6">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Товары:</span>
-          <span>{subtotal} ₽</span>
+          <span>{formattedSubtotal} ₽</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Доставка:</span>
-          <span>Бесплатно</span>
+          <span>{deliveryMethod ? deliveryMethod.price : 0} ₽</span>
         </div>
         <div className="border-t my-2"></div>
         <div className="flex justify-between font-medium text-lg">
           <span>Итого:</span>
-          <span>{total} ₽</span>
+          <span>{formattedTotal} ₽</span>
         </div>
       </div>
       

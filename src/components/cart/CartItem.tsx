@@ -21,6 +21,25 @@ const CartItem = ({ item, updateQuantity, removeItem }: CartItemProps) => {
   const isOutOfStock = item.product.stockQuantity !== undefined && 
     item.quantity > item.product.stockQuantity;
 
+  // Get the correct price
+  const getItemPrice = (): number => {
+    if (item.selectedColorVariant) {
+      return item.selectedColorVariant.discountPrice || item.selectedColorVariant.price || 0;
+    }
+    
+    if (item.color && item.product.colorVariants) {
+      const variant = item.product.colorVariants.find(v => v.color === item.color);
+      if (variant) {
+        return variant.discountPrice || variant.price || 0;
+      }
+    }
+    
+    return item.product.discountPrice || item.product.price || 0;
+  };
+
+  const price = getItemPrice();
+  const totalPrice = price * item.quantity;
+
   return (
     <tr key={item.product.id} className="border-t">
       <td className="p-4">
@@ -62,7 +81,7 @@ const CartItem = ({ item, updateQuantity, removeItem }: CartItemProps) => {
         </div>
       </td>
       <td className="p-4 text-right hidden sm:table-cell">
-        {item.product.discountPrice || item.product.price} ₽
+        {price} ₽
       </td>
       <td className="p-4 text-right">
         <div className="flex items-center justify-end gap-1">
@@ -88,7 +107,7 @@ const CartItem = ({ item, updateQuantity, removeItem }: CartItemProps) => {
         </div>
       </td>
       <td className="p-4 text-right font-medium">
-        {(item.product.discountPrice || item.product.price) * item.quantity} ₽
+        {totalPrice} ₽
       </td>
       <td className="p-4 text-right">
         <Button 
