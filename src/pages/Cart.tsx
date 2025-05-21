@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -36,11 +37,14 @@ const Cart = () => {
     item.quantity > item.product.stockQuantity
   );
 
-  // Verify that deliveryMethods are imported and logged for debugging
+  // Load delivery methods
   useEffect(() => {
     console.log("Available delivery methods:", deliveryMethods);
-    
-    // Try to load saved delivery method on mount
+    initializeDeliveryMethod();
+  }, []);
+  
+  // Initialize delivery method from localStorage or default to first one
+  const initializeDeliveryMethod = () => {
     const savedDeliveryMethodId = localStorage.getItem("savedDeliveryMethodId");
     
     if (savedDeliveryMethodId) {
@@ -52,7 +56,7 @@ const Cart = () => {
       // Default to first delivery method if none selected
       setDeliveryMethod(deliveryMethods[0]);
     }
-  }, [setDeliveryMethod]);
+  };
   
   const handleDeliveryMethodSelect = (method) => {
     setDeliveryMethod(method);
@@ -64,14 +68,7 @@ const Cart = () => {
     }
   };
   
-  const handleCheckout = async (formData: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    contactMethod: string;
-    telegramNickname?: string;
-  }) => {
+  const handleCheckout = async (formData) => {
     if (items.length === 0) {
       toast({
         title: "Ошибка",
@@ -94,7 +91,7 @@ const Cart = () => {
     
     // Create order data object
     const orderData = {
-      user_id: user?.id, // Will be undefined for guest checkout
+      user_id: user?.id,
       items,
       total,
       delivery_method: deliveryMethod.id,
@@ -102,45 +99,16 @@ const Cart = () => {
       customer_email: formData.email,
       customer_phone: formData.phone,
       delivery_address: formData.address,
+      contact_method: formData.contactMethod,
+      telegram_nickname: formData.telegramNickname,
     };
     
     try {
-       // Process the order
+      // Process the order
       const result = await placeOrder(orderData);
       
       if (result.success) {
-        toast({
-          title: "Успешно",
-          description: "Заказ успешно оформлен! Спасибо за покупку.",
-        });
-        
-        // Show additional message for guest users
-        if (!user) {
-          toast({
-            title: "Информация",
-            description: "Мы создали аккаунт для вас. Проверьте вашу почту для получения пароля и инструкций.",
-          });
-        }
-        
-        // Clear the cart after successful order
-        clearCart();
-        
-        // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
-        if (user) {
-          toast({
-            title: "Информация",
-            description: "Вы можете отслеживать статус заказа в личном кабинете",
-          });
-          // Перенаправляем после небольшой задержки для чтения сообщения
-          setTimeout(() => {
-            navigate("/account");
-          }, 2000);
-        } else {
-          // Иначе перенаправляем на главную страницу
-          setTimeout(() => {
-            navigate("/");
-          }, 2000);
-        }
+        handleSuccessfulOrder();
       } else {
         toast({
           title: "Ошибка",
@@ -160,6 +128,88 @@ const Cart = () => {
     }
   };
 
+  const handleSuccessfulOrder = () => {
+    toast({
+      title: "Успешно",
+      description: "Заказ успешно оформлен! Спасибо за покупку.",
+    });
+    
+    // Show additional message for guest users
+    if (!user) {
+      toast({
+        title: "Информация",
+        description: "Мы создали аккаунт для вас. Проверьте вашу почту для получения пароля и инструкций.",
+      });
+    }
+    
+    // Clear the cart after successful order
+    clearCart();
+    
+    // Если пользователь авторизован, перенаправляем в личный кабинет на страницу заказов
+    if (user) {
+      toast({
+        title: "Информация",
+        description: "Вы можете отслеживать статус заказа в личном кабинете",
+      });
+      // Перенаправляем после небольшой задержки для чтения сообщения
+      setTimeout(() => {
+        navigate("/account");
+      }, 2000);
+    } else {
+      // Иначе перенаправляем на главную страницу
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    }
+  };
+
+  // Render empty cart state
+  const renderEmptyCart = () => (
+    <div className="text-center py-12">
+      <h2 className="text-xl font-semibold mb-4">Ваша корзина пуста</h2>
+      <p className="text-muted-foreground mb-6">
+        Добавьте товары в корзину, чтобы оформить заказ
+      </p>
+      <Button asChild>
+        <Link to="/catalog">Перейти в каталог</Link>
+      </Button>
+    </div>
+  );
+
+  // Render cart content
+  const renderCartContent = () => (
+    <div className="grid md:grid-cols-[2fr_1fr] gap-8">
+      <div>
+        <CartTable 
+          items={items} 
+          updateQuantity={updateQuantity} 
+          removeItem={removeItem} 
+        />
+        
+        {deliveryMethods.length > 0 ? (
+          <DeliveryMethodSelector
+            deliveryMethod={deliveryMethod}
+            deliveryMethods={deliveryMethods}
+            onSelectDelivery={handleDeliveryMethodSelect}
+          />
+        ) : (
+          <p>Loading delivery methods...</p>
+        )}
+      </div>
+
+      <div>
+        <OrderSummary
+          subtotal={subtotal}
+          total={total}
+          deliveryMethod={deliveryMethod}
+          onSubmit={handleCheckout}
+          isSubmitting={isSubmitting}
+          hasStockIssues={hasStockIssues}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -167,49 +217,7 @@ const Cart = () => {
       <main className="flex-grow container px-4 py-8 md:px-6">
         <h1 className="text-3xl font-bold mb-6">Корзина</h1>
         
-        {items.length === 0 ? (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-4">Ваша корзина пуста</h2>
-            <p className="text-muted-foreground mb-6">
-              Добавьте товары в корзину, чтобы оформить заказ
-            </p>
-            <Button asChild>
-              <Link to="/catalog">Перейти в каталог</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-[2fr_1fr] gap-8">
-            <div>
-              <CartTable 
-                items={items} 
-                updateQuantity={updateQuantity} 
-                removeItem={removeItem} 
-              />
-              
-              {/* Ensure delivery methods are passed correctly */}
-              {deliveryMethods.length > 0 ? (
-                <DeliveryMethodSelector
-                  deliveryMethod={deliveryMethod}
-                  deliveryMethods={deliveryMethods}
-                  onSelectDelivery={handleDeliveryMethodSelect}
-                />
-              ) : (
-                <p>Loading delivery methods...</p>
-              )}
-            </div>
-
-            <div>
-              <OrderSummary
-                subtotal={subtotal}
-                total={total}
-                deliveryMethod={deliveryMethod}
-                onSubmit={handleCheckout}
-                isSubmitting={isSubmitting}
-                hasStockIssues={hasStockIssues}
-              />
-            </div>
-          </div>
-        )}
+        {items.length === 0 ? renderEmptyCart() : renderCartContent()}
       </main>
 
       <Footer />

@@ -43,6 +43,7 @@ const OrderSummary = ({
   const { profile, updateProfile } = useAuth();
   const { toast } = useToast();
   
+  // Form state
   const [orderForm, setOrderForm] = useState({
     name: "",
     email: "",
@@ -52,14 +53,20 @@ const OrderSummary = ({
     telegramNickname: "",
   });
   
+  // UI state
   const [saveInfo, setSaveInfo] = useState(false);
   const [hasSavedInfo, setHasSavedInfo] = useState(false);
   const [useSavedInfo, setUseSavedInfo] = useState(false);
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
-  // Load saved checkout information from localStorage on initial render
+  // Load saved checkout info on mount
   useEffect(() => {
+    loadSavedInfo();
+  }, [profile]);
+
+  // Load saved checkout information from localStorage and profile
+  const loadSavedInfo = () => {
     const savedInfoString = localStorage.getItem("savedCheckoutInfo");
     
     if (savedInfoString) {
@@ -78,7 +85,7 @@ const OrderSummary = ({
         telegramNickname: profile.telegramNickname || prev.telegramNickname
       }));
     }
-  }, [profile]);
+  };
 
   // Handle loading saved checkout information
   const handleUseSavedInfo = () => {
@@ -88,7 +95,6 @@ const OrderSummary = ({
       try {
         const savedInfo: SavedCheckoutInfo = JSON.parse(savedInfoString);
         
-        // Fix: Make sure telegramNickname is provided even if it's not in the saved info
         setOrderForm({
           name: savedInfo.name,
           email: savedInfo.email,
@@ -114,6 +120,7 @@ const OrderSummary = ({
     }
   };
 
+  // Form field change handlers
   const handleOrderFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setOrderForm((prev) => ({ ...prev, [name]: value }));
@@ -123,10 +130,11 @@ const OrderSummary = ({
     setOrderForm((prev) => ({ ...prev, contactMethod: value }));
   };
 
+  // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if terms and privacy policy are agreed
+    // Validation
     if (!termsAgreed || !privacyAgreed) {
       toast({
         title: "Ошибка",
@@ -136,35 +144,42 @@ const OrderSummary = ({
       return;
     }
     
-    // Save checkout information if the user checked the option
+    // Save checkout information if requested
     if (saveInfo) {
-      try {
-        localStorage.setItem("savedCheckoutInfo", JSON.stringify(orderForm));
-        toast({
-          title: "Информация сохранена",
-          description: "Данные о доставке сохранены для будущих заказов"
-        });
-      } catch (error) {
-        console.error("Failed to save checkout info", error);
-      }
-      
-      // If the user is logged in, also update their profile with this information
-      if (profile) {
-        updateProfile({
-          name: orderForm.name,
-          phone: orderForm.phone,
-          address: orderForm.address,
-          preferredContactMethod: orderForm.contactMethod as any,
-          telegramNickname: orderForm.telegramNickname
-        }).catch(error => {
-          console.error("Failed to update profile with checkout info", error);
-        });
-      }
+      saveCheckoutInfo();
     }
     
+    // Submit the form
     onSubmit(orderForm);
   };
   
+  // Save checkout info to localStorage and profile
+  const saveCheckoutInfo = () => {
+    try {
+      localStorage.setItem("savedCheckoutInfo", JSON.stringify(orderForm));
+      toast({
+        title: "Информация сохранена",
+        description: "Данные о доставке сохранены для будущих заказов"
+      });
+    } catch (error) {
+      console.error("Failed to save checkout info", error);
+    }
+    
+    // If the user is logged in, also update their profile
+    if (profile) {
+      updateProfile({
+        name: orderForm.name,
+        phone: orderForm.phone,
+        address: orderForm.address,
+        preferredContactMethod: orderForm.contactMethod as any,
+        telegramNickname: orderForm.telegramNickname
+      }).catch(error => {
+        console.error("Failed to update profile with checkout info", error);
+      });
+    }
+  };
+  
+  // Render summary
   return (
     <div className="rounded-lg border p-6 sticky top-20">
       <h2 className="text-xl font-semibold mb-4">Информация о заказе</h2>
@@ -185,6 +200,7 @@ const OrderSummary = ({
         </div>
       </div>
       
+      {/* Saved information button */}
       {hasSavedInfo && !useSavedInfo && (
         <div className="mb-4">
           <Button 
@@ -198,6 +214,7 @@ const OrderSummary = ({
         </div>
       )}
       
+      {/* Order form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <OrderFormFields 
           orderForm={orderForm}
@@ -230,6 +247,6 @@ const OrderSummary = ({
       </form>
     </div>
   );
-}
+};
 
 export default OrderSummary;

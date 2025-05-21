@@ -25,19 +25,22 @@ export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryM
 
 // Helper function to get the correct price for an item
 function getItemPrice(item: CartItem): number {
+  // Check if there's a selected color variant with price
   if (item.selectedColorVariant) {
-    return item.selectedColorVariant.discountPrice || 
-           item.selectedColorVariant.price;
+    const price = item.selectedColorVariant.discountPrice || item.selectedColorVariant.price || 0;
+    return typeof price === 'number' ? price : 0;
   }
   
+  // Check if there's a color and color variants
   if (item.color && item.product.colorVariants) {
     const variant = item.product.colorVariants.find(v => v.color === item.color);
     if (variant) {
-      return variant.discountPrice || variant.price;
+      const price = variant.discountPrice || variant.price || 0;
+      return typeof price === 'number' ? price : 0;
     }
   }
   
-  return item.product.discountPrice || 
-         item.product.price || 
-         0; // Fallback to 0 if no price is found
+  // Fallback to product prices
+  const productPrice = item.product.discountPrice || item.product.price || 0;
+  return typeof productPrice === 'number' ? productPrice : 0;
 }

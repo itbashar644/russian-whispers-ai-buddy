@@ -1,12 +1,15 @@
 
 import React from "react";
-import { Phone, MessageSquare } from "lucide-react";
+import { Phone, MessageSquare, ChevronDown } from "lucide-react";
 import TelegramIcon from "@/components/icons/TelegramIcon";
 import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 interface ContactMethodSelectProps {
@@ -18,30 +21,33 @@ const ContactMethodSelect = ({ value, onValueChange }: ContactMethodSelectProps)
   return (
     <div className="space-y-2">
       <Label className="block text-sm font-medium">Предпочтительный способ связи</Label>
-      <ToggleGroup 
-        type="single" 
-        value={value} 
-        onValueChange={(value) => {
-          if (value) onValueChange(value);
-        }}
-        className="inline-flex flex-nowrap" 
-        variant="outline"
-      >
-        <ToggleGroupItem value="phone" aria-label="По телефону" className="flex items-center gap-2 px-4 py-2">
-          <Phone className="h-4 w-4" />
-          <span>По телефону</span>
-        </ToggleGroupItem>
-        
-        <ToggleGroupItem value="telegram" aria-label="Telegram" className="flex items-center gap-2 px-4 py-2">
-          <TelegramIcon size={16} className="text-[#0088cc]" />
-          <span>Telegram</span>
-        </ToggleGroupItem>
-        
-        <ToggleGroupItem value="whatsapp" aria-label="WhatsApp" className="flex items-center gap-2 px-4 py-2">
-          <WhatsAppIcon size={16} className="text-[#25D366]" />
-          <span>WhatsApp</span>
-        </ToggleGroupItem>
-      </ToggleGroup>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Выберите способ связи" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="phone" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              <span>По телефону</span>
+            </div>
+          </SelectItem>
+          
+          <SelectItem value="telegram" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <TelegramIcon size={16} className="text-[#0088cc]" />
+              <span>Telegram</span>
+            </div>
+          </SelectItem>
+          
+          <SelectItem value="whatsapp" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <WhatsAppIcon size={16} className="text-[#25D366]" />
+              <span>WhatsApp</span>
+            </div>
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 };
