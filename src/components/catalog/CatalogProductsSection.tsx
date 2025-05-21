@@ -21,6 +21,21 @@ interface CatalogProductsSectionProps {
   onLayoutChange?: (layout: "grid" | "table") => void;
   onToggleFilters?: () => void;
   isFiltersVisible?: boolean;
+  filteredProducts?: Product[];
+  inStockCount?: number;
+  outOfStockCount?: number;
+  activeFiltersCount?: number;
+  handleSearchSubmit?: (e: React.FormEvent) => void;
+  handleSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCategoryClick?: (categoryId: string | null) => void;
+  handleColorFilter?: (color: string | null) => void;
+  handleClearAllFilters?: () => void;
+  categoryParam?: string;
+  searchTerm?: string;
+  colorParam?: string;
+  availableCategories?: string[];
+  sortBy?: string;
+  setSortBy?: (value: string) => void;
 }
 
 const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
@@ -31,13 +46,22 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
   onLayoutChange,
   onToggleFilters,
   isFiltersVisible,
+  filteredProducts,
+  sortBy: externalSortBy,
+  setSortBy: externalSetSortBy,
 }) => {
-  const [sortOption, setSortOption] = useState("popularity");
+  const [sortOption, setSortOption] = useState(externalSortBy || "popularity");
   const [layout, setLayout] = useState<"grid" | "table">("grid");
   const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  // Use provided filteredProducts if available, otherwise use products
+  const displayProducts = filteredProducts || products;
 
   const handleSortChange = (value: string) => {
     setSortOption(value);
+    if (externalSetSortBy) {
+      externalSetSortBy(value);
+    }
     if (onSort) {
       onSort(value);
     }
@@ -122,7 +146,7 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
       </div>
 
       {layout === "grid" ? (
-        <ProductGrid products={products} loading={loading} />
+        <ProductGrid products={displayProducts} loading={loading} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -135,16 +159,16 @@ const CatalogProductsSection: React.FC<CatalogProductsSectionProps> = ({
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {displayProducts.map((product) => (
                 <tr key={product.id} className="border-b hover:bg-muted/50">
                   <td className="px-4 py-2">
                     <div className="flex items-center space-x-3">
                       <img
-                        src={product.images?.[0] || "/placeholder.svg"}
-                        alt={product.name}
+                        src={product.imageUrl || "/placeholder.svg"}
+                        alt={product.title}
                         className="w-12 h-12 object-cover rounded"
                       />
-                      <span className="font-medium">{product.name}</span>
+                      <span className="font-medium">{product.title}</span>
                     </div>
                   </td>
                   <td className="px-4 py-2">

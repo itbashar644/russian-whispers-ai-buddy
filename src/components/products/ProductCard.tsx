@@ -44,13 +44,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
     addItem(product, 1);
   };
 
-  const imageUrl = product.images?.[0] || "/placeholder.svg";
+  // Use correct property names from the Product type
+  const imageUrl = product.imageUrl || "/placeholder.svg";
+  const additionalImages = product.additionalImages || [];
+  const firstImage = additionalImages.length > 0 ? additionalImages[0] : imageUrl;
+  
   const productUrl = parentId
     ? `/product/${parentId}?color=${product.id}`
     : `/product/${product.id}`;
+  
   const productName = showAsColorVariant
-    ? `${product.name} - ${product.color || "Стандартный"}`
-    : product.name;
+    ? `${product.title} - ${product.colors && product.colors.length > 0 ? product.colors[0] : "Стандартный"}`
+    : product.title;
+
+  // Calculate discount percentage if both price and discountPrice are available
+  const discountPercent = product.discountPrice && product.price 
+    ? Math.round(100 - (product.discountPrice / product.price * 100))
+    : 0;
 
   // Настроим размер карточки, чтобы их было 5 в ряду
   const cardClasses = cn(
@@ -66,8 +76,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="relative">
             <AspectRatio ratio={1 / 1}>
               <img
-                src={imageUrl}
-                alt={product.name}
+                src={firstImage}
+                alt={product.title}
                 className="object-cover h-full w-full transition-transform group-hover:scale-105"
                 loading="lazy"
               />
@@ -80,9 +90,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 {product.isBestseller && (
                   <Badge className="bg-amber-500 hover:bg-amber-600">Хит продаж</Badge>
                 )}
-                {product.discountPercent > 0 && (
+                {product.discountPrice && discountPercent > 0 && (
                   <Badge className="bg-red-500 hover:bg-red-600">
-                    -{product.discountPercent}%
+                    -{discountPercent}%
                   </Badge>
                 )}
               </div>

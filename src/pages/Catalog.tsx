@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CatalogLayout from "@/components/catalog/CatalogLayout";
@@ -193,22 +192,15 @@ const Catalog = () => {
         <div itemScope itemType="https://schema.org/ItemList">
           <meta itemProp="numberOfItems" content={String(filteredProducts.length)} />
           <CatalogProductsSection
-            categoryParam={categoryParam}
-            searchTerm={searchTerm}
-            colorParam={colorParam}
-            availableCategories={availableCategories}
-            loading={loading}
+            products={allProducts}
             filteredProducts={filteredProducts}
-            inStockCount={inStockCount}
-            outOfStockCount={outOfStockCount}
-            activeFiltersCount={activeFiltersCount}
+            loading={loading}
+            totalProducts={filteredProducts.length}
+            onToggleFilters={() => setShowMobileFilters(!showMobileFilters)}
+            isFiltersVisible={showMobileFilters}
             sortBy={sortBy}
-            handleSearchSubmit={handleSearchSubmit}
-            handleSearchChange={handleSearchChange}
             setSortBy={setSortBy}
-            handleCategoryClick={handleCategoryClick}
-            handleColorFilter={handleColorFilter}
-            handleClearAllFilters={handleClearAllFilters}
+            onSort={(value) => setSortBy(value)}
           />
         </div>
       </div>
