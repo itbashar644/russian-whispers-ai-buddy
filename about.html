@@ -13,41 +13,32 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <header class="main-header">
-      <div class="container">
-        <div class="header-content">
-          <div class="logo">
-            <a href="index.html">The X Shop</a>
-          </div>
-          
+    <header class="header">
+      <div class="container header-container">
+        <div class="header-left">
+          <a href="index.html" class="logo">The X Shop</a>
           <nav class="main-nav">
-            <ul class="nav-list">
-              <li><a href="index.html" class="nav-link">Главная</a></li>
-              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
-              <li><a href="about.html" class="nav-link active">О нас</a></li>
-              <li><a href="contact.html" class="nav-link">Контакты</a></li>
+            <ul>
+              <li><a href="index.html">Главная</a></li>
+              <li><a href="catalog.html">Каталог</a></li>
+              <li><a href="about.html" class="active">О нас</a></li>
+              <li><a href="contacts.html">Контакты</a></li>
             </ul>
           </nav>
-          
-          <div class="header-actions">
-            <a href="search.html" class="action-icon search-icon" title="Поиск">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </a>
-            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-            </a>
-            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span id="cart-counter" class="counter">0</span>
-            </a>
-            <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </a>
-          </div>
-          
-          <button class="mobile-menu-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        </div>
+        <div class="header-actions">
+          <button class="icon-button search-button" aria-label="Поиск">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
           </button>
+          <a href="wishlist.html" class="icon-button" aria-label="Избранное">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+          </a>
+          <a href="cart.html" class="icon-button" aria-label="Корзина">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          </a>
+          <a href="/login" class="icon-button" aria-label="Личный кабинет">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </a>
         </div>
       </div>
     </header>
@@ -85,43 +76,40 @@
             Если у вас остались вопросы, вы можете ознакомиться с разделом 
             <a href="delivery.html" class="text-link">Доставка</a> 
             или посетить страницу
-            <a href="contact.html" class="text-link">Контакты</a>,
+            <a href="contacts.html" class="text-link">Контакты</a>,
             чтобы связаться с нами напрямую.
           </p>
         </div>
       </section>
     </main>
     
-    <footer class="main-footer">
+    <footer class="footer">
       <div class="container">
-        <div class="footer-content">
+        <div class="footer-grid">
           <div class="footer-column">
-            <h3 class="footer-title">The X Shop</h3>
-            <p>Качественные товары из Китая по доступным ценам</p>
+            <h4>The X Shop</h4>
+            <p>Товары из Китая для вашего дома</p>
           </div>
-          
           <div class="footer-column">
-            <h4 class="footer-title">Каталог</h4>
-            <ul class="footer-links">
-              <li><a href="catalog.html">Все товары</a></li>
-              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
-              <li><a href="catalog.html?category=Дом и сад">Дом и сад</a></li>
-              <li><a href="catalog.html?category=Аксессуары">Аксессуары</a></li>
-            </ul>
-          </div>
-          
-          <div class="footer-column">
-            <h4 class="footer-title">Информация</h4>
-            <ul class="footer-links">
+            <h4>Информация</h4>
+            <ul>
               <li><a href="about.html">О нас</a></li>
-              <li><a href="contact.html">Контакты</a></li>
-              <li><a href="delivery.html">Доставка и оплата</a></li>
+              <li><a href="delivery.html">Доставка</a></li>
+              <li><a href="contacts.html">Контакты</a></li>
             </ul>
+          </div>
+          <div class="footer-column">
+            <h4>Помощь</h4>
+            <ul>
+              <li><a href="terms.html">Условия использования</a></li>
+              <li><a href="privacy.html">Политика конфиденциальности</a></li>
+            </ul>
+          </div>
+         
           </div>
         </div>
-        
         <div class="footer-bottom">
-          <p>&copy; The X Shop 2024. Все права защищены.</p>
+          <p>&copy; 2024 The X Shop. Все права защищены.</p>
         </div>
       </div>
     </footer>
@@ -151,6 +139,6 @@
     
     <!-- Скрипты для функциональности страницы -->
     <script src="scripts.js"></script>
-    <script src="js/chat.js"></script>
+     <script src="js/chat.js"></script>
     </body>
 </html>
