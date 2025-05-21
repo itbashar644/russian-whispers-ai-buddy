@@ -164,7 +164,7 @@ function renderWishlist() {
             addToCart({
               id: product.id,
               title: product.title,
-              price: product.discount_price || product.price,
+              price: parsePrice(product.discount_price || product.price),
               image: product.image_url,
               quantity: 1
             });

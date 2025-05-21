@@ -3,9 +3,22 @@
  * Вспомогательные функции
  */
 
+// Функция для преобразования строки цены в число
+function parsePrice(price) {
+  if (typeof price === 'number') {
+    return price;
+  }
+  if (!price) {
+    return 0;
+  }
+  const numeric = parseFloat(String(price).replace(/[^0-9.-]+/g, ''));
+  return isNaN(numeric) ? 0 : numeric;
+}
+
 // Функция для форматирования цены
 function formatPrice(price) {
-  return parseFloat(price).toLocaleString('ru-RU') + ' ₽';
+  const value = parsePrice(price);
+  return value.toLocaleString('ru-RU') + ' ₽';
 }
 
 // Функция для отображения уведомления

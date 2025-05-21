@@ -1,4 +1,12 @@
 
+// Преобразовать текст цены в числовое значение
+function parsePrice(value) {
+  if (typeof value === 'number') return value;
+  if (!value) return 0;
+  const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+  return isNaN(numeric) ? 0 : numeric;
+}
+  
 document.addEventListener('DOMContentLoaded', function() {
   // Функция для работы с корзиной
   initCart();
@@ -109,7 +117,8 @@ function initAddToCartButtons() {
       if (!productId) return;
       
       const productTitle = productCard.querySelector('h3').textContent;
-      const productPrice = productCard.querySelector('.current-price').textContent;
+      const priceText = productCard.querySelector('.current-price').textContent;
+      const productPrice = parsePrice(priceText);
       const productImage = productCard.querySelector('.product-image img').src;
       
       addToCart({

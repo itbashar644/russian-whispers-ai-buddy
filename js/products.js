@@ -413,7 +413,7 @@ function initProductButtons(product) {
         addToCart({
           id: product.id,
           title: product.title,
-          price: product.discount_price || product.price,
+          price: parsePrice(product.discount_price || product.price),
           image: product.image_url,
           quantity: 1
         });
@@ -449,7 +449,7 @@ function initAddToCartButtons() {
         addToCart({
           id: productId,
           title: productTitle,
-          price: parseFloat(productPrice),
+          price: parsePrice(productPrice),
           image: productImage,
           quantity: 1
         });
