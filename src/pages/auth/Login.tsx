@@ -178,7 +178,7 @@ const Login = () => {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Пароль</FormLabel>
-                        <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                        <Link to="/forgot-password" className="text-sm text-primary hover:underline">
                           Забыли пароль?
                         </Link>
                       </div>

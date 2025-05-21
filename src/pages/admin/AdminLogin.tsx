@@ -140,7 +140,7 @@ const AdminLogin = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="password">Пароль</Label>
-                <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                 <Link to="/forgot-password" className="text-sm text-primary hover:underline">
                   Забыли пароль?
                 </Link>
               </div>

@@ -63,8 +63,8 @@ const ResetPassword: React.FC = () => {
               description: "Пожалуйста, запросите новую ссылку для сброса пароля"
             });
             
-            // If we're on the /auth/reset-password path but don't have a token, redirect to the forgot password page
-            if (location.pathname === '/auth/reset-password') {
+            // If we're on the /reset-password path but don't have a token, redirect to the forgot password page
+            if (location.pathname === '/reset-password') {
               setTimeout(() => navigate("/forgot-password"), 2000);
             }
           }

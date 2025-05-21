@@ -81,10 +81,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </Link>
           ) : (
             <Link
-              to="/auth/login"
-              onClick={onClose}
-              className="text-lg font-medium flex items-center gap-2"
-            >
+                to="/login"
+                onClick={onClose}
+                className="text-lg font-medium flex items-center gap-2"
+              >
               <LogIn className="h-5 w-5" />
               Войти
             </Link>

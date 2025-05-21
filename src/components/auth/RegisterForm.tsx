@@ -48,7 +48,7 @@ export default function RegisterForm() {
         toast.success("Регистрация успешна!", {
           description: "Теперь вы можете войти в свой аккаунт.",
         });
-        navigate("/auth/login");
+        navigate("/login");
       } else if (result.isExistingUser) {
         // User already exists, show login prompt
         setShowLoginPrompt(true);
@@ -148,7 +148,7 @@ export default function RegisterForm() {
         {showLoginPrompt && (
           <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
             У вас уже есть аккаунт.{" "}
-            <Link to="/auth/login" className="font-medium underline">
+            <Link to="/login" className="font-medium underline">
               Войти сейчас
             </Link>
           </div>
@@ -170,7 +170,7 @@ export default function RegisterForm() {
 
         <div className="text-center text-sm">
           Уже есть аккаунт?{" "}
-          <Link to="/auth/login" className="font-medium">
+           <Link to="/login" className="font-medium">
             Войти
           </Link>
         </div>

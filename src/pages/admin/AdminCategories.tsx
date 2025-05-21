@@ -22,7 +22,7 @@ const AdminCategories = () => {
           toast.error("Требуется авторизация", {
             description: "Необходимо войти в систему для доступа к панели администратора"
           });
-          navigate("/auth/login");
+          navigate("/login");
           return;
         }
         
