@@ -61,7 +61,7 @@ function collectFormData() {
     address: document.getElementById('address').value,
     comment: document.getElementById('comment')?.value,
     contact_method: document.querySelector('input[name="contact_method"]:checked').value,
-    delivery_method: document.querySelector('input[name="delivery_method"]:checked')?.value || 'russianpost',
+    delivery_method: document.querySelector('input[name="delivery_method"]:checked')?.value || 'cdek',
     telegram_username: document.getElementById('telegram_username')?.value
   };
 }
@@ -208,7 +208,7 @@ function createOrderObject(formData, cart) {
       address: formData.address,
       comment: formData.comment || '',
       contact_method: formData.contact_method || 'phone',
-      delivery_method: formData.delivery_method || 'russianpost',
+      delivery_method: formData.delivery_method || 'cdek',
       telegram_username: formData.telegram_username || ''
     },
     totalPrice: cart.reduce((total, item) => {
@@ -303,7 +303,7 @@ function getDeliveryMethodText(method) {
   switch(method) {
     case 'russianpost': return 'Почта РФ';
     case 'cdek': return 'СДЭК';
-    case 'wb': return 'В ПВЗ WB';
+    case 'wbtrack': return 'WB Track';
     default: return method;
   }
 }

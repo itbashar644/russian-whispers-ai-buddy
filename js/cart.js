@@ -305,7 +305,10 @@ function renderCart() {
         email: email,
         address: address,
         comment: document.getElementById('comment').value.trim(),
-        payment_method: document.querySelector('input[name="payment_method"]:checked').value
+        contact_method: document.querySelector('input[name="contact_method"]:checked')?.value || 'phone',
+        telegram_username: document.getElementById('telegram_username')?.value.trim(),
+        delivery_method: document.querySelector('input[name="delivery_method"]:checked')?.value || 'cdek',
+        payment_method: document.querySelector('input[name="payment_method"]:checked')?.value || 'cash'
       };
       
       // Отправляем заказ
@@ -335,6 +338,9 @@ function submitOrder(formData) {
         email: formData.email,
         address: formData.address,
         comment: formData.comment || '',
+        contact_method: formData.contact_method || 'phone',
+        telegram_username: formData.telegram_username || '',
+        delivery_method: formData.delivery_method || 'cdek',
         payment_method: formData.payment_method || 'cash'
       },
       totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
@@ -390,6 +396,8 @@ async function sendOrderToTelegram(order) {
 - Телефон: ${order.customer.phone}
 - Email: ${order.customer.email}
 - Адрес: ${order.customer.address}
+- Способ связи: ${getContactMethodText(order.customer.contact_method)}${order.customer.telegram_username ? `\n- Telegram: ${order.customer.telegram_username}` : ''}
+- Способ доставки: ${getDeliveryMethodText(order.customer.delivery_method)}
 - Способ оплаты: ${order.customer.payment_method === 'cash' ? 'Наличными при получении' : 'Картой при получении'}
 ${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
@@ -465,6 +473,25 @@ function showNotification(message, type = 'info') {
       notification.remove();
     });
   }, 3000);
+}
+// Преобразование кода способа связи в читаемый текст
+function getContactMethodText(method) {
+  switch(method) {
+    case 'phone': return 'По телефону';
+    case 'telegram': return 'Telegram';
+    case 'whatsapp': return 'WhatsApp';
+    default: return method;
+  }
+}
+
+// Получение текста способа доставки
+function getDeliveryMethodText(method) {
+  switch(method) {
+    case 'cdek': return 'СДЭК';
+    case 'russianpost': return 'Почта РФ';
+    case 'wbtrack': return 'WB Track';
+    default: return method;
+  }
 }
 
 // Инициализируем корзину при загрузке страницы
