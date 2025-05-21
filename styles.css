@@ -255,7 +255,7 @@ img {
 
 .product-image {
   position: relative;
-  padding-top: 75%; /* 3:4 aspect ratio */
+  padding-top: 133.33%; /* 3:4 aspect ratio */
   background-color: #f8f9fa;
   overflow: hidden;
 }
