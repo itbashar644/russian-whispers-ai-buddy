@@ -14,13 +14,9 @@ index 66ccba3..e4c6d9d 100644
 +  const listContainer = document.getElementById('categories-list');
 +
    try {
--    const categoriesContainer = document.querySelector('.categories-section');
--    if (!categoriesContainer) return;
--    
 +    if (!sectionContainer && !listContainer) return;
 +
      // Показываем состояние загрузки
--    categoriesContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
 +    if (sectionContainer) {
 +      sectionContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
 +    }
@@ -49,24 +45,6 @@ index 66ccba3..e4c6d9d 100644
 +      }
        return;
      }
--    
--    // Создаем HTML для категорий
--    const categoriesHTML = `
--      <h2 class="section-title">Категории</h2>
--      <div class="categories-grid">
--        ${categories.map(category => `
--          <a href="catalog.html?category=${category.name}" class="category-card">
--            <div class="category-image">
--              <img src="${category.image_url || '/placeholder.svg'}" alt="${category.name}">
--            </div>
--            <h3>${category.name}</h3>
--          </a>
--        `).join('')}
--      </div>
--    `;
--    
--    // Обновляем контейнер
--    categoriesContainer.innerHTML = categoriesHTML;
 +
 +    // Создаем HTML для секции с карточками категорий
 +    if (sectionContainer) {
@@ -95,9 +73,6 @@ index 66ccba3..e4c6d9d 100644
 +    }
    } catch (error) {
      console.error('Ошибка при загрузке категорий:', error);
--    const categoriesContainer = document.querySelector('.categories-section');
--    if (categoriesContainer) {
--      categoriesContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
 +    if (sectionContainer) {
 +      sectionContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
 +    }
