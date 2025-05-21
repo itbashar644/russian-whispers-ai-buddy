@@ -162,17 +162,6 @@ ul {
   justify-content: flex-start;
 }
 
-/* Tech Banner */
-.tech-banner {
-  padding: 1rem 0 3rem;
-}
-
-.tech-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
 
 /* Button Styles */
 .btn {
