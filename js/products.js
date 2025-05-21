@@ -167,7 +167,7 @@ function createMarketplaceLinksHtml(product) {
   if (product.wildberries_url) {
     marketplaceIconsHtml += `
       <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
-        <img src="/placeholder.svg" alt="Wildberries">
+        <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
       </a>
     `;
   }
@@ -175,7 +175,7 @@ function createMarketplaceLinksHtml(product) {
   if (product.ozon_url) {
     marketplaceIconsHtml += `
       <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
-        <img src="/placeholder.svg" alt="Ozon">
+       <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
       </a>
     `;
   }
@@ -183,7 +183,7 @@ function createMarketplaceLinksHtml(product) {
   if (product.avito_url) {
     marketplaceIconsHtml += `
       <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
-        <img src="/placeholder.svg" alt="Авито">
+         <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
       </a>
     `;
   }
