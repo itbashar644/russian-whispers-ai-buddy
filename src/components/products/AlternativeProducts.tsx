@@ -49,12 +49,7 @@ const AlternativeProducts = ({ productId, title = "Альтернативные 
 
   return (
     <div className="mt-10">
-      <ProductGrid 
-        products={products} 
-        title={title} 
-        limit={limit} 
-        showExpand={true} 
-      />
+      <ProductGrid products={products} title={title} limit={limit} showExpand={true} />
     </div>
   );
 };

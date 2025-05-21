@@ -179,10 +179,7 @@ const Product = () => {
         {/* Связанные товары */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
-            <ProductGrid 
-              products={relatedProducts} 
-              title="Похожие товары" 
-            />
+            <ProductGrid products={relatedProducts} title="Похожие товары" />
           </div>
         )}
       </div>

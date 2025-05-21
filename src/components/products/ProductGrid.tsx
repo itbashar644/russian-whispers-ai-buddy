@@ -1,89 +1,85 @@
 
-import React from "react";
 import { Product } from "@/types/product";
 import ProductCard from "./ProductCard";
-import ProductSkeleton from "./ProductSkeleton";
-import { ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ProductGridProps {
   products: Product[];
-  loading?: boolean;
-  skeletonCount?: number;
-  showAsColorVariants?: boolean;
-  compact?: boolean;
-  hideBadges?: boolean;
   title?: string;
-  showExpand?: boolean;
+  showAsColorVariants?: boolean;
   limit?: number;
+  showExpand?: boolean;
+    /**
+   * Optional CSS classes to control grid columns layout.
+   * Defaults to showing up to five columns on large screens.
+   */
+  columnsClass?: string;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({
-  products,
-  loading = false,
-  skeletonCount = 10,
-  showAsColorVariants = false,
-  compact = false,
-  hideBadges = false,
-  title,
-  showExpand = false,
+const ProductGrid = ({ 
+  products, 
+  title, 
+  showAsColorVariants = false, 
   limit,
-}) => {
-  // Apply limit if provided
-  const displayProducts = limit && products.length > limit 
-    ? products.slice(0, limit) 
-    : products;
-    
-  if (loading) {
+  showExpand = false,
+  columnsClass
+}: ProductGridProps) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  const displayProducts = useMemo(() => {
+    if (!limit || expanded) {
+      return products;
+    }
+    return products.slice(0, limit);
+  }, [products, limit, expanded]);
+  
+  if (products.length === 0) {
     return (
-      <div className="w-full">
-        {title && <h2 className="text-2xl font-bold mb-6">{title}</h2>}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {Array(skeletonCount)
-            .fill(0)
-            .map((_, index) => (
-              <ProductSkeleton key={index} />
-            ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (displayProducts.length === 0) {
-    return (
-      <div className="w-full">
-        {title && <h2 className="text-2xl font-bold mb-6">{title}</h2>}
-        <div className="text-center py-20 text-muted-foreground">
-          Товары не найдены.
-        </div>
+      <div className="py-12 text-center">
+        <h2 className="text-2xl font-bold mb-2">Нет товаров</h2>
+        <p className="text-muted-foreground">Попробуйте изменить параметры поиска</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      {title && (
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">{title}</h2>
-          {showExpand && products.length > limit && (
-            <Link to="/catalog" className="flex items-center text-primary hover:underline">
-              Смотреть все
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          )}
-        </div>
-      )}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div className="space-y-6">
+      {title && <h2 className="text-2xl font-bold mb-6">{title}</h2>}
+      <div
+        className={`grid ${
+          columnsClass ?? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        } gap-4`}
+      >
         {displayProducts.map((product) => (
           <ProductCard 
             key={product.id} 
             product={product} 
-            showAsColorVariant={showAsColorVariants}
-            compact={compact}
-            hideBadges={hideBadges}
+            isColorVariant={showAsColorVariants && !!product.isColorVariant}
           />
         ))}
       </div>
+      
+      {showExpand && limit && products.length > limit && (
+        <div className="text-center mt-8">
+          <Button 
+            variant="outline" 
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1"
+          >
+            {expanded ? (
+              <>
+                Показать меньше <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Показать все {products.length} товаров <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
