@@ -3,289 +3,178 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The X Shop | Товары из Китая для вашего дома</title>
-    <meta name="description" content="The X Shop: Товары из Китая для вашего дома. Минималистичный дизайн, высокое качество, доступные цены." />
-    <meta name="keywords" content="товары из китая, дизайнерские товары, товары для дома, минимализм" />
-    
-    <!-- CSS стили -->
+    <meta name="description" content="Товары из Китая высокого качества по доступным ценам. Аналоги популярных брендов.">
     <link rel="stylesheet" href="styles.css">
-    <style>
-      /* Добавляем стили для аспектного соотношения изображений */
-      .category-image img, .product-image img {
-        aspect-ratio: 3/4;
-        object-fit: cover;
-      }
-      
-      /* Уменьшаем расстояние между категориями */
-      .categories-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-      }
-      
-      /* Стили для маркетплейсов */
-      .marketplace-links {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 10px 0;
-      }
-      
-      .marketplace-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-        overflow: hidden;
-      }
-      
-      /* Стили для hero section */
-      .hero-content {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-      }
-      
-      .hero-tech-logo {
-        position: absolute;
-        top: 50%;
-        right: 0;
-        transform: translateY(-50%);
-        width: 500px;
-        height: auto;
-      }
-      
-      /* Стили для каталога */
-      .catalog-sidebar {
-        padding-right: 20px;
-        border-right: 1px solid #eee;
-      }
-      
-      .categories-list {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      /* Улучшенные стили для формы обратной связи */
-      .contact-form {
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 30px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      }
-      
-      .contact-form .form-group {
-        margin-bottom: 20px;
-      }
-      
-      .contact-form label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #333;
-      }
-      
-      .contact-form input,
-      .contact-form textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        transition: border-color 0.3s;
-      }
-      
-      .contact-form input:focus,
-      .contact-form textarea:focus {
-        border-color: #007bff;
-        outline: none;
-      }
-      
-      .contact-form button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-      }
-      
-      .contact-form button:hover {
-        background-color: #0069d9;
-      }
-    </style>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
   <body>
-    <header class="header">
-      <div class="container header-container">
-        <div class="header-left">
-          <a href="index.html" class="logo">The X Shop</a>
+    <header class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <a href="index.html">The X Shop</a>
+          </div>
+          
           <nav class="main-nav">
-            <ul>
-              <li><a href="index.html" class="active">Главная</a></li>
-              <li><a href="catalog.html">Каталог</a></li>
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
+            <ul class="nav-list">
+              <li><a href="index.html" class="nav-link active">Главная</a></li>
+              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+              <li><a href="about.html" class="nav-link">О нас</a></li>
+              <li><a href="contact.html" class="nav-link">Контакты</a></li>
             </ul>
           </nav>
-        </div>
-        <div class="header-actions">
-          <button class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          
+          <div class="header-actions">
+            <a href="search.html" class="action-icon search-icon" title="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </a>
+            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </a>
+            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              <span id="cart-counter" class="counter">0</span>
+            </a>
+            <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </a>
+          </div>
+          
+          <button class="mobile-menu-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
           </button>
-          <a href="wishlist.html" class="icon-button" aria-label="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
-          <a href="cart.html" class="icon-button" aria-label="Корзина">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-            <span class="cart-counter"></span>
-          </a>
-          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </a>
         </div>
       </div>
     </header>
 
     <main>
-      <section class="hero">
-        <img src="/lovable-uploads/de373e15-1fec-4c44-b0d2-f330b4b01505.png" alt="Современные технологии" class="hero-tech-logo">
+      <!-- Hero Section -->
+      <section class="hero-section">
         <div class="container">
           <div class="hero-content">
-            <h1>Товары из Китая <br>для вашего дома</h1>
-            
-            <p class="hero-subtitle">Качественные товары по доступным ценам с доставкой на дом</p>
-            <div class="hero-actions">
-              <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
-              <a href="about.html" class="btn btn-outline">О нас</a>
+            <div class="hero-text">
+              <h1>Качество из Китая по доступным ценам</h1>
+              <p>Аналоги мировых брендов для вашего дома и комфорта</p>
+              <div class="hero-buttons">
+                <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
+                <a href="#featured" class="btn secondary-btn">Популярные товары</a>
+              </div>
+            </div>
+            <div class="hero-image">
+              <img src="lovable-uploads/hero-image.jpg" alt="Товары из Китая" loading="lazy">
             </div>
           </div>
-           
-        </div>
-         
-      </section>
-      
-      <!-- Секция категорий (перемещена выше) -->
-      <section class="container categories-section">
-        <!-- Категории будут загружены с помощью JavaScript -->
-        <div class="loading">Загрузка категорий...</div>
-      </section>
-      
-      <section class="container">
-        <h2 class="section-title">Популярные товары</h2>
-        <div class="featured-products">
-          <!-- Товары будут загружены с помощью JavaScript -->
-          <div class="loading">Загрузка товаров...</div>
-        </div>
-        <div class="section-actions">
-          <a href="catalog.html" class="btn btn-outline">Смотреть все товары</a>
         </div>
       </section>
       
-      <section class="benefits">
+      <!-- Categories Section -->
+      <section class="categories-section section-padding" id="categories">
         <div class="container">
-          <h2 class="section-title">Почему выбирают нас</h2>
-          <div class="benefits-grid">
-            <div class="benefit-card">
-              <div class="benefit-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
-              </div>
-              <h3>Гарантия качества</h3>
-              <p>Мы тщательно проверяем каждый товар перед отправкой</p>
+          <!-- Categories will be loaded dynamically here -->
+        </div>
+      </section>
+      
+      <!-- Featured Products -->
+      <section class="featured-products-section section-padding" id="featured">
+        <div class="container">
+          <h2 class="section-title">Популярные товары</h2>
+          <div class="featured-products products-grid">
+            <!-- Products will be loaded dynamically here -->
+          </div>
+          <div class="section-footer">
+            <a href="catalog.html" class="btn primary-btn">Посмотреть весь каталог</a>
+          </div>
+        </div>
+      </section>
+      
+      <!-- About Section -->
+      <section class="about-section section-padding bg-light">
+        <div class="container">
+          <div class="about-content">
+            <div class="about-image">
+              <img src="lovable-uploads/about-image.jpg" alt="О нашем магазине" loading="lazy">
             </div>
-            <div class="benefit-card">
-              <div class="benefit-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m2 8 6.25 5c.55.44 1.27.67 2 .67.73 0 1.45-.23 2-.67L18.5 8"></path></svg>
-              </div>
-              <h3>Быстрая доставка</h3>
-              <p>Доставляем товары в кратчайшие сроки по всей России</p>
-            </div>
-            <div class="benefit-card">
-              <div class="benefit-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>
-              </div>
-              <h3>Доступные цены</h3>
-              <p>Работаем напрямую с производителями без посредников</p>
-            </div>
-            <div class="benefit-card">
-              <div class="benefit-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h3.8a2 2 0 0 0 1.4-.6L12 4.8a2 2 0 0 1 1.4-.6h3.8a2 2 0 0 1 2 2v2.2z"></path><path d="M12 10v6"></path><path d="M9 13h6"></path></svg>
-              </div>
-              <h3>Широкий выбор</h3>
-              <p>Тысячи товаров на любой вкус и для любого бюджета</p>
+            <div class="about-text">
+              <h2>О нашем магазине</h2>
+              <p>The X Shop - это магазин товаров из Китая высокого качества по доступным ценам. Мы предлагаем широкий ассортимент товаров для дома, электроники, одежды и многого другого.</p>
+              <p>Все товары проходят тщательный отбор и проверку качества перед отправкой нашим клиентам. Мы работаем напрямую с производителями, что позволяет нам предлагать конкурентные цены.</p>
+              <a href="about.html" class="btn secondary-btn">Узнать больше</a>
             </div>
           </div>
         </div>
       </section>
+      
+      <!-- Chat Button -->
+      <div class="chat-widget">
+        <button id="chat-button" class="chat-toggle-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+        <div id="chat-container" class="chat-container hidden">
+          <!-- Chat interface will be loaded here -->
+        </div>
+      </div>
     </main>
-    
-    <footer class="footer">
+
+    <footer class="main-footer">
       <div class="container">
-        <div class="footer-grid">
+        <div class="footer-content">
           <div class="footer-column">
-            <h4>The X Shop</h4>
-            <p>Товары из Китая для вашего дома</p>
+            <h3 class="footer-title">The X Shop</h3>
+            <p>Качественные товары из Китая по доступным ценам</p>
+            <div class="social-icons">
+              <a href="#" class="social-icon" title="Telegram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 2.73a2.5 2.5 0 0 0-3.53 0l-13 13a.75.75 0 0 0-.2.34l-1 5a.75.75 0 0 0 .9.9l5-1a.75.75 0 0 0 .34-.2l13-13a2.5 2.5 0 0 0 0-3.54Z"/><path d="m16 6 2 2"/></svg>
+              </a>
+              <a href="#" class="social-icon" title="WhatsApp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4"/><path d="M17 8l-5 5-5-5"/><path d="M7 3h10"/></svg>
+              </a>
+            </div>
           </div>
+          
           <div class="footer-column">
-            <h4>Информация</h4>
-            <ul>
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка</a></li>
-              <li><a href="contacts.html">Контакты</a></li>
-            </ul>
-          </div>
-          <div class="footer-column">
-            <h4>Помощь</h4>
-            <ul>
-              <li><a href="terms.html">Условия использования</a></li>
-              <li><a href="privacy.html">Политика конфиденциальности</a></li>
+            <h4 class="footer-title">Каталог</h4>
+            <ul class="footer-links">
+              <li><a href="catalog.html">Все товары</a></li>
+              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
+              <li><a href="catalog.html?category=Дом и сад">Дом и сад</a></li>
+              <li><a href="catalog.html?category=Аксессуары">Аксессуары</a></li>
             </ul>
           </div>
           
+          <div class="footer-column">
+            <h4 class="footer-title">Информация</h4>
+            <ul class="footer-links">
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="contact.html">Контакты</a></li>
+              <li><a href="delivery.html">Доставка и оплата</a></li>
+              <li><a href="returns.html">Возврат и обмен</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-column">
+            <h4 class="footer-title">Контакты</h4>
+            <address class="footer-contact">
+              <p>Телефон: <a href="tel:+79001234567">+7 (900) 123-45-67</a></p>
+              <p>Email: <a href="mailto:info@thexshop.ru">info@thexshop.ru</a></p>
+              <p>Адрес: г. Москва, ул. Примерная, д. 123</p>
+            </address>
+          </div>
         </div>
+        
         <div class="footer-bottom">
           <p>&copy; 2024 The X Shop. Все права защищены.</p>
         </div>
       </div>
     </footer>
 
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-       ym(101964387, "init", {
-            defer: true,
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true,
-            webvisor:true,
-            ecommerce:"dataLayer"
-       });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-    
-    <!-- Необходимый скрипт для Lovable -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    
-    <!-- Модульные скрипты для функциональности страницы -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/products.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/wishlist.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/categories.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/forms.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/main.js"></script>
   </body>

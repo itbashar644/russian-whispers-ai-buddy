@@ -24,11 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initWishlistButtons();
   }
   
-  // Инициализация поиска
-  if (typeof initSearch === 'function') {
-    initSearch();
-  }
-  
   // Загрузка товаров с Supabase, если мы находимся на главной странице
   if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
     loadCategories(); // Сначала загружаем категории
@@ -75,18 +70,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Убедимся, что иконка профиля ведёт на страницу авторизации
-  const profileLinks = document.querySelectorAll('a[href="login.html"]');
-  profileLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      // Предотвращаем действие по умолчанию и явно перенаправляем на login.html
-      e.preventDefault();
-      window.location.href = 'login.html';
-    });
-  });
-  
   // Инициализация чата, если он есть на странице
   if (typeof initChat === 'function') {
     initChat();
   }
+  
+  // Инициализация мобильного меню
+  initMobileMenu();
 });
+
+// Функция для инициализации мобильного меню
+function initMobileMenu() {
+  const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+  
+  if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', function() {
+      // Здесь должен быть код для открытия/закрытия мобильного меню
+      // Для простоты реализации просто переключаем видимость навигации
+      const mainNav = document.querySelector('.main-nav');
+      
+      if (mainNav) {
+        if (mainNav.style.display === 'flex') {
+          mainNav.style.display = 'none';
+        } else {
+          mainNav.style.display = 'flex';
+        }
+      }
+    });
+  }
+}

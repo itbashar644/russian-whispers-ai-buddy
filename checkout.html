@@ -4,8 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Корзина | The X Shop</title>
-    <meta name="description" content="Корзина товаров из Китая высокого качества по доступным ценам">
+    <title>Оформление заказа | The X Shop</title>
+    <meta name="description" content="Оформление заказа на товары из Китая">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
@@ -33,7 +33,7 @@
             <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
             </a>
-            <a href="cart.html" class="action-icon cart-icon active" title="Корзина">
+            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
               <span id="cart-counter" class="counter">0</span>
             </a>
@@ -50,34 +50,98 @@
     </header>
 
     <main>
-      <!-- Cart Header -->
+      <!-- Checkout Header -->
       <section class="section-padding-sm bg-light">
         <div class="container">
-          <h1>Корзина</h1>
+          <h1>Оформление заказа</h1>
           <div class="breadcrumbs">
-            <a href="index.html">Главная</a> / <span>Корзина</span>
+            <a href="index.html">Главная</a> / <a href="cart.html">Корзина</a> / <span>Оформление заказа</span>
           </div>
         </div>
       </section>
       
-      <!-- Cart Content -->
+      <!-- Checkout Content -->
       <section class="section-padding">
         <div class="container">
-          <div id="cart-container">
-            <!-- Cart will be loaded dynamically here -->
+          <div class="checkout-container">
+            <form id="checkout-form" class="checkout-form">
+              <div class="checkout-customer-info">
+                <h2>Контактная информация</h2>
+                
+                <div class="form-group">
+                  <label for="name">ФИО *</label>
+                  <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="phone">Телефон *</label>
+                  <input type="tel" id="phone" name="phone" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="email">Email *</label>
+                  <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="address">Адрес доставки *</label>
+                  <textarea id="address" name="address" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label for="comment">Комментарий к заказу</label>
+                  <textarea id="comment" name="comment"></textarea>
+                </div>
+              </div>
+              
+              <div>
+                <div class="checkout-summary">
+                  <h3 class="checkout-summary-title">Ваш заказ</h3>
+                  
+                  <div id="checkout-items" class="checkout-items">
+                    <!-- Items will be added dynamically -->
+                  </div>
+                  
+                  <div class="checkout-totals">
+                    <div class="checkout-total-row">
+                      <span>Товары:</span>
+                      <span id="subtotal"></span>
+                    </div>
+                    
+                    <div class="checkout-total-row">
+                      <span>Доставка:</span>
+                      <span id="shipping">Бесплатно</span>
+                    </div>
+                    
+                    <div class="checkout-total-row grand-total">
+                      <span>Итого:</span>
+                      <span id="grand-total"></span>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn primary-btn place-order-btn">Оформить заказ</button>
+                </div>
+                
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                  <h3>Способы оплаты</h3>
+                  <div class="payment-options">
+                    <label class="payment-option">
+                      <input type="radio" name="payment_method" value="cash" checked>
+                      <span>Наличными при получении</span>
+                    </label>
+                    
+                    <label class="payment-option">
+                      <input type="radio" name="payment_method" value="card">
+                      <span>Картой при получении</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </section>
-      
-      <!-- Chat Button -->
-      <div class="chat-widget">
-        <button id="chat-button" class="chat-toggle-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        </button>
-        <div id="chat-container" class="chat-container hidden">
-          <!-- Chat interface will be loaded here -->
-        </div>
-      </div>
     </main>
 
     <footer class="main-footer">
@@ -135,7 +199,66 @@
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/checkout.js"></script>
+    <script>
+      // Скрипт для заполнения информации о заказе
+      document.addEventListener('DOMContentLoaded', function() {
+        // Получаем корзину
+        const cart = getFromStorage('cart', []);
+        
+        if (cart.length === 0) {
+          window.location.href = 'cart.html';
+          return;
+        }
+        
+        // Заполняем список товаров
+        const checkoutItemsContainer = document.getElementById('checkout-items');
+        checkoutItemsContainer.innerHTML = '';
+        
+        let subtotal = 0;
+        
+        cart.forEach(item => {
+          const itemTotal = item.price * item.quantity;
+          subtotal += itemTotal;
+          
+          const itemHTML = `
+            <div class="checkout-item">
+              <div class="checkout-item-image">
+                <img src="${item.image}" alt="${item.title}">
+              </div>
+              <div class="checkout-item-title">${item.title}</div>
+              <div class="checkout-item-quantity">x${item.quantity}</div>
+              <div class="checkout-item-price">${formatPrice(itemTotal)}</div>
+            </div>
+          `;
+          
+          checkoutItemsContainer.innerHTML += itemHTML;
+        });
+        
+        // Обновляем итоговую стоимость
+        document.getElementById('subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('grand-total').textContent = formatPrice(subtotal);
+        
+        // Обработчик отправки формы
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = {
+            name: document.getElementById('name').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            address: document.getElementById('address').value,
+            comment: document.getElementById('comment').value,
+            payment_method: document.querySelector('input[name="payment_method"]:checked').value
+          };
+          
+          if (typeof submitOrder === 'function') {
+            submitOrder(formData);
+          } else {
+            showNotification('Функция оформления заказа находится в разработке', 'error');
+          }
+        });
+      });
+    </script>
   </body>
 </html>

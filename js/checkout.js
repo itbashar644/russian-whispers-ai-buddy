@@ -3,277 +3,159 @@
  * Функционал для оформления заказа
  */
 
-// Инициализация формы заказа
-function initCheckoutForm() {
+document.addEventListener('DOMContentLoaded', function() {
+  // Проверяем, есть ли форма оформления заказа на странице
   const checkoutForm = document.getElementById('checkout-form');
-  if (!checkoutForm) return;
   
-  // Инициализация формы с сохраненными данными
-  loadSavedCheckoutInfo();
+  if (!checkoutForm) return;
   
   // Обработчик отправки формы
   checkoutForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Проверка валидности формы
-    if (!checkoutForm.checkValidity()) {
+    // Получаем данные формы
+    const formData = {
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      address: document.getElementById('address').value,
+      comment: document.getElementById('comment').value,
+      payment_method: document.querySelector('input[name="payment_method"]:checked').value
+    };
+    
+    // Проверяем обязательные поля
+    if (!formData.name || !formData.phone || !formData.email || !formData.address) {
       showNotification('Пожалуйста, заполните все обязательные поля', 'error');
       return;
     }
     
-    // Получаем данные формы
-    const formData = new FormData(checkoutForm);
-    const orderData = {
-      items: getCartItems(),
+    // Отправляем заказ
+    submitOrder(formData)
+      .then(success => {
+        if (success) {
+          // Если заказ оформлен успешно, перенаправляем на страницу благодарности
+          // Перенаправление происходит внутри функции submitOrder
+        } else {
+          showNotification('Произошла ошибка при оформлении заказа', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка при оформлении заказа:', error);
+        showNotification('Произошла ошибка при оформлении заказа', 'error');
+      });
+  });
+});
+
+// Функция для оформления заказа
+async function submitOrder(formData) {
+  try {
+    // Получаем текущую корзину из localStorage
+    const cart = getFromStorage('cart', []);
+    
+    if (cart.length === 0) {
+      showNotification('Корзина пуста', 'error');
+      return false;
+    }
+    
+    // Создаем объект заказа
+    const order = {
+      id: 'order_' + Date.now(),
+      items: cart,
       customer: {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        address: formData.get('address'),
-        contactMethod: formData.get('contactMethod'),
-        telegramNickname: formData.get('telegramNickname') || ''
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        comment: formData.comment || '',
+        payment_method: formData.payment_method || 'cash'
       },
-      delivery: {
-        method: formData.get('deliveryMethod'),
-        address: formData.get('address')
-      },
-      payment: {
-        method: formData.get('paymentMethod')
-      },
-      total: calculateTotal(),
-      subtotal: calculateSubtotal(),
-      deliveryCost: calculateDeliveryCost()
+      totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
+      status: 'new',
+      created: new Date().toISOString()
     };
     
-    // Сохраняем данные для будущих заказов, если пользователь согласен
-    if (formData.get('saveInfo')) {
-      saveCheckoutInfo(orderData.customer);
+    // Получаем историю заказов пользователя
+    let orders = getFromStorage('orders', []);
+    
+    // Добавляем новый заказ в историю
+    orders.push(order);
+    
+    // Сохраняем историю заказов
+    saveToStorage('orders', orders);
+    
+    // Отправляем заказ оператору в Telegram
+    try {
+      await sendOrderToTelegram(order);
+      console.log('Заказ отправлен в Telegram');
+    } catch (err) {
+      console.error('Ошибка при отправке заказа в Telegram:', err);
+      // Продолжаем обработку заказа, даже если отправка в Telegram не удалась
     }
     
-    // Отправка заказа
-    submitOrder(orderData);
-  });
-  
-  // Инициализация выбора способа доставки
-  initDeliveryMethodSelection();
-  
-  // Инициализация выбора способа оплаты
-  initPaymentMethodSelection();
-  
-  // Обработка изменения способа контакта
-  const contactMethodSelect = document.querySelector('[name="contactMethod"]');
-  const telegramField = document.getElementById('telegram-field');
-  
-  if (contactMethodSelect && telegramField) {
-    contactMethodSelect.addEventListener('change', function() {
-      if (this.value === 'telegram') {
-        telegramField.style.display = 'block';
-        telegramField.querySelector('input').required = true;
-      } else {
-        telegramField.style.display = 'none';
-        telegramField.querySelector('input').required = false;
-      }
-    });
-    
-    // Вызываем событие change для инициализации
-    contactMethodSelect.dispatchEvent(new Event('change'));
-  }
-}
-
-// Функция для инициализации выбора способа доставки
-function initDeliveryMethodSelection() {
-  const deliveryMethods = document.querySelectorAll('[name="deliveryMethod"]');
-  const deliveryCost = document.getElementById('delivery-cost');
-  const orderTotal = document.getElementById('order-total');
-  
-  if (deliveryMethods.length && deliveryCost && orderTotal) {
-    deliveryMethods.forEach(method => {
-      method.addEventListener('change', function() {
-        const cost = calculateDeliveryCost();
-        deliveryCost.textContent = cost > 0 ? `${cost} ₽` : 'Бесплатно';
-        orderTotal.textContent = `${calculateTotal()} ₽`;
-      });
-    });
-  }
-}
-
-// Функция для инициализации выбора способа оплаты
-function initPaymentMethodSelection() {
-  const paymentMethods = document.querySelectorAll('[name="paymentMethod"]');
-  if (paymentMethods.length) {
-    paymentMethods.forEach(method => {
-      method.addEventListener('change', function() {
-        // Логика в зависимости от выбранного метода оплаты
-      });
-    });
-  }
-}
-
-// Функция для загрузки сохраненной информации о заказе
-function loadSavedCheckoutInfo() {
-  try {
-    const savedInfo = localStorage.getItem('savedCheckoutInfo');
-    if (!savedInfo) return;
-    
-    const info = JSON.parse(savedInfo);
-    const form = document.getElementById('checkout-form');
-    if (!form) return;
-    
-    // Заполняем форму сохраненными данными
-    if (info.name) form.querySelector('[name="name"]').value = info.name;
-    if (info.email) form.querySelector('[name="email"]').value = info.email;
-    if (info.phone) form.querySelector('[name="phone"]').value = info.phone;
-    if (info.address) form.querySelector('[name="address"]').value = info.address;
-    
-    const contactMethodSelect = form.querySelector('[name="contactMethod"]');
-    if (contactMethodSelect && info.contactMethod) {
-      contactMethodSelect.value = info.contactMethod;
-      contactMethodSelect.dispatchEvent(new Event('change'));
-    }
-    
-    if (info.telegramNickname) {
-      const telegramInput = form.querySelector('[name="telegramNickname"]');
-      if (telegramInput) telegramInput.value = info.telegramNickname;
-    }
-  } catch (e) {
-    console.error('Ошибка загрузки сохраненных данных о заказе:', e);
-  }
-}
-
-// Функция для сохранения данных о заказе
-function saveCheckoutInfo(customerData) {
-  try {
-    localStorage.setItem('savedCheckoutInfo', JSON.stringify(customerData));
-  } catch (e) {
-    console.error('Ошибка сохранения данных о заказе:', e);
-  }
-}
-
-// Функция для отправки заказа
-function submitOrder(orderData) {
-  // Показываем индикатор загрузки
-  const submitButton = document.querySelector('#checkout-form button[type="submit"]');
-  const originalText = submitButton.textContent;
-  submitButton.disabled = true;
-  submitButton.textContent = 'Обработка...';
-  
-  // Формирование тела запроса
-  const requestData = {
-    user_id: null, // Для гостевого оформления
-    items: orderData.items.map(item => ({
-      product: {
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        discountPrice: item.discountPrice || null,
-        articleNumber: item.articleNumber || ''
-      },
-      quantity: item.quantity,
-      color: item.color || null,
-      size: item.size || null
-    })),
-    total: orderData.total,
-    delivery_method: orderData.delivery.method,
-    customer_name: orderData.customer.name,
-    customer_email: orderData.customer.email,
-    customer_phone: orderData.customer.phone,
-    delivery_address: orderData.delivery.address
-  };
-  
-  // Отправка запроса на создание заказа
-  fetch('https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/orders', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...CONFIG.apiHeaders
-    },
-    body: JSON.stringify(requestData)
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Ошибка при оформлении заказа');
-    }
-    return response.json();
-  })
-  .then(data => {
     // Очищаем корзину
     clearCart();
     
-    // Показываем сообщение об успехе
-    showNotification('Заказ успешно оформлен! Спасибо за покупку.', 'success');
+    // Перенаправляем пользователя на страницу благодарности
+    window.location.href = 'thank-you.html?order_id=' + order.id;
     
-    // Перенаправляем на страницу с подтверждением заказа
-    setTimeout(() => {
-      window.location.href = '/order-success.html?order_id=' + data.id;
-    }, 2000);
-  })
-  .catch(error => {
+    return true;
+  } catch (error) {
     console.error('Ошибка при оформлении заказа:', error);
-    showNotification('Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте еще раз.', 'error');
-  })
-  .finally(() => {
-    // Восстанавливаем кнопку
-    submitButton.disabled = false;
-    submitButton.textContent = originalText;
-  });
-}
-
-// Функция для расчета стоимости доставки
-function calculateDeliveryCost() {
-  const deliveryMethodEl = document.querySelector('[name="deliveryMethod"]:checked');
-  if (!deliveryMethodEl) return 0;
-  
-  const deliveryMethod = deliveryMethodEl.value;
-  const subtotal = calculateSubtotal();
-  
-  // Примеры правил доставки
-  switch (deliveryMethod) {
-    case 'pickup':
-      return 0;
-    case 'courier':
-      return subtotal > 5000 ? 0 : 300;
-    case 'post':
-      return subtotal > 3000 ? 0 : 250;
-    default:
-      return 0;
+    showNotification('Произошла ошибка при оформлении заказа', 'error');
+    return false;
   }
 }
 
-// Функция для расчета промежуточной суммы (без доставки)
-function calculateSubtotal() {
-  const cartItems = getCartItems();
-  return cartItems.reduce((sum, item) => {
-    const price = item.discountPrice || item.price;
-    return sum + (price * item.quantity);
-  }, 0);
-}
+// Функция для отправки заказа в Telegram
+async function sendOrderToTelegram(order) {
+  try {
+    // Формируем текст сообщения
+    const message = `
+📦 Новый заказ #${order.id}
 
-// Функция для расчета итоговой суммы (с доставкой)
-function calculateTotal() {
-  return calculateSubtotal() + calculateDeliveryCost();
-}
+👤 Клиент:
+- ФИО: ${order.customer.name}
+- Телефон: ${order.customer.phone}
+- Email: ${order.customer.email}
+- Адрес: ${order.customer.address}
+- Способ оплаты: ${order.customer.payment_method === 'cash' ? 'Наличными при получении' : 'Картой при получении'}
+${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-  initCheckoutForm();
-  updateCartSummary(); // Обновляем сводку по корзине
-});
+🛒 Товары:
+${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPrice(item.price * item.quantity)}`).join('\n')}
 
-// Функция для обновления сводки по корзине
-function updateCartSummary() {
-  const subtotalEl = document.getElementById('order-subtotal');
-  const deliveryCostEl = document.getElementById('delivery-cost');
-  const totalEl = document.getElementById('order-total');
-  
-  if (subtotalEl && totalEl) {
-    const subtotal = calculateSubtotal();
-    const deliveryCost = calculateDeliveryCost();
-    const total = subtotal + deliveryCost;
+💰 Итого: ${formatPrice(order.totalPrice)}
+    `;
     
-    subtotalEl.textContent = `${subtotal} ₽`;
-    if (deliveryCostEl) {
-      deliveryCostEl.textContent = deliveryCost > 0 ? `${deliveryCost} ₽` : 'Бесплатно';
+    // Отправляем сообщение через Telegram API
+    const TELEGRAM_TOKEN = CONFIG.telegramBotToken;
+    const CHAT_ID = CONFIG.telegramChatId;
+    
+    if (!TELEGRAM_TOKEN || !CHAT_ID || TELEGRAM_TOKEN === 'your_telegram_bot_token' || CHAT_ID === 'your_telegram_chat_id') {
+      console.error('Не настроены параметры для отправки в Telegram');
+      return false;
     }
-    totalEl.textContent = `${total} ₽`;
+    
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: message,
+        parse_mode: 'HTML'
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка при отправке заказа в Telegram:', error);
+    throw error;
   }
 }
