@@ -1,4 +1,3 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/js/categories.js b/js/categories.js
 index 66ccba3..e4c6d9d 100644
 --- a/js/categories.js
@@ -107,6 +106,3 @@ index 66ccba3..e4c6d9d 100644
      }
    }
  }
- 
-EOF
-)
