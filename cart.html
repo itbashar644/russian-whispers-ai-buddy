@@ -117,6 +117,40 @@
                     </div>
                   </div>
                   
+                  <div class="form-section">
+                    <h3>Предпочтительный способ связи</h3>
+                    <div class="contact-methods">
+                      <label class="contact-method">
+                        <input type="radio" name="contact_method" value="phone" checked>
+                        <div class="contact-method-icon phone-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <span class="contact-method-name">По телефону</span>
+                      </label>
+                      <label class="contact-method">
+                        <input type="radio" name="contact_method" value="telegram">
+                        <div class="contact-method-icon">
+                          <img src="lovable-uploads/eeca568c-aa0a-4169-8a72-46a1d9746536.png" alt="Telegram" width="24" height="24">
+                        </div>
+                        <span class="contact-method-name">Telegram</span>
+                      </label>
+                      <label class="contact-method">
+                        <input type="radio" name="contact_method" value="whatsapp">
+                        <div class="contact-method-icon">
+                          <img src="lovable-uploads/6fc205ab-6c5e-4d07-97bf-08052b285a4f.png" alt="WhatsApp" width="24" height="24">
+                        </div>
+                        <span class="contact-method-name">WhatsApp</span>
+                      </label>
+                    </div>
+                    
+                    <div id="telegram-username-container" class="telegram-username-container" style="display: none;">
+                      <div class="form-group">
+                        <label for="telegram_username">Ваш Telegram username <span class="required">*</span></label>
+                        <input type="text" id="telegram_username" name="telegram_username" placeholder="@username">
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div class="form-section checkout-agreement">
                     <label class="checkbox-label">
                       <input type="checkbox" required name="agreement">
@@ -184,5 +218,24 @@
     <script src="js/cart.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/main.js"></script>
+    <script>
+      // Скрипт для отображения поля telegram username при выборе Telegram как способа связи
+      document.addEventListener('DOMContentLoaded', function() {
+        const contactMethodRadios = document.querySelectorAll('input[name="contact_method"]');
+        const telegramUsernameContainer = document.getElementById('telegram-username-container');
+        
+        contactMethodRadios.forEach(radio => {
+          radio.addEventListener('change', function() {
+            if (this.value === 'telegram') {
+              telegramUsernameContainer.style.display = 'block';
+              document.getElementById('telegram_username').setAttribute('required', '');
+            } else {
+              telegramUsernameContainer.style.display = 'none';
+              document.getElementById('telegram_username').removeAttribute('required');
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>

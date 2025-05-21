@@ -92,6 +92,40 @@
                   <label for="comment">Комментарий к заказу</label>
                   <textarea id="comment" name="comment"></textarea>
                 </div>
+                
+                <div class="form-group">
+                  <label>Предпочтительный способ связи *</label>
+                  <div class="contact-methods">
+                    <label class="contact-method">
+                      <input type="radio" name="contact_method" value="phone" checked>
+                      <div class="contact-method-icon phone-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                      </div>
+                      <span class="contact-method-name">По телефону</span>
+                    </label>
+                    <label class="contact-method">
+                      <input type="radio" name="contact_method" value="telegram">
+                      <div class="contact-method-icon">
+                        <img src="lovable-uploads/eeca568c-aa0a-4169-8a72-46a1d9746536.png" alt="Telegram" width="24" height="24">
+                      </div>
+                      <span class="contact-method-name">Telegram</span>
+                    </label>
+                    <label class="contact-method">
+                      <input type="radio" name="contact_method" value="whatsapp">
+                      <div class="contact-method-icon">
+                        <img src="lovable-uploads/6fc205ab-6c5e-4d07-97bf-08052b285a4f.png" alt="WhatsApp" width="24" height="24">
+                      </div>
+                      <span class="contact-method-name">WhatsApp</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div id="telegram-username-container" class="telegram-username-container" style="display: none;">
+                  <div class="form-group">
+                    <label for="telegram_username">Ваш Telegram username *</label>
+                    <input type="text" id="telegram_username" name="telegram_username" placeholder="@username">
+                  </div>
+                </div>
               </div>
               
               <div>
@@ -150,14 +184,6 @@
           <div class="footer-column">
             <h3 class="footer-title">The X Shop</h3>
             <p>Качественные товары из Китая по доступным ценам</p>
-            <div class="social-icons">
-              <a href="#" class="social-icon" title="Telegram">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 2.73a2.5 2.5 0 0 0-3.53 0l-13 13a.75.75 0 0 0-.2.34l-1 5a.75.75 0 0 0 .9.9l5-1a.75.75 0 0 0 .34-.2l13-13a2.5 2.5 0 0 0 0-3.54Z"/><path d="m16 6 2 2"/></svg>
-              </a>
-              <a href="#" class="social-icon" title="WhatsApp">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4"/><path d="M17 8l-5 5-5-5"/><path d="M7 3h10"/></svg>
-              </a>
-            </div>
           </div>
           
           <div class="footer-column">
@@ -176,17 +202,7 @@
               <li><a href="about.html">О нас</a></li>
               <li><a href="contact.html">Контакты</a></li>
               <li><a href="delivery.html">Доставка и оплата</a></li>
-              <li><a href="returns.html">Возврат и обмен</a></li>
             </ul>
-          </div>
-          
-          <div class="footer-column">
-            <h4 class="footer-title">Контакты</h4>
-            <address class="footer-contact">
-              <p>Телефон: <a href="tel:+79001234567">+7 (900) 123-45-67</a></p>
-              <p>Email: <a href="mailto:info@thexshop.ru">info@thexshop.ru</a></p>
-              <p>Адрес: г. Москва, ул. Примерная, д. 123</p>
-            </address>
           </div>
         </div>
         
@@ -210,6 +226,22 @@
           window.location.href = 'cart.html';
           return;
         }
+        
+        // Обработка предпочтительного способа связи
+        const contactMethodRadios = document.querySelectorAll('input[name="contact_method"]');
+        const telegramUsernameContainer = document.getElementById('telegram-username-container');
+        
+        contactMethodRadios.forEach(radio => {
+          radio.addEventListener('change', function() {
+            if (this.value === 'telegram') {
+              telegramUsernameContainer.style.display = 'block';
+              document.getElementById('telegram_username').setAttribute('required', '');
+            } else {
+              telegramUsernameContainer.style.display = 'none';
+              document.getElementById('telegram_username').removeAttribute('required');
+            }
+          });
+        });
         
         // Заполняем список товаров
         const checkoutItemsContainer = document.getElementById('checkout-items');
@@ -249,8 +281,14 @@
             email: document.getElementById('email').value,
             address: document.getElementById('address').value,
             comment: document.getElementById('comment').value,
-            payment_method: document.querySelector('input[name="payment_method"]:checked').value
+            payment_method: document.querySelector('input[name="payment_method"]:checked').value,
+            contact_method: document.querySelector('input[name="contact_method"]:checked').value
           };
+          
+          // Добавляем Telegram username если выбран Telegram
+          if (formData.contact_method === 'telegram') {
+            formData.telegram_username = document.getElementById('telegram_username').value;
+          }
           
           if (typeof submitOrder === 'function') {
             submitOrder(formData);

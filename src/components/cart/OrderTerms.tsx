@@ -1,15 +1,15 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router-dom";
+import { Label } from "@/components/ui/label";
 
 interface OrderTermsProps {
   termsAgreed: boolean;
-  setTermsAgreed: (value: boolean) => void;
+  setTermsAgreed: React.Dispatch<React.SetStateAction<boolean>>;
   privacyAgreed: boolean;
-  setPrivacyAgreed: (value: boolean) => void;
+  setPrivacyAgreed: React.Dispatch<React.SetStateAction<boolean>>;
   saveInfo: boolean;
-  setSaveInfo: (value: boolean) => void;
+  setSaveInfo: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const OrderTerms = ({
@@ -21,51 +21,49 @@ const OrderTerms = ({
   setSaveInfo
 }: OrderTermsProps) => {
   return (
-    <>
+    <div className="space-y-3">
       <div className="flex items-start space-x-2">
         <Checkbox 
-          id="termsAgreement" 
-          checked={termsAgreed}
-          onCheckedChange={(checked) => setTermsAgreed(checked === true)} 
-          className="mt-1"
+          id="terms" 
+          checked={termsAgreed} 
+          onCheckedChange={() => setTermsAgreed(prev => !prev)}
         />
-        <label
-          htmlFor="termsAgreement"
-          className="text-sm font-medium leading-tight cursor-pointer"
+        <Label 
+          htmlFor="terms" 
+          className="text-sm font-normal cursor-pointer leading-tight"
         >
-          Я прочитал(а) и согласен(на) с <Link to="/terms" className="text-primary underline" target="_blank">Условиями использования</Link>
-        </label>
+          Я согласен с <a href="/terms" className="text-primary underline">Условиями использования</a>
+        </Label>
       </div>
       
       <div className="flex items-start space-x-2">
         <Checkbox 
-          id="privacyAgreement" 
-          checked={privacyAgreed}
-          onCheckedChange={(checked) => setPrivacyAgreed(checked === true)} 
-          className="mt-1"
+          id="privacy" 
+          checked={privacyAgreed} 
+          onCheckedChange={() => setPrivacyAgreed(prev => !prev)}
         />
-        <label
-          htmlFor="privacyAgreement"
-          className="text-sm font-medium leading-tight cursor-pointer"
+        <Label 
+          htmlFor="privacy" 
+          className="text-sm font-normal cursor-pointer leading-tight"
         >
-          Я прочитал(а) и согласен(на) с <Link to="/privacy" className="text-primary underline" target="_blank">Политикой конфиденциальности</Link>
-        </label>
+          Я согласен с <a href="/privacy" className="text-primary underline">Политикой конфиденциальности</a>
+        </Label>
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex items-start space-x-2">
         <Checkbox 
-          id="saveInfo" 
-          checked={saveInfo}
-          onCheckedChange={(checked) => setSaveInfo(checked === true)} 
+          id="save-info" 
+          checked={saveInfo} 
+          onCheckedChange={() => setSaveInfo(prev => !prev)}
         />
-        <label
-          htmlFor="saveInfo"
-          className="text-sm font-medium leading-none cursor-pointer"
+        <Label 
+          htmlFor="save-info" 
+          className="text-sm font-normal cursor-pointer leading-tight"
         >
-          Сохранить информацию для будущих заказов
-        </label>
+          Сохранить информацию для следующих заказов
+        </Label>
       </div>
-    </>
+    </div>
   );
 };
 
