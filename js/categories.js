@@ -4,14 +4,7 @@
  */
 
 // Функция для загрузки категорий с Supabase
- Если запрос не удался, используем набор категорий по умолчанию
 async function loadCategories() {
-  // Запасные категории на случай ошибки загрузки
-  const fallbackCategories = [
-    { name: 'Популярное', image_url: '/placeholder.svg' },
-    { name: 'Новинки', image_url: '/placeholder.svg' },
-    { name: 'Скидки', image_url: '/placeholder.svg' }
-  ];
   const sectionContainer = document.querySelector('.categories-section');
   const listContainer = document.getElementById('categories-list');
 
@@ -74,39 +67,6 @@ async function loadCategories() {
     }
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
-      // При ошибке используем резервный список категорий
-    renderCategories(fallbackCategories);
-  }
-}
-
-// Вспомогательная функция для отрисовки секции категорий и списка
-function renderCategories(categories) {
-  const sectionContainer = document.querySelector('.categories-section');
-  const listContainer = document.getElementById('categories-list');
-
-  if (sectionContainer) {
-    const sectionHTML = `
-      <h2 class="section-title">Категории</h2>
-      <div class="categories-grid">
-        ${categories
-          .map(c => `
-            <a href="catalog.html?category=${c.name}" class="category-card">
-              <div class="category-image">
-                <img src="${c.image_url || '/placeholder.svg'}" alt="${c.name}">
-              </div>
-              <h3>${c.name}</h3>
-            </a>
-          `)
-          .join('')}
-      </div>`;
-    sectionContainer.innerHTML = sectionHTML;
-  }
-
-  if (listContainer) {
-    const listHTML = categories
-      .map(c => `<a href="catalog.html?category=${c.name}" class="category-link">${c.name}</a>`)
-      .join('');
-    listContainer.innerHTML = listHTML;
     if (sectionContainer) {
       sectionContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
     }
