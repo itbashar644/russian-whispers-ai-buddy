@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     loadCatalogProducts(categoryParam);
+        // Загружаем список категорий для сайдбара каталога
+    loadCategories();
   }
   
   // Если мы на странице товара, загружаем данные о товаре
