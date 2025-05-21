@@ -430,9 +430,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .marketplace-icon {
-  width: 24px;
-  height: 24px;
-  padding: 3px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -451,15 +451,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .ozon-icon {
-  background-color: #005bff;
+  background-color: transparent;
 }
 
 .wildberries-icon {
-  background-color: #cb11ab;
+  background-color: transparent;
 }
 
 .avito-icon {
-  background-color: #97cf26;
+  background-color: transparent;
 }
 
 /* Секция "Преимущества" */
