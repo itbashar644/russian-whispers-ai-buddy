@@ -77,7 +77,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
       handleColorSelect={handleColorSelect}
       handleAddToCart={handleAddToCart}
       handleToggleWishlist={handleToggleWishlist}
-      isInWishlist={isInWishlist(product.id)}
+      isInWishlist={isInWishlist}
     />
   );
 };
