@@ -19,13 +19,15 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
     <>
       {/* Main image display */}
       <div className="border rounded-lg overflow-hidden">
-       <img
-          src={imageError ? "/placeholder.svg" : currentImage}
-          alt="Product"
-            className="object-contain w-full h-auto cursor-pointer"
-          onError={() => setImageError(true)}
-          onClick={() => setLightboxOpen(true)}
-        />
+        <div className="relative" style={{ paddingTop: '133.33%' }}>  {/* 3:4 aspect ratio */}
+          <img
+            src={imageError ? "/placeholder.svg" : currentImage}
+            alt="Product"
+            className="absolute top-0 left-0 w-full h-full object-cover cursor-pointer"
+            onError={() => setImageError(true)}
+            onClick={() => setLightboxOpen(true)}
+          />
+        </div>
       </div>
       
       {/* Thumbnails gallery */}
@@ -34,19 +36,22 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
           {allImages.map((img, index) => (
             <button 
               key={index}
-              className={`border rounded overflow-hidden aspect-[3/4] ${
+              className={`border rounded overflow-hidden ${
                 index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
               }`}
+              style={{ aspectRatio: '3/4' }}
               onClick={() => setCurrentImageIndex(index)}
             >
-              <img 
-                src={img} 
-                alt={`Product thumbnail ${index + 1}`}
-                className="w-full h-full object-cover" 
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg";
-                }}
-              />
+              <div className="relative h-full">
+                <img 
+                  src={img} 
+                  alt={`Product thumbnail ${index + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover" 
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
             </button>
           ))}
         </div>

@@ -77,3 +77,91 @@
   padding: 15px 0;
   font-size: 0.9rem;
 }
+
+/* Product and category image aspect ratio (3:4) */
+.category-image img,
+.product-image img,
+.featured-products .product-card img,
+.categories-grid .category-card img,
+.product-grid .product-card img {
+  aspect-ratio: 3/4;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Hero section image aspect ratio */
+.hero-image img {
+  aspect-ratio: 3/4;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Fix category cards to maintain aspect ratio */
+.categories-grid .category-card .category-image {
+  position: relative;
+  padding-top: 133.33%; /* 4:3 aspect ratio (4/3 = 1.33) */
+  overflow: hidden;
+}
+
+.categories-grid .category-card .category-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Ensure consistent product card heights */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.product-card .product-image {
+  position: relative;
+  padding-top: 133.33%; /* 3:4 aspect ratio */
+  overflow: hidden;
+}
+
+.product-card .product-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-card .product-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Maintain aspect ratio in sliders and other contexts */
+.product-slider .product-image,
+.related-products .product-image {
+  position: relative;
+  padding-top: 133.33%; /* 3:4 aspect ratio */
+  overflow: hidden;
+}
+
+.product-slider .product-image img,
+.related-products .product-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
