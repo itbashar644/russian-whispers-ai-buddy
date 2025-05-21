@@ -860,13 +860,13 @@ img {
 .main-footer {
   background-color: #343a40;
   color: #fff;
-  padding: 60px 0 30px;
+  padding: 40px 0 20px;
 }
 
 .footer-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 20px;
 }
 
 .footer-column {
@@ -876,7 +876,7 @@ img {
 
 .footer-title {
   font-size: 1.2rem;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #fff;
 }
 
@@ -928,8 +928,8 @@ img {
 }
 
 .footer-bottom {
-  margin-top: 50px;
-  padding-top: 20px;
+  margin-top: 30px;
+  padding-top: 15px;
   border-top: 1px solid rgba(255,255,255,0.1);
   text-align: center;
   color: #adb5bd;
