@@ -1,15 +1,13 @@
 
 import React from "react";
-import { Phone } from "lucide-react";
+import { Phone, MessageSquare } from "lucide-react";
 import TelegramIcon from "@/components/icons/TelegramIcon";
 import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
+import { Label } from "@/components/ui/label";
 
 interface ContactMethodSelectProps {
   value: string;
@@ -18,34 +16,33 @@ interface ContactMethodSelectProps {
 
 const ContactMethodSelect = ({ value, onValueChange }: ContactMethodSelectProps) => {
   return (
-    <Select 
-      value={value} 
-      onValueChange={onValueChange}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Выберите способ связи" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="phone">
-          <div className="flex items-center">
-            <Phone className="h-4 w-4 mr-2" />
-            По телефону
-          </div>
-        </SelectItem>
-        <SelectItem value="telegram">
-          <div className="flex items-center">
-            <TelegramIcon size={16} className="mr-2" />
-            Telegram
-          </div>
-        </SelectItem>
-        <SelectItem value="whatsapp">
-          <div className="flex items-center">
-            <WhatsAppIcon size={16} className="mr-2" />
-            WhatsApp
-          </div>
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="space-y-2">
+      <Label className="block text-sm font-medium">Предпочтительный способ связи</Label>
+      <ToggleGroup 
+        type="single" 
+        value={value} 
+        onValueChange={(value) => {
+          if (value) onValueChange(value);
+        }}
+        className="justify-start"
+        variant="outline"
+      >
+        <ToggleGroupItem value="phone" aria-label="По телефону" className="flex items-center gap-2 px-4 py-2">
+          <Phone className="h-4 w-4" />
+          <span>По телефону</span>
+        </ToggleGroupItem>
+        
+        <ToggleGroupItem value="telegram" aria-label="Telegram" className="flex items-center gap-2 px-4 py-2">
+          <TelegramIcon size={16} className="text-[#0088cc]" />
+          <span>Telegram</span>
+        </ToggleGroupItem>
+        
+        <ToggleGroupItem value="whatsapp" aria-label="WhatsApp" className="flex items-center gap-2 px-4 py-2">
+          <WhatsAppIcon size={16} className="text-[#25D366]" />
+          <span>WhatsApp</span>
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
   );
 };
 

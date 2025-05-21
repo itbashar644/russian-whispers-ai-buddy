@@ -74,13 +74,10 @@ const OrderFormFields = ({
         />
       </div>
 
-      <div>
-        <Label htmlFor="contactMethod">Предпочтительный способ связи</Label>
-        <ContactMethodSelect 
-          value={orderForm.contactMethod} 
-          onValueChange={handleContactMethodChange}
-        />
-      </div>
+      <ContactMethodSelect 
+        value={orderForm.contactMethod} 
+        onValueChange={handleContactMethodChange}
+      />
       
       {orderForm.contactMethod === "telegram" && (
         <TelegramNicknameInput

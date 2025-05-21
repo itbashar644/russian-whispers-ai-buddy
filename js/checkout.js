@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
       email: document.getElementById('email').value,
       address: document.getElementById('address').value,
       comment: document.getElementById('comment').value,
-      payment_method: document.querySelector('input[name="payment_method"]:checked').value,
       contact_method: document.querySelector('input[name="contact_method"]:checked').value
     };
     
@@ -79,7 +78,6 @@ async function submitOrder(formData) {
         email: formData.email,
         address: formData.address,
         comment: formData.comment || '',
-        payment_method: formData.payment_method || 'cash',
         contact_method: formData.contact_method || 'phone'
       },
       totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
@@ -137,7 +135,6 @@ async function sendOrderToTelegram(order) {
 - Email: ${order.customer.email}
 - Адрес: ${order.customer.address}
 - Способ связи: ${getContactMethodText(order.customer.contact_method)}${order.customer.telegram_username ? `\n- Telegram: ${order.customer.telegram_username}` : ''}
-- Способ оплаты: ${order.customer.payment_method === 'cash' ? 'Наличными при получении' : 'Картой при получении'}
 ${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
 🛒 Товары:

@@ -155,22 +155,6 @@
                   
                   <button type="submit" class="btn primary-btn place-order-btn">Оформить заказ</button>
                 </div>
-                
-                <!-- Payment Methods -->
-                <div class="payment-methods">
-                  <h3>Способы оплаты</h3>
-                  <div class="payment-options">
-                    <label class="payment-option">
-                      <input type="radio" name="payment_method" value="cash" checked>
-                      <span>Наличными при получении</span>
-                    </label>
-                    
-                    <label class="payment-option">
-                      <input type="radio" name="payment_method" value="card">
-                      <span>Картой при получении</span>
-                    </label>
-                  </div>
-                </div>
               </div>
             </form>
           </div>
@@ -270,32 +254,6 @@
         // Обновляем итоговую стоимость
         document.getElementById('subtotal').textContent = formatPrice(subtotal);
         document.getElementById('grand-total').textContent = formatPrice(subtotal);
-        
-        // Обработчик отправки формы
-        document.getElementById('checkout-form').addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const formData = {
-            name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            address: document.getElementById('address').value,
-            comment: document.getElementById('comment').value,
-            payment_method: document.querySelector('input[name="payment_method"]:checked').value,
-            contact_method: document.querySelector('input[name="contact_method"]:checked').value
-          };
-          
-          // Добавляем Telegram username если выбран Telegram
-          if (formData.contact_method === 'telegram') {
-            formData.telegram_username = document.getElementById('telegram_username').value;
-          }
-          
-          if (typeof submitOrder === 'function') {
-            submitOrder(formData);
-          } else {
-            showNotification('Функция оформления заказа находится в разработке', 'error');
-          }
-        });
       });
     </script>
   </body>
