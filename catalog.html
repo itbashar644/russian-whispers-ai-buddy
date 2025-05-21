@@ -11,6 +11,66 @@
     
     <!-- CSS стили -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+      /* Стили для аспектного соотношения изображений */
+      .product-image img, .category-image img {
+        aspect-ratio: 3/4;
+        object-fit: cover;
+        width: 100%;
+      }
+      
+      /* Стили для каталога */
+      .catalog-container {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 30px;
+      }
+      
+      .catalog-sidebar {
+        padding-right: 0;
+        border-right: 1px solid #eee;
+      }
+      
+      .categories-list {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .category-link {
+        display: block;
+        width: 100%;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        color: #333;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+      
+      .category-link:hover {
+        color: #007bff;
+      }
+      
+      /* Стили для маркетплейсов */
+      .marketplace-links {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      
+      .marketplace-text {
+        font-size: 0.85rem;
+        color: #666;
+      }
+      
+      .marketplace-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+    </style>
   </head>
   <body>
     <header class="header">
@@ -40,7 +100,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
             <span class="cart-counter"></span>
           </a>
-          <a href="/login" class="icon-button" aria-label="Личный кабинет">
+          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </a>
         </div>

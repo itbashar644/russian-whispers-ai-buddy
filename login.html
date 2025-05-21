@@ -1,60 +1,115 @@
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Просмотр товара | The X Shop</title>
-    <meta name="description" content="Подробная информация о товаре" />
-    <meta name="keywords" content="товары из китая, интернет-магазин" />
+    <title>Вход в личный кабинет | The X Shop</title>
+    <meta name="description" content="Вход в личный кабинет The X Shop. Управляйте своими заказами товаров из Китая." />
+    <meta name="keywords" content="личный кабинет, авторизация, вход, товары из китая, интернет-магазин" />
     
     <!-- CSS стили -->
     <link rel="stylesheet" href="styles.css">
     <style>
-      /* Стили для аспектного соотношения изображений */
-      .product-image img {
-        aspect-ratio: 3/4;
-        object-fit: cover;
-        width: 100%;
+      .auth-container {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 40px 30px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
       }
       
-      /* Стили для маркетплейсов */
-      .marketplace-links {
+      .auth-logo {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .auth-logo img {
+        width: 60px;
+        height: auto;
+      }
+      
+      .auth-title {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+      
+      .auth-form .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .auth-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+      
+      .auth-form input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+      
+      .auth-form input:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+      }
+      
+      .auth-form button {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      
+      .auth-form button:hover {
+        background-color: #0069d9;
+      }
+      
+      .auth-links {
+        margin-top: 20px;
+        text-align: center;
+      }
+      
+      .auth-links a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      
+      .auth-links a:hover {
+        text-decoration: underline;
+      }
+      
+      .auth-separator {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin: 15px 0;
-        border-top: 1px solid #eee;
-        border-bottom: 1px solid #eee;
-        padding: 10px 0;
+        margin: 20px 0;
       }
       
-      .marketplace-text {
+      .auth-separator::before,
+      .auth-separator::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: #ddd;
+      }
+      
+      .auth-separator span {
+        padding: 0 10px;
+        color: #777;
         font-size: 0.9rem;
-        color: #666;
-        margin-right: 10px;
-      }
-      
-      .marketplace-icons {
-        display: flex;
-        gap: 12px;
-      }
-      
-      .marketplace-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
-        overflow: hidden;
-        transition: transform 0.2s;
-      }
-      
-      .marketplace-icon:hover {
-        transform: scale(1.1);
-      }
-      
-      .marketplace-link {
-        text-decoration: none;
       }
     </style>
   </head>
@@ -86,7 +141,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
             <span class="cart-counter"></span>
           </a>
-          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
+          <a href="login.html" class="icon-button active" aria-label="Личный кабинет">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </a>
         </div>
@@ -95,28 +150,38 @@
 
     <main>
       <div class="container py-8">
-        <div class="product-details-container">
-          <!-- Содержимое будет загружено с помощью JavaScript -->
-          <div class="loading">Загрузка информации о товаре...</div>
-        </div>
-        
-        <!-- Шаблон для отображения маркетплейсов (будет использован в JS) -->
-        <template id="marketplace-template">
-          <div class="marketplace-links">
-            <span class="marketplace-text">Доступен на:</span>
-            <div class="marketplace-icons">
-              <a href="#" class="marketplace-link ozon-link" target="_blank">
-                <img src="/lovable-uploads/4d08cd77-bc35-424c-b00a-acc6abeb1b11.png" alt="Ozon" class="marketplace-icon">
-              </a>
-              <a href="#" class="marketplace-link wildberries-link" target="_blank">
-                <img src="/lovable-uploads/762f1200-f023-4ca5-b000-0f11686f0904.png" alt="Wildberries" class="marketplace-icon">
-              </a>
-              <a href="#" class="marketplace-link avito-link" target="_blank">
-                <img src="/lovable-uploads/32c1792b-a62c-44f1-ba99-7d179f625064.png" alt="Avito" class="marketplace-icon">
-              </a>
-            </div>
+        <div class="auth-container">
+          <div class="auth-logo">
+            <img src="/lovable-uploads/de373e15-1fec-4c44-b0d2-f330b4b01505.png" alt="The X Shop Logo">
           </div>
-        </template>
+          <h1 class="auth-title">Вход в личный кабинет</h1>
+          
+          <form class="auth-form" id="loginForm">
+            <div class="form-group">
+              <label for="email">Электронная почта</label>
+              <input type="email" id="email" required placeholder="example@mail.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Пароль</label>
+              <input type="password" id="password" required placeholder="********">
+            </div>
+            
+            <button type="submit">Войти</button>
+          </form>
+          
+          <div class="auth-links">
+            <a href="#">Забыли пароль?</a>
+          </div>
+          
+          <div class="auth-separator">
+            <span>или</span>
+          </div>
+          
+          <div class="auth-links">
+            <a href="register.html">Зарегистрироваться</a>
+          </div>
+        </div>
       </div>
     </main>
     
@@ -179,13 +244,28 @@
     <!-- Необходимый скрипт для Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
-    <!-- Модульные скрипты для функциональности страницы -->
+    <!-- Скрипты для функциональности страницы -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/wishlist.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+      // Обработчик отправки формы авторизации
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // В реальном проекте здесь будет отправка данных на сервер
+        console.log('Отправка формы авторизации:', { email, password });
+        
+        // Показываем уведомление
+        showNotification('Успешная авторизация!');
+        
+        // Перенаправляем на главную страницу
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      });
+    </script>
   </body>
 </html>

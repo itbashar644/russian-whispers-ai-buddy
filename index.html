@@ -11,6 +11,113 @@
     
     <!-- CSS стили -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+      /* Добавляем стили для аспектного соотношения изображений */
+      .category-image img, .product-image img {
+        aspect-ratio: 3/4;
+        object-fit: cover;
+      }
+      
+      /* Уменьшаем расстояние между категориями */
+      .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+      }
+      
+      /* Стили для маркетплейсов */
+      .marketplace-links {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      
+      .marketplace-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      /* Стили для hero section */
+      .hero-content {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      
+      .hero-tech-logo {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        width: 100px;
+        height: auto;
+      }
+      
+      /* Стили для каталога */
+      .catalog-sidebar {
+        padding-right: 20px;
+        border-right: 1px solid #eee;
+      }
+      
+      .categories-list {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      /* Улучшенные стили для формы обратной связи */
+      .contact-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      
+      .contact-form .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .contact-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .contact-form input,
+      .contact-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: border-color 0.3s;
+      }
+      
+      .contact-form input:focus,
+      .contact-form textarea:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+      
+      .contact-form button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+      }
+      
+      .contact-form button:hover {
+        background-color: #0069d9;
+      }
+    </style>
   </head>
   <body>
     <header class="header">
@@ -40,7 +147,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
             <span class="cart-counter"></span>
           </a>
-          <a href="/login" class="icon-button" aria-label="Личный кабинет">
+          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </a>
         </div>
@@ -52,6 +159,7 @@
         <div class="container">
           <div class="hero-content">
             <h1>Товары из Китая <br>для вашего дома</h1>
+            <img src="/lovable-uploads/de373e15-1fec-4c44-b0d2-f330b4b01505.png" alt="Современные технологии" class="hero-tech-logo">
             <p class="hero-subtitle">Качественные товары по доступным ценам с доставкой на дом</p>
             <div class="hero-actions">
               <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
