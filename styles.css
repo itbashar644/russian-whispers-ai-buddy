@@ -290,13 +290,9 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  align-items: flex-start;
-  width: 100%;
 }
 
 .category-link {
-  display: block;
-  width: 100%;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--border-color);
 }
@@ -315,7 +311,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
@@ -773,10 +769,6 @@ h1, h2, h3, h4, h5, h6 {
   .categories-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   
   .footer-grid {
     grid-template-columns: 1fr;
@@ -796,10 +788,6 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
   }
 }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
 
 /* Страница корзины */
 .cart-container {
