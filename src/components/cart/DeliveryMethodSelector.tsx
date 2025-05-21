@@ -63,6 +63,9 @@ const DeliveryMethodSelector = ({
                 <p className="text-sm text-muted-foreground">
                   {method.description}
                 </p>
+                <p className="text-sm font-medium mt-1">
+                  {method.estimatedDays}
+                </p>
               </div>
             </div>
           </div>

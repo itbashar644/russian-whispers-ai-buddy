@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
       phone: document.getElementById('phone').value,
       email: document.getElementById('email').value,
       address: document.getElementById('address').value,
-      comment: document.getElementById('comment').value,
-      contact_method: document.querySelector('input[name="contact_method"]:checked').value
+      comment: document.getElementById('comment')?.value,
+      contact_method: document.querySelector('input[name="contact_method"]:checked').value,
+      delivery_method: document.querySelector('input[name="delivery_method"]:checked')?.value || 'russianpost'
     };
     
     // Если выбран Telegram, добавляем username
@@ -78,7 +79,8 @@ async function submitOrder(formData) {
         email: formData.email,
         address: formData.address,
         comment: formData.comment || '',
-        contact_method: formData.contact_method || 'phone'
+        contact_method: formData.contact_method || 'phone',
+        delivery_method: formData.delivery_method || 'russianpost'
       },
       totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
       status: 'new',
@@ -125,6 +127,16 @@ async function submitOrder(formData) {
 // Функция для отправки заказа в Telegram
 async function sendOrderToTelegram(order) {
   try {
+    // Получаем наименование метода доставки
+    const getDeliveryMethodText = (method) => {
+      switch(method) {
+        case 'russianpost': return 'Почта РФ';
+        case 'cdek': return 'СДЭК';
+        case 'wb': return 'В ПВЗ WB';
+        default: return method;
+      }
+    };
+    
     // Формируем текст сообщения
     const message = `
 📦 Новый заказ #${order.id}
@@ -135,6 +147,7 @@ async function sendOrderToTelegram(order) {
 - Email: ${order.customer.email}
 - Адрес: ${order.customer.address}
 - Способ связи: ${getContactMethodText(order.customer.contact_method)}${order.customer.telegram_username ? `\n- Telegram: ${order.customer.telegram_username}` : ''}
+- Способ доставки: ${getDeliveryMethodText(order.customer.delivery_method)}
 ${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
 🛒 Товары:

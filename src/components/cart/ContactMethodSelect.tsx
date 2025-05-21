@@ -24,20 +24,20 @@ const ContactMethodSelect = ({ value, onValueChange }: ContactMethodSelectProps)
         onValueChange={(value) => {
           if (value) onValueChange(value);
         }}
-        className="justify-start"
+        className="flex flex-wrap gap-2" // Changed from justify-start to flex-wrap with gap
         variant="outline"
       >
-        <ToggleGroupItem value="phone" aria-label="По телефону" className="flex items-center gap-2 px-4 py-2">
+        <ToggleGroupItem value="phone" aria-label="По телефону" className="flex items-center gap-2 px-4 py-2 w-auto">
           <Phone className="h-4 w-4" />
           <span>По телефону</span>
         </ToggleGroupItem>
         
-        <ToggleGroupItem value="telegram" aria-label="Telegram" className="flex items-center gap-2 px-4 py-2">
+        <ToggleGroupItem value="telegram" aria-label="Telegram" className="flex items-center gap-2 px-4 py-2 w-auto">
           <TelegramIcon size={16} className="text-[#0088cc]" />
           <span>Telegram</span>
         </ToggleGroupItem>
         
-        <ToggleGroupItem value="whatsapp" aria-label="WhatsApp" className="flex items-center gap-2 px-4 py-2">
+        <ToggleGroupItem value="whatsapp" aria-label="WhatsApp" className="flex items-center gap-2 px-4 py-2 w-auto">
           <WhatsAppIcon size={16} className="text-[#25D366]" />
           <span>WhatsApp</span>
         </ToggleGroupItem>

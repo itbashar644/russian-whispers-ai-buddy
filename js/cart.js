@@ -1,4 +1,3 @@
-
 /**
  * Функционал для работы с корзиной
  */
@@ -186,8 +185,11 @@ function renderCart() {
     checkoutFormContainer.style.display = 'block';
   }
   
-  // Рассчитываем общую стоимость
-  const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  // Рассчитываем общую стоимость - убедимся, что у нас числа
+  const totalPrice = cart.reduce((total, item) => {
+    const itemPrice = typeof item.price === 'number' ? item.price : 0;
+    return total + itemPrice * item.quantity;
+  }, 0);
   
   // Формируем HTML для корзины
   const cartHTML = `

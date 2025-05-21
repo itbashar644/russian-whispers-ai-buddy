@@ -17,11 +17,15 @@ export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryM
       }
     }
     
-    return total + (price * item.quantity);
+    // Ensure price is a number
+    const numericPrice = typeof price === 'number' ? price : 0;
+    
+    return total + (numericPrice * item.quantity);
   }, 0);
 
   // Calculate total with delivery
-  const total = subtotal + (deliveryMethod?.price || 0);
+  const deliveryPrice = deliveryMethod?.price || 0;
+  const total = subtotal + deliveryPrice;
 
   return {
     totalItems,
