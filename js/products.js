@@ -38,9 +38,15 @@ async function loadFeaturedProducts() {
     });
     
     // Инициализируем кнопки после добавления карточек
-    initAddToCartButtons();
-    initWishlistButtons();
-    initWishlist();
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof initWishlist === 'function') {
+      initWishlist();
+    }
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
     const productsContainer = document.querySelector('.featured-products');
@@ -53,7 +59,7 @@ async function loadFeaturedProducts() {
 // Функция для загрузки товаров для каталога
 async function loadCatalogProducts(category = null) {
   try {
-    const productsContainer = document.querySelector('.catalog-products');
+    const productsContainer = document.getElementById('products-container');
     if (!productsContainer) return;
     
     // Показываем состояние загрузки
@@ -67,6 +73,46 @@ async function loadCatalogProducts(category = null) {
       url += `&category=eq.${encodeURIComponent(category)}`;
     }
     
+    // Получаем параметры фильтрации из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const minPrice = urlParams.get('min_price');
+    const maxPrice = urlParams.get('max_price');
+    const inStock = urlParams.get('in_stock');
+    const searchQuery = urlParams.get('search');
+    
+    // Добавляем фильтры в запрос, если они указаны
+    if (minPrice) {
+      url += `&price=gte.${minPrice}`;
+    }
+    if (maxPrice) {
+      url += `&price=lte.${maxPrice}`;
+    }
+    if (inStock === 'true') {
+      url += '&in_stock=eq.true';
+    }
+    
+    // Добавляем параметр сортировки, если указан
+    const sortParam = urlParams.get('sort');
+    if (sortParam) {
+      switch (sortParam) {
+        case 'price-asc':
+          url += '&order=price.asc';
+          break;
+        case 'price-desc':
+          url += '&order=price.desc';
+          break;
+        case 'new':
+          url += '&order=created_at.desc';
+          break;
+        default:
+          // По умолчанию сортируем по популярности (рейтингу)
+          url += '&order=rating.desc';
+      }
+    } else {
+      // Если сортировка не указана, сортируем по умолчанию по популярности
+      url += '&order=rating.desc';
+    }
+    
     // Загружаем товары с Supabase
     const response = await fetch(url, {
       headers: CONFIG.apiHeaders
@@ -76,7 +122,16 @@ async function loadCatalogProducts(category = null) {
       throw new Error('Не удалось загрузить товары');
     }
     
-    const products = await response.json();
+    let products = await response.json();
+    
+    // Применяем поиск на стороне клиента, если указан поисковый запрос
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      products = products.filter(product => 
+        product.title.toLowerCase().includes(searchLower) || 
+        (product.description && product.description.toLowerCase().includes(searchLower))
+      );
+    }
     
     if (products.length === 0) {
       productsContainer.innerHTML = '<div class="empty-message">Товары не найдены</div>';
@@ -86,35 +141,27 @@ async function loadCatalogProducts(category = null) {
     // Очищаем контейнер
     productsContainer.innerHTML = '';
     
-    // Добавляем заголовок с категорией, если указана
-    if (category) {
-      const categoryTitle = document.createElement('h1');
-      categoryTitle.className = 'category-title';
-      categoryTitle.textContent = category;
-      productsContainer.appendChild(categoryTitle);
-    }
-    
-    // Создаем грид для товаров
-    const productsGrid = document.createElement('div');
-    productsGrid.className = 'products-grid';
-    
-    // Добавляем товары в грид
+    // Добавляем товары в контейнер
     products.forEach(product => {
       const productCard = createProductCard(product);
-      productsGrid.appendChild(productCard);
+      productsContainer.appendChild(productCard);
     });
     
-    productsContainer.appendChild(productsGrid);
-    
     // Инициализируем кнопки после добавления карточек
-    initAddToCartButtons();
-    initWishlistButtons();
-    initWishlist();
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof initWishlist === 'function') {
+      initWishlist();
+    }
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
-    const productsContainer = document.querySelector('.catalog-products');
+    const productsContainer = document.getElementById('products-container');
     if (productsContainer) {
-      productsContainer.innerHTML = '<div class="error-message">Ошибка при загрузке товаров</div>';
+      productsContainer.innerHTML = '<div class="error-message">Ошибка при загрузке товаров: ' + error.message + '</div>';
     }
   }
 }
@@ -136,7 +183,7 @@ function createProductCard(product) {
       <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
         <img src="${product.image_url}" alt="${product.title}" loading="lazy">
       </a>
-      <button class="wishlist-button" aria-label="Добавить в избранное">
+      <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
       </button>
     </div>
@@ -148,7 +195,7 @@ function createProductCard(product) {
         ${priceDisplay}
       </div>
       ${marketplaceLinks}
-      <button class="add-to-cart-btn">В корзину</button>
+      <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
     </div>
   `;
   
@@ -278,8 +325,8 @@ async function loadProductDetails() {
           </div>
           ${marketplaceLinks}
           <div class="product-actions">
-            <button class="btn add-to-cart-btn-large">В корзину</button>
-            <button class="btn wishlist-btn-large">
+            <button class="btn add-to-cart-btn-large" data-id="${product.id}">В корзину</button>
+            <button class="btn wishlist-btn-large" data-id="${product.id}">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
               В избранное
             </button>
@@ -362,15 +409,19 @@ function initProductButtons(product) {
   const addToCartBtn = document.querySelector('.add-to-cart-btn-large');
   if (addToCartBtn) {
     addToCartBtn.addEventListener('click', function() {
-      addToCart({
-        id: product.id,
-        title: product.title,
-        price: product.discount_price || product.price,
-        image: product.image_url,
-        quantity: 1
-      });
-      
-      showNotification(`"${product.title}" добавлен в корзину`);
+      if (typeof addToCart === 'function') {
+        addToCart({
+          id: product.id,
+          title: product.title,
+          price: product.discount_price || product.price,
+          image: product.image_url,
+          quantity: 1
+        });
+        
+        if (typeof showNotification === 'function') {
+          showNotification(`"${product.title}" добавлен в корзину`);
+        }
+      }
     });
   }
   
@@ -378,7 +429,49 @@ function initProductButtons(product) {
   const wishlistBtn = document.querySelector('.wishlist-btn-large');
   if (wishlistBtn) {
     wishlistBtn.addEventListener('click', function() {
-      toggleWishlist(product.id, product.title);
+      if (typeof toggleWishlist === 'function') {
+        toggleWishlist(product.id, product.title);
+      }
     });
   }
+}
+
+// Инициализация кнопок "В корзину" для всех карточек товаров
+function initAddToCartButtons() {
+  document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const productTitle = this.closest('.product-card').querySelector('.product-link').textContent;
+      const productPrice = this.closest('.product-card').querySelector('.current-price').textContent;
+      const productImage = this.closest('.product-card').querySelector('img').src;
+      
+      if (typeof addToCart === 'function') {
+        addToCart({
+          id: productId,
+          title: productTitle,
+          price: parseFloat(productPrice),
+          image: productImage,
+          quantity: 1
+        });
+        
+        if (typeof showNotification === 'function') {
+          showNotification(`"${productTitle}" добавлен в корзину`);
+        }
+      }
+    });
+  });
+}
+
+// Инициализация кнопок "В избранное" для всех карточек товаров
+function initWishlistButtons() {
+  document.querySelectorAll('.wishlist-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const productTitle = this.closest('.product-card').querySelector('.product-link').textContent;
+      
+      if (typeof toggleWishlist === 'function') {
+        toggleWishlist(productId, productTitle);
+      }
+    });
+  });
 }

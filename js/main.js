@@ -5,49 +5,74 @@
 
 document.addEventListener('DOMContentLoaded', function() {
   // Функция для работы с корзиной
-  initCart();
+  if (typeof initCart === 'function') {
+    initCart();
+  }
   
   // Функция для работы с избранным
-  initWishlist();
+  if (typeof initWishlist === 'function') {
+    initWishlist();
+  }
   
   // Обработка кнопок добавления в корзину
-  initAddToCartButtons();
+  if (typeof initAddToCartButtons === 'function') {
+    initAddToCartButtons();
+  }
   
   // Обработка кнопок добавления в избранное
-  initWishlistButtons();
+  if (typeof initWishlistButtons === 'function') {
+    initWishlistButtons();
+  }
   
   // Инициализация поиска
-  initSearch();
+  if (typeof initSearch === 'function') {
+    initSearch();
+  }
   
   // Загрузка товаров с Supabase, если мы находимся на главной странице
   if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
     loadCategories(); // Сначала загружаем категории
-    loadFeaturedProducts(); // Затем популярные товары
+    
+    if (typeof loadFeaturedProducts === 'function') {
+      loadFeaturedProducts(); // Затем популярные товары
+    }
   }
   
   // Загрузка товаров в каталоге
   if (window.location.pathname === '/catalog.html') {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
-    loadCatalogProducts(categoryParam);
-    // Загружаем список категорий для сайдбара каталога
+    
+    // Загружаем категории для сайдбара каталога
     loadCategories();
+    
+    if (typeof loadCatalogProducts === 'function') {
+      loadCatalogProducts(categoryParam);
+    }
   }
   
   // Если мы на странице товара, загружаем данные о товаре
   if (window.location.pathname === '/product.html') {
-    loadProductDetails();
+    if (typeof loadProductDetails === 'function') {
+      loadProductDetails();
+    }
   }
   
   // Находим форму обратной связи
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {
-    contactForm.addEventListener('submit', submitContactForm);
+    contactForm.addEventListener('submit', function(e) {
+      if (typeof submitContactForm === 'function') {
+        submitContactForm(e);
+      }
+    });
   }
   
   // Если мы на странице корзины, рендерим корзину
   if (window.location.pathname.endsWith('cart.html')) {
-    renderCart();
+    if (typeof renderCart === 'function') {
+      renderCart();
+    }
   }
   
   // Убедимся, что иконка профиля ведёт на страницу авторизации
@@ -59,4 +84,9 @@ document.addEventListener('DOMContentLoaded', function() {
       window.location.href = 'login.html';
     });
   });
+  
+  // Инициализация чата, если он есть на странице
+  if (typeof initChat === 'function') {
+    initChat();
+  }
 });
