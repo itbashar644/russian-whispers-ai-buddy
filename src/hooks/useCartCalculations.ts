@@ -8,19 +8,8 @@ export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryM
   // Calculate subtotal
   const subtotal = items.reduce((total, item) => {
     // Get the price based on the selected color variant
-    let price = item.product.discountPrice || item.product.price;
-    
-    if (item.color && item.product.colorVariants) {
-      const variant = item.product.colorVariants.find(v => v.color === item.color);
-      if (variant) {
-        price = variant.discountPrice || variant.price;
-      }
-    }
-    
-    // Ensure price is a number
-    const numericPrice = typeof price === 'number' ? price : 0;
-    
-    return total + (numericPrice * item.quantity);
+    const price = getItemPrice(item);
+    return total + (price * item.quantity);
   }, 0);
 
   // Calculate total with delivery
@@ -32,4 +21,23 @@ export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryM
     subtotal,
     total
   };
+}
+
+// Helper function to get the correct price for an item
+function getItemPrice(item: CartItem): number {
+  if (item.selectedColorVariant) {
+    return item.selectedColorVariant.discountPrice || 
+           item.selectedColorVariant.price;
+  }
+  
+  if (item.color && item.product.colorVariants) {
+    const variant = item.product.colorVariants.find(v => v.color === item.color);
+    if (variant) {
+      return variant.discountPrice || variant.price;
+    }
+  }
+  
+  return item.product.discountPrice || 
+         item.product.price || 
+         0; // Fallback to 0 if no price is found
 }

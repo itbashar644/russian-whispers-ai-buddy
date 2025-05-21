@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -37,8 +36,11 @@ const Cart = () => {
     item.quantity > item.product.stockQuantity
   );
 
-  // Try to load saved delivery method on mount
+  // Verify that deliveryMethods are imported and logged for debugging
   useEffect(() => {
+    console.log("Available delivery methods:", deliveryMethods);
+    
+    // Try to load saved delivery method on mount
     const savedDeliveryMethodId = localStorage.getItem("savedDeliveryMethodId");
     
     if (savedDeliveryMethodId) {
@@ -46,6 +48,9 @@ const Cart = () => {
       if (method) {
         setDeliveryMethod(method);
       }
+    } else if (deliveryMethods.length > 0) {
+      // Default to first delivery method if none selected
+      setDeliveryMethod(deliveryMethods[0]);
     }
   }, [setDeliveryMethod]);
   
@@ -181,11 +186,16 @@ const Cart = () => {
                 removeItem={removeItem} 
               />
               
-              <DeliveryMethodSelector
-                deliveryMethod={deliveryMethod}
-                deliveryMethods={deliveryMethods}
-                onSelectDelivery={handleDeliveryMethodSelect}
-              />
+              {/* Ensure delivery methods are passed correctly */}
+              {deliveryMethods.length > 0 ? (
+                <DeliveryMethodSelector
+                  deliveryMethod={deliveryMethod}
+                  deliveryMethods={deliveryMethods}
+                  onSelectDelivery={handleDeliveryMethodSelect}
+                />
+              ) : (
+                <p>Loading delivery methods...</p>
+              )}
             </div>
 
             <div>

@@ -27,12 +27,24 @@ const DeliveryMethodSelector = ({
     }
   };
   
+  // Ensure we have delivery methods to display
+  if (!deliveryMethods || deliveryMethods.length === 0) {
+    console.error("No delivery methods available");
+    return null;
+  }
+  
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">Выберите способ доставки</h2>
       <RadioGroup 
         value={deliveryMethod?.id || ""} 
         className="space-y-3"
+        onValueChange={(value) => {
+          const selected = deliveryMethods.find(method => method.id === value);
+          if (selected) {
+            onSelectDelivery(selected);
+          }
+        }}
       >
         {deliveryMethods.map((method) => (
           <div 
@@ -47,7 +59,7 @@ const DeliveryMethodSelector = ({
             <RadioGroupItem 
               value={method.id} 
               id={`delivery-${method.id}`} 
-              className="sr-only" 
+              className="mr-4" 
             />
             <div className="flex flex-1 items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
