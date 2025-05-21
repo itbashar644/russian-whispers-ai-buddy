@@ -137,12 +137,12 @@ ul {
   padding: 5rem 0;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: #fff;
-  text-align: center;
+  text-align: left;
 }
 
 .hero-content {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .hero h1 {
@@ -159,7 +159,7 @@ ul {
 .hero-actions {
   display: flex;
   gap: 1rem;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 /* Tech Banner */
