@@ -111,124 +111,13 @@
     <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
     
-    <!-- Скрипты для функциональности страницы -->
-    <script src="scripts.js"></script>
+    <!-- Необходимый скрипт для Lovable -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
-    <!-- Скрипт для корзины -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        renderCart();
-      });
-      
-      function renderCart() {
-        const cartContainer = document.getElementById('cart-container');
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        if (cart.length === 0) {
-          cartContainer.innerHTML = `
-            <div class="empty-message">
-              <p>Ваша корзина пуста</p>
-              <div class="section-actions" style="margin-top: 2rem;">
-                <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
-              </div>
-            </div>
-          `;
-          return;
-        }
-        
-        let cartHTML = `
-          <div class="cart-items">
-        `;
-        
-        let totalPrice = 0;
-        
-        cart.forEach((item, index) => {
-          const itemPrice = parseFloat(item.price.replace(/[^\d.,]/g, '').replace(',', '.')) * item.quantity;
-          totalPrice += itemPrice;
-          
-          cartHTML += `
-            <div class="cart-item">
-              <div class="cart-item-image">
-                <img src="${item.image}" alt="${item.title}">
-              </div>
-              <div class="cart-item-details">
-                <h3><a href="product.html?id=${item.id}">${item.title}</a></h3>
-                <div class="product-price">
-                  <span class="current-price">${item.price}</span>
-                </div>
-              </div>
-              <div class="cart-item-quantity">
-                <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
-                <input type="number" class="quantity-input" value="${item.quantity}" min="1" onchange="updateQuantity(${index}, this.value)">
-                <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
-              </div>
-              <button class="remove-btn" onclick="removeFromCart(${index})">Удалить</button>
-            </div>
-          `;
-        });
-        
-        cartHTML += `
-          </div>
-          <div class="cart-summary">
-            <div class="cart-summary-row">
-              <span>Товары (${cart.length}):</span>
-              <span>${totalPrice.toFixed(2)} ₽</span>
-            </div>
-            <div class="cart-summary-row">
-              <span>Доставка:</span>
-              <span>Бесплатно</span>
-            </div>
-            <div class="cart-summary-row cart-total">
-              <span>Итого:</span>
-              <span>${totalPrice.toFixed(2)} ₽</span>
-            </div>
-            <div class="section-actions" style="margin-top: 2rem;">
-              <button class="btn btn-primary" style="width: 100%;" onclick="checkout()">Оформить заказ</button>
-            </div>
-          </div>
-        `;
-        
-        cartContainer.innerHTML = cartHTML;
-      }
-      
-      function changeQuantity(index, delta) {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        if (index >= 0 && index < cart.length) {
-          cart[index].quantity = Math.max(1, cart[index].quantity + delta);
-          localStorage.setItem('cart', JSON.stringify(cart));
-          renderCart();
-          updateCartCounter(cart);
-        }
-      }
-      
-      function updateQuantity(index, value) {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        if (index >= 0 && index < cart.length) {
-          const quantity = parseInt(value);
-          if (quantity > 0) {
-            cart[index].quantity = quantity;
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-            updateCartCounter(cart);
-          }
-        }
-      }
-      
-      function removeFromCart(index) {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        if (index >= 0 && index < cart.length) {
-          const removedItem = cart.splice(index, 1)[0];
-          localStorage.setItem('cart', JSON.stringify(cart));
-          renderCart();
-          updateCartCounter(cart);
-          showNotification(`"${removedItem.title}" удален из корзины`);
-        }
-      }
-      
-      function checkout() {
-        // Здесь будет функционал для оформления заказа
-        alert('Функция оформления заказа находится в разработке');
-      }
-    </script>
+    <!-- Модульные скрипты для функциональности страницы -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>
