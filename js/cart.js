@@ -37,10 +37,32 @@ function addToCart(product) {
     // Обновляем счетчик корзины
     updateCartCounter();
     
+    // Показываем уведомление
+    showNotification('Товар добавлен в корзину', 'success');
+    
     return true;
   } catch (error) {
     console.error('Ошибка при добавлении товара в корзину:', error);
+    showNotification('Ошибка при добавлении товара в корзину', 'error');
     return false;
+  }
+}
+
+// Функция для обновления счетчика корзины
+function updateCartCounter() {
+  const cartCounter = document.getElementById('cart-counter');
+  if (!cartCounter) return;
+  
+  const cart = getFromStorage('cart', []);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  
+  cartCounter.textContent = totalItems;
+  
+  // Добавляем класс active, если в корзине есть товары
+  if (totalItems > 0) {
+    cartCounter.classList.add('active');
+  } else {
+    cartCounter.classList.remove('active');
   }
 }
 
@@ -99,7 +121,7 @@ function updateCartItemQuantity(productId, quantity) {
     updateCartCounter();
     
     // Обновляем страницу корзины, если мы на ней находимся
-    if (window.location.pathname.endsWith('cart.html') && typeof renderCart === 'function') {
+    if (window.location.pathname.endsWith('cart.html')) {
       renderCart();
     }
     
@@ -120,7 +142,7 @@ function clearCart() {
     updateCartCounter();
     
     // Обновляем страницу корзины, если мы на ней находимся
-    if (window.location.pathname.endsWith('cart.html') && typeof renderCart === 'function') {
+    if (window.location.pathname.endsWith('cart.html')) {
       renderCart();
     }
     
@@ -134,6 +156,8 @@ function clearCart() {
 // Функция для отображения страницы корзины
 function renderCart() {
   const cartContainer = document.getElementById('cart-container');
+  const checkoutFormContainer = document.getElementById('checkout-form-container');
+  
   if (!cartContainer) return;
   
   // Получаем текущую корзину из localStorage
@@ -148,7 +172,18 @@ function renderCart() {
         <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
       </div>
     `;
+    
+    // Скрываем форму оформления заказа
+    if (checkoutFormContainer) {
+      checkoutFormContainer.style.display = 'none';
+    }
+    
     return;
+  }
+  
+  // Показываем форму оформления заказа, если она есть
+  if (checkoutFormContainer) {
+    checkoutFormContainer.style.display = 'block';
   }
   
   // Рассчитываем общую стоимость
@@ -157,7 +192,7 @@ function renderCart() {
   // Формируем HTML для корзины
   const cartHTML = `
     <div class="cart-content">
-      <h2>Корзина</h2>
+      <h2>Ваши товары</h2>
       <div class="cart-items">
         ${cart.map(item => `
           <div class="cart-item">
@@ -165,7 +200,7 @@ function renderCart() {
               <img src="${item.image}" alt="${item.title}">
             </div>
             <div class="cart-item-info">
-              <h3>${item.title}</h3>
+              <h3 class="cart-item-title">${item.title}</h3>
               <div class="cart-item-price">${formatPrice(item.price)}</div>
             </div>
             <div class="cart-item-quantity">
@@ -182,14 +217,23 @@ function renderCart() {
           </div>
         `).join('')}
       </div>
-      <div class="cart-footer">
-        <div class="cart-total">
-          <span class="cart-total-label">Итого:</span>
-          <span class="cart-total-price">${formatPrice(totalPrice)}</span>
+      <div class="cart-summary">
+        <div class="cart-totals">
+          <div class="cart-total-row">
+            <span>Товары (${cart.reduce((count, item) => count + item.quantity, 0)} шт.):</span>
+            <span>${formatPrice(totalPrice)}</span>
+          </div>
+          <div class="cart-total-row">
+            <span>Доставка:</span>
+            <span>Бесплатно</span>
+          </div>
+          <div class="cart-total-row cart-grand-total">
+            <span>Итого:</span>
+            <span>${formatPrice(totalPrice)}</span>
+          </div>
         </div>
         <div class="cart-actions">
           <button id="clear-cart" class="btn secondary-btn">Очистить корзину</button>
-          <a href="checkout.html" class="btn primary-btn">Оформить заказ</a>
         </div>
       </div>
     </div>
@@ -234,6 +278,38 @@ function renderCart() {
       clearCart();
     }
   });
+  
+  // Обработчик отправки формы оформления заказа
+  const checkoutForm = document.getElementById('checkout-form');
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Проверка заполнения обязательных полей
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const address = document.getElementById('address').value.trim();
+      
+      if (!name || !phone || !email || !address) {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        return;
+      }
+      
+      // Собираем данные формы
+      const formData = {
+        name: name,
+        phone: phone,
+        email: email,
+        address: address,
+        comment: document.getElementById('comment').value.trim(),
+        payment_method: document.querySelector('input[name="payment_method"]:checked').value
+      };
+      
+      // Отправляем заказ
+      submitOrder(formData);
+    });
+  }
 }
 
 // Функция для оформления заказа
@@ -256,7 +332,8 @@ function submitOrder(formData) {
         phone: formData.phone,
         email: formData.email,
         address: formData.address,
-        comment: formData.comment || ''
+        comment: formData.comment || '',
+        payment_method: formData.payment_method || 'cash'
       },
       totalPrice: cart.reduce((total, item) => total + item.price * item.quantity, 0),
       status: 'new',
@@ -273,13 +350,17 @@ function submitOrder(formData) {
     saveToStorage('orders', orders);
     
     // Отправляем заказ оператору в Telegram
-    sendOrderToTelegram(order)
-      .then(res => {
-        console.log('Заказ отправлен в Telegram:', res);
-      })
-      .catch(err => {
-        console.error('Ошибка при отправке заказа в Telegram:', err);
-      });
+    try {
+      sendOrderToTelegram(order)
+        .then(result => {
+          console.log('Заказ отправлен в Telegram:', result);
+        })
+        .catch(err => {
+          console.error('Ошибка при отправке заказа в Telegram:', err);
+        });
+    } catch (err) {
+      console.error('Ошибка при отправке заказа в Telegram:', err);
+    }
     
     // Очищаем корзину
     clearCart();
@@ -307,6 +388,7 @@ async function sendOrderToTelegram(order) {
 - Телефон: ${order.customer.phone}
 - Email: ${order.customer.email}
 - Адрес: ${order.customer.address}
+- Способ оплаты: ${order.customer.payment_method === 'cash' ? 'Наличными при получении' : 'Картой при получении'}
 ${order.customer.comment ? `- Комментарий: ${order.customer.comment}` : ''}
 
 🛒 Товары:
@@ -319,7 +401,7 @@ ${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPr
     const TELEGRAM_TOKEN = CONFIG.telegramBotToken;
     const CHAT_ID = CONFIG.telegramChatId;
     
-    if (!TELEGRAM_TOKEN || !CHAT_ID) {
+    if (!TELEGRAM_TOKEN || !CHAT_ID || TELEGRAM_TOKEN === 'your_telegram_bot_token' || CHAT_ID === 'your_telegram_chat_id') {
       console.error('Не настроены параметры для отправки в Telegram');
       return false;
     }
@@ -337,11 +419,50 @@ ${order.items.map(item => `- ${item.title} (${item.quantity} шт.) - ${formatPr
       })
     });
     
+    if (!response.ok) {
+      throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+    
     return await response.json();
   } catch (error) {
     console.error('Ошибка при отправке заказа в Telegram:', error);
     throw error;
   }
+}
+
+// Функция для отображения уведомлений
+function showNotification(message, type = 'info') {
+  // Проверяем, существует ли уже контейнер для уведомлений
+  let notificationContainer = document.querySelector('.notification-container');
+  
+  if (!notificationContainer) {
+    notificationContainer = document.createElement('div');
+    notificationContainer.className = 'notification-container';
+    document.body.appendChild(notificationContainer);
+  }
+  
+  // Создаем элемент уведомления
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  
+  // Добавляем уведомление в контейнер
+  notificationContainer.appendChild(notification);
+  
+  // Показываем уведомление
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+  
+  // Через 3 секунды скрываем и удаляем уведомление
+  setTimeout(() => {
+    notification.classList.remove('show');
+    
+    // После завершения анимации удаляем элемент
+    notification.addEventListener('transitionend', function() {
+      notification.remove();
+    });
+  }, 3000);
 }
 
 // Инициализируем корзину при загрузке страницы

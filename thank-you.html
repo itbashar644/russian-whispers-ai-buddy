@@ -4,8 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Спасибо за заказ | The X Shop</title>
-    <meta name="description" content="Спасибо за заказ в The X Shop. Ваш заказ принят и будет обработан в ближайшее время.">
+    <title>Заказ оформлен | The X Shop</title>
+    <meta name="description" content="Спасибо за ваш заказ в магазине The X Shop.">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
@@ -57,27 +57,29 @@
             <div class="thank-you-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
-            
             <h1 class="thank-you-title">Спасибо за заказ!</h1>
-            
             <p class="thank-you-text">
-              Ваш заказ <span class="order-number" id="order-number">№123456</span> успешно принят и находится в обработке.
-              <br>
-              Мы свяжемся с вами в ближайшее время для уточнения деталей.
+              Ваш заказ <span id="order-number" class="order-number">loading...</span> успешно оформлен. В ближайшее время наш менеджер свяжется с вами для подтверждения заказа.
             </p>
-            
-            <p class="thank-you-details">
-              Копия информации о заказе отправлена на указанный вами email.
-              <br>
-              Если у вас есть вопросы, свяжитесь с нами по телефону <a href="tel:+79001234567">+7 (900) 123-45-67</a>.
+            <p class="thank-you-text">
+              Информация о заказе отправлена на вашу электронную почту.
             </p>
-            
             <div class="thank-you-actions">
               <a href="catalog.html" class="btn primary-btn">Продолжить покупки</a>
             </div>
           </div>
         </div>
       </section>
+      
+      <!-- Chat Button -->
+      <div class="chat-widget">
+        <button id="chat-button" class="chat-toggle-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+        <div id="chat-container" class="chat-container hidden">
+          <!-- Chat interface will be loaded here -->
+        </div>
+      </div>
     </main>
 
     <footer class="main-footer">
@@ -134,18 +136,19 @@
 
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Получаем ID заказа из URL
+        const orderNumberElement = document.getElementById('order-number');
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('order_id');
         
-        // Отображаем номер заказа на странице
         if (orderId) {
-          const orderNumberElement = document.getElementById('order-number');
-          if (orderNumberElement) {
-            orderNumberElement.textContent = orderId;
-          }
+          orderNumberElement.textContent = orderId;
+        } else {
+          orderNumberElement.textContent = 'Unknown';
         }
         
         // Обновляем счетчик корзины
