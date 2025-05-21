@@ -176,30 +176,6 @@ function updateActiveFilters() {
     hasActiveFilters = true;
   }
   
-  // Проверяем сортировку
-  const sort = urlParams.get('sort');
-  if (sort) {
-    let sortLabel;
-    switch (sort) {
-      case 'price_asc':
-        sortLabel = 'По возрастанию цены';
-        break;
-      case 'price_desc':
-        sortLabel = 'По убыванию цены';
-        break;
-      case 'newest':
-        sortLabel = 'Новинки';
-        break;
-      case 'popular':
-        sortLabel = 'Популярные';
-        break;
-      default:
-        sortLabel = 'По умолчанию';
-    }
-    filtersHTML += createFilterTag('Сортировка', sortLabel, () => removeFilter('sort'));
-    hasActiveFilters = true;
-  }
-  
   // Добавляем кнопку сброса всех фильтров, если есть активные фильтры
   if (hasActiveFilters) {
     filtersHTML += `
@@ -253,70 +229,15 @@ function clearAllFilters() {
     // Если была выбрана категория, оставляем только её
     window.location.href = `${window.location.pathname}?category=${category}`;
   } else {
-    // Иначе сбрасываем все параметры
+    // Если категории не было, полностью очищаем URL
     window.location.href = window.location.pathname;
   }
 }
 
-// Функция для сортировки товаров
-function sortProducts(products, sortType) {
-  switch(sortType) {
-    case 'price_asc':
-      return [...products].sort((a, b) => a.price - b.price);
-    case 'price_desc':
-      return [...products].sort((a, b) => b.price - a.price);
-    case 'newest':
-      return [...products].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    case 'popular':
-      return [...products].sort((a, b) => b.popularity - a.popularity);
-    default:
-      return products;
-  }
-}
-
-// Применение фильтров и сортировки к товарам
-function applyFiltersAndSort(products) {
-  const urlParams = new URLSearchParams(window.location.search);
-  let filteredProducts = [...products];
-  
-  // Применяем фильтр по цене
-  const minPrice = urlParams.get('min_price');
-  const maxPrice = urlParams.get('max_price');
-  
-  if (minPrice) {
-    filteredProducts = filteredProducts.filter(product => product.price >= Number(minPrice));
-  }
-  
-  if (maxPrice) {
-    filteredProducts = filteredProducts.filter(product => product.price <= Number(maxPrice));
-  }
-  
-  // Применяем фильтр по наличию
-  const inStock = urlParams.get('in_stock');
-  if (inStock === 'true') {
-    filteredProducts = filteredProducts.filter(product => product.in_stock);
-  }
-  
-  // Применяем фильтр по поиску
-  const searchQuery = urlParams.get('search');
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    filteredProducts = filteredProducts.filter(product => 
-      product.title.toLowerCase().includes(query) || 
-      product.description.toLowerCase().includes(query)
-    );
-  }
-  
-  // Применяем сортировку
-  const sortType = urlParams.get('sort');
-  if (sortType) {
-    filteredProducts = sortProducts(filteredProducts, sortType);
-  }
-  
-  return filteredProducts;
-}
-
-// Инициализируем фильтры при загрузке страницы
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-  initFilters();
+  // Проверяем, находимся ли мы на странице каталога
+  if (document.getElementById('products-container')) {
+    initFilters();
+  }
 });
