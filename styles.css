@@ -540,17 +540,6 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
 }
 
-.contact-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.contact-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
 .footer-bottom {
   text-align: center;
