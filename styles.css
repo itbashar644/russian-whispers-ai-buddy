@@ -1137,6 +1137,38 @@ img {
   background-color: #f0f7ff;
 }
 
+/* Contact method styles */
+.contact-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.contact-method {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contact-method input[type="radio"] {
+  margin-right: 8px;
+}
+
+.contact-method:has(input:checked) {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+}
+
+.contact-method-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .checkout-agreement {
   margin-top: 20px;
   font-size: 0.9rem;
