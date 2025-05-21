@@ -335,7 +335,7 @@ section {
 /* Categories Grid */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 2rem;
 }
 
@@ -349,7 +349,7 @@ section {
 }
 
 .category-image {
-  height: 140px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
