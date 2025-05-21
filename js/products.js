@@ -128,6 +128,9 @@ function createProductCard(product) {
     ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
     : `<span class="current-price">${product.price} ₽</span>`;
   
+  // Подготовка блока маркетплейсов
+  const marketplaceLinks = createMarketplaceLinksHtml(product);
+  
   card.innerHTML = `
     <div class="product-image">
       <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
@@ -144,11 +147,55 @@ function createProductCard(product) {
       <div class="product-price">
         ${priceDisplay}
       </div>
+      ${marketplaceLinks}
       <button class="add-to-cart-btn">В корзину</button>
     </div>
   `;
   
   return card;
+}
+
+// Функция для создания HTML-блока с маркетплейсами
+function createMarketplaceLinksHtml(product) {
+  // Проверяем, есть ли у товара хотя бы одна ссылка на маркетплейс
+  if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
+    return '';
+  }
+  
+  let marketplaceIconsHtml = '';
+  
+  if (product.wildberries_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+        <img src="/placeholder.svg" alt="Wildberries">
+      </a>
+    `;
+  }
+  
+  if (product.ozon_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+        <img src="/placeholder.svg" alt="Ozon">
+      </a>
+    `;
+  }
+  
+  if (product.avito_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+        <img src="/placeholder.svg" alt="Авито">
+      </a>
+    `;
+  }
+  
+  return `
+    <div class="marketplace-links">
+      <span class="marketplace-title">Доступно на:</span>
+      <div class="marketplace-icons">
+        ${marketplaceIconsHtml}
+      </div>
+    </div>
+  `;
 }
 
 // Функция для загрузки данных о товаре на странице товара
@@ -190,6 +237,9 @@ async function loadProductDetails() {
     // Обновляем заголовок страницы
     document.title = `${product.title} | The X Shop`;
     
+    // Подготовка блока маркетплейсов
+    const marketplaceLinks = createMarketplaceLinksHtml(product);
+    
     // Формируем HTML для страницы товара
     const productHTML = `
       <div class="product-details">
@@ -226,6 +276,7 @@ async function loadProductDetails() {
           <div class="product-description">
             <p>${product.description}</p>
           </div>
+          ${marketplaceLinks}
           <div class="product-actions">
             <button class="btn add-to-cart-btn-large">В корзину</button>
             <button class="btn wishlist-btn-large">
