@@ -19,7 +19,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
     <>
       {/* Main image display */}
       <div className="border rounded-lg overflow-hidden">
-        <div className="relative" style={{ paddingTop: '133.33%' }}>  {/* 3:4 aspect ratio */}
+        <div className="relative" style={{ paddingTop: '133.33%', maxHeight: '400px' }}>  {/* 3:4 aspect ratio with max height */}
           <img
             src={imageError ? "/placeholder.svg" : currentImage}
             alt="Product"
@@ -39,7 +39,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
               className={`border rounded overflow-hidden ${
                 index === currentImageIndex ? 'border-primary border-2' : 'border-gray-200'
               }`}
-              style={{ aspectRatio: '3/4' }}
+              style={{ aspectRatio: '3/4', maxHeight: '100px' }}
               onClick={() => setCurrentImageIndex(index)}
             >
               <div className="relative h-full">

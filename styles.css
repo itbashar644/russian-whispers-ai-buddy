@@ -86,7 +86,7 @@
 .product-grid .product-card img {
   aspect-ratio: 3/4;
   width: 100%;
-  height: auto;
+  max-height: 300px;
   object-fit: cover;
 }
 
@@ -94,7 +94,7 @@
 .hero-image img {
   aspect-ratio: 3/4;
   width: 100%;
-  height: auto;
+  max-height: 500px;
   object-fit: cover;
 }
 
@@ -102,6 +102,7 @@
 .categories-grid .category-card .category-image {
   position: relative;
   padding-top: 133.33%; /* 4:3 aspect ratio (4/3 = 1.33) */
+  max-height: 300px;
   overflow: hidden;
 }
 
@@ -125,11 +126,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  max-height: 450px;
 }
 
 .product-card .product-image {
   position: relative;
   padding-top: 133.33%; /* 3:4 aspect ratio */
+  max-height: 300px;
   overflow: hidden;
 }
 
@@ -153,6 +156,7 @@
 .related-products .product-image {
   position: relative;
   padding-top: 133.33%; /* 3:4 aspect ratio */
+  max-height: 300px;
   overflow: hidden;
 }
 
@@ -164,4 +168,54 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Fix header styles to ensure it's always visible */
+.main-header {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Improve icon positioning in the header */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.action-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make sure the hero section doesn't push content too far */
+.hero-section {
+  padding: 40px 0;
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-content {
+    flex-direction: column;
+  }
+  
+  .hero-image img {
+    max-height: 400px;
+  }
+  
+  .product-card .product-image,
+  .category-image {
+    max-height: 250px;
+  }
 }
