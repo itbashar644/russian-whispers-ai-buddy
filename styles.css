@@ -916,3 +916,76 @@ h1, h2, h3, h4, h5, h6 {
   height: 100%;
   object-fit: contain;
 }
+
+/* Chat widget */
+.chat-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+}
+
+.chat-window {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 300px;
+  max-height: 400px;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: none;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.chat-window.open {
+  display: flex;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+}
+
+.chat-message.admin {
+  text-align: right;
+}
+
+.chat-message .time {
+  font-size: 0.75rem;
+  color: var(--light-text);
+}
+
+.chat-input-area {
+  display: flex;
+  border-top: 1px solid var(--border-color);
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 8px;
+  border: none;
+}
+
+.chat-input-area button {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
