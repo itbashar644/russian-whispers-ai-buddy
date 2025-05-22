@@ -21,7 +21,7 @@ export const getProducts = async (includeArchived = false): Promise<Product[]> =
     }
     
     // Always update cache when requesting products
-    await refreshCacheIfNeeded(true);
+    await refreshCacheIfNeeded();
     
     return getProductsCache();
   } catch (error) {
@@ -140,7 +140,7 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
   try {
     if (!category) {
       // Return all active products
-      await refreshCacheIfNeeded(true);
+      await refreshCacheIfNeeded();
       return getProductsCache();
     }
     
