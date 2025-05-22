@@ -34,18 +34,7 @@ function initFilters() {
     });
   }
   
-  // Фильтр по наличию
-  const inStockCheckbox = document.getElementById('in-stock-filter') || document.getElementById('in-stock-only');
-  if (inStockCheckbox) {
-    // Восстанавливаем состояние из URL
-    const inStockParam = urlParams.get('in_stock');
-    inStockCheckbox.checked = inStockParam === 'true';
-    
-    // Обработчик изменения состояния чекбокса
-    inStockCheckbox.addEventListener('change', function() {
-      applyFilters();
-    });
-  }
+
   
   // Фильтр по поиску
   const searchInput = document.getElementById('search-input');
@@ -117,11 +106,6 @@ function applyFilters() {
     newParams.set('max_price', priceMaxInput.value);
   }
   
-  // Добавляем фильтр по наличию
-  const inStockCheckbox = document.getElementById('in-stock-filter') || document.getElementById('in-stock-only');
-  if (inStockCheckbox && inStockCheckbox.checked) {
-    newParams.set('in_stock', 'true');
-  }
   
   // Добавляем поисковый запрос
   const searchInput = document.getElementById('search-input');
@@ -170,12 +154,7 @@ function updateActiveFilters() {
     hasActiveFilters = true;
   }
   
-  // Проверяем фильтр по наличию
-  const inStock = urlParams.get('in_stock');
-  if (inStock === 'true') {
-    filtersHTML += createFilterTag('Только в наличии', '', () => removeFilter('in_stock'));
-    hasActiveFilters = true;
-  }
+
   
   // Проверяем поисковый запрос
   const searchQuery = urlParams.get('search');

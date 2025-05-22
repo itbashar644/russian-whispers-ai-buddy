@@ -77,7 +77,6 @@ async function loadCatalogProducts(category = null) {
     const urlParams = new URLSearchParams(window.location.search);
     const minPrice = urlParams.get('min_price');
     const maxPrice = urlParams.get('max_price');
-    const inStock = urlParams.get('in_stock');
     const searchQuery = urlParams.get('search');
     
     // Добавляем фильтры в запрос, если они указаны
@@ -86,9 +85,6 @@ async function loadCatalogProducts(category = null) {
     }
     if (maxPrice) {
       url += `&price=lte.${maxPrice}`;
-    }
-    if (inStock === 'true') {
-      url += '&in_stock=eq.true';
     }
     
     // Добавляем параметр сортировки, если указан
