@@ -5,7 +5,7 @@ import { NewsletterSignup } from "../marketing/NewsletterSignup";
 const Footer = () => {
   return (
     <footer className="bg-gray-100 border-t">
-      <div className="container px-4 py-8 md:py-12">
+      <div className="container px-4 py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="font-bold text-lg mb-3">The X Shop</h3>
@@ -34,8 +34,8 @@ const Footer = () => {
             <NewsletterSignup />
           </div>
         </div>
-        <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">&copy; 2024 The X Shop. Все права защищены.</p>
+        <div className="border-t mt-4 pt-4 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-sm text-muted-foreground">&copy; 2020 The X Shop. Все права защищены.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <Link to="/terms" className="text-sm text-muted-foreground hover:underline">Условия использования</Link>
             <Link to="/privacy" className="text-sm text-muted-foreground hover:underline">Политика конфиденциальности</Link>

@@ -873,7 +873,7 @@ img {
 .main-footer {
   background-color: #343a40;
   color: #fff;
-  padding: 60px 0 30px;
+  padding: 40px 0 20px;
 }
 
 .footer-content {
@@ -941,8 +941,8 @@ img {
 }
 
 .footer-bottom {
-  margin-top: 50px;
-  padding-top: 20px;
+  margin-top: 30px;
+  padding-top: 15px;
   border-top: 1px solid rgba(255,255,255,0.1);
   text-align: center;
   color: #adb5bd;
