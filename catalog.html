@@ -86,7 +86,15 @@
                   </div>
                 </div>
                 
-                
+                <!-- Search -->
+                <div class="filter-group">
+                  <h4>Поиск</h4>
+                  <div class="search-filter">
+                    <input type="text" id="search-input" placeholder="Поиск по названию">
+                    <button id="search-button" class="btn secondary-btn btn-sm">Найти</button>
+                  </div>
+                </div>
+
                 <!-- Sort -->
                 <div class="filter-group">
                   <h4>Сортировка</h4>
@@ -102,6 +110,7 @@
             
             <!-- Catalog Products -->
             <div class="catalog-content">
+              <div id="active-filters" class="active-filters"></div>
               <div id="products-container" class="products-grid">
                 <!-- Products will be loaded dynamically here -->
               </div>
@@ -166,6 +175,7 @@
     <script src="js/utils.js"></script>
     <script src="js/categories.js"></script>
     <script src="js/products.js"></script>
+    <script src="js/filters.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/wishlist.js"></script>
     <script src="js/chat.js"></script>
