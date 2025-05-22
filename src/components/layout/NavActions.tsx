@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuthCore";
+import { useAuth } from "@/context/AuthContext"; // Changed from @/hooks/useAuthCore
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { Menu, Heart, ShoppingCart, User } from "lucide-react";
@@ -19,10 +19,10 @@ export const NavActions: React.FC<NavActionsProps> = ({
 }) => {
   const { user } = useAuth();
   const { items } = useCart();
-  const { items: wishlistItems } = useWishlist();
+  const { wishlist } = useWishlist(); // Changed from items to wishlist
 
   const cartCount = items.length;
-  const wishlistCount = wishlistItems.length;
+  const wishlistCount = wishlist.length; // Changed from wishlistItems to wishlist
 
   return (
     <div className="flex items-center gap-1 md:gap-2">

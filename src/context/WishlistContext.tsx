@@ -4,7 +4,7 @@ import { Product } from '@/types/product';
 import { toast } from 'sonner';
 
 interface WishlistContextType {
-  wishlist: Product[];
+  wishlist: Product[]; // This should be named wishlist, not items
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (productId: string) => void;
   toggleWishlistItem: (product: Product) => void;
@@ -69,7 +69,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
   
   return (
     <WishlistContext.Provider value={{
-      wishlist,
+      wishlist, // This should be wishlist, not items
       addToWishlist,
       removeFromWishlist,
       toggleWishlistItem,
