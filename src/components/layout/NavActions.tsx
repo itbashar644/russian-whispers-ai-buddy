@@ -11,18 +11,19 @@ import { SearchIcon } from "./SearchIcon";
 
 interface NavActionsProps {
   onToggleMenu: () => void;
+  onOpenSearch: () => void;
 }
 
-export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu }) => {
+export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu, onOpenSearch }) => {
   const { items } = useCart();
   const { wishlist } = useWishlist();
   const { user } = useAuth();
-  
+
   const totalItems = items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   
   return (
     <div className="flex items-center gap-4">
-      <SearchIcon />
+      <SearchIcon onClick={onOpenSearch} />
       
       <Link to="/wishlist" className="relative">
         <Heart className="h-5 w-5" />

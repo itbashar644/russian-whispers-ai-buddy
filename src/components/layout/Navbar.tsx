@@ -5,9 +5,11 @@ import { useMediaQuery } from "@/hooks/use-mobile";
 import { NavLinks } from "./NavLinks";
 import { NavActions } from "./NavActions";
 import { MobileMenu } from "./MobileMenu";
+import { SearchDialog } from "./SearchDialog";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const location = useLocation();
@@ -51,10 +53,11 @@ const Navbar = () => {
           <NavLinks />
         </div>
         
-        <NavActions onToggleMenu={toggleMenu} />
+        <NavActions onToggleMenu={toggleMenu} onOpenSearch={() => setIsSearchOpen(true)} />
       </div>
       
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </header>
   );
 };
