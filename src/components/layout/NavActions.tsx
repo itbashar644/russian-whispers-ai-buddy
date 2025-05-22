@@ -1,82 +1,69 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, LogIn, Heart, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuthCore";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { Menu, Heart, ShoppingCart, User } from "lucide-react";
 import { SearchIcon } from "./SearchIcon";
+import { Button } from "@/components/ui/button";
 
 interface NavActionsProps {
   onToggleMenu: () => void;
   onOpenSearch: () => void;
 }
 
-export const NavActions: React.FC<NavActionsProps> = ({ onToggleMenu, onOpenSearch }) => {
-  const { items } = useCart();
-  const { wishlist } = useWishlist();
+export const NavActions: React.FC<NavActionsProps> = ({
+  onToggleMenu,
+  onOpenSearch,
+}) => {
   const { user } = useAuth();
+  const { items } = useCart();
+  const { items: wishlistItems } = useWishlist();
 
-  const totalItems = items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
-  
+  const cartCount = items.length;
+  const wishlistCount = wishlistItems.length;
+
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-1 md:gap-2">
       <SearchIcon onClick={onOpenSearch} />
       
-      <Link to="/wishlist" className="relative">
+      <Link
+        to="/wishlist"
+        className="relative flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
+      >
         <Heart className="h-5 w-5" />
-        {wishlist.length > 0 && (
-          <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-            {wishlist.length}
-          </Badge>
+        {wishlistCount > 0 && (
+          <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+            {wishlistCount}
+          </span>
         )}
       </Link>
       
-      <Link to="/cart" className="relative">
+      <Link
+        to="/cart"
+        className="relative flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
+      >
         <ShoppingCart className="h-5 w-5" />
-        {totalItems > 0 && (
-          <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-            {totalItems}
-          </Badge>
+        {cartCount > 0 && (
+          <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+            {cartCount}
+          </span>
         )}
       </Link>
       
-      <div className="hidden md:block">
-        {user ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="flex items-center gap-2"
-          >
-            <Link to="/account">
-              <User className="h-4 w-4" />
-              <span className="hidden md:inline-block">Мой аккаунт</span>
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="flex items-center gap-2"
-          >
-            <Link to="/login">
-              <LogIn className="h-4 w-4" />
-              <span className="hidden md:inline-block">Войти</span>
-            </Link>
-          </Button>
-        )}
-      </div>
+      <Link
+        to={user ? "/account" : "/login"}
+        className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
+      >
+        <User className="h-5 w-5" />
+      </Link>
       
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         className="md:hidden"
         onClick={onToggleMenu}
-        aria-label="Toggle menu"
       >
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle menu</span>

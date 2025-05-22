@@ -1,9 +1,4 @@
 
-src/components/layout/SearchIcon.tsx
-+7
--6
-
-
 import React from 'react';
 import { Search } from 'lucide-react';
 
