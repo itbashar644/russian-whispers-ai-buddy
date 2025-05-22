@@ -126,6 +126,11 @@ img {
   position: relative;
 }
 
+.icon-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .icon-button svg {
   width: 24px;
   height: 24px;
