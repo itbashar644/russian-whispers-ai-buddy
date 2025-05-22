@@ -18,7 +18,6 @@ const ChatWidget: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSending, setIsSending] = useState(false);
-  const [configStatus, setConfigStatus] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, profile } = useAuth();
 
@@ -38,20 +37,8 @@ const ChatWidget: React.FC = () => {
     }
   };
 
-  // Check webhook status on first load
+  // Initial fetch on component mount
   useEffect(() => {
-    const checkWebhookConfig = async () => {
-      try {
-        // We'll skip this for now as the function isn't fully implemented
-        console.info("Webhook status check skipped");
-      } catch (error) {
-        console.error("Error checking webhook status:", error);
-      }
-    };
-    
-    checkWebhookConfig();
-    
-    // Fetch messages immediately when component mounts
     fetchMessages();
   }, []);
 
@@ -68,7 +55,6 @@ const ChatWidget: React.FC = () => {
       const markAsRead = async () => {
         try {
           await markMessagesAsRead();
-          console.info("Messages marked as read");
           setUnreadCount(0);
           setMessages(prev => 
             prev.map(msg => ({ ...msg, is_read: true }))
@@ -85,7 +71,6 @@ const ChatWidget: React.FC = () => {
   // Poll for new messages periodically
   useEffect(() => {
     const interval = setInterval(fetchMessages, 10000);
-    
     return () => clearInterval(interval);
   }, []);
 
@@ -122,9 +107,7 @@ const ChatWidget: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Ошибка отправки сообщения", {
-        description: "Произошла неожиданная ошибка. Пожалуйста, попробуйте позже."
-      });
+      toast.error("Ошибка отправки сообщения");
     } finally {
       setIsSending(false);
     }

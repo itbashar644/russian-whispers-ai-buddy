@@ -10,7 +10,7 @@ export const SearchIcon: React.FC<SearchIconProps> = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="flex items-center justify-center text-primary hover:text-primary/80 transition-colors"
+      className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
       aria-label="Поиск товаров"
     >
       <Search className="h-5 w-5" />
