@@ -7,7 +7,7 @@ export const deliveryMethods: DeliveryMethod[] = [
     name: "Почта РФ",
     description: "Доставка Почтой России",
     price: 0,
-    estimatedDays: "10-20 дней",
+    estimatedDays: "",
     icon: "mail"
   },
   {
@@ -15,7 +15,7 @@ export const deliveryMethods: DeliveryMethod[] = [
     name: "СДЭК",
     description: "Доставка курьерской службой СДЭК",
     price: 0,
-    estimatedDays: "5-7 дней",
+    estimatedDays: "",
     icon: "truck"
   },
   {
@@ -23,7 +23,7 @@ export const deliveryMethods: DeliveryMethod[] = [
     name: "В ПВЗ WB",
     description: "Самовывоз из пункта выдачи Wildberries",
     price: 0,
-    estimatedDays: "10-15 дней",
+    estimatedDays: "",
     icon: "map-pin"
   }
 ];

@@ -31,7 +31,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
   return (
     <div className={className}>
       <span className="text-xs text-muted-foreground">Доступен на:</span>
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         {product.wildberriesUrl && (
           <a 
             href={product.wildberriesUrl} 
@@ -61,7 +61,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
             title="Открыть на Ozon"
             onClick={() => handleExternalLinkClick('ozon', product.ozonUrl || '')}
           >
-           <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+           <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
                 src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png"
                 alt="Ozon" 
@@ -81,7 +81,7 @@ const MarketplaceLinks: React.FC<MarketplaceLinksProps> = ({
             title="Открыть на Авито"
             onClick={() => handleExternalLinkClick('avito', product.avitoUrl || '')}
           >
-            <div className="flex items-center justify-center w-8 h-8 overflow-hidden">
+            <div className="flex items-center justify-center w-6 h-6 overflow-hidden">
               <img 
                 src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png"
                 alt="Avito" 

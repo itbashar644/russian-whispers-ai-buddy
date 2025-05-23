@@ -41,16 +41,17 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFormLoading, setIsFormLoading] = useState(false);
   
   // Check if already authenticated and redirect if needed
   useEffect(() => {
-    if (isAuthenticated) {
+    // Wait for auth to finish loading before redirecting
+    if (!isLoading && isAuthenticated) {
       navigate('/account', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -71,7 +72,7 @@ const Login = () => {
   };
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+    setIsFormLoading(true);
     try {
       // Clean up any existing auth state
       cleanupAuthState();
@@ -83,10 +84,8 @@ const Login = () => {
           description: "Вы успешно вошли в систему",
         });
 
-        // Small delay before redirecting
-        setTimeout(() => {
-          navigate("/account");
-        }, 500);
+        // Use window.location for a clean page refresh to avoid state conflicts
+        window.location.href = "/account";
       } else {
         toast.error("Ошибка авторизации", {
           description: getErrorMessage(result.error),
@@ -98,12 +97,12 @@ const Login = () => {
         description: error.message || "Произошла ошибка при входе в систему",
       });
     } finally {
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
 
   const handleSocialLogin = async (provider: Provider) => {
-    setIsLoading(true);
+    setIsFormLoading(true);
     try {
       // Clean up any existing auth state
       cleanupAuthState();
@@ -123,9 +122,22 @@ const Login = () => {
       toast.error("Ошибка входа через социальную сеть", {
         description: error.message || "Произошла ошибка при входе через социальную сеть",
       });
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
+
+  // Show loading while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Проверка авторизации...</p>
+          <p className="text-xs text-muted-foreground mt-1">The X Shop</p>
+        </div>
+      </div>
+    );
+  }
 
   // If already authenticated, don't render the login form
   if (isAuthenticated) {
@@ -161,7 +173,7 @@ const Login = () => {
                             type="email" 
                             placeholder="Введите email" 
                             className="pl-10" 
-                            disabled={isLoading}
+                            disabled={isFormLoading}
                             {...field} 
                           />
                         </div>
@@ -189,7 +201,7 @@ const Login = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="Введите пароль"
                             className="pl-10"
-                            disabled={isLoading}
+                            disabled={isFormLoading}
                             {...field}
                           />
                           <Button
@@ -198,7 +210,7 @@ const Login = () => {
                             size="icon"
                             className="absolute right-2 top-1/2 transform -translate-y-1/2"
                             onClick={() => setShowPassword(!showPassword)}
-                            disabled={isLoading}
+                            disabled={isFormLoading}
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
@@ -209,8 +221,8 @@ const Login = () => {
                   )}
                 />
                 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Вход..." : (
+                <Button type="submit" className="w-full" disabled={isFormLoading}>
+                  {isFormLoading ? "Вход..." : (
                     <>
                       Войти <ArrowRight className="ml-2 h-4 w-4" />
                     </>
@@ -234,7 +246,7 @@ const Login = () => {
               <Button 
                 variant="outline" 
                 onClick={() => handleSocialLogin('google')}
-                disabled={isLoading}
+                disabled={isFormLoading}
                 className="flex items-center justify-center gap-2"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
