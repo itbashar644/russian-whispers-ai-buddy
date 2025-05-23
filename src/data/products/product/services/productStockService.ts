@@ -66,7 +66,7 @@ export const decreaseProductStock = async (
         quantity,
         colorVariant
       }
-        });
+    });
 
     if (error) {
       console.error('Error invoking update-stock function:', error);
@@ -75,7 +75,7 @@ export const decreaseProductStock = async (
     
     if (!data || !data.success) {
       console.error('update-stock function returned failure:', data);
-    return false;
+      return false;
     }
     
     await invalidateCache();
@@ -107,7 +107,7 @@ export const updateProductStock = async (productId: string, newQuantity: number,
         variant.stockQuantity = Math.max(0, newQuantity);
         console.log(`Updated variant stock to: ${variant.stockQuantity}`);
         
-        // Update inStock status for the variant based on actual quantity
+        // Update inStock status based on actual quantity - always set this based on stockQuantity
         const hasAnyVariantStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
         product.inStock = hasAnyVariantStock;
         
@@ -128,7 +128,8 @@ export const updateProductStock = async (productId: string, newQuantity: number,
     // Handle main product stock
     console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
     product.stockQuantity = Math.max(0, newQuantity);
-    // Always set inStock based on actual quantity
+    
+    // Always set inStock based on actual quantity - ключевое изменение
     product.inStock = product.stockQuantity > 0;
     
     console.log("Setting product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);

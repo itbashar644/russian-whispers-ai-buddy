@@ -17,6 +17,10 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
   handleInputChange,
   handleCheckboxChange
 }) => {
+  // Автоматически определяем, есть ли товар в наличии, на основе количества
+  const stockQuantity = formData.stockQuantity !== undefined ? formData.stockQuantity : 0;
+  const isInStock = stockQuantity > 0;
+  
   return (
     <FormSection>
       <FormRow label="Цена*" htmlFor="price">
@@ -58,7 +62,12 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
           name="stockQuantity"
           type="number"
           value={formData.stockQuantity !== undefined ? formData.stockQuantity : ""}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            handleInputChange(e);
+            // Автоматически устанавливаем статус наличия при изменении количества
+            const newQuantity = parseInt(e.target.value, 10) || 0;
+            handleCheckboxChange(newQuantity > 0, "inStock");
+          }}
           placeholder="0"
           min="0"
           className="w-full"
@@ -88,18 +97,24 @@ export const ProductPricing: React.FC<ProductPricingProps> = ({
       </FormRow>
 
       <FormRow label="Наличие" htmlFor="inStock">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="inStock"
-            checked={formData.inStock ?? true}
-            onCheckedChange={(checked) => handleCheckboxChange(!!checked, "inStock")}
-          />
-          <label
-            htmlFor="inStock"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Товар в наличии
-          </label>
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="inStock"
+              checked={formData.inStock ?? isInStock}
+              onCheckedChange={(checked) => handleCheckboxChange(!!checked, "inStock")}
+              disabled={true} /* Отключаем редактирование галочки - она теперь автоматически устанавливается */
+            />
+            <label
+              htmlFor="inStock"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Товар в наличии
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Статус "В наличии" устанавливается автоматически на основе количества товара на складе.
+          </p>
         </div>
       </FormRow>
     </FormSection>
