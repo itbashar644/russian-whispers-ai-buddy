@@ -2,11 +2,12 @@
 import { CartItem, DeliveryMethod } from "@/types/product";
 
 export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryMethod | null) {
-  // Calculate total number of items
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+  // Filter out invalid items and calculate total number of items
+  const validItems = items.filter(item => item && item.product && item.product.title);
+  const totalItems = validItems.reduce((total, item) => total + item.quantity, 0);
 
   // Calculate subtotal
-  const subtotal = items.reduce((total, item) => {
+  const subtotal = validItems.reduce((total, item) => {
     // Get the price based on the selected color variant
     const price = getItemPrice(item);
     console.log(`Item ${item.product.title}, price: ${price}, quantity: ${item.quantity}`);
@@ -29,6 +30,12 @@ export function useCartCalculations(items: CartItem[], deliveryMethod: DeliveryM
 // Helper function to get the correct price for an item
 function getItemPrice(item: CartItem): number {
   try {
+    // Validate that item and product exist
+    if (!item || !item.product) {
+      console.warn("Invalid cart item or missing product:", item);
+      return 0;
+    }
+
     // Check if there's a selected color variant with price
     if (item.selectedColorVariant && (item.selectedColorVariant.discountPrice || item.selectedColorVariant.price)) {
       const price = item.selectedColorVariant.discountPrice || item.selectedColorVariant.price;

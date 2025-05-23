@@ -22,6 +22,39 @@ interface CartContextType {
 // Create the context with a default value
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper function to validate cart items
+const validateCartItems = (items: any[]): CartItem[] => {
+  if (!Array.isArray(items)) {
+    console.warn("Cart items is not an array, returning empty array");
+    return [];
+  }
+
+  return items.filter(item => {
+    // Check if item has required structure
+    if (!item || typeof item !== 'object') {
+      console.warn("Invalid cart item (not an object):", item);
+      return false;
+    }
+
+    if (!item.product || typeof item.product !== 'object') {
+      console.warn("Invalid cart item (missing or invalid product):", item);
+      return false;
+    }
+
+    if (!item.product.id || !item.product.title) {
+      console.warn("Invalid cart item (missing product id or title):", item);
+      return false;
+    }
+
+    if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+      console.warn("Invalid cart item (invalid quantity):", item);
+      return false;
+    }
+
+    return true;
+  });
+};
+
 // Create the provider component
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // State for cart items
@@ -29,9 +62,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Try to load items from localStorage
       const savedItems = localStorage.getItem("cart");
-      return savedItems ? JSON.parse(savedItems) : [];
+      if (!savedItems) {
+        return [];
+      }
+
+      const parsedItems = JSON.parse(savedItems);
+      const validatedItems = validateCartItems(parsedItems);
+      
+      // If we filtered out invalid items, save the cleaned version
+      if (validatedItems.length !== parsedItems.length) {
+        console.log("Cleaned up invalid cart items");
+        localStorage.setItem("cart", JSON.stringify(validatedItems));
+      }
+
+      return validatedItems;
     } catch (error) {
       console.error("Error loading cart from localStorage:", error);
+      // Clear corrupted cart data
+      localStorage.removeItem("cart");
       return [];
     }
   });
@@ -52,7 +100,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem("cart", JSON.stringify(items));
+      // Validate items before saving
+      const validItems = validateCartItems(items);
+      localStorage.setItem("cart", JSON.stringify(validItems));
+      
+      // Update state if validation filtered out items
+      if (validItems.length !== items.length) {
+        setItems(validItems);
+      }
     } catch (error) {
       console.error("Error saving cart to localStorage:", error);
     }
