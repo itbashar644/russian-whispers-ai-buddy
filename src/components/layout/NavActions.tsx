@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext"; // Changed from @/hooks/useAuthCore
-import { useCart } from "@/context/CartContext";
+import { CartContext } from "@/context/CartContext";  // Import CartContext directly instead of useCart
 import { useWishlist } from "@/context/WishlistContext";
 import { Menu, Heart, ShoppingCart, User } from "lucide-react";
 import { SearchIcon } from "./SearchIcon";
@@ -18,7 +18,9 @@ export const NavActions: React.FC<NavActionsProps> = ({
   onOpenSearch,
 }) => {
   const { user } = useAuth();
-  const { items } = useCart();
+  // Use optional chaining and provide fallback for when context is undefined
+  const cartContext = useContext(CartContext);
+  const items = cartContext?.items || [];
   const { wishlist } = useWishlist(); // Changed from items to wishlist
 
   const cartCount = items.length;

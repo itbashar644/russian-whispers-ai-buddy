@@ -19,8 +19,8 @@ interface CartContextType {
   decreaseStockForItems: (items: CartItem[]) => Promise<boolean>;
 }
 
-// Create the context with a default value
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Create the context with a default value and export it
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Helper function to validate cart items
 const validateCartItems = (items: any[]): CartItem[] => {
@@ -149,7 +149,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setDeliveryMethod,
       subtotal,
       total,
-      totalItems,  // Added this property to the context value
+      totalItems,
       decreaseStockForItems
     }}>
       {children}
