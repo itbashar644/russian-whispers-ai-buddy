@@ -42,6 +42,7 @@ interface OrdersTableProps {
   loading: boolean;
   onStatusChange: (orderId: string, newStatus: Order["status"]) => void;
   onArchive: (orderId: string) => void;
+  onRestore: (orderId: string) => void;
   onTrackingUpdate: (orderId: string, trackingNumber: string, trackingUrl: string) => void;
   getStatusColor: (status: Order["status"]) => string;
   getStatusText: (status: Order["status"]) => string;
@@ -52,6 +53,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   loading,
   onStatusChange,
   onArchive,
+  onRestore,
   onTrackingUpdate,
   getStatusColor,
   getStatusText
@@ -94,6 +96,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                 order={order}
                 onStatusChange={onStatusChange}
                 onArchive={onArchive}
+                onRestore={onRestore}
                 onTrackingUpdate={onTrackingUpdate}
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}

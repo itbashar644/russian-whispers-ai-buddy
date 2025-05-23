@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Archive, ChevronDown, ChevronUp, Truck } from "lucide-react";
+import { Archive, ChevronDown, ChevronUp, Truck, RotateCcw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -43,6 +43,7 @@ interface OrderRowProps {
   order: Order;
   onStatusChange: (orderId: string, newStatus: Order["status"]) => void;
   onArchive: (orderId: string) => void;
+  onRestore: (orderId: string) => void;
   onTrackingUpdate: (orderId: string, trackingNumber: string, trackingUrl: string) => void;
   getStatusColor: (status: Order["status"]) => string;
   getStatusText: (status: Order["status"]) => string;
@@ -52,6 +53,7 @@ const OrderRow: React.FC<OrderRowProps> = ({
   order,
   onStatusChange,
   onArchive,
+  onRestore,
   onTrackingUpdate,
   getStatusColor,
   getStatusText
@@ -116,16 +118,28 @@ const OrderRow: React.FC<OrderRowProps> = ({
               }
             />
 
-            {order.status !== 'archived' && (
+            {order.status === 'archived' ? (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => onRestore(order.id)}
+                className="text-green-600"
+                title="Восстановить заказ"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            ) : (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => onArchive(order.id)}
                 className="text-gray-500"
+                title="Архивировать заказ"
               >
                 <Archive className="h-4 w-4" />
               </Button>
             )}
+            
             <Select
               value={order.status}
               onValueChange={(value) => onStatusChange(order.id, value as Order["status"])}

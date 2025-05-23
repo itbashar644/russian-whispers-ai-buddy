@@ -13,20 +13,20 @@ const Account = () => {
   const navigate = useNavigate();
   const { logout, isAuthenticated, profile, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
-  const [hasChecked, setHasChecked] = useState(false);
 
-  // Handle redirect if not authenticated - только после того как проверка завершена
+  // Упрощенная логика проверки аутентификации
   useEffect(() => {
-    if (!isLoading && !hasChecked) {
-      setHasChecked(true);
-      if (!isAuthenticated || !profile) {
+    // Ждем завершения загрузки перед проверкой
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        console.log('User not authenticated, redirecting to login');
         navigate("/login", { replace: true });
       }
     }
-  }, [isAuthenticated, profile, isLoading, navigate, hasChecked]);
+  }, [isAuthenticated, isLoading, navigate]);
 
-  // Показываем загрузку пока идет проверка аутентификации
-  if (isLoading || !hasChecked) {
+  // Показываем загрузку только пока идет проверка
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -37,8 +37,8 @@ const Account = () => {
     );
   }
 
-  // Если пользователь не авторизован, не рендерим ничего (редирект уже произошел)
-  if (!isAuthenticated || !profile) {
+  // Если не авторизован, не рендерим контент (редирект уже произошел)
+  if (!isAuthenticated) {
     return null;
   }
 

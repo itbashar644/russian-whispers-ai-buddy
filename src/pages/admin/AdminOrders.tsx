@@ -1,24 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { 
-  getAllOrders, 
-  updateOrderStatus, 
-  updateOrderTracking 
-} from "@/services/orderService";
-import OrderFilter from "@/components/admin/orders/OrderFilter";
+import { Button } from "@/components/ui/button";
+import { Download, RefreshCw } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
+import OrderFilter from "@/components/admin/orders/OrderFilter";
+import { getAllOrders, updateOrderStatus, updateOrderTracking } from "@/services/orderService";
 
-// Типы для заказов
-export interface OrderItem {
+interface OrderItem {
   productId: string;
   productName: string;
   price: number;
@@ -28,7 +17,7 @@ export interface OrderItem {
   articleNumber?: string;
 }
 
-export interface Order {
+interface Order {
   id: string;
   orderNumber: number;
   customerName: string;
@@ -47,258 +36,193 @@ export interface Order {
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showArchived, setShowArchived] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
-  // Загрузка заказов из Supabase
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const result = await getAllOrders();
-
-        if (result.success && result.orders) {
-          // Преобразуем данные из базы в формат Order
-          const formattedOrders: Order[] = result.orders.map(order => ({
-            id: order.id,
-            orderNumber: order.order_number,
-            customerName: order.customer_name,
-            customerEmail: order.customer_email,
-            customerPhone: order.customer_phone,
-            // Use type assertion to properly convert JSON items to OrderItem[]
-            items: (order.items as unknown) as OrderItem[],
-            total: order.total,
-            status: validateOrderStatus(order.status),
-            date: order.created_at,
-            address: order.delivery_address,
-            deliveryMethod: order.delivery_method,
-            userId: order.user_id,
-            trackingNumber: order.tracking_number || undefined,
-            trackingUrl: order.tracking_url || undefined
-          }));
-          
-          setOrders(formattedOrders);
-        } else {
-          throw new Error("Failed to fetch orders");
-        }
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-        toast.error('Ошибка при загрузке заказов');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
-
-    // Subscribe to real-time updates
-    const ordersSubscription = supabase
-      .channel('orders_admin_channel')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'orders' 
-        },
-        (payload) => {
-          const newOrder = payload.new as any;
-          
-          const formattedOrder: Order = {
-            id: newOrder.id,
-            orderNumber: newOrder.order_number,
-            customerName: newOrder.customer_name,
-            customerEmail: newOrder.customer_email,
-            customerPhone: newOrder.customer_phone,
-            // Cast JSON items to OrderItem[] type using double assertion
-            items: (newOrder.items as unknown) as OrderItem[],
-            total: newOrder.total,
-            status: validateOrderStatus(newOrder.status),
-            date: newOrder.created_at,
-            address: newOrder.delivery_address,
-            deliveryMethod: newOrder.delivery_method,
-            userId: newOrder.user_id,
-            trackingNumber: newOrder.tracking_number || undefined,
-            trackingUrl: newOrder.tracking_url || undefined
-          };
-          
-          setOrders(prevOrders => [formattedOrder, ...prevOrders]);
-          toast.info(`Получен новый заказ №${newOrder.order_number}`);
-        }
-      )
-      .subscribe();
-      
-    // Cleanup on unmount
-    return () => {
-      supabase.removeChannel(ordersSubscription);
-    };
   }, []);
 
-  // Helper function to validate order status
-  const validateOrderStatus = (status: string): Order["status"] => {
-    const validStatuses: Order["status"][] = ["new", "processing", "shipped", "delivered", "cancelled", "archived"];
-    return validStatuses.includes(status as Order["status"]) 
-      ? (status as Order["status"]) 
-      : "new"; // Default to "new" if invalid status
+  useEffect(() => {
+    filterOrders();
+  }, [orders, selectedStatus]);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const result = await getAllOrders();
+      if (result.success && result.orders) {
+        const transformedOrders = result.orders.map((order: any) => ({
+          id: order.id,
+          orderNumber: order.order_number || 0,
+          customerName: order.customer_name || '',
+          customerEmail: order.customer_email || '',
+          customerPhone: order.customer_phone || '',
+          items: order.items || [],
+          total: parseFloat(order.total) || 0,
+          status: order.status || 'new',
+          date: order.created_at,
+          address: order.delivery_address || '',
+          deliveryMethod: order.delivery_method || '',
+          userId: order.user_id,
+          trackingNumber: order.tracking_number,
+          trackingUrl: order.tracking_url
+        }));
+        setOrders(transformedOrders);
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить заказы",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при загрузке заказов",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterOrders = () => {
+    if (selectedStatus === "all") {
+      setFilteredOrders(orders);
+    } else {
+      setFilteredOrders(orders.filter(order => order.status === selectedStatus));
+    }
   };
 
   const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
     try {
       const result = await updateOrderStatus(orderId, newStatus);
-      
       if (result.success) {
-        // Обновляем локальное состояние заказов
-        setOrders(
-          orders.map((order) =>
-            order.id === orderId ? { ...order, status: newStatus } : order
-          )
-        );
-        
-        toast.success('Статус заказа обновлен', {
-          description: `Заказ №${orders.find(o => o.id === orderId)?.orderNumber} теперь имеет статус "${getStatusText(newStatus)}"`,
+        setOrders(orders.map(order => 
+          order.id === orderId ? { ...order, status: newStatus } : order
+        ));
+        toast({
+          title: "Успешно",
+          description: "Статус заказа обновлен",
         });
       } else {
-        throw new Error("Failed to update order status");
+        toast({
+          title: "Ошибка",
+          description: "Не удалось обновить статус заказа",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Ошибка при обновлении статуса заказа');
+      console.error("Error updating order status:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при обновлении статуса заказа",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleArchiveOrder = async (orderId: string) => {
-    await handleStatusChange(orderId, "archived");
+  const handleArchive = (orderId: string) => {
+    handleStatusChange(orderId, "archived");
+  };
+
+  const handleRestore = (orderId: string) => {
+    handleStatusChange(orderId, "new");
   };
 
   const handleTrackingUpdate = async (orderId: string, trackingNumber: string, trackingUrl: string) => {
     try {
-      const result = await updateOrderTracking(
-        orderId, 
-        trackingNumber.trim(),
-        trackingUrl.trim()
-      );
-      
+      const result = await updateOrderTracking(orderId, trackingNumber, trackingUrl);
       if (result.success) {
-        // Update local state
-        setOrders(
-          orders.map((order) =>
-            order.id === orderId 
-              ? { 
-                  ...order, 
-                  trackingNumber: trackingNumber.trim(),
-                  trackingUrl: trackingUrl.trim() 
-                } 
-              : order
-          )
-        );
-        
-        const orderNumber = orders.find(o => o.id === orderId)?.orderNumber;
-        toast.success('Информация о треке обновлена', {
-          description: `Трек-номер для заказа №${orderNumber} успешно сохранен`,
+        setOrders(orders.map(order => 
+          order.id === orderId 
+            ? { ...order, trackingNumber, trackingUrl } 
+            : order
+        ));
+        toast({
+          title: "Успешно",
+          description: "Информация о трекинге обновлена",
         });
       } else {
-        throw new Error("Failed to update tracking information");
+        toast({
+          title: "Ошибка",
+          description: "Не удалось обновить информацию о трекинге",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error updating tracking information:', error);
-      toast.error('Ошибка при обновлении информации о треке');
+      console.error("Error updating tracking info:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при обновлении трекинга",
+        variant: "destructive",
+      });
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
-    // Фильтрация по архивным заказам
-    if (!showArchived && order.status === "archived") {
-      return false;
-    }
-    
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerPhone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.orderNumber.toString().includes(searchTerm);
-
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
-      case "new":
-        return "bg-blue-100 text-blue-800";
-      case "processing":
-        return "bg-yellow-100 text-yellow-800";
-      case "shipped":
-        return "bg-purple-100 text-purple-800";
-      case "delivered":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      case "archived":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "new": return "bg-blue-100 text-blue-800";
+      case "processing": return "bg-yellow-100 text-yellow-800";
+      case "shipped": return "bg-purple-100 text-purple-800";
+      case "delivered": return "bg-green-100 text-green-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      case "archived": return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusText = (status: Order["status"]) => {
-    const statusMap: Record<Order["status"], string> = {
-      new: "Новый",
-      processing: "В обработке",
-      shipped: "Отправлен",
-      delivered: "Доставлен",
-      cancelled: "Отменен",
-      archived: "Архивирован"
-    };
-    return statusMap[status];
+    switch (status) {
+      case "new": return "Новый";
+      case "processing": return "В обработке";
+      case "shipped": return "Отправлен";
+      case "delivered": return "Доставлен";
+      case "cancelled": return "Отменен";
+      case "archived": return "Архивирован";
+      default: return status;
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Управление заказами</h2>
+        <h1 className="text-2xl font-bold">Управление заказами</h1>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={fetchOrders} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Обновить
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Фильтры</CardTitle>
-          <CardDescription>
-            Отфильтруйте заказы по статусу или воспользуйтесь поиском
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <OrderFilter 
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            showArchived={showArchived}
-            onToggleArchived={() => setShowArchived(!showArchived)}
-          />
-        </CardContent>
-      </Card>
+      <OrderFilter
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        ordersCount={{
+          all: orders.length,
+          new: orders.filter(o => o.status === 'new').length,
+          processing: orders.filter(o => o.status === 'processing').length,
+          shipped: orders.filter(o => o.status === 'shipped').length,
+          delivered: orders.filter(o => o.status === 'delivered').length,
+          cancelled: orders.filter(o => o.status === 'cancelled').length,
+          archived: orders.filter(o => o.status === 'archived').length,
+        }}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Список заказов</CardTitle>
-          <CardDescription>
-            Всего заказов: {filteredOrders.length}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <OrdersTable 
-            orders={filteredOrders}
-            loading={loading}
-            onStatusChange={handleStatusChange}
-            onArchive={handleArchiveOrder}
-            onTrackingUpdate={handleTrackingUpdate}
-            getStatusColor={getStatusColor}
-            getStatusText={getStatusText}
-          />
-        </CardContent>
-      </Card>
+      <OrdersTable
+        orders={filteredOrders}
+        loading={loading}
+        onStatusChange={handleStatusChange}
+        onArchive={handleArchive}
+        onRestore={handleRestore}
+        onTrackingUpdate={handleTrackingUpdate}
+        getStatusColor={getStatusColor}
+        getStatusText={getStatusText}
+      />
     </div>
   );
 };

@@ -1,86 +1,107 @@
 
-import { Routes, Route, NavLink, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+import AdminAuth from "@/components/admin/AdminAuth";
 import AdminDashboard from "./AdminDashboard";
 import AdminProducts from "./AdminProducts";
-import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import AdminCustomers from "./AdminCustomers";
-import AdminReports from "./AdminReports";
+import AdminCategories from "./AdminCategories";
 import AdminSettings from "./AdminSettings";
+import AdminReports from "./AdminReports";
 import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
-import AdminAuth from "@/components/admin/AdminAuth";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset
-} from "@/components/ui/sidebar";
-import { LayoutDashboard, Package, LayoutList, ShoppingBag, Users, Mail, BarChart, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const AdminPanel = () => {
-  const location = useLocation();
-  
-  const menuItems = [
-    { path: "/admin", label: "Дашборд", icon: LayoutDashboard, exact: true },
-    { path: "/admin/products", label: "Товары", icon: Package },
-    { path: "/admin/categories", label: "Категории", icon: LayoutList },
-    { path: "/admin/orders", label: "Заказы", icon: ShoppingBag },
-    { path: "/admin/customers", label: "Клиенты", icon: Users },
-    { path: "/admin/marketing", label: "Рассылки", icon: Mail },
-    { path: "/admin/reports", label: "Отчеты", icon: BarChart },
-    { path: "/admin/settings", label: "Настройки", icon: Settings }
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navigation = [
+    { name: 'Дашборд', href: '/admin/dashboard', current: false },
+    { name: 'Товары', href: '/admin/products', current: false },
+    { name: 'Заказы', href: '/admin/orders', current: false },
+    { name: 'Клиенты', href: '/admin/customers', current: false },
+    { name: 'Категории', href: '/admin/categories', current: false },
+    { name: 'Рассылка', href: '/admin/newsletter', current: false },
+    { name: 'Отчеты', href: '/admin/reports', current: false },
+    { name: 'Настройки', href: '/admin/settings', current: false },
   ];
-  
+
   return (
     <AdminAuth>
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full">
-          <Sidebar>
-            <div className="px-6 py-5 border-b">
-              <h2 className="text-xl font-bold">Админ панель</h2>
-            </div>
-            <SidebarContent>
-              <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={item.exact 
-                        ? location.pathname === item.path
-                        : location.pathname.startsWith(item.path)}
-                      tooltip={item.label}
-                    >
-                      <NavLink to={item.path} end={item.exact}>
-                        <item.icon className="mr-2" />
-                        <span>{item.label}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-          </Sidebar>
+      <div className="flex h-screen bg-gray-100 overflow-hidden">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <div className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}>
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+            <h1 className="text-xl font-semibold text-gray-800">Админ-панель</h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
           
-          <div className="flex-1 overflow-auto">
-            <SidebarInset className="p-4 md:p-8">
+          <nav className="mt-5 px-2 space-y-1 overflow-y-auto max-h-[calc(100vh-4rem)]">
+            {navigation.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors"
+              >
+                {item.name}
+              </a>
+            ))}
+          </nav>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile header */}
+          <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">Админ-панель</h1>
+            <div className="w-8" /> {/* Spacer for centering */}
+          </div>
+
+          {/* Content area with proper scrolling */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
               <Routes>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products/*" element={<AdminProducts />} />
-                <Route path="categories/*" element={<AdminCategories />} />
-                <Route path="orders/*" element={<AdminOrders />} />
-                <Route path="customers/*" element={<AdminCustomers />} />
-                <Route path="marketing" element={<NewsletterManager />} />
-                <Route path="reports/*" element={<AdminReports />} />
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="newsletter" element={<NewsletterManager />} />
+                <Route path="reports" element={<AdminReports />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Routes>
-            </SidebarInset>
-          </div>
+            </div>
+          </main>
         </div>
-      </SidebarProvider>
+      </div>
     </AdminAuth>
   );
 };
