@@ -19,6 +19,7 @@ const ChatWidget: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { isAuthenticated, profile } = useAuth();
 
   // Helper function to fetch messages
@@ -74,6 +75,16 @@ const ChatWidget: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Focus input when chat opens on mobile
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small delay to ensure the chat is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+
   const handleToggleChat = () => {
     setIsOpen(!isOpen);
   };
@@ -85,31 +96,51 @@ const ChatWidget: React.FC = () => {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!message.trim()) return;
+    if (!message.trim() || isSending) return;
     
+    const messageToSend = message.trim();
+    setMessage(""); // Clear immediately for better UX
     setIsSending(true);
     
     try {
+      console.log("Sending message:", messageToSend);
+      
       const userInfo = {
         name: profile?.name || '',
         email: profile?.email || ''
       };
       
-      const success = await sendMessage(message, userInfo);
+      const success = await sendMessage(messageToSend, userInfo);
       
       if (success) {
-        setMessage("");
-        await fetchMessages();
+        console.log("Message sent successfully");
+        await fetchMessages(); // Refresh messages
+        toast.success("Сообщение отправлено");
       } else {
+        console.error("Failed to send message");
+        setMessage(messageToSend); // Restore message on failure
         toast.error("Ошибка отправки сообщения", {
           description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
         });
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setMessage(messageToSend); // Restore message on error
       toast.error("Ошибка отправки сообщения");
     } finally {
       setIsSending(false);
+      // Refocus input on mobile
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
     }
   };
 
@@ -119,12 +150,12 @@ const ChatWidget: React.FC = () => {
       onClick={handleToggleChat}
       variant="outline"
       size="icon"
-      className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-40"
+      className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-40 bg-white border-2"
       aria-label="Открыть чат"
     >
       <MessageSquare />
       {unreadCount > 0 && (
-        <Badge className="absolute -top-2 -right-2">
+        <Badge className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs">
           {unreadCount}
         </Badge>
       )}
@@ -133,7 +164,7 @@ const ChatWidget: React.FC = () => {
 
   // Render the chat window
   const renderChatWindow = () => (
-    <Card className="fixed bottom-4 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] flex flex-col shadow-lg animate-in slide-in-from-bottom-5 z-50">
+    <Card className="fixed bottom-4 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] flex flex-col shadow-lg animate-in slide-in-from-bottom-5 z-50 bg-white">
       <CardHeader className="p-3 border-b flex-shrink-0">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Чат с поддержкой</CardTitle>
@@ -166,8 +197,10 @@ const ChatWidget: React.FC = () => {
       <CardFooter className="p-3 border-t flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex w-full gap-2">
           <Input
+            ref={inputRef}
             value={message}
             onChange={handleMessageChange}
+            onKeyPress={handleKeyPress}
             placeholder="Введите сообщение..."
             disabled={isSending}
             className="flex-1"
