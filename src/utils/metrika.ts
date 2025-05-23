@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for Yandex Metrika tracking
  */
@@ -55,6 +56,52 @@ export function trackGoal(target: string, params?: Record<string, any>) {
       (window as any).ym(COUNTER_ID, 'reachGoal', target, params);
     } else {
       (window as any).ym(COUNTER_ID, 'reachGoal', target);
+    }
+  }
+}
+
+/**
+ * Track a purchase completion
+ * @param purchaseData - Purchase information
+ */
+export function trackPurchase(purchaseData: {
+  orderId: string;
+  revenue?: number;
+  items?: Array<{
+    id: string;
+    name: string;
+    category?: string;
+    quantity?: number;
+    price?: number;
+  }>;
+}) {
+  if (typeof window !== 'undefined' && (window as any).ym) {
+    try {
+      // Track as a goal
+      trackGoal('purchase', {
+        order_id: purchaseData.orderId,
+        revenue: purchaseData.revenue,
+        items_count: purchaseData.items?.length || 0
+      });
+      
+      // Also send ecommerce purchase data if available
+      if ((window as any).dataLayer && purchaseData.items) {
+        (window as any).dataLayer.push({
+          'ecommerce': {
+            'purchase': {
+              'actionField': {
+                'id': purchaseData.orderId,
+                'revenue': purchaseData.revenue
+              },
+              'products': purchaseData.items
+            }
+          }
+        });
+      }
+      
+      console.debug('[Metrika] Tracked purchase:', purchaseData);
+    } catch (error) {
+      console.error('[Metrika] Error tracking purchase:', error);
     }
   }
 }
