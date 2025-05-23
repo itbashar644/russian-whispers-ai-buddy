@@ -11,29 +11,41 @@ import ProfileForm from "@/components/account/ProfileForm";
 
 const Account = () => {
   const navigate = useNavigate();
-  const { logout, isAuthenticated, profile } = useAuth();
+  const { logout, isAuthenticated, profile, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
+  const [hasChecked, setHasChecked] = useState(false);
 
-  // Handle redirect if not authenticated
+  // Handle redirect if not authenticated - только после того как проверка завершена
   useEffect(() => {
-    if (!isAuthenticated || !profile) {
-      navigate("/login");
+    if (!isLoading && !hasChecked) {
+      setHasChecked(true);
+      if (!isAuthenticated || !profile) {
+        navigate("/login", { replace: true });
+      }
     }
-  }, [isAuthenticated, profile, navigate]);
+  }, [isAuthenticated, profile, isLoading, navigate, hasChecked]);
 
-  // If not authenticated, render a loading state
-  if (!isAuthenticated || !profile) {
+  // Показываем загрузку пока идет проверка аутентификации
+  if (isLoading || !hasChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Загрузка...</p>
+        </div>
       </div>
     );
+  }
+
+  // Если пользователь не авторизован, не рендерим ничего (редирект уже произошел)
+  if (!isAuthenticated || !profile) {
+    return null;
   }
 
   // Handle logout
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (

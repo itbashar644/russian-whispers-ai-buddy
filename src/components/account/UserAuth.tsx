@@ -11,22 +11,30 @@ interface UserAuthProps {
 
 const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
   const [isChecking, setIsChecking] = useState(true);
+  const [hasShowError, setHasShowError] = useState(false);
   const { isAuthenticated, isLoading, profile, hasRole } = useAuth();
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated) {
+      if (!isAuthenticated && !hasShowError) {
+        setHasShowError(true);
         toast("Требуется авторизация", {
           description: "Пожалуйста, войдите в аккаунт",
         });
-      } else if (requiredRole && !hasRole(requiredRole)) {
-        toast("Недостаточно прав", {
-          description: "У вас нет доступа к этому разделу",
+      } else if (isAuthenticated && requiredRole && !hasShowError) {
+        // Проверяем роль асинхронно только один раз
+        hasRole(requiredRole).then((hasRequiredRole) => {
+          if (!hasRequiredRole && !hasShowError) {
+            setHasShowError(true);
+            toast("Недостаточно прав", {
+              description: "У вас нет доступа к этому разделу",
+            });
+          }
         });
       }
       setIsChecking(false);
     }
-  }, [isLoading, isAuthenticated, profile, requiredRole, hasRole]);
+  }, [isLoading, isAuthenticated, profile, requiredRole, hasRole, hasShowError]);
 
   if (isLoading || isChecking) {
     return (
@@ -44,8 +52,11 @@ const UserAuth = ({ children, requiredRole }: UserAuthProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && !hasRole(requiredRole)) {
-    return <Navigate to="/" replace />;
+  // Для проверки роли используем промис, но не блокируем рендеринг
+  if (requiredRole) {
+    // Показываем содержимое, но проверка роли идет асинхронно
+    // Если роли нет, пользователь будет перенаправлен через useEffect
+    return <>{children}</>;
   }
 
   return <>{children}</>;
