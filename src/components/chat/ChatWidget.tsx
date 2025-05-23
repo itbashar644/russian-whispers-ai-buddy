@@ -119,7 +119,7 @@ const ChatWidget: React.FC = () => {
       onClick={handleToggleChat}
       variant="outline"
       size="icon"
-      className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+      className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-40"
       aria-label="Открыть чат"
     >
       <MessageSquare />
@@ -134,7 +134,7 @@ const ChatWidget: React.FC = () => {
   // Render the chat window
   const renderChatWindow = () => (
     <Card className="fixed bottom-4 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] flex flex-col shadow-lg animate-in slide-in-from-bottom-5 z-50">
-      <CardHeader className="p-3 border-b">
+      <CardHeader className="p-3 border-b flex-shrink-0">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Чат с поддержкой</CardTitle>
           <Button variant="ghost" size="icon" onClick={handleToggleChat}>
@@ -163,7 +163,7 @@ const ChatWidget: React.FC = () => {
         </div>
       </ScrollArea>
       
-      <CardFooter className="p-3 border-t">
+      <CardFooter className="p-3 border-t flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex w-full gap-2">
           <Input
             value={message}
@@ -171,8 +171,15 @@ const ChatWidget: React.FC = () => {
             placeholder="Введите сообщение..."
             disabled={isSending}
             className="flex-1"
+            autoComplete="off"
+            inputMode="text"
           />
-          <Button type="submit" size="icon" disabled={isSending}>
+          <Button 
+            type="submit" 
+            size="icon" 
+            disabled={isSending || !message.trim()}
+            className="flex-shrink-0"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </form>

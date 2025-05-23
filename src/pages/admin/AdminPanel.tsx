@@ -30,7 +30,7 @@ const AdminPanel = () => {
 
   return (
     <AdminAuth>
-      <div className="flex h-screen bg-gray-100 overflow-hidden">
+      <div className="flex h-screen bg-gray-100">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div 
@@ -41,10 +41,10 @@ const AdminPanel = () => {
 
         {/* Sidebar */}
         <div className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}>
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 flex-shrink-0">
             <h1 className="text-xl font-semibold text-gray-800">Админ-панель</h1>
             <Button
               variant="ghost"
@@ -56,7 +56,7 @@ const AdminPanel = () => {
             </Button>
           </div>
           
-          <nav className="mt-5 px-2 space-y-1 overflow-y-auto max-h-[calc(100vh-4rem)]">
+          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => (
               <a
                 key={item.name}
@@ -70,9 +70,9 @@ const AdminPanel = () => {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Mobile header */}
-          <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200">
+          <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -86,7 +86,7 @@ const AdminPanel = () => {
 
           {/* Content area with proper scrolling */}
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-full mx-auto">
               <Routes>
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />

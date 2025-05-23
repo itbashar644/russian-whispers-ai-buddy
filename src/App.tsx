@@ -36,6 +36,7 @@ import AccountSecurity from "@/pages/account/AccountSecurity";
 import UserOrders from "@/pages/account/UserOrders";
 import Wishlist from "@/pages/Wishlist";
 import ThankYou from "@/pages/ThankYou";
+import OrderSuccess from "@/pages/OrderSuccess";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
 import ChatWidget from "@/components/chat/ChatWidget";
@@ -69,6 +70,7 @@ function App() {
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/thank-you" element={<ThankYou />} />
+                  <Route path="/order-success" element={<OrderSuccess />} />
                   
                   {/* Account routes */}
                   <Route path="/account" element={<Account />} />
