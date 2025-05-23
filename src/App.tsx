@@ -35,6 +35,7 @@ import Account from "@/pages/account/Account";
 import AccountSecurity from "@/pages/account/AccountSecurity";
 import UserOrders from "@/pages/account/UserOrders";
 import Wishlist from "@/pages/Wishlist";
+import ThankYou from "@/pages/ThankYou";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
 import ChatWidget from "@/components/chat/ChatWidget";
@@ -67,6 +68,7 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
                   
                   {/* Account routes */}
                   <Route path="/account" element={<Account />} />
