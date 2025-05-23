@@ -42,7 +42,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ mainImage, additionalImages
               <img 
                 src={img} 
                 alt={`Product thumbnail ${index + 1}`}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover"
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.src = "/placeholder.svg";
                 }}

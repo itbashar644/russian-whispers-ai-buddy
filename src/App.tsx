@@ -30,6 +30,7 @@ import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminReports from "@/pages/admin/AdminReports";
+import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
 import Account from "@/pages/account/Account";
 import AccountSecurity from "@/pages/account/AccountSecurity";
 import UserOrders from "@/pages/account/UserOrders";
@@ -73,15 +74,7 @@ function App() {
                   <Route path="/account/orders" element={<UserOrders />} />
                   
                   {/* Admin routes */}
-                  <Route path="/admin" element={<AdminPanel />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="products" element={<AdminProducts />} />
-                    <Route path="orders" element={<AdminOrders />} />
-                    <Route path="customers" element={<AdminCustomers />} />
-                    <Route path="categories" element={<AdminCategories />} />
-                    <Route path="reports" element={<AdminReports />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                  </Route>
+                  <Route path="/admin/*" element={<AdminPanel />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   
                   {/* 404 route */}

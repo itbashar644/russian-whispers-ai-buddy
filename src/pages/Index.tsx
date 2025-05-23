@@ -86,7 +86,7 @@ const Index = () => {
               <div className="rounded-lg overflow-hidden">
                 <img
                   alt="Современные технологические товары"
-                   className="aspect-[3/4] object-cover w-full"
+                  className="aspect-square object-cover w-full max-w-md mx-auto"
                   src="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png"
                 />
               </div>
@@ -124,6 +124,7 @@ const Index = () => {
                         alt={category.name}
                         className="absolute top-0 left-0 h-full w-full object-cover transition-transform group-hover:scale-105"
                         src={category.imageUrl}
+                        loading="lazy"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/placeholder.svg";
                         }}
