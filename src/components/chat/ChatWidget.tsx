@@ -75,16 +75,6 @@ const ChatWidget: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Focus input when chat opens on mobile
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      // Small delay to ensure the chat is fully rendered
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
-  }, [isOpen]);
-
   const handleToggleChat = () => {
     setIsOpen(!isOpen);
   };
@@ -99,7 +89,6 @@ const ChatWidget: React.FC = () => {
     if (!message.trim() || isSending) return;
     
     const messageToSend = message.trim();
-    setMessage(""); // Clear immediately for better UX
     setIsSending(true);
     
     try {
@@ -110,6 +99,9 @@ const ChatWidget: React.FC = () => {
         email: profile?.email || ''
       };
       
+      // Clear message field immediately for better UX
+      setMessage("");
+      
       const success = await sendMessage(messageToSend, userInfo);
       
       if (success) {
@@ -118,21 +110,26 @@ const ChatWidget: React.FC = () => {
         toast.success("Сообщение отправлено");
       } else {
         console.error("Failed to send message");
-        setMessage(messageToSend); // Restore message on failure
+        // Restore message on failure
+        setMessage(messageToSend);
         toast.error("Ошибка отправки сообщения", {
           description: "Не удалось отправить сообщение. Пожалуйста, попробуйте позже."
         });
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessage(messageToSend); // Restore message on error
+      // Restore message on error
+      setMessage(messageToSend);
       toast.error("Ошибка отправки сообщения");
     } finally {
       setIsSending(false);
-      // Refocus input on mobile
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      
+      // Ensure input stays focused on mobile
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
@@ -206,6 +203,14 @@ const ChatWidget: React.FC = () => {
             className="flex-1"
             autoComplete="off"
             inputMode="text"
+            onBlur={() => {
+              // Prevent zoom on iOS by refocusing after a short delay
+              setTimeout(() => {
+                if (inputRef.current && isOpen) {
+                  inputRef.current.focus();
+                }
+              }, 100);
+            }}
           />
           <Button 
             type="submit" 

@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PackageCheck } from "lucide-react";
 
@@ -13,7 +12,6 @@ interface InStockFilterProps {
 
 const InStockFilter: React.FC<InStockFilterProps> = ({
   inStockOnly,
-  inStockCount,
   handleInStockFilter,
   loading
 }) => {
@@ -24,23 +22,19 @@ const InStockFilter: React.FC<InStockFilterProps> = ({
         Наличие
       </h3>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="in-stock" 
-              checked={inStockOnly} 
-              onCheckedChange={(checked) => handleInStockFilter(checked === true)}
-              disabled={loading}
-            />
-            <label
-              htmlFor="in-stock"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Только в наличии
-            </label>
-          </div>
-          
-          <Badge variant="outline">{inStockCount}</Badge>
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="in-stock" 
+            checked={inStockOnly} 
+            onCheckedChange={(checked) => handleInStockFilter(checked === true)}
+            disabled={loading}
+          />
+          <label
+            htmlFor="in-stock"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Только в наличии
+          </label>
         </div>
       </div>
     </div>
