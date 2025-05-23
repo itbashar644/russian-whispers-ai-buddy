@@ -1,7 +1,5 @@
 
 import React from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { 
   Select,
   SelectContent,
@@ -9,61 +7,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Archive } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface OrderFilterProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  statusFilter: string;
+  selectedStatus: string;
   onStatusChange: (value: string) => void;
-  showArchived: boolean;
-  onToggleArchived: () => void;
+  ordersCount: {
+    all: number;
+    new: number;
+    processing: number;
+    shipped: number;
+    delivered: number;
+    cancelled: number;
+    archived: number;
+  };
 }
 
 const OrderFilter: React.FC<OrderFilterProps> = ({
-  searchTerm,
-  onSearchChange,
-  statusFilter,
+  selectedStatus,
   onStatusChange,
-  showArchived,
-  onToggleArchived,
+  ordersCount,
 }) => {
+  const statusOptions = [
+    { value: "all", label: "Все статусы", count: ordersCount.all },
+    { value: "new", label: "Новые", count: ordersCount.new },
+    { value: "processing", label: "В обработке", count: ordersCount.processing },
+    { value: "shipped", label: "Отправленные", count: ordersCount.shipped },
+    { value: "delivered", label: "Доставленные", count: ordersCount.delivered },
+    { value: "cancelled", label: "Отмененные", count: ordersCount.cancelled },
+    { value: "archived", label: "Архивированные", count: ordersCount.archived },
+  ];
+
   return (
-    <div className="flex flex-col md:flex-row gap-4">
+    <div className="flex flex-col md:flex-row gap-4 items-start">
       <div className="w-full md:w-1/3">
-        <Input
-          placeholder="Поиск по ID, имени или контактам"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-      <div className="w-full md:w-1/3">
-        <Select
-          value={statusFilter}
-          onValueChange={onStatusChange}
-        >
+        <Select value={selectedStatus} onValueChange={onStatusChange}>
           <SelectTrigger>
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все статусы</SelectItem>
-            <SelectItem value="new">Новые</SelectItem>
-            <SelectItem value="processing">В обработке</SelectItem>
-            <SelectItem value="shipped">Отправленные</SelectItem>
-            <SelectItem value="delivered">Доставленные</SelectItem>
-            <SelectItem value="cancelled">Отмененные</SelectItem>
-            <SelectItem value="archived">Архивированные</SelectItem>
+            {statusOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{option.label}</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {option.count}
+                  </Badge>
+                </div>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="w-full md:w-1/3 flex items-center space-x-2">
-        <Button 
-          variant={showArchived ? "default" : "outline"} 
-          onClick={onToggleArchived}
-        >
-          <Archive className="h-4 w-4 mr-2" />
-          {showArchived ? "Скрыть архивные" : "Показать архивные"}
-        </Button>
       </div>
     </div>
   );
