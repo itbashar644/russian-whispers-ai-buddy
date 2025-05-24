@@ -75,6 +75,19 @@ const ChatWidget: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Focus input when chat opens on mobile
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Delay focus to ensure the chat is fully rendered
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const handleToggleChat = () => {
     setIsOpen(!isOpen);
   };
@@ -83,17 +96,21 @@ const ChatWidget: React.FC = () => {
     setMessage(e.target.value);
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     
-    if (!message.trim() || isSending) return;
+    if (!message.trim() || isSending) {
+      console.log("Message empty or already sending", { message: message.trim(), isSending });
+      return;
+    }
     
     const messageToSend = message.trim();
+    console.log("Starting to send message:", messageToSend);
     setIsSending(true);
     
     try {
-      console.log("Sending message:", messageToSend);
-      
       const userInfo = {
         name: profile?.name || '',
         email: profile?.email || ''
@@ -101,15 +118,16 @@ const ChatWidget: React.FC = () => {
       
       // Clear message field immediately for better UX
       setMessage("");
+      console.log("Message field cleared, sending to server...");
       
       const success = await sendMessage(messageToSend, userInfo);
       
       if (success) {
-        console.log("Message sent successfully");
+        console.log("Message sent successfully, refreshing messages");
         await fetchMessages(); // Refresh messages
         toast.success("Сообщение отправлено");
       } else {
-        console.error("Failed to send message");
+        console.error("Failed to send message, restoring text");
         // Restore message on failure
         setMessage(messageToSend);
         toast.error("Ошибка отправки сообщения", {
@@ -123,21 +141,16 @@ const ChatWidget: React.FC = () => {
       toast.error("Ошибка отправки сообщения");
     } finally {
       setIsSending(false);
-      
-      // Ensure input stays focused on mobile
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
+      console.log("Send operation completed");
     }
   };
 
   // Handle Enter key press
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage(e);
+      console.log("Enter key pressed, attempting to send message");
+      handleSendMessage();
     }
   };
 
@@ -197,26 +210,22 @@ const ChatWidget: React.FC = () => {
             ref={inputRef}
             value={message}
             onChange={handleMessageChange}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Введите сообщение..."
             disabled={isSending}
             className="flex-1"
             autoComplete="off"
             inputMode="text"
-            onBlur={() => {
-              // Prevent zoom on iOS by refocusing after a short delay
-              setTimeout(() => {
-                if (inputRef.current && isOpen) {
-                  inputRef.current.focus();
-                }
-              }, 100);
-            }}
           />
           <Button 
             type="submit" 
             size="icon" 
             disabled={isSending || !message.trim()}
             className="flex-shrink-0"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
           >
             <Send className="h-4 w-4" />
           </Button>
