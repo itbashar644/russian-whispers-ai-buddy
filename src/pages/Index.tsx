@@ -87,7 +87,7 @@ const Index = () => {
                 <img
                   alt="Современные технологические товары"
                   className="aspect-square object-cover w-full max-w-md mx-auto"
-                  src="/lovable-uploads/20f4bfd6-6f1c-40b7-9d9c-9b1be8939979.png"
+                  src="/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png"
                 />
               </div>
             </div>

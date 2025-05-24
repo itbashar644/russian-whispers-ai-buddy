@@ -75,15 +75,19 @@ const ChatWidget: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Focus input when chat opens on mobile
+  // Focus input when chat opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      // Delay focus to ensure the chat is fully rendered
+      // Use a longer delay for mobile devices and ensure focus works
       const timer = setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
+          // On mobile, also trigger click to ensure virtual keyboard appears
+          if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            inputRef.current.click();
+          }
         }
-      }, 300);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -99,7 +103,14 @@ const ChatWidget: React.FC = () => {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
+      e.stopPropagation();
     }
+    
+    console.log("handleSendMessage called", { 
+      message: message.trim(), 
+      isSending, 
+      messageLength: message.length 
+    });
     
     if (!message.trim() || isSending) {
       console.log("Message empty or already sending", { message: message.trim(), isSending });
@@ -126,6 +137,15 @@ const ChatWidget: React.FC = () => {
         console.log("Message sent successfully, refreshing messages");
         await fetchMessages(); // Refresh messages
         toast.success("Сообщение отправлено");
+        
+        // Refocus input after sending on mobile
+        if (inputRef.current && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }, 100);
+        }
       } else {
         console.error("Failed to send message, restoring text");
         // Restore message on failure
@@ -145,13 +165,21 @@ const ChatWidget: React.FC = () => {
     }
   };
 
-  // Handle Enter key press
+  // Handle Enter key press with better mobile support
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       console.log("Enter key pressed, attempting to send message");
       handleSendMessage();
     }
+  };
+
+  // Handle button click with explicit event handling
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Send button clicked");
+    handleSendMessage();
   };
 
   // Render the widget button with unread badge
@@ -216,15 +244,18 @@ const ChatWidget: React.FC = () => {
             className="flex-1"
             autoComplete="off"
             inputMode="text"
+            enterKeyHint="send"
           />
           <Button 
-            type="submit" 
+            type="button"
             size="icon" 
             disabled={isSending || !message.trim()}
             className="flex-shrink-0"
-            onClick={(e) => {
+            onClick={handleButtonClick}
+            onTouchStart={(e) => {
+              // Prevent touch delay on mobile
               e.preventDefault();
-              handleSendMessage();
+              handleButtonClick(e as any);
             }}
           >
             <Send className="h-4 w-4" />
