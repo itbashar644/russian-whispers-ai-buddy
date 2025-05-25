@@ -61,8 +61,7 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
         {/* Color Options */}
         {product.colors && product.colors.length > 0 && (
           <ProductColorOptions
-            colors={product.colors}
-            colorVariants={product.colorVariants}
+            product={product}
             selectedColor={selectedColor}
             onColorSelect={handleColorSelect}
           />

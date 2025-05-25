@@ -24,7 +24,15 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
     cartContext = null;
   }
 
-  const { toggleWishlistItem, isInWishlist } = useWishlist();
+  // Check if WishlistProvider is available
+  let wishlistContext;
+  try {
+    wishlistContext = useWishlist();
+  } catch (error) {
+    console.warn("WishlistProvider not available, ProductCard will render without wishlist functionality");
+    wishlistContext = null;
+  }
+
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
   );
@@ -68,7 +76,14 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the heart
-    toggleWishlistItem(product);
+    if (wishlistContext) {
+      wishlistContext.toggleWishlistItem(product);
+    }
+  };
+
+  // Create a safe isInWishlist function
+  const isInWishlist = (product: Product) => {
+    return wishlistContext ? wishlistContext.isInWishlist(product.id) : false;
   };
 
   // Compact variant for smaller cards
