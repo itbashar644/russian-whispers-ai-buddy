@@ -24,23 +24,19 @@ export const checkProductStock = async (productId: string, colorVariant?: string
     if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
       if (variant) {
-        // Проверяем наличие stockQuantity и его значение
-        const hasStock = variant.stockQuantity !== undefined ? variant.stockQuantity > 0 : false;
-        console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}`);
+        // Stock is available only if stockQuantity is defined and > 0
+        const hasStock = (variant.stockQuantity || 0) > 0;
+        console.log(`Stock check for ${productId}, color ${colorVariant}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${variant.stockQuantity || 0}`);
         return hasStock;
       }
       return false;
     }
     
-    // Check main product stock - must be based on actual quantity
-    if (product.stockQuantity !== undefined) {
-      const hasStock = product.stockQuantity > 0;
-      console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${product.stockQuantity}`);
-      return hasStock;
-    }
-    
-    // Fallback to inStock boolean if stockQuantity is not defined
-    return product.inStock || false;
+    // Check main product stock - stock is available only if stockQuantity > 0
+    const stockQuantity = product.stockQuantity || 0;
+    const hasStock = stockQuantity > 0;
+    console.log(`Stock check for ${productId}: ${hasStock ? 'In stock' : 'Out of stock'}, Quantity: ${stockQuantity}`);
+    return hasStock;
   } catch (error) {
     console.error("Error checking product stock:", error);
     return false;
@@ -103,11 +99,11 @@ export const updateProductStock = async (productId: string, newQuantity: number,
     if (colorVariant && product.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === colorVariant);
       if (variant) {
-        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity}`);
+        console.log(`Found color variant ${colorVariant}, current stock: ${variant.stockQuantity || 0}`);
         variant.stockQuantity = Math.max(0, newQuantity);
         console.log(`Updated variant stock to: ${variant.stockQuantity}`);
         
-        // Update inStock status based on actual quantity - always set this based on stockQuantity
+        // Update inStock status based on actual quantity - product is in stock if ANY variant has stock > 0
         const hasAnyVariantStock = product.colorVariants.some(v => (v.stockQuantity || 0) > 0);
         product.inStock = hasAnyVariantStock;
         
@@ -126,10 +122,10 @@ export const updateProductStock = async (productId: string, newQuantity: number,
     }
     
     // Handle main product stock
-    console.log(`Updating main product stock. Current: ${product.stockQuantity}`);
+    console.log(`Updating main product stock. Current: ${product.stockQuantity || 0}`);
     product.stockQuantity = Math.max(0, newQuantity);
     
-    // Always set inStock based on actual quantity - ключевое изменение
+    // Always set inStock based on actual quantity - product is in stock only if stockQuantity > 0
     product.inStock = product.stockQuantity > 0;
     
     console.log("Setting product stock:", productId, "New quantity:", product.stockQuantity, "In stock:", product.inStock);

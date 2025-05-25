@@ -27,10 +27,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
     const messageToSend = message.trim();
     if (!messageToSend || isSending) return;
     
+    console.log('Sending message:', messageToSend);
     setMessage('');
     
     try {
       await onSendMessage(messageToSend);
+      console.log('Message sent successfully');
       
       // Refocus input after sending
       if (inputRef.current) {
@@ -41,6 +43,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
         }, 100);
       }
     } catch (error) {
+      console.error('Error sending message:', error);
       // Restore message on error
       setMessage(messageToSend);
     }
@@ -53,7 +56,14 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
     }
   };
 
-  const handleButtonClick = () => {
+  // Improved mobile event handling
+  const handleButtonInteraction = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!message.trim() || isSending) return;
+    
+    console.log('Button interaction triggered');
     handleSendMessage();
   };
 
@@ -72,12 +82,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
         enterKeyHint="send"
       />
       <Button 
-        type="button"
+        type="submit"
         size="icon" 
         disabled={isSending || !message.trim()}
         className="flex-shrink-0"
-        onClick={handleButtonClick}
-        onTouchEnd={handleButtonClick}
+        onClick={handleButtonInteraction}
+        onTouchStart={handleButtonInteraction}
+        style={{ WebkitTapHighlightColor: 'transparent' }}
       >
         <Send className="h-4 w-4" />
       </Button>

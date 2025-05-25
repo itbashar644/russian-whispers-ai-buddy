@@ -132,32 +132,39 @@ export const excelToProducts = async (data: ArrayBuffer): Promise<Product[]> => 
       );
     }
     
-    // Save products to database
+    // Save products to database with optimized batch processing
     console.log("Saving products to database...");
     
     const savedProducts: Product[] = [];
     
-    // Save in batches to avoid overloading the database
-    const batchSize = 10;
+    // Increased batch size for better performance
+    const batchSize = 25;
     for (let i = 0; i < products.length; i += batchSize) {
       const batch = products.slice(i, i + batchSize);
+      console.log(`Processing batch ${Math.floor(i/batchSize) + 1} of ${Math.ceil(products.length/batchSize)}`);
       
-      // Process each product in the batch
-      for (const product of batch) {
+      // Process batch concurrently for better performance
+      const batchPromises = batch.map(async (product) => {
         try {
           console.log(`Saving product: ${product.title}`);
           const result = await addOrUpdateProductInSupabase(product);
           
           if (result.success) {
             console.log(`Successfully saved product: ${product.title}`);
-            savedProducts.push(product);
+            return product;
           } else {
             console.error(`Failed to save product: ${product.title}`, result.error);
+            return null;
           }
         } catch (err) {
           console.error(`Error saving product ${product.title}:`, err);
+          return null;
         }
-      }
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      const successfulProducts = batchResults.filter(p => p !== null) as Product[];
+      savedProducts.push(...successfulProducts);
     }
     
     console.log(`${savedProducts.length} of ${products.length} products saved to database`);
@@ -232,83 +239,102 @@ export const updateProductsFromExcel = async (data: ArrayBuffer): Promise<Update
       errors: []
     };
     
-    // Process rows and update existing products
-    for (let i = 0; i < jsonData.length; i++) {
-      const row = jsonData[i];
-      const rowNum = i + 2; // +2 because Excel is 1-indexed and we have headers
+    // Process in batches for better performance
+    const batchSize = 20;
+    for (let batchStart = 0; batchStart < jsonData.length; batchStart += batchSize) {
+      const batchEnd = Math.min(batchStart + batchSize, jsonData.length);
+      const batch = jsonData.slice(batchStart, batchEnd);
       
-      try {
-        // Try to find the product by ID or article number
-        let existingProduct: Product | undefined = undefined;
+      console.log(`Processing update batch ${Math.floor(batchStart/batchSize) + 1} of ${Math.ceil(jsonData.length/batchSize)}`);
+      
+      // Process batch concurrently
+      const batchPromises = batch.map(async (row, index) => {
+        const rowNum = batchStart + index + 2; // +2 because Excel is 1-indexed and we have headers
         
-        if (row.id) {
-          existingProduct = productByIdMap.get(String(row.id));
+        try {
+          // Try to find the product by ID or article number
+          let existingProduct: Product | undefined = undefined;
+          
+          if (row.id) {
+            existingProduct = productByIdMap.get(String(row.id));
+          }
+          
+          if (!existingProduct && row.articleNumber) {
+            existingProduct = productByArticleMap.get(String(row.articleNumber));
+          }
+          
+          if (!existingProduct) {
+            console.log(`Product not found for row ${rowNum}: ID=${row.id}, ArticleNumber=${row.articleNumber}`);
+            return { type: 'notFound', error: `Строка ${rowNum}: товар не найден (ID=${row.id}, Артикул=${row.articleNumber})` };
+          }
+          
+          // Update product with Excel data
+          const updatedProduct: Product = { ...existingProduct };
+          
+          // Update fields only if they exist in the Excel row
+          if (row.title !== undefined) updatedProduct.title = String(row.title).trim();
+          if (row.description !== undefined) updatedProduct.description = String(row.description).trim();
+          if (row.price !== undefined && !isNaN(Number(row.price))) updatedProduct.price = Number(row.price);
+          if (row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice))) {
+            updatedProduct.discountPrice = Number(row.discountPrice);
+          }
+          if (row.category !== undefined) updatedProduct.category = String(row.category).trim();
+          if (row.imageUrl !== undefined) updatedProduct.imageUrl = String(row.imageUrl).trim() || '/placeholder.svg';
+          if (row.rating !== undefined) updatedProduct.rating = parseFloat(String(row.rating));
+          if (row.inStock !== undefined) updatedProduct.inStock = row.inStock === 'Да' || row.inStock === true || row.inStock === 'true';
+          if (row.countryOfOrigin !== undefined) updatedProduct.countryOfOrigin = String(row.countryOfOrigin).trim();
+          if (row.colors !== undefined) updatedProduct.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
+          if (row.sizes !== undefined) updatedProduct.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+          if (row.isNew !== undefined) updatedProduct.isNew = row.isNew === 'Да' || row.isNew === true || row.isNew === 'true';
+          if (row.isBestseller !== undefined) updatedProduct.isBestseller = row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true';
+          if (row.barcode !== undefined) updatedProduct.barcode = row.barcode ? String(row.barcode) : undefined;
+          if (row.wildberriesUrl !== undefined) updatedProduct.wildberriesUrl = row.wildberriesUrl ? String(row.wildberriesUrl) : undefined;
+          if (row.ozonUrl !== undefined) updatedProduct.ozonUrl = row.ozonUrl ? String(row.ozonUrl) : undefined;
+          if (row.avitoUrl !== undefined) updatedProduct.avitoUrl = row.avitoUrl ? String(row.avitoUrl) : undefined;
+          if (row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity))) {
+            updatedProduct.stockQuantity = Number(row.stockQuantity);
+          }
+          if (row.material !== undefined) updatedProduct.material = row.material ? String(row.material) : undefined;
+          if (row.modelName !== undefined) updatedProduct.modelName = row.modelName ? String(row.modelName) : undefined;
+          
+          // Add new category if needed
+          if (updatedProduct.category && !existingCategories.includes(updatedProduct.category)) {
+            console.log(`Adding new category: ${updatedProduct.category}`);
+            await addCategory(updatedProduct.category);
+            existingCategories.push(updatedProduct.category); // Update our local cache
+          }
+          
+          // Update the product in the database
+          console.log(`Updating product: ${updatedProduct.title}`);
+          const updateResult = await addOrUpdateProductInSupabase(updatedProduct);
+          
+          if (updateResult.success) {
+            console.log(`Successfully updated product: ${updatedProduct.title}`);
+            return { type: 'updated' };
+          } else {
+            console.error(`Failed to update product: ${updatedProduct.title}`, updateResult.error);
+            return { type: 'failed', error: `Строка ${rowNum}: ошибка обновления товара: ${updateResult.error}` };
+          }
+        } catch (err: any) {
+          console.error(`Error processing row ${rowNum}:`, err);
+          return { type: 'failed', error: `Строка ${rowNum}: ошибка обработки данных: ${err.message || "Неизвестная ошибка"}` };
         }
-        
-        if (!existingProduct && row.articleNumber) {
-          existingProduct = productByArticleMap.get(String(row.articleNumber));
-        }
-        
-        if (!existingProduct) {
-          console.log(`Product not found for row ${rowNum}: ID=${row.id}, ArticleNumber=${row.articleNumber}`);
-          result.notFound++;
-          result.errors.push(`Строка ${rowNum}: товар не найден (ID=${row.id}, Артикул=${row.articleNumber})`);
-          continue;
-        }
-        
-        // Update product with Excel data
-        const updatedProduct: Product = { ...existingProduct };
-        
-        // Update fields only if they exist in the Excel row
-        if (row.title !== undefined) updatedProduct.title = String(row.title).trim();
-        if (row.description !== undefined) updatedProduct.description = String(row.description).trim();
-        if (row.price !== undefined && !isNaN(Number(row.price))) updatedProduct.price = Number(row.price);
-        if (row.discountPrice !== undefined && row.discountPrice !== '' && !isNaN(Number(row.discountPrice))) {
-          updatedProduct.discountPrice = Number(row.discountPrice);
-        }
-        if (row.category !== undefined) updatedProduct.category = String(row.category).trim();
-        if (row.imageUrl !== undefined) updatedProduct.imageUrl = String(row.imageUrl).trim() || '/placeholder.svg';
-        if (row.rating !== undefined) updatedProduct.rating = parseFloat(String(row.rating));
-        if (row.inStock !== undefined) updatedProduct.inStock = row.inStock === 'Да' || row.inStock === true || row.inStock === 'true';
-        if (row.countryOfOrigin !== undefined) updatedProduct.countryOfOrigin = String(row.countryOfOrigin).trim();
-        if (row.colors !== undefined) updatedProduct.colors = String(row.colors).split(',').map((c: string) => c.trim()).filter((c: string) => c.length > 0);
-        if (row.sizes !== undefined) updatedProduct.sizes = String(row.sizes).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-        if (row.isNew !== undefined) updatedProduct.isNew = row.isNew === 'Да' || row.isNew === true || row.isNew === 'true';
-        if (row.isBestseller !== undefined) updatedProduct.isBestseller = row.isBestseller === 'Да' || row.isBestseller === true || row.isBestseller === 'true';
-        if (row.barcode !== undefined) updatedProduct.barcode = row.barcode ? String(row.barcode) : undefined;
-        if (row.wildberriesUrl !== undefined) updatedProduct.wildberriesUrl = row.wildberriesUrl ? String(row.wildberriesUrl) : undefined;
-        if (row.ozonUrl !== undefined) updatedProduct.ozonUrl = row.ozonUrl ? String(row.ozonUrl) : undefined;
-        if (row.avitoUrl !== undefined) updatedProduct.avitoUrl = row.avitoUrl ? String(row.avitoUrl) : undefined;
-        if (row.stockQuantity !== undefined && !isNaN(Number(row.stockQuantity))) {
-          updatedProduct.stockQuantity = Number(row.stockQuantity);
-        }
-        if (row.material !== undefined) updatedProduct.material = row.material ? String(row.material) : undefined;
-        if (row.modelName !== undefined) updatedProduct.modelName = row.modelName ? String(row.modelName) : undefined;
-        
-        // Add new category if needed
-        if (updatedProduct.category && !existingCategories.includes(updatedProduct.category)) {
-          console.log(`Adding new category: ${updatedProduct.category}`);
-          await addCategory(updatedProduct.category);
-          existingCategories.push(updatedProduct.category); // Update our local cache
-        }
-        
-        // Update the product in the database
-        console.log(`Updating product: ${updatedProduct.title}`);
-        const updateResult = await addOrUpdateProductInSupabase(updatedProduct);
-        
-        if (updateResult.success) {
-          console.log(`Successfully updated product: ${updatedProduct.title}`);
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Aggregate results
+      batchResults.forEach(batchResult => {
+        if (batchResult.type === 'updated') {
           result.updated++;
-        } else {
-          console.error(`Failed to update product: ${updatedProduct.title}`, updateResult.error);
+        } else if (batchResult.type === 'notFound') {
+          result.notFound++;
+          if (batchResult.error) result.errors.push(batchResult.error);
+        } else if (batchResult.type === 'failed') {
           result.failed++;
-          result.errors.push(`Строка ${rowNum}: ошибка обновления товара: ${updateResult.error}`);
+          if (batchResult.error) result.errors.push(batchResult.error);
         }
-      } catch (err: any) {
-        console.error(`Error processing row ${rowNum}:`, err);
-        result.failed++;
-        result.errors.push(`Строка ${rowNum}: ошибка обработки данных: ${err.message || "Неизвестная ошибка"}`);
-      }
+      });
     }
     
     console.log(`Update complete. Results: ${JSON.stringify(result)}`);
