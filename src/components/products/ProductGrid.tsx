@@ -55,8 +55,7 @@ const ProductGrid = ({
         {displayProducts.map((product) => (
           <ProductCard 
             key={product.id} 
-            product={product} 
-            isColorVariant={showAsColorVariants && !!product.isColorVariant}
+            product={product}
           />
         ))}
       </div>

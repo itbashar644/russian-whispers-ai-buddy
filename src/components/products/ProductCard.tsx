@@ -30,21 +30,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
   compact = false,
   cartAvailable = true
 }) => {
-  const { addToCart } = useCart();
-  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addItem } = useCart();
+  const { isInWishlist, toggleWishlistItem } = useWishlist();
 
   const handleAddToCart = () => {
     const selectedVariant = selectedColor && currentProduct.colorVariants 
       ? currentProduct.colorVariants.find(v => v.color === selectedColor)
       : undefined;
 
-    addToCart(currentProduct, 1, selectedColor, undefined, selectedVariant);
+    addItem({
+      product: currentProduct,
+      quantity: 1,
+      color: selectedColor,
+      selectedColorVariant: selectedVariant
+    });
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist(product);
+    toggleWishlistItem(product);
   };
 
   return (
@@ -63,11 +68,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <button
         onClick={handleToggleWishlist}
         className={`absolute top-3 right-3 p-2 rounded-full bg-white shadow-sm hover:shadow-md transition-all duration-200 ${
-          isInWishlist(product) ? "text-red-500" : "text-gray-400"
+          isInWishlist(product.id) ? "text-red-500" : "text-gray-400"
         }`}
-        aria-label={isInWishlist(product) ? "Удалить из избранного" : "Добавить в избранное"}
+        aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
       >
-        <Heart className={`h-4 w-4 ${isInWishlist(product) ? "fill-current" : ""}`} />
+        <Heart className={`h-4 w-4 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
       </button>
 
       <div className={compact ? "p-3" : "p-4"}>
