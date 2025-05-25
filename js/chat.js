@@ -248,57 +248,57 @@ function initChat() {
       });
   }
   
-  // Функция для отправки сообщения в Telegram
+  // Утилита для генерации простого UUID
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // Получение или создание идентификатора чата
+  function getChatId() {
+    let chatId = getFromStorage('chat_id');
+    if (!chatId) {
+      chatId = generateUUID();
+      saveToStorage('chat_id', chatId);
+    }
+    return chatId;
+  }
+
+  // Функция для отправки сообщения через Supabase функцию
   async function sendMessageToTelegram(message) {
     try {
-      const TELEGRAM_TOKEN = CONFIG.telegramBotToken;
-      const CHAT_ID = CONFIG.telegramChatId;
-      
-      if (!TELEGRAM_TOKEN || !CHAT_ID) {
-        console.error('Не настроены параметры для отправки в Telegram');
-        throw new Error('Не настроены параметры для отправки в Telegram');
-      }
-      
-      // Формируем текст сообщения с информацией о странице
-      const userInfo = {
-        page: window.location.pathname,
-        referrer: document.referrer || 'none',
-        timestamp: new Date().toISOString()
-      };
-      
-      const formattedMessage = `
-🔔 Новое сообщение из чата на сайте:
+      const chatId = getChatId();
 
-💬 Сообщение:
-${message}
-
-📄 Информация:
-- Страница: ${userInfo.page}
-- Источник: ${userInfo.referrer}
-- Время: ${userInfo.timestamp}
-      `;
-      
-      // Отправляем сообщение через Telegram API
-      const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-      const response = await fetch(url, {
+      const response = await fetch(`${CONFIG.supabaseUrl}/functions/v1/telegram-chat/send`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...CONFIG.apiHeaders
         },
         body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: formattedMessage,
-          parse_mode: 'HTML'
+          chatId,
+          message,
+          page: window.location.pathname,
+          referrer: document.referrer || 'none'
         })
       });
       
       if (!response.ok) {
-        throw new Error('Ошибка при отправке сообщения в Telegram');
+        throw new Error('Ошибка сети при отправке сообщения');
       }
       
-      return await response.json();
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Ошибка функции отправки');
+      }
+
+      return data;
     } catch (error) {
-      console.error('Ошибка при отправке сообщения в Telegram:', error);
+      console.error('Ошибка при отправке сообщения в Supabase функцию:', error);
       throw error;
     }
   }
