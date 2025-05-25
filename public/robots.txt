@@ -3,21 +3,18 @@
 User-agent: *
 Allow: /
 
-# Disallow admin paths
-Disallow: /admin
-Disallow: /admin/*
+# Specific rules for Yandex bots
+User-agent: YandexBot
+Allow: /
 
-# Sitemap
-Sitemap: https://the-x.shop/sitemap.xml
+User-agent: YaDirectFetcher
+Allow: /
 
-# Specific rules for major bots
+# Allow other major bots
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
-Allow: /
-
-User-agent: Yandex
 Allow: /
 
 User-agent: Twitterbot
@@ -25,3 +22,10 @@ Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
+
+# Disallow admin paths
+Disallow: /admin
+Disallow: /admin/*
+
+# Sitemap
+Sitemap: https://the-x.shop/sitemap.xml

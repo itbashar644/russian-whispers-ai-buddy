@@ -40,6 +40,9 @@ export const SEOHead: React.FC<SEOProps> = ({
       {/* Canonical URL для предотвращения дублирования контента */}
       <link rel="canonical" href={fullUrl} />
       
+      {/* Альтернативная статичная страница для роботов */}
+      <link rel="alternate" type="text/html" href={`${domain}/static-catalog.html`} />
+      
       {/* Open Graph мета-теги для социальных сетей */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />

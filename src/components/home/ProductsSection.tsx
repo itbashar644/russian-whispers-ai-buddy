@@ -23,11 +23,12 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
   return (
     <section className={`py-12 ${className}`} itemScope itemType={schemaType}>
       <meta itemProp="name" content={`${title} The X Shop`} />
+      <meta itemProp="description" content={`Раздел ${title} - качественные товары из Китая по доступным ценам`} />
       <div className="container px-4 md:px-6">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">{title}</h2>
+          <h2 className="text-2xl font-bold" itemProp="headline">{title}</h2>
           <Button variant="link" asChild>
-            <Link to="/catalog">Смотреть все</Link>
+            <Link to="/catalog" itemProp="url">Смотреть все</Link>
           </Button>
         </div>
         {loading ? (
@@ -41,6 +42,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
             <meta itemProp="itemListOrder" content="https://schema.org/ItemListOrderDescending" />
             <meta itemProp="numberOfItems" content={String(products.length)} />
             <ProductGrid products={products} />
+            
+            {/* Ссылка на статичную версию для роботов */}
+            <div style={{ display: 'none' }}>
+              <a href="/static-catalog.html" itemProp="url">Статичная версия каталога</a>
+            </div>
           </div>
         )}
       </div>

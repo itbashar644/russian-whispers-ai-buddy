@@ -53,14 +53,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className={`group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
-      <Link to={`/product/${product.id}`} className="block">
+    <div className={`group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}
+         itemScope itemType="https://schema.org/Product">
+      
+      {/* Структурированные данные */}
+      <meta itemProp="name" content={product.title} />
+      <meta itemProp="description" content={product.description} />
+      <meta itemProp="category" content={product.category} />
+      <meta itemProp="brand" content="The X Shop" />
+      <meta itemProp="sku" content={product.articleNumber || product.id} />
+      
+      <Link to={`/product/${product.id}`} className="block" itemProp="url">
         <AspectRatio ratio={compact ? 1 : 3/4} className="overflow-hidden rounded-t-lg bg-gray-50">
           <img
             src={currentProduct.imageUrl}
             alt={product.title}
             className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
             loading="lazy"
+            itemProp="image"
           />
         </AspectRatio>
       </Link>
@@ -79,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Link to={`/product/${product.id}`}>
           <h3 className={`font-medium text-gray-900 group-hover:text-gray-700 line-clamp-2 mb-2 ${
             compact ? "text-xs" : "text-sm"
-          }`}>
+          }`} itemProp="name">
             {product.title}
           </h3>
         </Link>
@@ -93,11 +103,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
         )}
 
-        {/* Price */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* Price with structured data */}
+        <div className="flex items-center gap-2 mb-3" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+          <meta itemProp="priceCurrency" content="RUB" />
+          <meta itemProp="availability" content={currentProduct.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <meta itemProp="url" content={`https://the-x.shop/product/${product.id}`} />
+          
           {currentProduct.discountPrice ? (
             <>
-              <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`}>
+              <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`} itemProp="price" content={String(currentProduct.discountPrice)}>
                 {formatPrice(currentProduct.discountPrice)}
               </span>
               <span className={`text-gray-500 line-through ${compact ? "text-xs" : "text-sm"}`}>
@@ -105,7 +119,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </span>
             </>
           ) : (
-            <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`}>
+            <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`} itemProp="price" content={String(currentProduct.price)}>
               {formatPrice(currentProduct.price)}
             </span>
           )}
