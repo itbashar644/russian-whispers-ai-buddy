@@ -4,13 +4,43 @@ import { v4 as uuidv4 } from "uuid";
 import { ChatMessage } from "@/types/chat";
 
 // Получение или создание ID чата
+// Cache chat ID in memory so we don't rely solely on localStorage
+let cachedChatId: string | null = null;
+
+/**
+ * Safely obtain a chat ID.
+ *
+ * On some mobile browsers `localStorage` may be unavailable (e.g. in private
+ * mode or inside in-app browsers).  In such cases we fall back to an in-memory
+ * value so the chat can still function.
+ */
 export const getChatId = (): string => {
-  let chatId = localStorage.getItem("chat_id");
-  if (!chatId) {
-    chatId = uuidv4();
-    localStorage.setItem("chat_id", chatId);
+    if (cachedChatId) {
+    return cachedChatId;
   }
-  return chatId;
+
+  try {
+    const stored = typeof localStorage !== "undefined"
+      ? localStorage.getItem("chat_id")
+      : null;
+
+    if (stored) {
+      cachedChatId = stored;
+    } else {
+      cachedChatId = uuidv4();
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("chat_id", cachedChatId);
+      }
+    }
+  } catch (error) {
+    console.error("Unable to access localStorage for chat_id:", error);
+    // Fall back to a generated ID if we couldn't read from storage
+    if (!cachedChatId) {
+      cachedChatId = uuidv4();
+    }
+  }
+
+  return cachedChatId;
 };
 
 // Отправка сообщения
