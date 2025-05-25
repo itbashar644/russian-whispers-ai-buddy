@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardFullProps {
   product: Product;
@@ -31,14 +32,14 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
   return (
     <div className="group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
       <Link to={`/product/${product.id}`} className="block">
-        <div className="aspect-square overflow-hidden rounded-t-lg bg-gray-50">
+        <AspectRatio ratio={3/4} className="overflow-hidden rounded-t-lg bg-gray-50">
           <img
             src={currentProduct.imageUrl}
             alt={product.title}
             className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
             loading="lazy"
           />
-        </div>
+        </AspectRatio>
       </Link>
 
       <button
