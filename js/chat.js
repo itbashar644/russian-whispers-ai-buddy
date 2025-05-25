@@ -75,7 +75,7 @@ function initChat() {
         </div>
       </div>
       <div class="chat-footer">
-        <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+        <textarea id="chat-input" placeholder="Введите сообщение..." rows="2" inputmode="text" enterkeyhint="send"></textarea>
         <button class="chat-send-btn" id="chat-send-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
@@ -86,7 +86,13 @@ function initChat() {
     
     // Добавляем обработчики событий для интерфейса чата
     document.querySelector('.chat-close-btn').addEventListener('click', closeChat);
-    document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
+    const sendBtn = document.getElementById('chat-send-btn');
+    sendBtn.addEventListener('click', sendMessage);
+    // Дополнительная обработка для мобильных устройств
+    sendBtn.addEventListener('touchstart', function(event) {
+      event.preventDefault();
+      sendMessage();
+    });
     
     const chatInput = document.getElementById('chat-input');
     chatInput.addEventListener('keydown', function(event) {

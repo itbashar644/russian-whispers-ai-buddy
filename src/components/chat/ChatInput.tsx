@@ -88,7 +88,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
         className="flex-shrink-0"
         onClick={handleButtonInteraction}
         onTouchStart={handleButtonInteraction}
-        style={{ WebkitTapHighlightColor: 'transparent' }}
+        style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <Send className="h-4 w-4" />
       </Button>

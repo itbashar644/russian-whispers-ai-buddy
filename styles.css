@@ -872,6 +872,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+    /* Улучшаем отзывчивость на мобильных устройствах */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Footer styles */
