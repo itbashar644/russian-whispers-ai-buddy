@@ -88,14 +88,12 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
 
         {/* Stock Status */}
         <div className={`text-xs font-medium mb-3 ${
-          currentProduct.stockQuantity && currentProduct.stockQuantity > 0
-            ? "text-green-600"
+          currentProduct.stockQuantity && currentProduct.stockQuantity > 0 
+            ? "text-green-600" 
             : "text-red-500"
         }`}>
           {currentProduct.stockQuantity && currentProduct.stockQuantity > 0 ? "В наличии" : "Нет в наличии"}
         </div>
-        {/* Marketplace links */}
-        <MarketplaceLinks product={product} className="mb-3" />
 
         {/* Add to Cart Button */}
         {cartAvailable && (
