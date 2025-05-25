@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -285,6 +284,10 @@ async function sendToTelegramBot(chatId: string, message: string, name: string, 
 
 💬 **Сообщение:**
 ${message}
+
+📝 Для ответа отправьте сообщение в формате:
+Reply to chat ID: ${chatId}
+Ваш ответ здесь...
     `.trim()
 
     await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
