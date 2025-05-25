@@ -28,7 +28,6 @@ function initChat() {
   // Обработчик событий на документе, чтобы закрывать чат по клику вне его
   document.addEventListener('click', function(event) {
     if (!chatContainer.classList.contains('hidden')) {
-      // Проверяем, был ли клик вне чата и не по кнопке чата
       const isClickInsideChat = chatContainer.contains(event.target);
       const isClickOnChatButton = chatButton.contains(event.target);
       
@@ -40,7 +39,6 @@ function initChat() {
   
   // Функция для открытия чата
   function openChat() {
-    // Проверяем, есть ли уже интерфейс чата
     if (chatContainer.innerHTML.trim() === '' || chatContainer.classList.contains('hidden')) {
       renderChatInterface();
     }
@@ -49,7 +47,6 @@ function initChat() {
     chatState.open = true;
     saveToStorage('chat_state', chatState);
     
-    // Прокручиваем до последнего сообщения
     scrollToLatestMessage();
   }
   
@@ -84,33 +81,28 @@ function initChat() {
     
     chatContainer.innerHTML = chatHTML;
     
-    // Добавляем обработчики событий для интерфейса чата
+    // Добавляем обработчики событий
     document.querySelector('.chat-close-btn').addEventListener('click', closeChat);
     const sendBtn = document.getElementById('chat-send-btn');
     const handleSendInteraction = function(event) {
       event.preventDefault();
       sendMessage();
-          };
+    };
 
-    // Используем pointerdown для корректной работы на мобильных
     sendBtn.addEventListener('pointerdown', handleSendInteraction);
-    // Также реагируем на touchstart для некоторых мобильных браузеров
     sendBtn.addEventListener('touchstart', handleSendInteraction);
-    // Добавляем стандартные click и touchend на случай, если pointerdown
-    // не сработает в некоторых браузерах
     sendBtn.addEventListener('click', handleSendInteraction);
     sendBtn.addEventListener('touchend', handleSendInteraction);
     
     const chatInput = document.getElementById('chat-input');
     chatInput.addEventListener('keydown', function(event) {
-      // Отправка сообщения по нажатию Enter без Shift
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         sendMessage();
       }
     });
     
-    // Если это первое открытие чата, добавляем приветственное сообщение
+    // Приветственное сообщение при первом открытии
     if (chatState.messages.length === 0) {
       addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
     }
@@ -124,11 +116,11 @@ function initChat() {
       
       switch (message.type) {
         case 'user':
-          messageClass = 'user-message';
+          messageClass = 'user-message'; // Справа
           nameLabel = 'Вы';
           break;
         case 'operator':
-          messageClass = 'operator-message';
+          messageClass = 'operator-message'; // Слева
           nameLabel = 'Оператор';
           break;
         case 'system':
@@ -160,7 +152,6 @@ function initChat() {
     
     chatState.messages.push(message);
     saveToStorage('chat_state', chatState);
-    
     updateChatMessages();
   }
   
@@ -174,7 +165,6 @@ function initChat() {
     
     chatState.messages.push(message);
     saveToStorage('chat_state', chatState);
-    
     updateChatMessages();
   }
   
@@ -188,11 +178,10 @@ function initChat() {
     
     chatState.messages.push(message);
     saveToStorage('chat_state', chatState);
-    
     updateChatMessages();
   }
   
-  // Функция для обновления списка сообщений в интерфейсе
+  // Функция для обновления списка сообщений
   function updateChatMessages() {
     const chatMessagesEl = document.getElementById('chat-messages');
     if (chatMessagesEl) {
@@ -209,15 +198,48 @@ function initChat() {
     }
   }
   
-  // Функция для форматирования даты сообщения
+  // Функция для форматирования даты
   function formatDate(dateString) {
     const date = new Date(dateString);
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    
     return `${hours}:${minutes}`;
   }
   
+  // Получение или создание уникального идентификатора чата
+  function getChatId() {
+    let chatId = getFromStorage('chat_id');
+    if (!chatId) {
+      chatId = `chat_${Date.now()}_${generateUUID()}`;
+      saveToStorage('chat_id', chatId);
+    }
+    return chatId;
+  }
+  
+  // Генерация UUID
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // Получение информации об устройстве
+  function getDeviceInfo() {
+    try {
+      return {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenResolution: `${screen.width}x${screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      };
+    } catch (error) {
+      return {};
+    }
+  }
+
   // Функция для отправки сообщения
   function sendMessage() {
     const chatInput = document.getElementById('chat-input');
@@ -231,46 +253,27 @@ function initChat() {
     // Очищаем поле ввода
     chatInput.value = '';
     
-    // Отправляем сообщение в Telegram и ждем ответа оператора
+    // Отправляем сообщение в Telegram
     sendMessageToTelegram(message)
       .then(() => {
         addSystemMessage('Сообщение отправлено оператору. Ожидайте ответа.');
         
-        // Здесь можно реализовать long polling для получения ответа от оператора
-        // Для демонстрации добавим заглушку с автоматическим ответом через 2 секунды
+        // Демо ответ через 2 секунды
         setTimeout(() => {
           addOperatorMessage('Спасибо за обращение! Как я могу вам помочь?');
         }, 2000);
       })
       .catch(error => {
-        console.error('Ошибка при отправке сообщения в Telegram:', error);
-        addSystemMessage('Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте позже.');
+        console.error('Ошибка при отправке сообщения:', error);
+        addSystemMessage('Произошла ошибка при отправке сообщения. Попробуйте позже.');
       });
   }
-  
-  // Утилита для генерации простого UUID
-  function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
 
-  // Получение или создание идентификатора чата
-  function getChatId() {
-    let chatId = getFromStorage('chat_id');
-    if (!chatId) {
-      chatId = generateUUID();
-      saveToStorage('chat_id', chatId);
-    }
-    return chatId;
-  }
-
-  // Функция для отправки сообщения через Supabase функцию
+  // Функция для отправки сообщения через Supabase
   async function sendMessageToTelegram(message) {
     try {
       const chatId = getChatId();
+      const deviceInfo = getDeviceInfo();
 
       const response = await fetch(`${CONFIG.supabaseUrl}/functions/v1/telegram-chat/send`, {
         method: 'POST',
@@ -281,8 +284,10 @@ function initChat() {
         body: JSON.stringify({
           chatId,
           message,
+          deviceInfo,
+          timestamp: new Date().toISOString(),
           page: window.location.pathname,
-          referrer: document.referrer || 'none'
+          referrer: document.referrer || 'direct'
         })
       });
       
@@ -298,7 +303,7 @@ function initChat() {
 
       return data;
     } catch (error) {
-      console.error('Ошибка при отправке сообщения в Supabase функцию:', error);
+      console.error('Ошибка при отправке сообщения:', error);
       throw error;
     }
   }
@@ -309,7 +314,7 @@ function initChat() {
   }
 }
 
-// Инициализируем чат при загрузке страницы
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
 });

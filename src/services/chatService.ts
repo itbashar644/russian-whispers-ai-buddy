@@ -3,23 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessage } from "@/types/chat";
 
-// Получение или создание ID чата
-// Cache chat ID in memory so we don't rely solely on localStorage
+// Получение или создание ID чата с улучшенной идентификацией
 let cachedChatId: string | null = null;
 
 /**
- * Safely obtain a chat ID.
- *
- * On some mobile browsers `localStorage` may be unavailable (e.g. in private
- * mode or inside in-app browsers).  In such cases we fall back to an in-memory
- * value so the chat can still function.
+ * Безопасное получение ID чата с поддержкой множественных устройств
  */
 export const getChatId = (): string => {
-    if (cachedChatId) {
+  if (cachedChatId) {
     return cachedChatId;
   }
 
   try {
+    // Пытаемся получить ID из localStorage
     const stored = typeof localStorage !== "undefined"
       ? localStorage.getItem("chat_id")
       : null;
@@ -27,23 +23,38 @@ export const getChatId = (): string => {
     if (stored) {
       cachedChatId = stored;
     } else {
-      cachedChatId = uuidv4();
+      // Генерируем новый уникальный ID
+      cachedChatId = `chat_${Date.now()}_${uuidv4()}`;
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("chat_id", cachedChatId);
       }
     }
   } catch (error) {
-    console.error("Unable to access localStorage for chat_id:", error);
-    // Fall back to a generated ID if we couldn't read from storage
+    console.error("Ошибка доступа к localStorage для chat_id:", error);
     if (!cachedChatId) {
-      cachedChatId = uuidv4();
+      cachedChatId = `chat_${Date.now()}_${uuidv4()}`;
     }
   }
 
   return cachedChatId;
 };
 
-// Отправка сообщения
+// Получение информации об устройстве для лучшей идентификации
+const getDeviceInfo = () => {
+  try {
+    return {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+      screenResolution: `${screen.width}x${screen.height}`,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+  } catch (error) {
+    return {};
+  }
+};
+
+// Отправка сообщения с расширенной информацией о пользователе
 export const sendMessage = async (
   message: string,
   userInfo?: { name?: string; email?: string }
@@ -51,29 +62,34 @@ export const sendMessage = async (
   try {
     console.log("Отправка сообщения:", { message, userInfo });
     const chatId = getChatId();
+    const deviceInfo = getDeviceInfo();
     
     const response = await supabase.functions.invoke("telegram-chat/send", {
       body: { 
         chatId, 
         message, 
         name: userInfo?.name || '', 
-        email: userInfo?.email || '' 
+        email: userInfo?.email || '',
+        deviceInfo,
+        timestamp: new Date().toISOString(),
+        page: window.location.pathname,
+        referrer: document.referrer || 'direct'
       },
     });
     
     if (response.error) {
-      console.error("Error sending message:", response.error);
+      console.error("Ошибка отправки сообщения:", response.error);
       return false;
     }
     
     if (response.data && response.data.error) {
-      console.error("Error from function:", response.data.error, response.data.details);
+      console.error("Ошибка функции:", response.data.error, response.data.details);
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error("Error in sendMessage:", error);
+    console.error("Ошибка в sendMessage:", error);
     return false;
   }
 };
@@ -82,31 +98,31 @@ export const sendMessage = async (
 export const getMessages = async (): Promise<ChatMessage[]> => {
   try {
     const chatId = getChatId();
-    console.log("Fetching messages for chat ID:", chatId);
+    console.log("Получение сообщений для chat ID:", chatId);
     
     const response = await supabase.functions.invoke("telegram-chat/messages", {
       body: { chatId },
     });
     
     if (response.error) {
-      console.error("Error getting messages:", response.error);
+      console.error("Ошибка получения сообщений:", response.error);
       return [];
     }
     
     if (response.data && response.data.error) {
-      console.error("Error from function:", response.data.error);
+      console.error("Ошибка функции:", response.data.error);
       return [];
     }
     
-    console.log("Messages received:", response.data?.messages || []);
+    console.log("Получены сообщения:", response.data?.messages || []);
     return response.data?.messages || [];
   } catch (error) {
-    console.error("Error in getMessages:", error);
+    console.error("Ошибка в getMessages:", error);
     return [];
   }
 };
 
-// Mark messages as read
+// Отметка сообщений как прочитанных
 export const markMessagesAsRead = async (): Promise<boolean> => {
   try {
     const chatId = getChatId();
@@ -116,35 +132,35 @@ export const markMessagesAsRead = async (): Promise<boolean> => {
     });
     
     if (response.error) {
-      console.error("Error marking messages as read:", response.error);
+      console.error("Ошибка отметки сообщений как прочитанных:", response.error);
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error("Error in markMessagesAsRead:", error);
+    console.error("Ошибка в markMessagesAsRead:", error);
     return false;
   }
 };
 
-// Check Telegram webhook status
+// Проверка статуса webhook Telegram
 export const checkTelegramWebhookStatus = async (): Promise<any> => {
   try {
     const response = await supabase.functions.invoke("telegram-chat/webhook-status", {});
     
     if (response.error) {
-      console.error("Error checking webhook status:", response.error);
+      console.error("Ошибка проверки статуса webhook:", response.error);
       return { ok: false };
     }
     
     return response.data || {};
   } catch (error) {
-    console.error("Error in checkTelegramWebhookStatus:", error);
+    console.error("Ошибка в checkTelegramWebhookStatus:", error);
     return { ok: false };
   }
 };
 
-// Проверка состояния telegram-chat функции
+// Проверка состояния функции telegram-chat
 export const checkChatStatus = async (): Promise<{
   ok: boolean;
   config?: {
@@ -158,7 +174,7 @@ export const checkChatStatus = async (): Promise<{
     const response = await supabase.functions.invoke("telegram-chat/status", {});
     
     if (response.error) {
-      console.error("Error checking chat status:", response.error);
+      console.error("Ошибка проверки статуса чата:", response.error);
       return { ok: false };
     }
     
@@ -167,7 +183,7 @@ export const checkChatStatus = async (): Promise<{
       config: response.data?.config 
     };
   } catch (error) {
-    console.error("Error in checkChatStatus:", error);
+    console.error("Ошибка в checkChatStatus:", error);
     return { ok: false };
   }
 };
@@ -188,7 +204,7 @@ export const pollForNewMessages = async (
       callback(messages);
     }
   } catch (error) {
-    console.error("Error polling for messages:", error);
+    console.error("Ошибка опроса сообщений:", error);
   }
 };
 
@@ -200,13 +216,36 @@ export const setupTelegramWebhook = async (url: string): Promise<boolean> => {
     });
 
     if (response.error || (response.data && response.data.error)) {
-      console.error("Error setting up webhook:", response.error || response.data.error);
+      console.error("Ошибка настройки webhook:", response.error || response.data.error);
       return false;
     }
 
     return !!response.data?.success;
   } catch (error) {
-    console.error("Error in setupTelegramWebhook:", error);
+    console.error("Ошибка в setupTelegramWebhook:", error);
     return false;
+  }
+};
+
+// Синхронизация чата между устройствами
+export const syncChatAcrossDevices = async (): Promise<void> => {
+  try {
+    const chatId = getChatId();
+    console.log("Синхронизация чата между устройствами для ID:", chatId);
+    
+    // Обновляем последнюю активность для данного чата
+    const response = await supabase.functions.invoke("telegram-chat/sync", {
+      body: { 
+        chatId,
+        lastActive: new Date().toISOString(),
+        deviceInfo: getDeviceInfo()
+      },
+    });
+    
+    if (response.error) {
+      console.error("Ошибка синхронизации чата:", response.error);
+    }
+  } catch (error) {
+    console.error("Ошибка в syncChatAcrossDevices:", error);
   }
 };

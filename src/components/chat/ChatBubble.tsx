@@ -24,14 +24,14 @@ const ChatBubble = ({ message, isFromAdmin, timestamp }: ChatBubbleProps) => {
       className={cn(
         "mb-4 max-w-[80%] rounded-lg p-3",
         isFromAdmin
-          ? "ml-auto bg-primary text-primary-foreground"
-          : "mr-auto bg-muted text-foreground"
+          ? "mr-auto bg-muted text-foreground" // Сообщения поддержки слева
+          : "ml-auto bg-primary text-primary-foreground" // Сообщения пользователя справа
       )}
     >
       <div className="text-sm">{messageText}</div>
       <div className={cn(
         "mt-1 text-xs",
-        isFromAdmin ? "text-primary-foreground/70" : "text-muted-foreground"
+        isFromAdmin ? "text-muted-foreground" : "text-primary-foreground/70"
       )}>
         {formattedTime}
       </div>
