@@ -15,7 +15,15 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
-  const { addItem } = useCart();
+  // Check if CartProvider is available
+  let cartContext;
+  try {
+    cartContext = useCart();
+  } catch (error) {
+    console.warn("CartProvider not available, ProductCard will render without cart functionality");
+    cartContext = null;
+  }
+
   const { toggleWishlistItem, isInWishlist } = useWishlist();
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors && product.colors.length > 0 ? product.colors[0] : undefined
@@ -41,15 +49,20 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
   };
 
   const handleAddToCart = () => {
+    if (!cartContext) {
+      console.warn("Cart functionality not available");
+      return;
+    }
+
     if (selectedVariant) {
-      addItem({
+      cartContext.addItem({
         product, 
         quantity: 1, 
         color: selectedColor,
         selectedColorVariant: selectedVariant
       });
     } else {
-      addItem({ product, quantity: 1, color: selectedColor });
+      cartContext.addItem({ product, quantity: 1, color: selectedColor });
     }
   };
 
@@ -78,6 +91,7 @@ const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCa
       handleAddToCart={handleAddToCart}
       handleToggleWishlist={handleToggleWishlist}
       isInWishlist={isInWishlist}
+      cartAvailable={!!cartContext}
     />
   );
 };

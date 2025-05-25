@@ -3,14 +3,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
-import MarketplaceLinks from "./MarketplaceLinks";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardFullProps {
   product: Product;
@@ -19,7 +14,8 @@ interface ProductCardFullProps {
   handleColorSelect: (colorName: string, variant?: ColorVariant) => void;
   handleAddToCart: () => void;
   handleToggleWishlist: (e: React.MouseEvent) => void;
-  isInWishlist: (id: string) => boolean;
+  isInWishlist: (product: Product) => boolean;
+  cartAvailable?: boolean;
 }
 
 const ProductCardFull: React.FC<ProductCardFullProps> = ({
@@ -29,114 +25,98 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
   handleColorSelect,
   handleAddToCart,
   handleToggleWishlist,
-  isInWishlist
+  isInWishlist,
+  cartAvailable = true
 }) => {
-  // Определяем доступность товара на основе stockQuantity
-  const isAvailable = currentProduct.stockQuantity !== undefined 
-    ? currentProduct.stockQuantity > 0 
-    : currentProduct.inStock;
-  
   return (
-    <Card className={`h-full flex flex-col ${!isAvailable ? 'opacity-75' : ''}`}>
-      <Link
-        to={`/product/${product.id}`}
-        className="block flex-grow overflow-hidden"
-      >
-        <div className="relative overflow-hidden">
-           <AspectRatio ratio={3/4} className="bg-white">
-            <img
-              src={currentProduct.imageUrl || "/placeholder.svg"}
-              alt={product.title}
-              className={`w-full h-full object-contain transition-all hover:scale-105 ${!isAvailable ? 'grayscale-[30%]' : ''}`}
-            />
-          </AspectRatio>
-          <div className="absolute top-1 right-1 flex flex-col gap-1">
-            {product.isNew && <Badge className="bg-blue-500 text-xs py-0">Новинка</Badge>}
-            {product.isBestseller && (
-              <Badge className="bg-amber-500 text-xs py-0">Хит продаж</Badge>
-            )}
-            {!isAvailable && (
-              <Badge variant="secondary" className="bg-gray-500 text-xs py-0">Нет в наличии</Badge>
-            )}
-          </div>
-          
-          <button 
-            onClick={handleToggleWishlist}
-            className="absolute top-1 left-1 bg-white/80 p-1 rounded-full hover:bg-white transition-colors"
-            aria-label={isInWishlist(product.id) ? "Удалить из избранного" : "Добавить в избранное"}
-          >
-            <Heart 
-              className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-            />
-          </button>
+    <div className="group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <Link to={`/product/${product.id}`} className="block">
+        <div className="aspect-square overflow-hidden rounded-t-lg bg-gray-50">
+          <img
+            src={currentProduct.imageUrl}
+            alt={product.title}
+            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
+            loading="lazy"
+          />
         </div>
       </Link>
-      
-      <CardHeader className="p-2 pb-0">
-        <Link to={`/product/${product.id}`} className="block">
-          <CardTitle className="line-clamp-2 text-sm">
+
+      <button
+        onClick={handleToggleWishlist}
+        className={`absolute top-3 right-3 p-2 rounded-full bg-white shadow-sm hover:shadow-md transition-all duration-200 ${
+          isInWishlist(product) ? "text-red-500" : "text-gray-400"
+        }`}
+        aria-label={isInWishlist(product) ? "Удалить из избранного" : "Добавить в избранное"}
+      >
+        <Heart className={`h-4 w-4 ${isInWishlist(product) ? "fill-current" : ""}`} />
+      </button>
+
+      <div className="p-4">
+        <Link to={`/product/${product.id}`}>
+          <h3 className="text-sm font-medium text-gray-900 group-hover:text-gray-700 line-clamp-2 mb-2">
             {product.title}
-          </CardTitle>
+          </h3>
         </Link>
-        <CardDescription className="flex items-center justify-between mt-1">
-          <div className="flex flex-col">
-            {currentProduct.discountPrice ? (
-              <>
-                <span className="text-sm font-semibold whitespace-nowrap">
-                  {formatPrice(currentProduct.discountPrice)}
-                </span>
-                <span className="text-xs line-through text-muted-foreground whitespace-nowrap">
-                  {formatPrice(currentProduct.price)}
-                </span>
-              </>
-            ) : (
-              <span className="text-sm font-semibold whitespace-nowrap">
+
+        {/* Color Options */}
+        {product.colors && product.colors.length > 0 && (
+          <ProductColorOptions
+            colors={product.colors}
+            colorVariants={product.colorVariants}
+            selectedColor={selectedColor}
+            onColorSelect={handleColorSelect}
+          />
+        )}
+
+        {/* Price */}
+        <div className="flex items-center gap-2 mb-3">
+          {currentProduct.discountPrice ? (
+            <>
+              <span className="text-lg font-bold text-gray-900">
+                {formatPrice(currentProduct.discountPrice)}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
                 {formatPrice(currentProduct.price)}
               </span>
-            )}
-          </div>
-          <div className="text-xs text-muted-foreground text-right">
-            {product.category}
-          </div>
-        </CardDescription>
-      </CardHeader>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-gray-900">
+              {formatPrice(currentProduct.price)}
+            </span>
+          )}
+        </div>
 
-      <CardContent className="p-2 pt-1 flex-grow">
-        {/* Display color options if available */}
-        <ProductColorOptions 
-          product={product}
-          selectedColor={selectedColor}
-          onColorSelect={handleColorSelect}
-        />
+        {/* Stock Status */}
+        <div className={`text-xs font-medium mb-3 ${
+          currentProduct.stockQuantity && currentProduct.stockQuantity > 0 
+            ? "text-green-600" 
+            : "text-red-500"
+        }`}>
+          {currentProduct.stockQuantity && currentProduct.stockQuantity > 0 ? "В наличии" : "Нет в наличии"}
+        </div>
 
-        {/* Marketplace links */}
-        <MarketplaceLinks product={product} />
-      </CardContent>
-
-      <CardFooter className="p-2 pt-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className="w-full text-xs h-8"
-                onClick={handleAddToCart}
-                disabled={!isAvailable}
-                variant={!isAvailable ? "outline" : "default"}
-                size="sm"
-              >
-                <ShoppingCart className="mr-1 h-3 w-3" />
-                {isAvailable ? "В корзину" : "Нет в наличии"}
-              </Button>
-            </TooltipTrigger>
-            {!isAvailable && (
-              <TooltipContent>
-                <p>Товара нет в наличии. Добавьте его в избранное, чтобы следить за наличием.</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-      </CardFooter>
-    </Card>
+        {/* Add to Cart Button */}
+        {cartAvailable && (
+          <Button
+            onClick={handleAddToCart}
+            disabled={!currentProduct.inStock || (currentProduct.stockQuantity !== undefined && currentProduct.stockQuantity <= 0)}
+            className="w-full"
+            size="sm"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            В корзину
+          </Button>
+        )}
+        
+        {!cartAvailable && (
+          <Link to={`/product/${product.id}`}>
+            <Button className="w-full" size="sm" variant="outline">
+              Подробнее
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
   );
 };
 
