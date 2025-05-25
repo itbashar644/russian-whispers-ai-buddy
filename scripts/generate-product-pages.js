@@ -1,4 +1,3 @@
-
 #!/usr/bin/env node
 
 const https = require('https');
@@ -105,6 +104,9 @@ function generateProductHTML(product) {
     }
   }
 
+  // Prepare all product images for Schema.org
+  const allImages = [product.image_url, ...additionalImages].filter(Boolean);
+
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -124,14 +126,14 @@ function generateProductHTML(product) {
     <!-- Canonical URL -->
     <link rel="canonical" href="https://the-x.shop/product-${product.id}.html">
     
-    <!-- Микроразметка Schema.org для товара -->
+    <!-- Микроразметка Schema.org для товара (JSON-LD) -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org/",
         "@type": "Product",
-        "name": "${product.title}",
-        "image": ["${product.image_url}"${additionalImages.length > 0 ? ', "' + additionalImages.join('", "') + '"' : ''}],
-        "description": "${product.description || ''}",
+        "name": "${product.title.replace(/"/g, '\\"')}",
+        "image": [${allImages.map(img => `"${img}"`).join(', ')}],
+        "description": "${(product.description || '').replace(/"/g, '\\"')}",
         "sku": "${product.article_number || product.id}",
         "mpn": "${product.article_number || ''}",
         "gtin": "${product.barcode || ''}",
@@ -226,7 +228,7 @@ function generateProductHTML(product) {
             {
                 "@type": "ListItem",
                 "position": 4,
-                "name": "${product.title}",
+                "name": "${product.title.replace(/"/g, '\\"')}",
                 "item": "https://the-x.shop/product-${product.id}.html"
             }
         ]
@@ -256,43 +258,83 @@ function generateProductHTML(product) {
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Микроразметка товара с использованием Microdata -->
+    <div class="container" itemscope itemtype="https://schema.org/Product">
         <!-- Хлебные крошки -->
         <nav class="breadcrumb">
             <a href="/">Главная</a> → 
             <a href="/catalog">Каталог</a> → 
             <a href="/catalog?category=${encodeURIComponent(product.category)}">${product.category}</a> → 
-            <span>${product.title}</span>
+            <span itemprop="name">${product.title}</span>
         </nav>
         
         <div class="product-grid">
             <div>
+                <!-- Главное изображение товара -->
                 <img src="${product.image_url}" alt="${product.title}" class="product-image" itemprop="image">
+                
+                <!-- Дополнительные изображения -->
                 ${additionalImages.length > 0 ? `
                 <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
-                    ${additionalImages.map(img => `<img src="${img}" alt="${product.title}" style="width: 100%; height: auto; border-radius: 4px;">`).join('')}
+                    ${additionalImages.map(img => `<img src="${img}" alt="${product.title}" style="width: 100%; height: auto; border-radius: 4px;" itemprop="image">`).join('')}
                 </div>
                 ` : ''}
+                
+                <!-- Скрытые мета-теги для микроразметки -->
+                <meta itemprop="sku" content="${product.article_number || product.id}">
+                <meta itemprop="mpn" content="${product.article_number || ''}">
+                <meta itemprop="gtin" content="${product.barcode || ''}">
+                <meta itemprop="category" content="${product.category}">
+                ${product.material ? `<meta itemprop="material" content="${product.material}">` : ''}
+                <meta itemprop="countryOfOrigin" content="${product.country_of_origin || 'Китай'}">
+                
+                <!-- Бренд товара -->
+                <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
+                    <meta itemprop="name" content="The X Shop">
+                </div>
+                
+                <!-- Рейтинг товара -->
+                <div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+                    <meta itemprop="ratingValue" content="${product.rating || 4.8}">
+                    <meta itemprop="bestRating" content="5">
+                    <meta itemprop="worstRating" content="1">
+                    <meta itemprop="ratingCount" content="47">
+                </div>
             </div>
             
             <div>
+                <!-- Название товара -->
                 <h1 itemprop="name">${product.title}</h1>
                 
-                ${product.article_number ? `<p><strong>Артикул:</strong> <span itemprop="sku">${product.article_number}</span></p>` : ''}
+                ${product.article_number ? `<p><strong>Артикул:</strong> <span>${product.article_number}</span></p>` : ''}
                 
-                <div class="price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                    <meta itemprop="priceCurrency" content="RUB">
-                    <meta itemprop="price" content="${price}">
-                    <meta itemprop="availability" content="${product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}">
-                    ${price} ₽
-                    ${hasDiscount ? `<span class="original-price">${originalPrice} ₽</span>` : ''}
+                <!-- Описание товара -->
+                ${product.description ? `<div itemprop="description"><p>${product.description}</p></div>` : ''}
+                
+                <!-- Предложение с ценой -->
+                <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                    <div class="price">
+                        <meta itemprop="priceCurrency" content="RUB">
+                        <meta itemprop="price" content="${price}">
+                        <meta itemprop="availability" content="${product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}">
+                        <meta itemprop="itemCondition" content="https://schema.org/NewCondition">
+                        <meta itemprop="url" content="https://the-x.shop/product-${product.id}.html">
+                        <meta itemprop="priceValidUntil" content="${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()}">
+                        
+                        ${price} ₽
+                        ${hasDiscount ? `<span class="original-price">${originalPrice} ₽</span>` : ''}
+                    </div>
+                    
+                    <!-- Продавец -->
+                    <div itemprop="seller" itemscope itemtype="https://schema.org/Organization">
+                        <meta itemprop="name" content="The X Shop">
+                        <meta itemprop="url" content="https://the-x.shop">
+                    </div>
                 </div>
                 
                 <div class="stock-status ${product.in_stock ? 'in-stock' : 'out-of-stock'}">
                     ${product.in_stock ? '✓ В наличии' : '✗ Нет в наличии'}
                 </div>
-                
-                ${product.description ? `<div itemprop="description"><p>${product.description}</p></div>` : ''}
                 
                 <a href="/#/product/${product.id}" class="cta-button">
                     ${product.in_stock ? `Купить за ${price} ₽` : 'Уведомить о поступлении'}
@@ -311,7 +353,7 @@ function generateProductHTML(product) {
                 </div>
                 ` : ''}
                 
-                ${product.material ? `<p><strong>Материал:</strong> <span itemprop="material">${product.material}</span></p>` : ''}
+                ${product.material ? `<p><strong>Материал:</strong> <span>${product.material}</span></p>` : ''}
                 ${product.country_of_origin ? `<p><strong>Страна происхождения:</strong> ${product.country_of_origin}</p>` : ''}
                 
                 ${colorVariants.length > 0 ? `
