@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const path = require('path');
 
@@ -6,6 +5,12 @@ class ProductPageGenerator {
   constructor() {
     this.baseUrl = 'https://the-x.shop';
     this.publicDir = path.join(__dirname, '../../public');
+    this.organizationInfo = {
+      name: "The X Shop",
+      address: "Россия, Москва",
+      telephone: "+7 (800) 123-45-67",
+      url: "https://the-x.shop"
+    };
   }
 
   // Генерация JSON-LD разметки для товара
@@ -20,18 +25,18 @@ class ProductPageGenerator {
       "description": product.description,
       "sku": product.article_number || `product-${product.id}`,
       "mpn": product.article_number || `product-${product.id}`,
-      "gtin": product.barcode || "",
       "brand": {
         "@type": "Brand",
         "name": "The X Shop"
       },
       "manufacturer": {
         "@type": "Organization",
-        "name": "The X Shop"
+        "name": "The X Shop",
+        "address": this.organizationInfo.address,
+        "telephone": this.organizationInfo.telephone,
+        "url": this.organizationInfo.url
       },
       "category": product.category,
-      "material": product.material || "",
-      "countryOfOrigin": product.country_of_origin || "Нет",
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": product.rating?.toString() || "4.8",
@@ -50,36 +55,9 @@ class ProductPageGenerator {
         "seller": {
           "@type": "Organization",
           "name": "The X Shop",
-          "url": this.baseUrl
-        },
-        "hasMerchantReturnPolicy": {
-          "@type": "MerchantReturnPolicy",
-          "applicableCountry": "RU",
-          "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-          "merchantReturnDays": 14
-        },
-        "shippingDetails": {
-          "@type": "OfferShippingDetails",
-          "shippingRate": {
-            "@type": "MonetaryAmount",
-            "value": "0",
-            "currency": "RUB"
-          },
-          "deliveryTime": {
-            "@type": "ShippingDeliveryTime",
-            "handlingTime": {
-              "@type": "QuantitativeValue",
-              "minValue": 1,
-              "maxValue": 3,
-              "unitCode": "DAY"
-            },
-            "transitTime": {
-              "@type": "QuantitativeValue",
-              "minValue": 3,
-              "maxValue": 14,
-              "unitCode": "DAY"
-            }
-          }
+          "address": this.organizationInfo.address,
+          "telephone": this.organizationInfo.telephone,
+          "url": this.organizationInfo.url
         }
       }
     };
@@ -272,14 +250,18 @@ class ProductPageGenerator {
                 <!-- Скрытые мета-теги для микроразметки -->
                 <meta itemprop="sku" content="${product.article_number || `product-${product.id}`}">
                 <meta itemprop="mpn" content="${product.article_number || `product-${product.id}`}">
-                <meta itemprop="gtin" content="${product.barcode || ''}">
                 <meta itemprop="category" content="${product.category}">
-                <meta itemprop="material" content="${product.material || ''}">
-                <meta itemprop="countryOfOrigin" content="${product.country_of_origin || 'Нет'}">
                 
                 <!-- Бренд товара -->
                 <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
                     <meta itemprop="name" content="The X Shop">
+                </div>
+                
+                <!-- Производитель -->
+                <div itemprop="manufacturer" itemscope itemtype="https://schema.org/Organization">
+                    <meta itemprop="name" content="The X Shop">
+                    <meta itemprop="address" content="${this.organizationInfo.address}">
+                    <meta itemprop="telephone" content="${this.organizationInfo.telephone}">
                 </div>
                 
                 <!-- Рейтинг товара -->
@@ -305,9 +287,8 @@ class ProductPageGenerator {
                     <div class="price">
                         <meta itemprop="priceCurrency" content="RUB">
                         <meta itemprop="price" content="${price}">
-                        <meta itemprop="availability" content="${product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}">
-                        <meta itemprop="itemCondition" content="https://schema.org/NewCondition">
-                        <meta itemprop="url" content="${this.baseUrl}/product-${product.id}.html">
+                        <link itemprop="availability" href="${product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}">
+                        <link itemprop="itemCondition" href="https://schema.org/NewCondition">
                         <meta itemprop="priceValidUntil" content="${this.getFutureDate()}">
                         
                         ${price} ₽
@@ -317,7 +298,8 @@ class ProductPageGenerator {
                     <!-- Продавец -->
                     <div itemprop="seller" itemscope itemtype="https://schema.org/Organization">
                         <meta itemprop="name" content="The X Shop">
-                        <meta itemprop="url" content="${this.baseUrl}">
+                        <meta itemprop="address" content="${this.organizationInfo.address}">
+                        <meta itemprop="telephone" content="${this.organizationInfo.telephone}">
                     </div>
                 </div>
                 
@@ -348,6 +330,14 @@ class ProductPageGenerator {
                 <li>Оплата при получении или картой онлайн</li>
                 <li>Гарантия возврата в течение 14 дней</li>
             </ul>
+            
+            <!-- Контактная информация организации -->
+            <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                <p><strong>Контакты:</strong></p>
+                <p>Адрес: ${this.organizationInfo.address}</p>
+                <p>Телефон: ${this.organizationInfo.telephone}</p>
+                <p>Сайт: ${this.organizationInfo.url}</p>
+            </div>
         </div>
     </div>
     
