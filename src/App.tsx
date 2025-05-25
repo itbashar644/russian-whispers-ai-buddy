@@ -40,54 +40,57 @@ import OrderSuccess from "@/pages/OrderSuccess";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
 import ChatWidget from "@/components/chat/ChatWidget";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./App.css";
 
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <ScrollToTop />
-              <YandexMetrika />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/catalog" element={<Catalog />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contacts" element={<Contacts />} />
-                <Route path="/delivery" element={<Delivery />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/thank-you" element={<ThankYou />} />
-                <Route path="/order-success" element={<OrderSuccess />} />
-                
-                {/* Account routes */}
-                <Route path="/account" element={<Account />} />
-                <Route path="/account/security" element={<AccountSecurity />} />
-                <Route path="/account/orders" element={<UserOrders />} />
-                
-                {/* Admin routes */}
-                <Route path="/admin/*" element={<AdminPanel />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                
-                {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-              <ChatWidget />
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
-      </Router>
+      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+        <Router>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <ScrollToTop />
+                <YandexMetrika />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/catalog" element={<Catalog />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/delivery" element={<Delivery />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
+                  <Route path="/order-success" element={<OrderSuccess />} />
+                  
+                  {/* Account routes */}
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/account/security" element={<AccountSecurity />} />
+                  <Route path="/account/orders" element={<UserOrders />} />
+                  
+                  {/* Admin routes */}
+                  <Route path="/admin/*" element={<AdminPanel />} />
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  
+                  {/* 404 route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+                <ChatWidget />
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
     </HelmetProvider>
   );
 }
