@@ -1,113 +1,147 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Product, ColorVariant } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Heart, ShoppingCart } from "lucide-react";
+import ProductColorOptions from "./ProductColorOptions";
+import MarketplaceLinks from "./MarketplaceLinks";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import ProductCardCompact from "./ProductCardCompact";
-import ProductCardFull from "./ProductCardFull";
 
 interface ProductCardProps {
   product: Product;
-  variant?: "default" | "compact";
-  isColorVariant?: boolean;
+  className?: string;
+  selectedColor?: string;
+  onColorSelect?: (colorName: string, variant?: ColorVariant) => void;
+  currentProduct?: Product;
+  compact?: boolean;
+  cartAvailable?: boolean;
 }
 
-const ProductCard = ({ product, variant = "default", isColorVariant }: ProductCardProps) => {
-  // Check if CartProvider is available
-  let cartContext;
-  try {
-    cartContext = useCart();
-  } catch (error) {
-    console.warn("CartProvider not available, ProductCard will render without cart functionality");
-    cartContext = null;
-  }
-
-  // Check if WishlistProvider is available
-  let wishlistContext;
-  try {
-    wishlistContext = useWishlist();
-  } catch (error) {
-    console.warn("WishlistProvider not available, ProductCard will render without wishlist functionality");
-    wishlistContext = null;
-  }
-
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product.colors && product.colors.length > 0 ? product.colors[0] : undefined
-  );
-  const [selectedVariant, setSelectedVariant] = useState<ColorVariant | undefined>();
-
-  // Use current variant or main product for display
-  const currentProduct = selectedVariant 
-    ? { 
-        ...product, 
-        imageUrl: selectedVariant.imageUrl || product.imageUrl,
-        price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice,
-        stockQuantity: selectedVariant.stockQuantity,
-        // Устанавливаем inStock на основе stockQuantity для варианта
-        inStock: selectedVariant.stockQuantity !== undefined ? selectedVariant.stockQuantity > 0 : product.inStock
-      } 
-    : product;
-
-  const handleColorSelect = (colorName: string, variant?: ColorVariant) => {
-    setSelectedColor(colorName);
-    setSelectedVariant(variant);
-  };
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  className = "",
+  selectedColor,
+  onColorSelect,
+  currentProduct = product,
+  compact = false,
+  cartAvailable = true
+}) => {
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   const handleAddToCart = () => {
-    if (!cartContext) {
-      console.warn("Cart functionality not available");
-      return;
-    }
+    const selectedVariant = selectedColor && currentProduct.colorVariants 
+      ? currentProduct.colorVariants.find(v => v.color === selectedColor)
+      : undefined;
 
-    if (selectedVariant) {
-      cartContext.addItem({
-        product, 
-        quantity: 1, 
-        color: selectedColor,
-        selectedColorVariant: selectedVariant
-      });
-    } else {
-      cartContext.addItem({ product, quantity: 1, color: selectedColor });
-    }
+    addToCart(currentProduct, 1, selectedColor, undefined, selectedVariant);
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation when clicking the heart
-    if (wishlistContext) {
-      wishlistContext.toggleWishlistItem(product);
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product);
   };
 
-  // Create a safe isInWishlist function
-  const isInWishlist = (product: Product) => {
-    return wishlistContext ? wishlistContext.isInWishlist(product.id) : false;
-  };
-
-  // Compact variant for smaller cards
-  if (variant === "compact") {
-    return (
-      <ProductCardCompact 
-        product={product} 
-        currentProduct={currentProduct} 
-      />
-    );
-  }
-
-  // Default variant for regular sized cards
   return (
-    <ProductCardFull
-      product={product}
-      currentProduct={currentProduct}
-      selectedColor={selectedColor}
-      handleColorSelect={handleColorSelect}
-      handleAddToCart={handleAddToCart}
-      handleToggleWishlist={handleToggleWishlist}
-      isInWishlist={isInWishlist}
-      cartAvailable={!!cartContext}
-    />
+    <div className={`group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
+      <Link to={`/product/${product.id}`} className="block">
+        <AspectRatio ratio={compact ? 1 : 3/4} className="overflow-hidden rounded-t-lg bg-gray-50">
+          <img
+            src={currentProduct.imageUrl}
+            alt={product.title}
+            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
+            loading="lazy"
+          />
+        </AspectRatio>
+      </Link>
+
+      <button
+        onClick={handleToggleWishlist}
+        className={`absolute top-3 right-3 p-2 rounded-full bg-white shadow-sm hover:shadow-md transition-all duration-200 ${
+          isInWishlist(product) ? "text-red-500" : "text-gray-400"
+        }`}
+        aria-label={isInWishlist(product) ? "Удалить из избранного" : "Добавить в избранное"}
+      >
+        <Heart className={`h-4 w-4 ${isInWishlist(product) ? "fill-current" : ""}`} />
+      </button>
+
+      <div className={compact ? "p-3" : "p-4"}>
+        <Link to={`/product/${product.id}`}>
+          <h3 className={`font-medium text-gray-900 group-hover:text-gray-700 line-clamp-2 mb-2 ${
+            compact ? "text-xs" : "text-sm"
+          }`}>
+            {product.title}
+          </h3>
+        </Link>
+
+        {/* Color Options */}
+        {!compact && product.colors && product.colors.length > 0 && onColorSelect && (
+          <ProductColorOptions
+            product={product}
+            selectedColor={selectedColor}
+            onColorSelect={onColorSelect}
+          />
+        )}
+
+        {/* Price */}
+        <div className="flex items-center gap-2 mb-3">
+          {currentProduct.discountPrice ? (
+            <>
+              <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`}>
+                {formatPrice(currentProduct.discountPrice)}
+              </span>
+              <span className={`text-gray-500 line-through ${compact ? "text-xs" : "text-sm"}`}>
+                {formatPrice(currentProduct.price)}
+              </span>
+            </>
+          ) : (
+            <span className={`font-bold text-gray-900 ${compact ? "text-sm" : "text-lg"}`}>
+              {formatPrice(currentProduct.price)}
+            </span>
+          )}
+        </div>
+
+        {/* Stock Status */}
+        {!compact && (
+          <div className={`text-xs font-medium mb-3 ${
+            currentProduct.stockQuantity && currentProduct.stockQuantity > 0 
+              ? "text-green-600" 
+              : "text-red-500"
+          }`}>
+            {currentProduct.stockQuantity && currentProduct.stockQuantity > 0 ? "В наличии" : "Нет в наличии"}
+          </div>
+        )}
+
+        {/* Marketplace Links */}
+        {!compact && <MarketplaceLinks product={currentProduct} />}
+
+        {/* Add to Cart Button */}
+        {cartAvailable && (
+          <Button
+            onClick={handleAddToCart}
+            disabled={!currentProduct.inStock || (currentProduct.stockQuantity !== undefined && currentProduct.stockQuantity <= 0)}
+            className="w-full"
+            size={compact ? "sm" : "sm"}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            В корзину
+          </Button>
+        )}
+        
+        {!cartAvailable && (
+          <Link to={`/product/${product.id}`}>
+            <Button className="w-full" size={compact ? "sm" : "sm"} variant="outline">
+              Подробнее
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import ProductColorOptions from "./ProductColorOptions";
+import MarketplaceLinks from "./MarketplaceLinks";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ProductCardFullProps {
@@ -94,6 +95,9 @@ const ProductCardFull: React.FC<ProductCardFullProps> = ({
         }`}>
           {currentProduct.stockQuantity && currentProduct.stockQuantity > 0 ? "В наличии" : "Нет в наличии"}
         </div>
+
+        {/* Marketplace Links */}
+        <MarketplaceLinks product={currentProduct} />
 
         {/* Add to Cart Button */}
         {cartAvailable && (
