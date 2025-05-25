@@ -94,7 +94,10 @@ function initChat() {
 
     // Используем pointerdown для корректной работы на мобильных
     sendBtn.addEventListener('pointerdown', handleSendInteraction);
-    });
+    // Добавляем также стандартный click и touchend на случай, если pointerdown
+    // не сработает в некоторых браузерах
+    sendBtn.addEventListener('click', handleSendInteraction);
+    sendBtn.addEventListener('touchend', handleSendInteraction);
     
     const chatInput = document.getElementById('chat-input');
     chatInput.addEventListener('keydown', function(event) {
