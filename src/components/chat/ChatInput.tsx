@@ -81,13 +81,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
         inputMode="text"
         enterKeyHint="send"
       />
-      <Button 
+      <Button
         type="submit"
-        size="icon" 
+        size="icon"
         disabled={isSending || !message.trim()}
         className="flex-shrink-0"
-        onClick={handleButtonInteraction}
-        onTouchStart={handleButtonInteraction}
+        onPointerDown={handleButtonInteraction}
         style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
       >
         <Send className="h-4 w-4" />

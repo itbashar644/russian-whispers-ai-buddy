@@ -87,11 +87,13 @@ function initChat() {
     // Добавляем обработчики событий для интерфейса чата
     document.querySelector('.chat-close-btn').addEventListener('click', closeChat);
     const sendBtn = document.getElementById('chat-send-btn');
-    sendBtn.addEventListener('click', sendMessage);
-    // Дополнительная обработка для мобильных устройств
-    sendBtn.addEventListener('touchstart', function(event) {
+    const handleSendInteraction = function(event) {
       event.preventDefault();
       sendMessage();
+          };
+
+    // Используем pointerdown для корректной работы на мобильных
+    sendBtn.addEventListener('pointerdown', handleSendInteraction);
     });
     
     const chatInput = document.getElementById('chat-input');
