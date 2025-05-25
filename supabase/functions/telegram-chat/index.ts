@@ -1,394 +1,302 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-// Configuration for CORS
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-};
+}
 
-// Handle options requests for CORS
-function handleCors(req: Request) {
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-      status: 204,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
-  return null;
-}
 
-// Supabase client initialization
-function getSupabaseClient() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
-  return createClient(supabaseUrl, supabaseKey);
-}
-
-// Function to send message to Telegram
-async function sendTelegramMessage(text: string) {
   try {
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const chatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID');
-    
-    if (!botToken || !chatId) {
-      console.error('Telegram configuration is missing');
-      return false;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    const url = new URL(req.url)
+    const action = url.pathname.split('/').pop()
+
+    switch (action) {
+      case 'send':
+        return await handleSendMessage(req, supabase)
+      case 'messages':
+        return await handleGetMessages(req, supabase)
+      case 'mark-read':
+        return await handleMarkAsRead(req, supabase)
+      case 'status':
+        return await handleStatus(req, supabase)
+      case 'webhook-status':
+        return await handleWebhookStatus(req, supabase)
+      case 'setup-webhook':
+        return await handleSetupWebhook(req, supabase)
+      default:
+        return new Response(JSON.stringify({ error: 'Invalid action' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
     }
-    
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text,
-        parse_mode: 'HTML',
-      }),
-    });
-    
-    const result = await response.json();
-    console.log('Telegram message sent:', result);
-    return result.ok === true;
   } catch (error) {
-    console.error('Error sending Telegram message:', error);
-    return false;
+    console.error('Error in telegram-chat function:', error)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-}
+})
 
-// Process incoming message from the website chat
-async function handleIncomingMessage(req: Request) {
+async function handleSendMessage(req: Request, supabase: any) {
+  const { chatId, message, name = '', email = '' } = await req.json()
+
+  if (!chatId || !message) {
+    return new Response(JSON.stringify({ error: 'Missing chatId or message' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
-    const { message, chatId, userName, userEmail } = await req.json();
-    const supabase = getSupabaseClient();
-    
-    console.log(`Received message from chat ${chatId}: ${message}`);
-    
-    // Store message in Supabase
-    const { error: dbError } = await supabase
+    // Ensure chat session exists
+    const { data: existingSession, error: sessionCheckError } = await supabase
+      .from('chat_sessions')
+      .select('id')
+      .eq('id', chatId)
+      .single()
+
+    if (sessionCheckError && sessionCheckError.code === 'PGRST116') {
+      // Session doesn't exist, create it
+      const { error: createSessionError } = await supabase
+        .from('chat_sessions')
+        .insert({
+          id: chatId,
+          customer_name: name,
+          customer_email: email
+        })
+
+      if (createSessionError) {
+        console.error('Error creating chat session:', createSessionError)
+        return new Response(JSON.stringify({ error: 'Failed to create chat session' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // Insert the message
+    const { error: messageError } = await supabase
       .from('chat_messages')
       .insert({
         chat_id: chatId,
         message: message,
         is_from_admin: false,
-        is_read: false,
-      });
-    
-    if (dbError) {
-      console.error('Error storing message:', dbError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Database error' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+        is_read: false
+      })
+
+    if (messageError) {
+      console.error('Error inserting message:', messageError)
+      return new Response(JSON.stringify({ error: 'Failed to save message' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
-    
-    // Forward message to Telegram admin
-    const userInfo = userName ? `${userName} (${userEmail || 'No email'})` : `User (${userEmail || 'Anonymous'})`;
-    const telegramText = `<b>New message from ${userInfo}</b>\n\nChat ID: ${chatId}\n\nMessage: ${message}`;
-    
-    const telegramResult = await sendTelegramMessage(telegramText);
-    
-    return new Response(
-      JSON.stringify({ success: true, telegramSent: telegramResult }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
+
+    // Try to send to Telegram bot
+    await sendToTelegramBot(chatId, message, name, email)
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    console.error('Error processing incoming message:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    console.error('Error in handleSendMessage:', error)
+    return new Response(JSON.stringify({ error: 'Failed to send message' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 }
 
-// Process webhook updates from Telegram
-async function handleTelegramWebhook(req: Request) {
-  try {
-    const update = await req.json();
-    console.log('Received Telegram update:', JSON.stringify(update));
-    
-    // We only care about message updates with text
-    if (!update.message || !update.message.text) {
-      return new Response(JSON.stringify({ success: true, action: 'ignored' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-    }
-    
-    const text = update.message.text;
-    const supabase = getSupabaseClient();
-    
-    // Check if this is a reply to a chat message
-    // Format expected: "CHAT_ID: message content"
-    const chatIdMatch = text.match(/^([a-zA-Z0-9-]+):\s*(.+)/s);
-    
-    if (!chatIdMatch) {
-      console.log('Message format not recognized for chat reply');
-      return new Response(JSON.stringify({ 
-          success: true, 
-          action: 'ignored',
-          message: 'To reply to a user, use format: CHAT_ID: your message' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-    }
-    
-    const chatId = chatIdMatch[1];
-    const replyMessage = chatIdMatch[2].trim();
-    
-    console.log(`Sending admin reply to chat ${chatId}: ${replyMessage}`);
-    
-    // Store admin reply in database
-    const { error: dbError } = await supabase
-      .from('chat_messages')
-      .insert({
-        chat_id: chatId,
-        message: replyMessage,
-        is_from_admin: true,
-        is_read: false,
-      });
-    
-    if (dbError) {
-      console.error('Error storing admin reply:', dbError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Database error' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        action: 'reply_sent',
-        chatId: chatId,
-        message: replyMessage
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
-  } catch (error) {
-    console.error('Error processing Telegram webhook:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+async function handleGetMessages(req: Request, supabase: any) {
+  const { chatId } = await req.json()
+
+  if (!chatId) {
+    return new Response(JSON.stringify({ error: 'Missing chatId' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-}
 
-// Configure Telegram webhook
-async function setupTelegramWebhook(req: Request) {
   try {
-    const { url } = await req.json();
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    
-    if (!botToken) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Bot token not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-
-    console.log(`Setting up Telegram webhook to: ${url}`);
-    
-    // Set the webhook
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: url,
-        allowed_updates: ['message'],
-      }),
-    });
-    
-    const result = await response.json();
-    console.log('Webhook setup result:', result);
-    
-    // Get webhook info
-    const infoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
-    const info = await infoResponse.json();
-    
-    return new Response(
-      JSON.stringify({ success: result.ok === true, webhook: info.result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
-  } catch (error) {
-    console.error('Error setting up webhook:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
-  }
-}
-
-// Get webhook status
-async function getWebhookStatus(req: Request) {
-  try {
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    
-    if (!botToken) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Bot token not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-    
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
-    const result = await response.json();
-    
-    return new Response(
-      JSON.stringify({ success: result.ok === true, webhook: result.result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
-  } catch (error) {
-    console.error('Error getting webhook status:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
-  }
-}
-
-// Add function to retrieve messages
-async function getMessages(req: Request) {
-  try {
-    const { chatId } = await req.json();
-    
-    if (!chatId) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Chat ID is required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-    
-    console.log(`Getting messages for chat ${chatId}`);
-    const supabase = getSupabaseClient();
-    
-    // Query messages from the database
-    const { data, error } = await supabase
+    const { data: messages, error } = await supabase
       .from('chat_messages')
       .select('*')
       .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
-    
+      .order('created_at', { ascending: true })
+
     if (error) {
-      console.error('Error fetching messages:', error);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Database error' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      console.error('Error fetching messages:', error)
+      return new Response(JSON.stringify({ error: 'Failed to fetch messages' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
-    
-    return new Response(
-      JSON.stringify({ success: true, messages: data }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
+
+    return new Response(JSON.stringify({ messages: messages || [] }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    console.error('Error processing get messages:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    console.error('Error in handleGetMessages:', error)
+    return new Response(JSON.stringify({ error: 'Failed to get messages' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 }
 
-// Add function to mark messages as read
-async function markMessagesAsRead(req: Request) {
+async function handleMarkAsRead(req: Request, supabase: any) {
+  const { chatId } = await req.json()
+
+  if (!chatId) {
+    return new Response(JSON.stringify({ error: 'Missing chatId' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
-    const { chatId } = await req.json();
-    
-    if (!chatId) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Chat ID is required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-    
-    console.log(`Marking messages as read for chat ${chatId}`);
-    const supabase = getSupabaseClient();
-    
-    // Update read status in the database
     const { error } = await supabase
       .from('chat_messages')
       .update({ is_read: true })
       .eq('chat_id', chatId)
       .eq('is_from_admin', true)
-      .eq('is_read', false);
-    
+
     if (error) {
-      console.error('Error marking messages as read:', error);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Database error' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      console.error('Error marking messages as read:', error)
+      return new Response(JSON.stringify({ error: 'Failed to mark messages as read' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
-    
-    return new Response(
-      JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    console.error('Error processing mark messages as read:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    console.error('Error in handleMarkAsRead:', error)
+    return new Response(JSON.stringify({ error: 'Failed to mark as read' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 }
 
-// Add function to check chat status
-async function checkChatStatus() {
-  const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-  const adminChatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID');
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  const config = {
-    telegram_bot_token_set: !!botToken,
-    telegram_admin_chat_id_set: !!adminChatId,
-    supabase_url_set: !!supabaseUrl,
-    supabase_service_role_key_set: !!supabaseKey
-  };
-  
-  const allConfigSet = Object.values(config).every(value => value === true);
-  
-  return new Response(
-    JSON.stringify({ 
-      status: allConfigSet ? 'ok' : 'missing_config',
-      config 
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-  );
+async function handleStatus(req: Request, supabase: any) {
+  const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+  const telegramAdminChatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID')
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  return new Response(JSON.stringify({
+    status: 'ok',
+    config: {
+      telegram_bot_token_set: !!telegramBotToken,
+      telegram_admin_chat_id_set: !!telegramAdminChatId,
+      supabase_url_set: !!supabaseUrl,
+      supabase_service_role_key_set: !!supabaseServiceRoleKey
+    }
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
 }
 
-// Main handler function
-Deno.serve(async (req) => {
-  // Handle CORS preflight
-  const corsResponse = handleCors(req);
-  if (corsResponse) return corsResponse;
+async function handleWebhookStatus(req: Request, supabase: any) {
+  const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
   
-  // Get request path
-  const url = new URL(req.url);
-  const path = url.pathname.split('/').pop();
-  
-  // Route to appropriate handler
-  switch (path) {
-    case 'webhook':
-      return handleTelegramWebhook(req);
-    case 'send':
-      return handleIncomingMessage(req);
-    case 'setup-webhook':
-      return setupTelegramWebhook(req);
-    case 'webhook-status':
-      return getWebhookStatus(req);
-    case 'messages':
-      return getMessages(req);
-    case 'mark-read':
-      return markMessagesAsRead(req);
-    case 'status':
-      return checkChatStatus();
-    default:
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid endpoint' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
-      );
+  if (!telegramBotToken) {
+    return new Response(JSON.stringify({ ok: false, error: 'No bot token configured' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-});
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/getWebhookInfo`)
+    const data = await response.json()
+    
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    return new Response(JSON.stringify({ ok: false, error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+}
+
+async function handleSetupWebhook(req: Request, supabase: any) {
+  const { url } = await req.json()
+  const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+  
+  if (!telegramBotToken) {
+    return new Response(JSON.stringify({ error: 'No bot token configured' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    })
+    
+    const data = await response.json()
+    
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+}
+
+async function sendToTelegramBot(chatId: string, message: string, name: string, email: string) {
+  const telegramBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+  const telegramAdminChatId = Deno.env.get('TELEGRAM_ADMIN_CHAT_ID')
+
+  if (!telegramBotToken || !telegramAdminChatId) {
+    console.log('Telegram not configured, skipping bot notification')
+    return
+  }
+
+  try {
+    const telegramMessage = `
+🔔 Новое сообщение от клиента
+
+👤 **Имя:** ${name || 'Не указано'}
+📧 **Email:** ${email || 'Не указан'}
+🆔 **Chat ID:** ${chatId}
+
+💬 **Сообщение:**
+${message}
+    `.trim()
+
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: telegramAdminChatId,
+        text: telegramMessage,
+        parse_mode: 'Markdown'
+      })
+    })
+  } catch (error) {
+    console.error('Error sending to Telegram:', error)
+  }
+}

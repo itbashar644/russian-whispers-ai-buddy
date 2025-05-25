@@ -56,15 +56,15 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
     }
   };
 
-  // Enhanced mobile event handling
-  const handleButtonClick = (e: React.MouseEvent | React.TouchEvent) => {
+  // Enhanced mobile event handling with proper preventDefault
+  const handleButtonInteraction = async (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!message.trim() || isSending) return;
     
     console.log('Button interaction triggered');
-    handleSendMessage();
+    await handleSendMessage();
   };
 
   return (
@@ -85,9 +85,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isSending }) => {
         type="button"
         size="icon"
         disabled={isSending || !message.trim()}
-        className="flex-shrink-0"
-        onClick={handleButtonClick}
-        onTouchStart={handleButtonClick}
+        className="flex-shrink-0 touch-manipulation"
+        onClick={handleButtonInteraction}
+        onTouchEnd={handleButtonInteraction}
         style={{ 
           WebkitTapHighlightColor: 'transparent', 
           touchAction: 'manipulation',
