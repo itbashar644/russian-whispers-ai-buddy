@@ -1,53 +1,36 @@
 
-const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 class SupabaseClient {
   constructor() {
-    const supabaseUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI';
+    this.supabaseUrl = process.env.SUPABASE_URL;
+    this.supabaseKey = process.env.SUPABASE_ANON_KEY;
     
-    this.supabase = createClient(supabaseUrl, supabaseKey);
-  }
-
-  // Получение всех товаров
-  async getProducts() {
-    try {
-      console.log('Получение товаров из Supabase...');
-      
-      const { data, error } = await this.supabase
-        .from('products')
-        .select('*')
-        .eq('archived', false);
-
-      if (error) {
-        console.error('Ошибка при получении товаров:', error);
-        throw error;
-      }
-
-      console.log(`✅ Получено ${data.length} товаров`);
-      return data;
-    } catch (error) {
-      console.error('Ошибка подключения к Supabase:', error);
-      throw error;
+    if (!this.supabaseUrl || !this.supabaseKey) {
+      throw new Error('Отсутствуют переменные окружения SUPABASE_URL или SUPABASE_ANON_KEY');
     }
   }
 
-  // Получение категорий товаров
-  async getCategories() {
+  async getProducts() {
     try {
-      const { data, error } = await this.supabase
-        .from('categories')
-        .select('*');
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/products?select=*`, {
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      if (error) {
-        console.error('Ошибка при получении категорий:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return data;
+      const products = await response.json();
+      console.log(`✅ Получено ${products.length} товаров из Supabase`);
+      return products;
     } catch (error) {
-      console.error('Ошибка получения категорий:', error);
-      return [];
+      console.error('❌ Ошибка получения товаров:', error.message);
+      throw error;
     }
   }
 }
