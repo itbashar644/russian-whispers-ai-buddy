@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import Index from "@/pages/Index";
@@ -43,7 +42,13 @@ import ChatWidget from "@/components/chat/ChatWidget";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./App.css";
 
+import { initRedirectHandler } from './utils/redirectHandler';
+
 function App() {
+  useEffect(() => {
+    initRedirectHandler();
+  }, []);
+
   return (
     <HelmetProvider>
       <ThemeProvider defaultTheme="light" storageKey="ui-theme">
