@@ -49,7 +49,7 @@ async function generateStaticPages() {
     
     for (const product of products) {
       try {
-        const slug = pageGenerator.generateSlug(product.title);
+        const slug = product.id;
         const htmlContent = pageGenerator.generateProductHTML(product, slug);
         const fileName = `product-${slug}.html`;
         const filePath = path.join(publicDir, fileName);
