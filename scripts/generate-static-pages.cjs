@@ -74,7 +74,7 @@ async function generateStaticPages() {
     // Создаем файл с маппингом ID -> slug для редиректов
     const mapping = {};
     products.forEach(product => {
-      const slug = pageGenerator.generateSlug(product.title);
+      const slug = product.id;
       mapping[product.id] = slug;
     });
     
