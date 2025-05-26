@@ -1,7 +1,7 @@
+
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
-import React, { useEffect } from "react";
 import Index from "@/pages/Index";
 import Product from "@/pages/Product";
 import ProductDetail from "@/pages/ProductDetail";
