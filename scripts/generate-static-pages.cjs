@@ -47,22 +47,32 @@ async function generateStaticPages() {
     let generatedCount = 0;
     let errorCount = 0;
     
-    for (const product of products) {
-      try {
-        const slug = product.id;
-        const htmlContent = pageGenerator.generateProductHTML(product, slug);
-        const fileName = `product-${slug}.html`;
-        const filePath = path.join(publicDir, fileName);
-        
-        fs.writeFileSync(filePath, htmlContent, 'utf8');
-        
-        console.log(`✅ Создана страница: ${fileName}`);
-        generatedCount++;
-      } catch (error) {
-        console.error(`❌ Ошибка создания страницы для товара ${product.id}:`, error.message);
-        errorCount++;
-      }
-    }
+    // === scripts/generate-static-pages.cjs ===
+for (const product of products) {
+  try {
+    // 1. slug = id
+    const slug = product.id;
+
+    // 2. создаём каталог public/product/<id>/
+    const dirPath = path.join(publicDir, "product", slug);
+    fs.mkdirSync(dirPath, { recursive: true });
+
+    // 3. генерируем HTML
+    const htmlContent = pageGenerator.generateProductHTML(product, slug);
+
+    // 4. путь до index.html
+    const filePath = path.join(dirPath, "index.html");
+    fs.writeFileSync(filePath, htmlContent, "utf8");
+
+    // 5. лог
+    console.log(`✅ Создана страница: product/${slug}/index.html`);
+    generatedCount++;
+  } catch (error) {
+    console.error(`❌ Ошибка создания страницы для товара ${product.id}:`, error.message);
+    errorCount++;
+  }
+}
+
     
     // Генерируем sitemap
     try {
