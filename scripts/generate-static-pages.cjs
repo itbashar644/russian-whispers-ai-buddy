@@ -1,116 +1,94 @@
+/* eslint-disable no-console */
+// scripts/generate-static-pages.cjs
+const fs   = require("fs");
+const path = require("path");
 
-const fs = require('fs');
-const path = require('path');
-const SupabaseClient      = require('./lib/supabaseClient.cjs');
-const StaticPageGenerator = require('./lib/staticPageGenerator.cjs');
-const SitemapGenerator    = require('./lib/sitemapGenerator.cjs');
-
+const SupabaseClient      = require("./lib/supabaseClient.cjs");
+const StaticPageGenerator = require("./lib/staticPageGenerator.cjs");
+const SitemapGenerator    = require("./lib/sitemapGenerator.cjs");
 
 async function generateStaticPages() {
   try {
-    console.log('🚀 Начало генерации статических страниц...');
-    
-    // Инициализация сервисов
+    console.log("🚀 Начало генерации статических страниц…");
+
+    /** инициализация сервисов */
     const supabaseClient = new SupabaseClient();
-    const pageGenerator = new StaticPageGenerator();
-    const sitemapGenerator = new SitemapGenerator();
-    
-    // Путь к публичной директории
-    const publicDir = path.join(__dirname, '../public');
-    
-    // Создаем директорию если её нет
+    const pageGenerator  = new StaticPageGenerator();
+    const sitemap        = new SitemapGenerator();
+
+    /** публичная директория проекта */
+    const publicDir = path.join(__dirname, "../public");
+
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
-    
-    // Получаем товары из Supabase
+
+    /** загружаем товары из Supabase */
     const products = await supabaseClient.getProducts();
-    
-    if (!products || products.length === 0) {
-      console.log('❌ Товары не найдены');
+    if (!products?.length) {
+      console.log("❌ Товары не найдены – генерация остановлена");
       return;
     }
-    
     console.log(`📦 Найдено ${products.length} товаров для генерации`);
-    
-    // Удаляем старые файлы товаров
-    const existingFiles = fs.readdirSync(publicDir);
-    const productFiles = existingFiles.filter(file => file.startsWith('product-') && file.endsWith('.html'));
-    
-    productFiles.forEach(file => {
-      fs.unlinkSync(path.join(publicDir, file));
-    });
-    
-    console.log(`🗑️ Удалено ${productFiles.length} старых файлов`);
-    
-    // Генерируем новые страницы товаров
-    let generatedCount = 0;
-    let errorCount = 0;
-    
-    // === scripts/generate-static-pages.cjs ===
-for (const product of products) {
-  try {
-    // 1. slug = id
-    const slug = product.id;
 
-    // 2. создаём каталог public/product/<id>/
-    const dirPath = path.join(publicDir, "product", slug);
-    fs.mkdirSync(dirPath, { recursive: true });
+    /** очищаем старые каталоги товаров */
+    const oldDirs = fs
+      .readdirSync(path.join(publicDir, "product"), { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => path.join(publicDir, "product", d.name));
 
-    // 3. генерируем HTML
-    const htmlContent = pageGenerator.generateProductHTML(product, slug);
+    oldDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true }));
+    console.log(`🗑️ Удалено ${oldDirs.length} старых каталогов`);
 
-    // 4. путь до index.html
-    const filePath = path.join(dirPath, "index.html");
-    fs.writeFileSync(filePath, htmlContent, "utf8");
+    /** генерируем статические страницы */
+    let generated = 0;
+    let errors    = 0;
 
-    // 5. лог
-    console.log(`✅ Создана страница: product/${slug}/index.html`);
-    generatedCount++;
-  } catch (error) {
-    console.error(`❌ Ошибка создания страницы для товара ${product.id}:`, error.message);
-    errorCount++;
-  }
-}
+    for (const product of products) {
+      try {
+        const slug       = product.id;                  // используем UUID
+        const dirPath    = path.join(publicDir, "product", slug);
+        const filePath   = path.join(dirPath, "index.html");
+        const html       = pageGenerator.generateProductHTML(product, slug);
 
-    
-    // Генерируем sitemap
-    try {
-      sitemapGenerator.saveSitemap(products, publicDir);
-    } catch (error) {
-      console.error('❌ Ошибка создания sitemap:', error.message);
+        fs.mkdirSync(dirPath, { recursive: true });
+        fs.writeFileSync(filePath, html, "utf8");
+
+        console.log(`✅ product/${slug}/index.html`);
+        generated++;
+      } catch (err) {
+        console.error(`❌ Ошибка ${product.id}: ${err.message}`);
+        errors++;
+      }
     }
-    
-    // Создаем файл с маппингом ID -> slug для редиректов
-    const mapping = {};
-    products.forEach(product => {
-      const slug = product.id;
-      mapping[product.id] = slug;
-    });
-    
-    const mappingPath = path.join(publicDir, 'product-mapping.json');
-    fs.writeFileSync(mappingPath, JSON.stringify(mapping, null, 2), 'utf8');
-    console.log('✅ Создан файл маппинга для редиректов');
-    
-    // Статистика
-    console.log('\n📊 Статистика генерации:');
-    console.log(`✅ Успешно создано: ${generatedCount} страниц`);
-    console.log(`❌ Ошибок: ${errorCount}`);
-    console.log(`📁 Страницы сохранены в: ${publicDir}`);
-    
-    if (generatedCount > 0) {
-      console.log('\n🎉 Генерация завершена успешно!');
-      console.log('💡 Все страницы содержат корректную микроразметку для Яндекса');
-      console.log('🔗 Канонические URL: https://the-x.shop/product/<slug>');
+
+    /** sitemap + mapping */
+    sitemap.saveSitemap(products, publicDir);
+
+    const mapping = Object.fromEntries(products.map((p) => [p.id, p.id]));
+    fs.writeFileSync(
+      path.join(publicDir, "product-mapping.json"),
+      JSON.stringify(mapping, null, 2),
+      "utf8",
+    );
+    console.log("✅ Sitemap и mapping сохранены");
+
+    /** итоговая статистика */
+    console.log("\n📊 Статистика:");
+    console.log(`   создано  : ${generated}`);
+    console.log(`   ошибок   : ${errors}`);
+    console.log(`   в каталоге: ${publicDir}/product/<id>/index.html`);
+
+    if (generated) {
+      console.log("\n🎉 Готово! Канонический URL:");
+      console.log("   https://the-x.shop/product/<id>/");
     }
-    
-  } catch (error) {
-    console.error('💥 Критическая ошибка:', error);
+  } catch (err) {
+    console.error("💥 Критическая ошибка:", err);
     process.exit(1);
   }
 }
 
-// Запуск генерации
 if (require.main === module) {
   generateStaticPages();
 }
