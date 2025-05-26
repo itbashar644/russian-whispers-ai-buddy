@@ -62,8 +62,7 @@ function App() {
                 <YandexMetrika />
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  {/*
-                  <Route path="/catalog" element={<Catalog />} />*/}
+                  <Route path="/catalog" element={<Catalog />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contacts" element={<Contacts />} />
