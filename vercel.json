@@ -1,0 +1,16 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/product/(.*)",
+      "destination": "/product-$1.html"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/product/([^/]+)",
+      "dest": "/product-$1.html",
+      "status": 200
+    }
+  ]
+}
