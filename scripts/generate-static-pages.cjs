@@ -36,10 +36,10 @@ async function generateStaticPages() {
 
     /** очищаем старые файлы товаров */
     const productDir = path.join(publicDir, "product");
-if (fs.existsSync(productDir)) {
-  fs.rmSync(productDir, { recursive: true, force: true });
-  console.log("🧹 Удалена старая папка /product/");
-}
+    if (fs.existsSync(productDir)) {
+      fs.rmSync(productDir, { recursive: true, force: true });
+      console.log("🧹 Удалена старая папка /product/");
+    }
 
     /** генерируем статические страницы */
     let generated = 0;
@@ -49,6 +49,8 @@ if (fs.existsSync(productDir)) {
       try {
         const slug       = product.id;
         const filePath = path.join(publicDir, "product", slug, "index.html");
+        
+        // Создаем директорию для каждого товара
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
         const html = pageGenerator.generateProductHTML(product, slug);
@@ -78,7 +80,7 @@ if (fs.existsSync(productDir)) {
     console.log("\n📊 Статистика:");
     console.log(`   создано  : ${generated}`);
     console.log(`   ошибок   : ${errors}`);
-    console.log(`   в каталоге: ${publicDir}/product-<id>.html`);
+    console.log(`   в каталоге: ${publicDir}/product/<id>/index.html`);
 
     if (generated) {
       console.log("\n🎉 Готово! Канонический URL:");

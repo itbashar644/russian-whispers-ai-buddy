@@ -2,10 +2,6 @@
 {
   "rewrites": [
     {
-      "source": "/product/:id",
-      "destination": "/product/:id/"
-    },
-    {
       "source": "/product/:id/",
       "destination": "/product/:id/index.html"
     }
