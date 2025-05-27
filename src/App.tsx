@@ -1,104 +1,122 @@
 
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async';
-import Index from "@/pages/Index";
-import Product from "@/pages/Product";
-import ProductDetail from "@/pages/ProductDetail";
-import Cart from "@/pages/Cart";
-import About from "@/pages/About";
-import Contacts from "@/pages/Contacts";
-import Catalog from "@/pages/Catalog";
-import Delivery from "@/pages/Delivery";
-import Privacy from "@/pages/Privacy";
-import Terms from "@/pages/Terms";
-import NotFound from "@/pages/NotFound";
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import ResetPassword from "@/pages/auth/ResetPassword";
-import AuthCallback from "@/pages/auth/AuthCallback";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/context/AuthContext";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
-import AdminPanel from "@/pages/admin/AdminPanel";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminProducts from "@/pages/admin/AdminProducts";
-import AdminOrders from "@/pages/admin/AdminOrders";
-import AdminCustomers from "@/pages/admin/AdminCustomers";
-import AdminCategories from "@/pages/admin/AdminCategories";
-import AdminSettings from "@/pages/admin/AdminSettings";
-import AdminLogin from "@/pages/admin/AdminLogin";
-import AdminReports from "@/pages/admin/AdminReports";
-import { NewsletterManager } from "@/components/admin/marketing/NewsletterManager";
-import Account from "@/pages/account/Account";
-import AccountSecurity from "@/pages/account/AccountSecurity";
-import UserOrders from "@/pages/account/UserOrders";
-import Wishlist from "@/pages/Wishlist";
-import ThankYou from "@/pages/ThankYou";
-import OrderSuccess from "@/pages/OrderSuccess";
-import ScrollToTop from "@/components/layout/ScrollToTop";
+import { AuthProvider } from "@/context/AuthContext";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
-import ChatWidget from "@/components/chat/ChatWidget";
-import { ThemeProvider } from "@/components/theme-provider";
+import ScrollToTop from "@/components/layout/ScrollToTop";
+
+// Import pages
+import Index from "./pages/Index";
+import Catalog from "./pages/Catalog";
+import Product from "./pages/Product";
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import Contacts from "./pages/Contacts";
+import About from "./pages/About";
+import Delivery from "./pages/Delivery";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import NotFound from "./pages/NotFound";
+import Wishlist from "./pages/Wishlist";
+import ThankYou from "./pages/ThankYou";
+import OrderSuccess from "./pages/OrderSuccess";
+
+// Admin pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminPanel from "./pages/admin/AdminPanel";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminCustomers from "./pages/admin/AdminCustomers";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettings from "./pages/admin/AdminSettings";
+
+// Auth pages
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import AuthCallback from "./pages/auth/AuthCallback";
+
+// Account pages
+import Account from "./pages/account/Account";
+import UserOrders from "./pages/account/UserOrders";
+import AccountSecurity from "./pages/account/AccountSecurity";
+
 import "./App.css";
 
-import { initRedirectHandler } from './utils/redirectHandler';
+const queryClient = new QueryClient();
 
 function App() {
-  useEffect(() => {
-    initRedirectHandler();
-  }, []);
-
   return (
-    <HelmetProvider>
-      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-        <Router>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <BrowserRouter>
                 <ScrollToTop />
                 <YandexMetrika />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/catalog" element={<Catalog />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contacts" element={<Contacts />} />
-                  <Route path="/delivery" element={<Delivery />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/thank-you" element={<ThankYou />} />
-                  <Route path="/order-success" element={<OrderSuccess />} />
-                  
-                  {/* Account routes */}
-                  <Route path="/account" element={<Account />} />
-                  <Route path="/account/security" element={<AccountSecurity />} />
-                  <Route path="/account/orders" element={<UserOrders />} />
-                  
-                  {/* Admin routes */}
-                  <Route path="/admin/*" element={<AdminPanel />} />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  
-                  {/* 404 route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/catalog" element={<Catalog />} />
+                    <Route path="/product/:slug" element={<Product />} />
+                    <Route path="/product-detail/:id" element={<ProductDetail />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/contacts" element={<Contacts />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/delivery" element={<Delivery />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/thank-you" element={<ThankYou />} />
+                    <Route path="/order-success" element={<OrderSuccess />} />
+
+                    {/* Auth routes */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+
+                    {/* Account routes */}
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/account/orders" element={<UserOrders />} />
+                    <Route path="/account/security" element={<AccountSecurity />} />
+
+                    {/* Admin routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin" element={<AdminPanel />}>
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="products" element={<AdminProducts />} />
+                      <Route path="orders" element={<AdminOrders />} />
+                      <Route path="categories" element={<AdminCategories />} />
+                      <Route path="customers" element={<AdminCustomers />} />
+                      <Route path="reports" element={<AdminReports />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                    </Route>
+
+                    {/* 404 route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
                 <Toaster />
-                <ChatWidget />
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </Router>
-      </ThemeProvider>
-    </HelmetProvider>
+                <Sonner />
+              </BrowserRouter>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
