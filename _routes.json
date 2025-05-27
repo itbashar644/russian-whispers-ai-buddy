@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "routes": [
+    {
+      "src": "/product/(?<slug>[\\w-]+)",
+      "dest": "/product-${slug}.html",
+      "status": 200
+    }
+  ]
+}
