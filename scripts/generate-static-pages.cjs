@@ -48,8 +48,8 @@ async function generateStaticPages() {
 
     for (const product of products) {
       try {
-        const slug       = product.id;                  // используем UUID
-        const fileName   = `product-${slug}.html`;      // формат для Cloudflare Pages
+        const slug       = product.id;
+        const fileName   = `product-${slug}.html`;
         const filePath   = path.join(publicDir, fileName);
         const html       = pageGenerator.generateProductHTML(product, slug);
 

@@ -1,7 +1,6 @@
 
 # Редиректы для статических страниц товаров
-/product/:id/    /product-:id.html    200!
-/product/:id     /product-:id.html    200!
+/product/:splat    /product-:splat.html    200!
 
 # Fallback для остальных маршрутов к SPA
 /*    /index.html    200
