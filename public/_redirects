@@ -1,6 +1,0 @@
-# Страницы товаров
-/product/:id     /product/:id/index.html   200
-/product/:id/    /product/:id/index.html   200
-
-# Остальные пути — отдаём как есть (без fallback на SPA)
-/*  /404.html  404
