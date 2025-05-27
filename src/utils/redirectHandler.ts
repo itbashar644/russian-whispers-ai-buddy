@@ -14,7 +14,7 @@ export async function initRedirectHandler() {
     
     try {
       // Проверяем, существует ли статическая страница
-      const staticPageUrl = `/product-${productId}.html`;
+      const staticPageUrl = `/product/${productId}/`;
       const staticPageResponse = await fetch(staticPageUrl, { method: 'HEAD' });
       
       if (staticPageResponse.ok) {
@@ -33,5 +33,5 @@ export async function initRedirectHandler() {
 
 // Функция для генерации URL статической страницы
 export function getStaticPageUrl(productId: string): string | null {
-  return `/product-${productId}.html`;
+  return `/product/${productId}/`;
 }
