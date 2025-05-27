@@ -7,62 +7,14 @@
     <title>The X Shop | Товары из Китая для вашего дома</title>
     <meta name="description" content="Товары из Китая высокого качества по доступным ценам. Аналоги популярных брендов.">
     <link rel="stylesheet" href="styles.css">
-    
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Load React app first -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Yandex.Metrika counter - heavily delayed to prevent React conflicts -->
-    <script type="text/javascript">
-       // Wait for React app to be fully initialized before loading Metrika
-       window.addEventListener('load', function() {
-         // Use a longer delay and check for React initialization
-         setTimeout(function() {
-           // Only initialize if React root exists and ym is not already defined
-           if (document.getElementById('root') && 
-               document.getElementById('root').innerHTML && 
-               typeof ym === 'undefined') {
-             
-             console.log('Initializing Yandex Metrika after React is ready...');
-             
-             try {
-               (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-               m[i].l=1*new Date();
-               for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-               k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-               (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-               // Add another delay before calling ym init
-               setTimeout(function() {
-                 if (typeof ym !== 'undefined') {
-                   ym(101964387, "init", {
-                        clickmap:true,
-                        trackLinks:true,
-                        accurateTrackBounce:true,
-                        webvisor:true
-                   });
-                   
-                   // Mark counter as initialized
-                   window._ymCounterInitialized = true;
-                   console.log('Yandex Metrika initialized successfully');
-                 }
-               }, 500);
-               
-             } catch (error) {
-               console.error('Error initializing Yandex Metrika:', error);
-             }
-           } else {
-             console.log('Skipping Yandex Metrika initialization - React not ready or already initialized');
-           }
-         }, 2000); // Increased delay to 2 seconds
-       });
-    </script>
-    <!-- /Yandex.Metrika counter -->
-    
-    <!-- Yandex.Metrika noscript -->
-    <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika noscript -->
+    <!-- GPT Engineer script - load after React -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </body>
 </html>
