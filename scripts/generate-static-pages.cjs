@@ -26,6 +26,8 @@ async function generateStaticPages() {
 
     /** загружаем товары из Supabase */
     const products = await supabaseClient.getProducts();
+    console.log("🔍 Что пришло от Supabase:", products);
+
     if (!products?.length) {
       console.log("❌ Товары не найдены – генерация остановлена");
       return;
@@ -49,13 +51,14 @@ async function generateStaticPages() {
     for (const product of products) {
       try {
         const slug       = product.id;
-        const fileName   = `product-${slug}.html`;
-        const filePath   = path.join(publicDir, fileName);
-        const html       = pageGenerator.generateProductHTML(product, slug);
+        const filePath = path.join(publicDir, "product", slug, "index.html");
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
+        const html = pageGenerator.generateProductHTML(product, slug);
         fs.writeFileSync(filePath, html, "utf8");
 
-        console.log(`✅ ${fileName}`);
+        console.log(`✅ /product/${slug}/index.html`);
+
         generated++;
       } catch (err) {
         console.error(`❌ Ошибка ${product.id}: ${err.message}`);
