@@ -35,13 +35,11 @@ async function generateStaticPages() {
     console.log(`📦 Найдено ${products.length} товаров для генерации`);
 
     /** очищаем старые файлы товаров */
-    const existingProductFiles = fs
-      .readdirSync(publicDir)
-      .filter((file) => file.startsWith('product-') && file.endsWith('.html'));
-
-    existingProductFiles.forEach((file) => {
-      fs.unlinkSync(path.join(publicDir, file));
-    });
+    const productDir = path.join(publicDir, "product");
+if (fs.existsSync(productDir)) {
+  fs.rmSync(productDir, { recursive: true, force: true });
+  console.log("🧹 Удалена старая папка /product/");
+}
     console.log(`🗑️ Удалено ${existingProductFiles.length} старых файлов`);
 
     /** генерируем статические страницы */
