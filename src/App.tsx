@@ -1,10 +1,10 @@
-
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -58,63 +58,65 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <BrowserRouter>
-                <ScrollToTop />
-                <YandexMetrika />
-                <Suspense fallback={<div>Loading...</div>}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<Index />} />
-                    <Route path="/catalog" element={<Catalog />} />
-                    <Route path="/product/:slug" element={<Product />} />
-                    <Route path="/product-detail/:id" element={<ProductDetail />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/delivery" element={<Delivery />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-                    <Route path="/thank-you" element={<ThankYou />} />
-                    <Route path="/order-success" element={<OrderSuccess />} />
+        <HelmetProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <YandexMetrika />
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Routes>
+                      {/* Public routes */}
+                      <Route path="/" element={<Index />} />
+                      <Route path="/catalog" element={<Catalog />} />
+                      <Route path="/product/:slug" element={<Product />} />
+                      <Route path="/product-detail/:id" element={<ProductDetail />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/contacts" element={<Contacts />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/delivery" element={<Delivery />} />
+                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/terms" element={<Terms />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      <Route path="/thank-you" element={<ThankYou />} />
+                      <Route path="/order-success" element={<OrderSuccess />} />
 
-                    {/* Auth routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
+                      {/* Auth routes */}
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/auth/callback" element={<AuthCallback />} />
 
-                    {/* Account routes */}
-                    <Route path="/account" element={<Account />} />
-                    <Route path="/account/orders" element={<UserOrders />} />
-                    <Route path="/account/security" element={<AccountSecurity />} />
+                      {/* Account routes */}
+                      <Route path="/account" element={<Account />} />
+                      <Route path="/account/orders" element={<UserOrders />} />
+                      <Route path="/account/security" element={<AccountSecurity />} />
 
-                    {/* Admin routes */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<AdminPanel />}>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="products" element={<AdminProducts />} />
-                      <Route path="orders" element={<AdminOrders />} />
-                      <Route path="categories" element={<AdminCategories />} />
-                      <Route path="customers" element={<AdminCustomers />} />
-                      <Route path="reports" element={<AdminReports />} />
-                      <Route path="settings" element={<AdminSettings />} />
-                    </Route>
+                      {/* Admin routes */}
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/admin" element={<AdminPanel />}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="products" element={<AdminProducts />} />
+                        <Route path="orders" element={<AdminOrders />} />
+                        <Route path="categories" element={<AdminCategories />} />
+                        <Route path="customers" element={<AdminCustomers />} />
+                        <Route path="reports" element={<AdminReports />} />
+                        <Route path="settings" element={<AdminSettings />} />
+                      </Route>
 
-                    {/* 404 route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-                <Toaster />
-                <Sonner />
-              </BrowserRouter>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+                      {/* 404 route */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                  <Toaster />
+                  <Sonner />
+                </BrowserRouter>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </HelmetProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
