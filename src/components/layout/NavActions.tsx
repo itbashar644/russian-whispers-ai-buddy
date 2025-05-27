@@ -1,8 +1,8 @@
 
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext"; // Changed from @/hooks/useAuthCore
-import { CartContext } from "@/context/CartContext";  // Import CartContext directly instead of useCart
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";  // Use the proper hook instead of direct context
 import { useWishlist } from "@/context/WishlistContext";
 import { Menu, Heart, ShoppingCart, User } from "lucide-react";
 import { SearchIcon } from "./SearchIcon";
@@ -18,13 +18,11 @@ export const NavActions: React.FC<NavActionsProps> = ({
   onOpenSearch,
 }) => {
   const { user } = useAuth();
-  // Use optional chaining and provide fallback for when context is undefined
-  const cartContext = useContext(CartContext);
-  const items = cartContext?.items || [];
-  const { wishlist } = useWishlist(); // Changed from items to wishlist
+  const { items } = useCart(); // Use the proper hook
+  const { wishlist } = useWishlist();
 
-  const cartCount = items.length;
-  const wishlistCount = wishlist.length; // Changed from wishlistItems to wishlist
+  const cartCount = items?.length || 0; // Add safety check
+  const wishlistCount = wishlist?.length || 0; // Add safety check
 
   return (
     <div className="flex items-center gap-1 md:gap-2">
