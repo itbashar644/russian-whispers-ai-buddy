@@ -1,7 +1,6 @@
+# Страницы товаров
+/product/:id     /product/:id/index.html   200
+/product/:id/    /product/:id/index.html   200
 
-# Редиректы для статических страниц товаров - точное соответствие URL
-/product/:id/    /product-:id.html    200!
-/product/:id     /product-:id.html    200!
-
-# Fallback для остальных маршрутов к SPA
-/*    /index.html    200
+# Остальные пути — отдаём как есть (без fallback на SPA)
+/*  /404.html  404
