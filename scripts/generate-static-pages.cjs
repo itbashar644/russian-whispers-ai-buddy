@@ -40,7 +40,6 @@ if (fs.existsSync(productDir)) {
   fs.rmSync(productDir, { recursive: true, force: true });
   console.log("🧹 Удалена старая папка /product/");
 }
-    console.log(`🗑️ Удалено ${existingProductFiles.length} старых файлов`);
 
     /** генерируем статические страницы */
     let generated = 0;
