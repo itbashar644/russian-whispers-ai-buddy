@@ -83,6 +83,8 @@ async function generateStaticPages() {
     if (generated) {
       console.log("\n🎉 Готово! Канонический URL:");
       console.log("   https://the-x.shop/product/<id>/");
+      console.log("\n🔍 Проверка микроразметки:");
+      console.log("   curl -s 'https://the-x.shop/product/<id>/' | grep -i 'schema.org/Product'");
     }
   } catch (err) {
     console.error("💥 Критическая ошибка:", err);
