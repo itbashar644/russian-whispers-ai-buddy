@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -28,6 +29,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addItem } = useCart();
   
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
@@ -35,14 +37,26 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!id) return;
+      if (!id) {
+        setError("ID товара не найден");
+        setLoading(false);
+        return;
+      }
       
+      console.log("Загружаю товар с ID:", id);
       setLoading(true);
+      setError(null);
+      
       try {
         const productData = await getProductById(id);
-        setProduct(productData || null);
+        console.log("Товар загружен:", productData);
         
-        if (productData) {
+        if (!productData) {
+          setError("Товар не найден");
+          setProduct(null);
+        } else {
+          setProduct(productData);
+          
           // Установка заголовка страницы для SEO
           document.title = `${productData.title} | The X Shop`;
           
@@ -62,11 +76,18 @@ const ProductDetail = () => {
           }
           
           // Load related products
-          const related = await getRelatedProducts(id, 4);
-          setRelatedProducts(related);
+          try {
+            const related = await getRelatedProducts(id, 4);
+            setRelatedProducts(related);
+          } catch (relatedError) {
+            console.error("Ошибка загрузки связанных товаров:", relatedError);
+            // Не прерываем загрузку основного товара из-за ошибки связанных товаров
+          }
         }
       } catch (error) {
-        console.error("Error loading product:", error);
+        console.error("Ошибка загрузки товара:", error);
+        setError("Ошибка загрузки товара");
+        setProduct(null);
       } finally {
         setLoading(false);
       }
@@ -159,7 +180,7 @@ const ProductDetail = () => {
     return <ProductSkeleton />;
   }
 
-  if (!product) {
+  if (error || !product) {
     return <ProductNotFound />;
   }
 
@@ -174,7 +195,7 @@ const ProductDetail = () => {
     ogType: 'product' as const,
   };
 
-  // Подготовка данных для расширенной микроразметки
+  // Подготовка данных для расширенной микроразметки (Schema.org + Яндекс)
   const productStructuredData = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -190,7 +211,10 @@ const ProductDetail = () => {
     },
     "manufacturer": {
       "@type": "Organization",
-      "name": "The X Shop"
+      "name": "The X Shop",
+      "address": "Россия, Москва",
+      "telephone": "+7 (800) 123-45-67",
+      "url": "https://the-x.shop"
     },
     "category": product.category,
     "material": product.material,
@@ -205,7 +229,7 @@ const ProductDetail = () => {
     },
     "offers": {
       "@type": "Offer",
-      "url": window.location.href,
+      "url": typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`,
       "priceCurrency": "RUB",
       "price": displayPrice,
       "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
@@ -214,6 +238,8 @@ const ProductDetail = () => {
       "seller": {
         "@type": "Organization",
         "name": "The X Shop",
+        "address": "Россия, Москва",
+        "telephone": "+7 (800) 123-45-67",
         "url": "https://the-x.shop"
       },
       "hasMerchantReturnPolicy": {
@@ -272,7 +298,7 @@ const ProductDetail = () => {
         ogImage={productSEO.ogImage}
         ogType={productSEO.ogType}
       >
-        {/* Расширенная микроразметка для товара */}
+        {/* Расширенная микроразметка для товара (Schema.org) */}
         <script type="application/ld+json">
           {JSON.stringify(productStructuredData)}
         </script>
@@ -305,11 +331,51 @@ const ProductDetail = () => {
                 "@type": "ListItem",
                 "position": 4,
                 "name": product.title,
-                "item": window.location.href
+                "item": typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`
               }
             ]
           })}
         </script>
+
+        {/* Микроразметка для Яндекса */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": product.title,
+            "description": product.description,
+            "image": product.imageUrl,
+            "sku": displayArticleNumber || product.id,
+            "brand": {
+              "@type": "Brand",
+              "name": "The X Shop"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": displayPrice,
+              "priceCurrency": "RUB",
+              "availability": hasStock() ? "InStock" : "OutOfStock",
+              "seller": {
+                "@type": "Organization",
+                "name": "The X Shop"
+              }
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": product.rating,
+              "ratingCount": 47
+            }
+          })}
+        </script>
+
+        {/* Мета-теги для Яндекс.Маркета */}
+        <meta name="yandex-verification" content="товар" />
+        <meta property="product:price:amount" content={String(displayPrice)} />
+        <meta property="product:price:currency" content="RUB" />
+        <meta property="product:availability" content={hasStock() ? "in stock" : "out of stock"} />
+        <meta property="product:condition" content="new" />
+        <meta property="product:brand" content="The X Shop" />
+        <meta property="product:retailer_item_id" content={displayArticleNumber || product.id} />
       </SEOHead>
 
       <Navbar />
@@ -382,7 +448,7 @@ const ProductDetail = () => {
               <meta itemProp="price" content={String(displayPrice)} />
               <meta itemProp="availability" content={hasStock() ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
               <meta itemProp="itemCondition" content="https://schema.org/NewCondition" />
-              <meta itemProp="url" content={window.location.href} />
+              <meta itemProp="url" content={typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`} />
               
               {/* Seller info */}
               <div itemProp="seller" itemScope itemType="https://schema.org/Organization">
