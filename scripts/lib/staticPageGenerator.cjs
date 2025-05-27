@@ -1,241 +1,147 @@
 
-const fs = require('fs');
-const path = require('path');
-
+// scripts/lib/staticPageGenerator.cjs
 class StaticPageGenerator {
-  constructor() {
-    this.baseUrl = 'https://the-x.shop';
-    this.organizationInfo = {
-      name: "The X Shop",
-      address: "Россия, Москва",
-      telephone: "+7 (800) 123-45-67",
-      url: "https://the-x.shop"
-    };
-  }
-
-  // Генерация SEO-friendly slug из названия товара
-  generateSlug(title) {
-    return title
-      .toLowerCase()
-      .replace(/[а-я]/g, (char) => {
-        const map = {
-          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
-          'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-          'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-          'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
-          'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
-        };
-        return map[char] || char;
-      })
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 100);
-  }
-
-  // Генерация JSON-LD разметки для товара
-  generateJsonLD(product) {
-    const images = this.getProductImages(product);
-    
-    return {
-      "@context": "https://schema.org/",
-      "@type": "Product",
-      "name": product.title,
-      "image": images,
-      "description": product.description,
-      "sku": product.article_number || `product-${product.id}`,
-      "mpn": product.article_number || `product-${product.id}`,
-      "brand": {
-        "@type": "Brand",
-        "name": "The X Shop"
-      },
-      "manufacturer": {
-        "@type": "Organization",
-        "name": "The X Shop",
-        "address": this.organizationInfo.address,
-        "telephone": this.organizationInfo.telephone,
-        "url": this.organizationInfo.url
-      },
-      "category": product.category,
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": product.rating?.toString() || "4.8",
-        "bestRating": "5",
-        "worstRating": "1",
-        "ratingCount": "47"
-      },
-      "offers": {
-        "@type": "Offer",
-        "url": `${this.baseUrl}/product/${this.generateSlug(product.title)}`,
-        "priceCurrency": "RUB",
-        "price": product.price?.toString() || "0",
-        "priceValidUntil": this.getFutureDate(),
-        "availability": product.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-        "itemCondition": "https://schema.org/NewCondition",
-        "seller": {
-          "@type": "Organization",
-          "name": "The X Shop",
-          "address": this.organizationInfo.address,
-          "telephone": this.organizationInfo.telephone,
-          "url": this.organizationInfo.url
-        }
-      }
-    };
-  }
-
-  // Генерация хлебных крошек
-  generateBreadcrumbsJsonLD(product, slug) {
-    return {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Главная",
-          "item": this.baseUrl
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Каталог",
-          "item": `${this.baseUrl}/catalog`
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": product.category,
-          "item": `${this.baseUrl}/catalog?category=${encodeURIComponent(product.category)}`
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": product.title,
-          "item": `${this.baseUrl}/product/${slug}`
-        }
-      ]
-    };
-  }
-
-  // Получение изображений товара
-  getProductImages(product) {
-    const images = [];
-    
-    if (product.image_url && product.image_url !== '/placeholder.svg') {
-      images.push(product.image_url);
-    }
-    
-    if (product.additional_images && Array.isArray(product.additional_images)) {
-      product.additional_images.forEach(img => {
-        if (img && img !== '/placeholder.svg') {
-          images.push(img);
-        }
-      });
-    }
-    
-    // Если нет изображений, используем заглушку
-    if (images.length === 0) {
-      images.push(`${this.baseUrl}/images/placeholder-product.jpg`);
-    }
-    
-    return images;
-  }
-
-  // Получение даты на год вперед
-  getFutureDate() {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() + 1);
-    return date.toISOString();
-  }
-
-  // Форматирование цены
-  formatPrice(price) {
-    return Number(price).toFixed(0);
-  }
-
-  // Генерация дополнительных изображений
-  generateAdditionalImages(product) {
-    const images = this.getProductImages(product);
-    if (images.length <= 1) return '';
-    
-    const additionalImages = images.slice(1);
-    return `
-      <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
-        ${additionalImages.map(img => 
-          `<img src="${img}" alt="${product.title}" style="width: 100%; height: auto; border-radius: 4px;" itemprop="image">`
-        ).join('')}
-      </div>
-    `;
-  }
-
-  // Генерация характеристик
-  generateSpecifications(product) {
-    if (!product.specifications || typeof product.specifications !== 'object') {
-      return `
-      <div class="specs">
-        <h3>Характеристики</h3>
-        <dl>
-          
-        </dl>
-      </div>
-    `;
-    }
-
-    return `
-      <div class="specs">
-        <h3>Характеристики</h3>
-        <dl>
-          ${Object.entries(product.specifications).map(([key, value]) => `
-            <dt>${key}</dt>
-            <dd>${value}</dd>
-          `).join('')}
-        </dl>
-      </div>
-    `;
-  }
-
-  // Генерация HTML страницы товара
   generateProductHTML(product, slug) {
-    const images = this.getProductImages(product);
-    const mainImage = images[0];
-    const jsonLD = this.generateJsonLD(product);
-    const breadcrumbsJsonLD = this.generateBreadcrumbsJsonLD(product, slug);
-    
-    const price = this.formatPrice(product.price);
-    const originalPrice = product.discount_price ? this.formatPrice(product.discount_price) : price;
-    const canonicalUrl = `${this.baseUrl}/product/${slug}`;
-    
+    const {
+      id,
+      title,
+      description,
+      price,
+      discount_price,
+      category,
+      image_url,
+      additional_images,
+      in_stock,
+      article_number,
+      country_of_origin,
+      specifications
+    } = product;
+
+    const currentPrice = discount_price || price;
+    const originalPrice = discount_price ? price : null;
+    const images = additional_images || [];
+    const stockStatus = in_stock ? 'InStock' : 'OutOfStock';
+    const stockText = in_stock ? '✓ В наличии' : '✗ Нет в наличии';
+    const stockClass = in_stock ? 'in-stock' : 'out-of-stock';
+    const buttonText = in_stock ? `Купить за ${currentPrice} ₽` : 'Уведомить о поступлении';
+
+    // Генерируем дополнительные изображения
+    const additionalImagesHTML = images.length > 0 ? `
+      <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
+        ${images.map(img => `<img src="${img}" alt="${title}" style="width: 100%; height: auto; border-radius: 4px;" itemprop="image">`).join('')}
+      </div>
+    ` : '';
+
+    // Генерируем характеристики
+    const specsHTML = specifications && Object.keys(specifications).length > 0 ? 
+      Object.entries(specifications).map(([key, value]) => `
+          <dt>${key}</dt>
+          <dd>${value}</dd>
+        `).join('') : '';
+
     return `<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${product.title} - купить в The X Shop</title>
-    <meta name="description" content="${product.description.substring(0, 160)}">
-    <meta name="keywords" content="${product.title}, ${product.category}, купить ${product.title}, товары из Китая, интернет-магазин">
+    <title>${title} - купить в The X Shop</title>
+    <meta name="description" content="${description.substring(0, 160)}">
+    <meta name="keywords" content="${title}, ${category}, купить ${title}, товары из Китая, интернет-магазин">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="${product.title} - The X Shop">
-    <meta property="og:description" content="${product.description}">
-    <meta property="og:image" content="${mainImage}">
+    <meta property="og:title" content="${title} - The X Shop">
+    <meta property="og:description" content="${description}">
+    <meta property="og:image" content="${image_url}">
     <meta property="og:type" content="product">
-    <meta property="og:url" content="${canonicalUrl}">
+    <meta property="og:url" content="https://the-x.shop/product/${id}">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="${canonicalUrl}">
+    <link rel="canonical" href="https://the-x.shop/product/${id}">
     
     <!-- Микроразметка Schema.org для товара (JSON-LD) -->
     <script type="application/ld+json">
-    ${JSON.stringify(jsonLD, null, 4)}
+    {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": "${title}",
+    "image": [
+        "${image_url}"${images.length > 0 ? ',' + images.map(img => `"${img}"`).join(',') : ''}
+    ],
+    "description": "${description.replace(/"/g, '\\"')}",
+    "sku": "${article_number || id}",
+    "mpn": "${article_number || id}",
+    "brand": {
+        "@type": "Brand",
+        "name": "The X Shop"
+    },
+    "manufacturer": {
+        "@type": "Organization",
+        "name": "The X Shop",
+        "address": "Россия, Москва",
+        "telephone": "+7 (800) 123-45-67",
+        "url": "https://the-x.shop"
+    },
+    "category": "${category}",
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingCount": "47"
+    },
+    "offers": {
+        "@type": "Offer",
+        "url": "https://the-x.shop/product/${id}",
+        "priceCurrency": "RUB",
+        "price": "${currentPrice}",
+        "priceValidUntil": "2026-05-26T23:37:17.505Z",
+        "availability": "https://schema.org/${stockStatus}",
+        "itemCondition": "https://schema.org/NewCondition",
+        "seller": {
+            "@type": "Organization",
+            "name": "The X Shop",
+            "address": "Россия, Москва",
+            "telephone": "+7 (800) 123-45-67",
+            "url": "https://the-x.shop"
+        }
+    }
+}
     </script>
     
     <!-- Микроразметка хлебных крошек -->
     <script type="application/ld+json">
-    ${JSON.stringify(breadcrumbsJsonLD, null, 4)}
+    {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Главная",
+            "item": "https://the-x.shop"
+        },
+        {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Каталог",
+            "item": "https://the-x.shop/catalog"
+        },
+        {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "${category}",
+            "item": "https://the-x.shop/catalog?category=${encodeURIComponent(category)}"
+        },
+        {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "${title}",
+            "item": "https://the-x.shop/product/${id}"
+        }
+    ]
+}
     </script>
     
-    <!-- SEO информация для поисковиков -->
     <style>
         .seo-banner { 
             background: #f0f8ff; 
@@ -288,22 +194,22 @@ class StaticPageGenerator {
         <nav class="breadcrumb">
             <a href="/">Главная</a> → 
             <a href="/catalog">Каталог</a> → 
-            <a href="/catalog?category=${encodeURIComponent(product.category)}">${product.category}</a> → 
-            <span itemprop="name">${product.title}</span>
+            <a href="/catalog?category=${encodeURIComponent(category)}">${category}</a> → 
+            <span itemprop="name">${title}</span>
         </nav>
         
         <div class="product-grid">
             <div>
                 <!-- Главное изображение товара -->
-                <img src="${mainImage}" alt="${product.title}" class="product-image" itemprop="image">
+                <img src="${image_url}" alt="${title}" class="product-image" itemprop="image">
                 
                 <!-- Дополнительные изображения -->
-                ${this.generateAdditionalImages(product)}
+                ${additionalImagesHTML}
                 
                 <!-- Скрытые мета-теги для микроразметки -->
-                <meta itemprop="sku" content="${product.article_number || `product-${product.id}`}">
-                <meta itemprop="mpn" content="${product.article_number || `product-${product.id}`}">
-                <meta itemprop="category" content="${product.category}">
+                <meta itemprop="sku" content="${article_number || id}">
+                <meta itemprop="mpn" content="${article_number || id}">
+                <meta itemprop="category" content="${category}">
                 
                 <!-- Бренд товара -->
                 <div itemprop="brand" itemscope itemtype="https://schema.org/Brand">
@@ -313,13 +219,13 @@ class StaticPageGenerator {
                 <!-- Производитель -->
                 <div itemprop="manufacturer" itemscope itemtype="https://schema.org/Organization">
                     <meta itemprop="name" content="The X Shop">
-                    <meta itemprop="address" content="${this.organizationInfo.address}">
-                    <meta itemprop="telephone" content="${this.organizationInfo.telephone}">
+                    <meta itemprop="address" content="Россия, Москва">
+                    <meta itemprop="telephone" content="+7 (800) 123-45-67">
                 </div>
                 
                 <!-- Рейтинг товара -->
                 <div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-                    <meta itemprop="ratingValue" content="${product.rating || '4.8'}">
+                    <meta itemprop="ratingValue" content="4.8">
                     <meta itemprop="bestRating" content="5">
                     <meta itemprop="worstRating" content="1">
                     <meta itemprop="ratingCount" content="47">
@@ -328,46 +234,51 @@ class StaticPageGenerator {
             
             <div>
                 <!-- Название товара -->
-                <h1 itemprop="name">${product.title}</h1>
+                <h1 itemprop="name">${title}</h1>
                 
-                <p><strong>Артикул:</strong> <span>${product.article_number || `product-${product.id}`}</span></p>
+                <p><strong>Артикул:</strong> <span>${article_number || id}</span></p>
                 
                 <!-- Описание товара -->
-                <div itemprop="description"><p>${product.description}</p></div>
+                <div itemprop="description"><p>${description}</p></div>
                 
                 <!-- Предложение с ценой -->
                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                     <div class="price">
                         <meta itemprop="priceCurrency" content="RUB">
-                        <meta itemprop="price" content="${price}">
-                        <link itemprop="availability" href="${product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}">
+                        <meta itemprop="price" content="${currentPrice}">
+                        <link itemprop="availability" href="https://schema.org/${stockStatus}">
                         <link itemprop="itemCondition" href="https://schema.org/NewCondition">
-                        <meta itemprop="priceValidUntil" content="${this.getFutureDate()}">
+                        <meta itemprop="priceValidUntil" content="2026-05-26T23:37:17.505Z">
                         
-                        ${price} ₽
-                        ${product.discount_price ? `<span class="original-price">${originalPrice} ₽</span>` : ''}
+                        ${currentPrice} ₽
+                        ${originalPrice ? `<span class="original-price">${originalPrice} ₽</span>` : ''}
                     </div>
                     
                     <!-- Продавец -->
                     <div itemprop="seller" itemscope itemtype="https://schema.org/Organization">
                         <meta itemprop="name" content="The X Shop">
-                        <meta itemprop="address" content="${this.organizationInfo.address}">
-                        <meta itemprop="telephone" content="${this.organizationInfo.telephone}">
+                        <meta itemprop="address" content="Россия, Москва">
+                        <meta itemprop="telephone" content="+7 (800) 123-45-67">
                     </div>
                 </div>
                 
-                <div class="stock-status ${product.in_stock ? 'in-stock' : 'out-of-stock'}">
-                    ${product.in_stock ? '✓ В наличии' : '✗ Нет в наличии'}
+                <div class="stock-status ${stockClass}">
+                    ${stockText}
                 </div>
                 
-                <a href="/#/product/${product.id}" class="cta-button">
-                    ${product.in_stock ? `Купить за ${price} ₽` : 'Уведомить о поступлении'}
+                <a href="/#/product/${id}" class="cta-button">
+                    ${buttonText}
                 </a>
                 
                 <!-- Характеристики -->
-                ${this.generateSpecifications(product)}
+                <div class="specs">
+                    <h3>Характеристики</h3>
+                    <dl>
+                        ${specsHTML}
+                    </dl>
+                </div>
                 
-                <p><strong>Страна происхождения:</strong> ${product.country_of_origin || 'Нет'}</p>
+                <p><strong>Страна происхождения:</strong> ${country_of_origin || 'Нет'}</p>
             </div>
         </div>
         
@@ -387,9 +298,9 @@ class StaticPageGenerator {
             <!-- Контактная информация организации -->
             <div style="margin-top: 20px; font-size: 14px; color: #666;">
                 <p><strong>Контакты:</strong></p>
-                <p>Адрес: ${this.organizationInfo.address}</p>
-                <p>Телефон: ${this.organizationInfo.telephone}</p>
-                <p>Сайт: ${this.organizationInfo.url}</p>
+                <p>Адрес: Россия, Москва</p>
+                <p>Телефон: +7 (800) 123-45-67</p>
+                <p>Сайт: https://the-x.shop</p>
             </div>
         </div>
     </div>
@@ -398,13 +309,13 @@ class StaticPageGenerator {
     <script>
         console.log('SEO страница загружена, редирект через 3 секунды...');
         setTimeout(function() {
-            window.location.href = '/#/product/${product.id}';
+            window.location.href = '/#/product/${id}';
         }, 3000);
         
         // Немедленный переход при клике на CTA
         document.querySelector('.cta-button').addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = '/#/product/${product.id}';
+            window.location.href = '/#/product/${id}';
         });
     </script>
 </body>

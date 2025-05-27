@@ -1,3 +1,4 @@
+
 /* eslint-disable no-console */
 // scripts/generate-static-pages.cjs
 const fs   = require("fs");
@@ -31,14 +32,15 @@ async function generateStaticPages() {
     }
     console.log(`📦 Найдено ${products.length} товаров для генерации`);
 
-    /** очищаем старые каталоги товаров */
-    const oldDirs = fs
-      .readdirSync(path.join(publicDir, "product"), { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => path.join(publicDir, "product", d.name));
+    /** очищаем старые файлы товаров */
+    const existingProductFiles = fs
+      .readdirSync(publicDir)
+      .filter((file) => file.startsWith('product-') && file.endsWith('.html'));
 
-    oldDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true }));
-    console.log(`🗑️ Удалено ${oldDirs.length} старых каталогов`);
+    existingProductFiles.forEach((file) => {
+      fs.unlinkSync(path.join(publicDir, file));
+    });
+    console.log(`🗑️ Удалено ${existingProductFiles.length} старых файлов`);
 
     /** генерируем статические страницы */
     let generated = 0;
@@ -47,14 +49,13 @@ async function generateStaticPages() {
     for (const product of products) {
       try {
         const slug       = product.id;                  // используем UUID
-        const dirPath    = path.join(publicDir, "product", slug);
-        const filePath   = path.join(dirPath, "index.html");
+        const fileName   = `product-${slug}.html`;      // формат для Cloudflare Pages
+        const filePath   = path.join(publicDir, fileName);
         const html       = pageGenerator.generateProductHTML(product, slug);
 
-        fs.mkdirSync(dirPath, { recursive: true });
         fs.writeFileSync(filePath, html, "utf8");
 
-        console.log(`✅ product/${slug}/index.html`);
+        console.log(`✅ ${fileName}`);
         generated++;
       } catch (err) {
         console.error(`❌ Ошибка ${product.id}: ${err.message}`);
@@ -77,7 +78,7 @@ async function generateStaticPages() {
     console.log("\n📊 Статистика:");
     console.log(`   создано  : ${generated}`);
     console.log(`   ошибок   : ${errors}`);
-    console.log(`   в каталоге: ${publicDir}/product/<id>/index.html`);
+    console.log(`   в каталоге: ${publicDir}/product-<id>.html`);
 
     if (generated) {
       console.log("\n🎉 Готово! Канонический URL:");
