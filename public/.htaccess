@@ -1,9 +1,8 @@
 
 RewriteEngine On
 
-# Редирект для страниц товаров с корректной обработкой
-RewriteRule ^product/([^/]+)/?$ /product/$1/ [R=301,L]
-RewriteRule ^product/([^/]+)/$ /product/$1/index.html [L]
+# Редирект для страниц товаров
+RewriteRule ^product/([^/]+)$ /product-$1.html [L]
 
 # Fallback на index.html для SPA
 RewriteCond %{REQUEST_FILENAME} !-f

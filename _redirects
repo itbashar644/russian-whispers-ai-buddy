@@ -1,7 +1,0 @@
-
-# Редиректы для статических страниц товаров - должны быть первыми
-/product/:id /product/:id/ 301
-/product/:id/ /product/:id/index.html 200
-
-# Fallback для остальных маршрутов к SPA
-/* /index.html 200

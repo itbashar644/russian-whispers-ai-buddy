@@ -2,15 +2,15 @@
 {
   "rewrites": [
     {
-      "source": "/product/:id/",
-      "destination": "/product/:id/index.html"
+      "source": "/product/(.*)",
+      "destination": "/product-$1.html"
     }
   ],
-  "redirects": [
+  "routes": [
     {
-      "source": "/product/:id",
-      "destination": "/product/:id/",
-      "permanent": true
+      "src": "/product/([^/]+)",
+      "dest": "/product-$1.html",
+      "status": 200
     }
   ]
 }

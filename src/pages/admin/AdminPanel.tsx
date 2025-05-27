@@ -125,7 +125,7 @@ const AdminPanel = () => {
                 <Routes>
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
-                  {/* // <Route path="products" element={<AdminProducts />} /> // */}
+                  <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="customers" element={<AdminCustomers />} />
                   <Route path="categories" element={<AdminCategories />} />
