@@ -48,10 +48,12 @@ const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
     return product?.imageUrl || "";
   };
 
+  console.log('ProductDetailsSection rendering with product:', product.title);
+
   return (
     <div className="grid md:grid-cols-2 gap-8">
       {/* Left side - images */}
-      <div itemProp="image">
+      <div>
         <ImageGallery 
           mainImage={getVariantImage()} 
           additionalImages={product.additionalImages} 
@@ -89,10 +91,15 @@ const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
         />
         
         {/* Pricing */}
-        <ProductPricing 
-          product={product} 
-          selectedColorVariant={selectedColorVariant} 
-        />
+        <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+          <ProductPricing 
+            product={product} 
+            selectedColorVariant={selectedColorVariant} 
+          />
+          <meta itemProp="priceCurrency" content="RUB" />
+          <meta itemProp="price" content={displayPrice.toString()} />
+          <link itemProp="availability" href={hasStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+        </div>
         
         {/* Marketplace links */}
         <MarketplaceLinks product={product} />
@@ -119,7 +126,6 @@ const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
             className="w-full"
             onClick={onAddToCart}
             disabled={!hasStock}
-            itemProp="offers"
           >
             <ShoppingCart className="mr-2 h-5 w-5" />
             {hasStock ? `Купить за ${displayPrice} ₽` : "Нет в наличии"}

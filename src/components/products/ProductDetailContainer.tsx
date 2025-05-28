@@ -35,14 +35,17 @@ const ProductDetailContainer: React.FC<ProductDetailContainerProps> = ({
   currentProductId
 }) => {
   return (
-    <ProductMicrodata
-      product={product}
-      selectedColor={selectedColor}
-      displayPrice={displayPrice}
-      hasStock={hasStock}
-      displayArticleNumber={displayArticleNumber}
-    >
-      <main className="flex-grow container px-4 py-8 md:px-6">
+    <>
+      {/* Микроразметка товара */}
+      <ProductMicrodata
+        product={product}
+        selectedColor={selectedColor}
+        displayPrice={displayPrice}
+        hasStock={hasStock}
+        displayArticleNumber={displayArticleNumber}
+      />
+      
+      <main className="flex-grow container px-4 py-8 md:px-6" itemScope itemType="https://schema.org/Product">
         <ProductHeader title={product.title} category={product.category} />
 
         <ProductDetailsSection
@@ -65,7 +68,7 @@ const ProductDetailContainer: React.FC<ProductDetailContainerProps> = ({
         {/* Related products */}
         <RelatedProducts products={relatedProducts} currentProductId={currentProductId} />
       </main>
-    </ProductMicrodata>
+    </>
   );
 };
 

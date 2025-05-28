@@ -105,7 +105,7 @@ const ProductDetail = () => {
       return variant?.stockQuantity !== undefined && variant.stockQuantity > 0;
     }
     
-    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
+    return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : true);
   };
 
   const handleColorChange = (color: string) => {
