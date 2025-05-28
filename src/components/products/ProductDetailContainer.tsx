@@ -35,8 +35,8 @@ const ProductDetailContainer: React.FC<ProductDetailContainerProps> = ({
   currentProductId
 }) => {
   return (
-    <>
-      {/* Микроразметка товара */}
+    <main className="flex-grow container px-4 py-8 md:px-6" itemScope itemType="https://schema.org/Product">
+      {/* Микроразметка товара - только HTML атрибуты */}
       <ProductMicrodata
         product={product}
         selectedColor={selectedColor}
@@ -45,30 +45,28 @@ const ProductDetailContainer: React.FC<ProductDetailContainerProps> = ({
         displayArticleNumber={displayArticleNumber}
       />
       
-      <main className="flex-grow container px-4 py-8 md:px-6" itemScope itemType="https://schema.org/Product">
-        <ProductHeader title={product.title} category={product.category} />
+      <ProductHeader title={product.title} category={product.category} />
 
-        <ProductDetailsSection
-          product={product}
-          selectedColor={selectedColor}
-          displayPrice={displayPrice}
-          hasStock={hasStock}
-          displayArticleNumber={displayArticleNumber}
-          onColorChange={onColorChange}
-          onAddToCart={onAddToCart}
-          quantity={quantity}
-          onQuantityChange={onQuantityChange}
-        />
+      <ProductDetailsSection
+        product={product}
+        selectedColor={selectedColor}
+        displayPrice={displayPrice}
+        hasStock={hasStock}
+        displayArticleNumber={displayArticleNumber}
+        onColorChange={onColorChange}
+        onAddToCart={onAddToCart}
+        quantity={quantity}
+        onQuantityChange={onQuantityChange}
+      />
 
-        {/* Product description */}
-        <div itemProp="description">
-          <ProductDetails product={product} />
-        </div>
+      {/* Product description */}
+      <div itemProp="description">
+        <ProductDetails product={product} />
+      </div>
 
-        {/* Related products */}
-        <RelatedProducts products={relatedProducts} currentProductId={currentProductId} />
-      </main>
-    </>
+      {/* Related products */}
+      <RelatedProducts products={relatedProducts} currentProductId={currentProductId} />
+    </main>
   );
 };
 

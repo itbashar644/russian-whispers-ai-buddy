@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -13,6 +12,8 @@ import YandexMicrodata from "@/components/seo/YandexMicrodata";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { trackPageView, trackProductView, trackAddToCart } from "@/utils/metrika";
 import { getProductPrice } from "@/lib/utils";
+import { getProductStructuredData } from "@/components/seo/ProductMicrodata";
+import { getYandexMetaTags } from "@/components/seo/YandexMicrodata";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -165,6 +166,24 @@ const ProductDetail = () => {
     ogType: 'product' as const,
   };
 
+  // Получаем структурированные данные
+  const { structuredData, breadcrumbData } = getProductStructuredData(
+    product, 
+    selectedColor, 
+    displayPrice, 
+    hasStock(), 
+    displayArticleNumber
+  );
+
+  // Получаем Яндекс мета-теги
+  const yandexMetaTags = getYandexMetaTags(
+    product, 
+    selectedColor, 
+    displayPrice, 
+    hasStock(), 
+    displayArticleNumber
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       <SEOHead 
@@ -174,14 +193,30 @@ const ProductDetail = () => {
         ogImage={productSEO.ogImage}
         ogType={productSEO.ogType}
       >
-        {/* Яндекс микроразметка */}
-        <YandexMicrodata 
-          product={product}
-          selectedColor={selectedColor}
-          displayPrice={displayPrice}
-          hasStock={hasStock()}
-          displayArticleNumber={displayArticleNumber}
+        {/* JSON-LD микроразметка товара */}
+        <script 
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData, null, 2)
+          }}
         />
+        
+        {/* JSON-LD хлебные крошки */}
+        <script 
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbData, null, 2)
+          }}
+        />
+
+        {/* Яндекс и Open Graph мета-теги */}
+        {yandexMetaTags.map((tag, index) => (
+          tag.property ? (
+            <meta key={index} property={tag.property} content={tag.content} />
+          ) : (
+            <meta key={index} name={tag.name} content={tag.content} />
+          )
+        ))}
       </SEOHead>
 
       <Navbar />

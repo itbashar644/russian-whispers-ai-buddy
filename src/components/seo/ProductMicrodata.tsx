@@ -10,13 +10,13 @@ interface ProductMicrodataProps {
   displayArticleNumber?: string;
 }
 
-const ProductMicrodata: React.FC<ProductMicrodataProps> = ({
-  product,
-  selectedColor,
-  displayPrice,
-  hasStock,
-  displayArticleNumber
-}) => {
+export const getProductStructuredData = (
+  product: Product,
+  selectedColor?: string,
+  displayPrice?: number,
+  hasStock?: boolean,
+  displayArticleNumber?: string
+) => {
   // Создаем структурированные данные для поисковых систем
   const structuredData = {
     "@context": "https://schema.org/",
@@ -42,7 +42,7 @@ const ProductMicrodata: React.FC<ProductMicrodataProps> = ({
       "@type": "Offer",
       "url": typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`,
       "priceCurrency": "RUB",
-      "price": displayPrice.toString(),
+      "price": displayPrice?.toString() || product.price.toString(),
       "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": hasStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "itemCondition": "https://schema.org/NewCondition",
@@ -93,24 +93,18 @@ const ProductMicrodata: React.FC<ProductMicrodataProps> = ({
     ]
   };
 
+  return { structuredData, breadcrumbData };
+};
+
+const ProductMicrodata: React.FC<ProductMicrodataProps> = ({
+  product,
+  selectedColor,
+  displayPrice,
+  hasStock,
+  displayArticleNumber
+}) => {
   return (
     <>
-      {/* JSON-LD микроразметка товара */}
-      <script 
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData, null, 2)
-        }}
-      />
-      
-      {/* JSON-LD хлебные крошки */}
-      <script 
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbData, null, 2)
-        }}
-      />
-
       {/* Скрытые мета-теги для микроразметки */}
       <div style={{ display: 'none' }}>
         <span itemProp="name">{product.title}</span>
@@ -133,7 +127,7 @@ const ProductMicrodata: React.FC<ProductMicrodataProps> = ({
         
         <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
           <span itemProp="priceCurrency">RUB</span>
-          <span itemProp="price">{displayPrice.toString()}</span>
+          <span itemProp="price">{displayPrice?.toString() || product.price.toString()}</span>
           <link itemProp="availability" href={hasStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
           <link itemProp="itemCondition" href="https://schema.org/NewCondition" />
           <span itemProp="priceValidUntil">{new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}</span>
