@@ -15,7 +15,20 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./js"),
     },
   },
+  // Disable TypeScript checking since we're using vanilla JS
+  esbuild: {
+    include: /\.(js|ts|jsx|tsx)$/,
+    exclude: [],
+    loader: 'js',
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      }
+    }
+  }
 }));
