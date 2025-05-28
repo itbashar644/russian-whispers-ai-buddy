@@ -1,4 +1,3 @@
-
 import { loadCategories, loadProducts } from './supabase.js';
 
 /**
@@ -44,8 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Загружаем категории для сайдбара каталога
     loadCategoriesForCatalog();
     
-    if (typeof loadCatalogProducts === 'function') {
-      loadCatalogProducts(categoryParam);
+    // Загружаем товары для каталога
+    loadCatalogProducts(categoryParam);
+  }
+  
+  // Если мы на странице товара, загружаем детали товара
+  if (window.location.pathname === '/product.html') {
+    if (typeof loadProductDetails === 'function') {
+      loadProductDetails();
     }
   }
   

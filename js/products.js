@@ -1,3 +1,4 @@
+
 /**
  * Функционал для работы с товарами
  */
@@ -256,24 +257,24 @@ async function loadProductDetails() {
     document.querySelector('.product-details-container').innerHTML = 
       '<div class="loading">Загрузка информации о товаре...</div>';
     
+    // Импортируем supabase клиент
+    const { supabase } = await import('./supabase.js');
+    
     // Загружаем данные о товаре с Supabase
-    const response = await fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=eq.${productId}&select=*`, {
-      headers: CONFIG.apiHeaders
-    });
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
     
-    if (!response.ok) {
-      throw new Error('Не удалось загрузить информацию о товаре');
-    }
-    
-    const products = await response.json();
-    
-    if (products.length === 0) {
+    if (error) {
+      console.error('Ошибка загрузки товара:', error);
       document.querySelector('.product-details-container').innerHTML = 
         '<div class="error-message">Товар не найден</div>';
       return;
     }
     
-    const product = products[0];
+    const product = products;
     
     // Обновляем заголовок страницы
     document.title = `${product.title} | The X Shop`;
