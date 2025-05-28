@@ -14,7 +14,6 @@ import ScrollToTop from "@/components/layout/ScrollToTop";
 // Import pages
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
-import Product from "./pages/Product";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Contacts from "./pages/Contacts";
@@ -70,8 +69,7 @@ function App() {
                       {/* Public routes */}
                       <Route path="/" element={<Index />} />
                       <Route path="/catalog" element={<Catalog />} />
-                      <Route path="/product/:slug" element={<Product />} />
-                      <Route path="/product-detail/:id" element={<ProductDetail />} />
+                      <Route path="/product/:id" element={<ProductDetail />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/contacts" element={<Contacts />} />
                       <Route path="/about" element={<About />} />
