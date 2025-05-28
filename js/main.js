@@ -91,14 +91,19 @@ async function loadHomePageData() {
     }
     
     // Загружаем все товары
-    const allProducts = await loadProducts({ limit: 20 });
+    const allProducts = await loadProducts({ limit: 50 });
     console.log('Товары загружены:', allProducts);
     
     if (allProducts && allProducts.length > 0) {
-      // Разделяем товары на бестселлеры и новинки
-      const bestsellers = allProducts.filter(product => product.is_bestseller).slice(0, 4);
-      const newProducts = allProducts.filter(product => product.is_new).slice(0, 4);
-      const popularProducts = allProducts.slice(0, 8); // Популярные товары как fallback
+      // Разделяем товары правильно
+      const bestsellers = allProducts.filter(product => product.is_bestseller === true);
+      const newProducts = allProducts.filter(product => product.is_new === true);
+      
+      console.log('Бестселлеры найдены:', bestsellers.length);
+      console.log('Новинки найдены:', newProducts.length);
+      
+      // Если нет специальных товаров, берем первые 8 как популярные
+      const popularProducts = allProducts.slice(0, 8);
       
       renderProductSections(bestsellers, newProducts, popularProducts);
     } else {
@@ -156,23 +161,30 @@ function renderCategoriesPlaceholder() {
 function renderProductSections(bestsellers, newProducts, popularProducts) {
   // Рендерим бестселлеры
   const bestsellersContainer = document.getElementById('bestsellersGrid');
-  if (bestsellersContainer && bestsellers.length > 0) {
-    bestsellersContainer.innerHTML = bestsellers.map(product => createProductHTML(product)).join('');
-    addProductEventListeners(bestsellersContainer);
+  if (bestsellersContainer) {
+    if (bestsellers.length > 0) {
+      bestsellersContainer.innerHTML = bestsellers.slice(0, 4).map(product => createProductHTML(product)).join('');
+      addProductEventListeners(bestsellersContainer);
+    } else {
+      bestsellersContainer.innerHTML = '<div class="no-products">Бестселлеры скоро появятся</div>';
+    }
   }
   
   // Рендерим новинки
   const newProductsContainer = document.getElementById('newProductsGrid');
-  if (newProductsContainer && newProducts.length > 0) {
-    newProductsContainer.innerHTML = newProducts.map(product => createProductHTML(product)).join('');
-    addProductEventListeners(newProductsContainer);
+  if (newProductsContainer) {
+    if (newProducts.length > 0) {
+      newProductsContainer.innerHTML = newProducts.slice(0, 4).map(product => createProductHTML(product)).join('');
+      addProductEventListeners(newProductsContainer);
+    } else {
+      newProductsContainer.innerHTML = '<div class="no-products">Новинки скоро появятся</div>';
+    }
   }
   
-  // Рендерим популярные товары (если нет специальных секций)
+  // Рендерим популярные товары
   const productsContainer = document.getElementById('productsGrid');
   if (productsContainer) {
-    const productsToShow = bestsellers.length > 0 || newProducts.length > 0 ? popularProducts : popularProducts;
-    productsContainer.innerHTML = productsToShow.map(product => createProductHTML(product)).join('');
+    productsContainer.innerHTML = popularProducts.slice(0, 8).map(product => createProductHTML(product)).join('');
     addProductEventListeners(productsContainer);
   }
 }

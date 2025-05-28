@@ -123,7 +123,7 @@ async function loadCatalogProducts(category = null) {
           products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           break;
         default:
-          products.sort((a, b) => b.rating - a.rating);
+          products.sort((a, b) => (b.rating || 4.8) - (a.rating || 4.8));
       }
     }
     
@@ -171,11 +171,10 @@ function createProductCard(product) {
   
   // Подготовка блока маркетплейсов
   const marketplaceLinks = createMarketplaceLinksHtml(product);
-  const slug = generateSlug(product.title);
   
   card.innerHTML = `
     <div class="product-image">
-      <a href="product-${slug}.html" class="product-link" data-id="${product.id}">
+      <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
         <img src="${product.image_url}" alt="${product.title}" loading="lazy">
       </a>
       <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
@@ -184,7 +183,7 @@ function createProductCard(product) {
     </div>
     <div class="product-info">
       <h3>
-        <a href="product-${slug}.html" class="product-link" data-id="${product.id}">${product.title}</a>
+        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a>
       </h3>
       <div class="product-price">
         ${priceDisplay}
