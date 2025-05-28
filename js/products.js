@@ -1,4 +1,3 @@
-
 /**
  * Функционал для работы с товарами
  */
@@ -60,73 +59,72 @@ async function loadFeaturedProducts() {
 async function loadCatalogProducts(category = null) {
   try {
     const productsContainer = document.getElementById('products-container');
-    if (!productsContainer) return;
+    if (!productsContainer) {
+      console.warn('Контейнер products-container не найден');
+      return;
+    }
     
     // Показываем состояние загрузки
     productsContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
     
-    // Формируем URL запроса
-    let url = 'https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?select=*&archived=eq.false';
+    // Импортируем функцию загрузки из supabase.js
+    const { loadProducts } = await import('./supabase.js');
     
-    // Добавляем фильтр по категории, если указана
-    if (category) {
-      url += `&category=eq.${encodeURIComponent(category)}`;
-    }
-    
-    // Получаем параметры фильтрации из URL
+    // Формируем параметры фильтрации
     const urlParams = new URLSearchParams(window.location.search);
     const minPrice = urlParams.get('min_price');
     const maxPrice = urlParams.get('max_price');
     const searchQuery = urlParams.get('search');
-    
-    // Добавляем фильтры в запрос, если они указаны
-    if (minPrice) {
-      url += `&price=gte.${minPrice}`;
-    }
-    if (maxPrice) {
-      url += `&price=lte.${maxPrice}`;
-    }
-    
-    // Добавляем параметр сортировки, если указан
     const sortParam = urlParams.get('sort');
-    if (sortParam) {
-      switch (sortParam) {
-        case 'price-asc':
-          url += '&order=price.asc';
-          break;
-        case 'price-desc':
-          url += '&order=price.desc';
-          break;
-        case 'new':
-          url += '&order=created_at.desc';
-          break;
-        default:
-          // По умолчанию сортируем по популярности (рейтингу)
-          url += '&order=rating.desc';
-      }
-    } else {
-      // Если сортировка не указана, сортируем по умолчанию по популярности
-      url += '&order=rating.desc';
+    
+    const filters = {};
+    
+    if (category) {
+      filters.category = category;
     }
     
-    // Загружаем товары с Supabase
-    const response = await fetch(url, {
-      headers: CONFIG.apiHeaders
-    });
+    // Загружаем товары
+    let products = await loadProducts(filters);
+    console.log('Товары загружены для каталога:', products);
     
-    if (!response.ok) {
-      throw new Error('Не удалось загрузить товары');
+    // Применяем фильтры на стороне клиента
+    if (minPrice) {
+      products = products.filter(product => {
+        const price = product.discount_price || product.price;
+        return price >= parseFloat(minPrice);
+      });
     }
     
-    let products = await response.json();
+    if (maxPrice) {
+      products = products.filter(product => {
+        const price = product.discount_price || product.price;
+        return price <= parseFloat(maxPrice);
+      });
+    }
     
-    // Применяем поиск на стороне клиента, если указан поисковый запрос
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       products = products.filter(product => 
         product.title.toLowerCase().includes(searchLower) || 
         (product.description && product.description.toLowerCase().includes(searchLower))
       );
+    }
+    
+    // Применяем сортировку
+    if (sortParam) {
+      switch (sortParam) {
+        case 'price-asc':
+          products.sort((a, b) => (a.discount_price || a.price) - (b.discount_price || b.price));
+          break;
+        case 'price-desc':
+          products.sort((a, b) => (b.discount_price || b.price) - (a.discount_price || a.price));
+          break;
+        case 'new':
+          products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        default:
+          products.sort((a, b) => b.rating - a.rating);
+      }
     }
     
     if (products.length === 0) {
@@ -471,4 +469,38 @@ function initWishlistButtons() {
       }
     });
   });
+}
+
+// Функция для преобразования строки цены в число
+function parsePrice(priceString) {
+  // Удаляем все символы, кроме цифр и десятичной точки
+  const cleanedString = priceString.replace(/[^\d.]/g, '');
+  
+  // Заменяем запятую на точку, если она используется в качестве десятичного разделителя
+  const normalizedString = cleanedString.replace(',', '.');
+  
+  // Преобразуем строку в число с плавающей точкой
+  const price = parseFloat(normalizedString);
+  
+  return price;
+}
+
+// Функция для генерации slug из названия продукта
+function generateSlug(title) {
+  // Приводим строку к нижнему регистру
+  let slug = title.toLowerCase();
+  
+  // Заменяем пробелы на дефисы
+  slug = slug.replace(/\s+/g, '-');
+  
+  // Удаляем все символы, кроме букв, цифр и дефисов
+  slug = slug.replace(/[^a-z0-9-]+/g, '');
+  
+  // Удаляем повторяющиеся дефисы
+  slug = slug.replace(/--+/g, '-');
+  
+  // Обрезаем дефисы в начале и конце строки
+  slug = slug.replace(/^-+|-+$/g, '');
+  
+  return slug;
 }

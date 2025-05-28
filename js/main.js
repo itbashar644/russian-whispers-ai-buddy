@@ -90,11 +90,17 @@ async function loadHomePageData() {
       renderCategoriesPlaceholder();
     }
     
-    // Загружаем популярные товары
-    const products = await loadProducts({ limit: 8 });
-    console.log('Товары загружены:', products);
-    if (products && products.length > 0) {
-      renderProducts(products);
+    // Загружаем все товары
+    const allProducts = await loadProducts({ limit: 20 });
+    console.log('Товары загружены:', allProducts);
+    
+    if (allProducts && allProducts.length > 0) {
+      // Разделяем товары на бестселлеры и новинки
+      const bestsellers = allProducts.filter(product => product.is_bestseller).slice(0, 4);
+      const newProducts = allProducts.filter(product => product.is_new).slice(0, 4);
+      const popularProducts = allProducts.slice(0, 8); // Популярные товары как fallback
+      
+      renderProductSections(bestsellers, newProducts, popularProducts);
     } else {
       console.warn('Товары не найдены');
       renderProductsPlaceholder();
@@ -146,15 +152,34 @@ function renderCategoriesPlaceholder() {
   `).join('');
 }
 
-// Рендеринг товаров
-function renderProducts(products) {
-  const container = document.getElementById('productsGrid');
-  if (!container) {
-    console.warn('Контейнер productsGrid не найден');
-    return;
+// Рендеринг секций товаров на главной странице
+function renderProductSections(bestsellers, newProducts, popularProducts) {
+  // Рендерим бестселлеры
+  const bestsellersContainer = document.getElementById('bestsellersGrid');
+  if (bestsellersContainer && bestsellers.length > 0) {
+    bestsellersContainer.innerHTML = bestsellers.map(product => createProductHTML(product)).join('');
+    addProductEventListeners(bestsellersContainer);
   }
   
-  container.innerHTML = products.map(product => `
+  // Рендерим новинки
+  const newProductsContainer = document.getElementById('newProductsGrid');
+  if (newProductsContainer && newProducts.length > 0) {
+    newProductsContainer.innerHTML = newProducts.map(product => createProductHTML(product)).join('');
+    addProductEventListeners(newProductsContainer);
+  }
+  
+  // Рендерим популярные товары (если нет специальных секций)
+  const productsContainer = document.getElementById('productsGrid');
+  if (productsContainer) {
+    const productsToShow = bestsellers.length > 0 || newProducts.length > 0 ? popularProducts : popularProducts;
+    productsContainer.innerHTML = productsToShow.map(product => createProductHTML(product)).join('');
+    addProductEventListeners(productsContainer);
+  }
+}
+
+// Создание HTML для товара
+function createProductHTML(product) {
+  return `
     <div class="product-card">
       <a href="product.html?id=${product.id}">
         <img src="${product.image_url || '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png'}" alt="${product.title}" loading="lazy" />
@@ -174,9 +199,11 @@ function renderProducts(products) {
         В корзину
       </button>
     </div>
-  `).join('');
-  
-  // Добавляем обработчики для кнопок "В корзину"
+  `;
+}
+
+// Добавление обработчиков событий для товаров
+function addProductEventListeners(container) {
   container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const productId = this.dataset.productId;
@@ -185,6 +212,11 @@ function renderProducts(products) {
       }
     });
   });
+}
+
+// Рендеринг товаров (старая функция для обратной совместимости)
+function renderProducts(products) {
+  renderProductSections([], [], products);
 }
 
 // Плейсхолдер для товаров если данные не загрузились
@@ -224,25 +256,7 @@ function renderProductsPlaceholder() {
     }
   ];
   
-  container.innerHTML = placeholderProducts.map(product => `
-    <div class="product-card">
-      <a href="product.html?id=${product.id}">
-        <img src="${product.image_url}" alt="${product.title}" loading="lazy" />
-        <h3>${product.title}</h3>
-        <div class="price">
-          ${product.discount_price ? 
-            `<span class="discount-price">${formatPrice(product.discount_price)}</span>
-             <span class="original-price">${formatPrice(product.price)}</span>` :
-            `<span class="price">${formatPrice(product.price)}</span>`
-          }
-        </div>
-        <div class="stock-status in-stock">В наличии</div>
-      </a>
-      <button class="add-to-cart-btn" data-product-id="${product.id}">
-        В корзину
-      </button>
-    </div>
-  `).join('');
+  container.innerHTML = placeholderProducts.map(product => createProductHTML(product)).join('');
 }
 
 // Форматирование цены
@@ -274,8 +288,20 @@ async function loadCategoriesForCatalog() {
   try {
     const categories = await loadCategories();
     console.log('Категории для каталога загружены:', categories);
-    // Здесь можно добавить рендеринг категорий в сайдбар каталога
+    renderCatalogCategories(categories);
   } catch (error) {
     console.error('Ошибка загрузки категорий для каталога:', error);
   }
+}
+
+// Рендеринг категорий в каталоге
+function renderCatalogCategories(categories) {
+  const container = document.getElementById('categories-list');
+  if (!container || !categories) return;
+  
+  container.innerHTML = categories.map(category => `
+    <a href="catalog.html?category=${encodeURIComponent(category.name)}" class="category-link">
+      ${category.name}
+    </a>
+  `).join('');
 }
