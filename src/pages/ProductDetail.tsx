@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getProductById, getRelatedProducts } from "@/data/products";
@@ -46,6 +45,7 @@ const ProductDetail = () => {
       console.log("Загружаю товар с ID:", id);
       setLoading(true);
       setError(null);
+      setProduct(null); // Очищаем предыдущий товар
       
       try {
         const productData = await getProductById(id);
@@ -103,28 +103,23 @@ const ProductDetail = () => {
     }
   }, [id]);
 
-  // Find the selected color variant if it exists
   const selectedColorVariant = product?.colorVariants?.find(
     v => v.color === selectedColor
   );
 
-  // Check stock availability
   const hasStock = () => {
     if (!product) return false;
     
-    // If we have a selected color variant, check its stock
     if (selectedColor && product.colorVariants?.length) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
       return variant?.stockQuantity !== undefined && variant.stockQuantity > 0;
     }
     
-    // Otherwise check the main product stock
     return product.inStock && (product.stockQuantity !== undefined ? product.stockQuantity > 0 : false);
   };
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);
-    // Reset quantity to 1 when changing color
     setQuantity(1);
   };
 
@@ -137,7 +132,6 @@ const ProductDetail = () => {
         selectedColorVariant
       });
       
-      // Track add to cart event
       trackAddToCart({
         id: product.id,
         name: product.title,
@@ -149,7 +143,6 @@ const ProductDetail = () => {
     }
   };
 
-  // Get variant-specific image if available, otherwise use the main product image
   const getVariantImage = () => {
     if (selectedColor && product?.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
@@ -160,7 +153,6 @@ const ProductDetail = () => {
     return product?.imageUrl || "";
   };
 
-  // Get article number to display
   const getArticleNumber = () => {
     if (selectedColor && product?.colorVariants) {
       const variant = product.colorVariants.find(v => v.color === selectedColor);
@@ -172,8 +164,6 @@ const ProductDetail = () => {
   };
 
   const displayArticleNumber = getArticleNumber();
-  
-  // Get the price to display
   const displayPrice = product ? getProductPrice(product, selectedColor) : 0;
 
   if (loading) {
@@ -195,98 +185,35 @@ const ProductDetail = () => {
     ogType: 'product' as const,
   };
 
-  // Подготовка данных для расширенной микроразметки (Schema.org + Яндекс)
-  const productStructuredData = {
+  // Яндекс микроразметка (JSON-LD Schema.org)
+  const yandexStructuredData = {
     "@context": "https://schema.org/",
     "@type": "Product",
     "name": product.title,
-    "image": [product.imageUrl, ...(product.additionalImages || [])],
     "description": product.description,
+    "image": [product.imageUrl, ...(product.additionalImages || [])],
     "sku": displayArticleNumber || product.id,
-    "mpn": displayArticleNumber,
-    "gtin": product.barcode,
     "brand": {
       "@type": "Brand",
       "name": "The X Shop"
-    },
-    "manufacturer": {
-      "@type": "Organization",
-      "name": "The X Shop",
-      "address": "Россия, Москва",
-      "telephone": "+7 (800) 123-45-67",
-      "url": "https://the-x.shop"
-    },
-    "category": product.category,
-    "material": product.material,
-    "color": selectedColor || (product.colors && product.colors[0]),
-    "countryOfOrigin": product.countryOfOrigin,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": product.rating,
-      "bestRating": "5",
-      "worstRating": "1",
-      "ratingCount": "47"
     },
     "offers": {
       "@type": "Offer",
       "url": typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`,
       "priceCurrency": "RUB",
       "price": displayPrice,
-      "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
       "availability": hasStock() ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "itemCondition": "https://schema.org/NewCondition",
       "seller": {
         "@type": "Organization",
-        "name": "The X Shop",
-        "address": "Россия, Москва",
-        "telephone": "+7 (800) 123-45-67",
-        "url": "https://the-x.shop"
-      },
-      "hasMerchantReturnPolicy": {
-        "@type": "MerchantReturnPolicy",
-        "applicableCountry": "RU",
-        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-        "merchantReturnDays": 14
-      },
-      "shippingDetails": {
-        "@type": "OfferShippingDetails",
-        "shippingRate": {
-          "@type": "MonetaryAmount",
-          "value": "0",
-          "currency": "RUB"
-        },
-        "deliveryTime": {
-          "@type": "ShippingDeliveryTime",
-          "handlingTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 1,
-            "maxValue": 3,
-            "unitCode": "DAY"
-          },
-          "transitTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 3,
-            "maxValue": 14,
-            "unitCode": "DAY"
-          }
-        }
+        "name": "The X Shop"
       }
     },
-    "review": [
-      {
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": "Покупатель"
-        },
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": product.rating,
-          "bestRating": "5"
-        },
-        "reviewBody": "Отличное качество, быстрая доставка!"
-      }
-    ]
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": product.rating,
+      "bestRating": "5",
+      "ratingCount": "47"
+    }
   };
 
   return (
@@ -298,77 +225,12 @@ const ProductDetail = () => {
         ogImage={productSEO.ogImage}
         ogType={productSEO.ogType}
       >
-        {/* Расширенная микроразметка для товара (Schema.org) */}
+        {/* Яндекс микроразметка */}
         <script type="application/ld+json">
-          {JSON.stringify(productStructuredData)}
+          {JSON.stringify(yandexStructuredData)}
         </script>
         
-        {/* Дополнительная микроразметка для хлебных крошек */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Главная",
-                "item": "https://the-x.shop"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Каталог",
-                "item": "https://the-x.shop/catalog"
-              },
-              {
-                "@type": "ListItem",
-                "position": 3,
-                "name": product.category,
-                "item": `https://the-x.shop/catalog?category=${encodeURIComponent(product.category)}`
-              },
-              {
-                "@type": "ListItem",
-                "position": 4,
-                "name": product.title,
-                "item": typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`
-              }
-            ]
-          })}
-        </script>
-
-        {/* Микроразметка для Яндекса */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": product.title,
-            "description": product.description,
-            "image": product.imageUrl,
-            "sku": displayArticleNumber || product.id,
-            "brand": {
-              "@type": "Brand",
-              "name": "The X Shop"
-            },
-            "offers": {
-              "@type": "Offer",
-              "price": displayPrice,
-              "priceCurrency": "RUB",
-              "availability": hasStock() ? "InStock" : "OutOfStock",
-              "seller": {
-                "@type": "Organization",
-                "name": "The X Shop"
-              }
-            },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": product.rating,
-              "ratingCount": 47
-            }
-          })}
-        </script>
-
-        {/* Мета-теги для Яндекс.Маркета */}
+        {/* Дополнительные мета-теги для Яндекса */}
         <meta name="yandex-verification" content="товар" />
         <meta property="product:price:amount" content={String(displayPrice)} />
         <meta property="product:price:currency" content="RUB" />
@@ -408,31 +270,14 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-bold mb-2" itemProp="name">{product.title}</h1>
               <meta itemProp="description" content={product.description} />
               <meta itemProp="category" content={product.category} />
-              <meta itemProp="material" content={product.material || ''} />
-              <meta itemProp="color" content={selectedColor || ''} />
+              <meta itemProp="sku" content={displayArticleNumber || product.id} />
               
               {/* Display article number if available */}
               {displayArticleNumber && (
                 <div className="text-sm text-muted-foreground mb-2">
-                  Артикул: <span itemProp="sku">{displayArticleNumber}</span>
+                  Артикул: <span>{displayArticleNumber}</span>
                 </div>
               )}
-              
-              {product.barcode && (
-                <meta itemProp="gtin" content={product.barcode} />
-              )}
-            </div>
-            
-            {/* Brand info */}
-            <div itemProp="brand" itemScope itemType="https://schema.org/Brand">
-              <meta itemProp="name" content="The X Shop" />
-            </div>
-            
-            {/* Rating */}
-            <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-              <meta itemProp="ratingValue" content={String(product.rating)} />
-              <meta itemProp="bestRating" content="5" />
-              <meta itemProp="ratingCount" content="47" />
             </div>
             
             {/* Add stock status indicator */}
@@ -447,14 +292,6 @@ const ProductDetail = () => {
               <meta itemProp="priceCurrency" content="RUB" />
               <meta itemProp="price" content={String(displayPrice)} />
               <meta itemProp="availability" content={hasStock() ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
-              <meta itemProp="itemCondition" content="https://schema.org/NewCondition" />
-              <meta itemProp="url" content={typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`} />
-              
-              {/* Seller info */}
-              <div itemProp="seller" itemScope itemType="https://schema.org/Organization">
-                <meta itemProp="name" content="The X Shop" />
-                <meta itemProp="url" content="https://the-x.shop" />
-              </div>
               
               <ProductPricing 
                 product={product} 
