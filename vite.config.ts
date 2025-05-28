@@ -19,11 +19,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   // Disable TypeScript checking since we're using vanilla JS
-  esbuild: {
-    include: /\.(js|ts|jsx|tsx)$/,
-    exclude: [],
-    loader: 'js',
-  },
+  esbuild: false,
   build: {
     rollupOptions: {
       input: {
