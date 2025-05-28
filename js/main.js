@@ -50,12 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Если мы на странице товара, загружаем данные о товаре
-  if (window.location.pathname === '/product.html') {
-    if (typeof loadProductDetails === 'function') {
-      loadProductDetails();
-    }
-  }
   
   // Находим форму обратной связи
   const contactForm = document.getElementById('contactForm');

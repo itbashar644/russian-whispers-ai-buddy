@@ -122,7 +122,7 @@ function renderWishlist() {
               return `
                 <div class="product-card">
                   <div class="product-image">
-                    <a href="product.html?id=${product.id}">
+                    <a href="product-${generateSlug(product.title)}.html">
                       <img src="${product.image_url}" alt="${product.title}">
                     </a>
                     <button class="wishlist-button active" data-id="${product.id}">
@@ -130,7 +130,7 @@ function renderWishlist() {
                     </button>
                   </div>
                   <div class="product-info">
-                    <h3><a href="product.html?id=${product.id}">${product.title}</a></h3>
+                    <h3><a href="product-${generateSlug(product.title)}.html">${product.title}</a></h3>
                     <div class="product-price">
                       ${priceDisplay}
                     </div>
@@ -190,7 +190,7 @@ function initWishlistButtons() {
       let productTitle = '';
       
       // Определяем заголовок товара в зависимости от страницы
-      if (window.location.pathname.endsWith('product.html')) {
+      if (/product-.*\.html$/.test(window.location.pathname)) {
         productTitle = document.querySelector('h1').textContent;
       } else {
         productTitle = this.closest('.product-card').querySelector('h3 a').textContent;

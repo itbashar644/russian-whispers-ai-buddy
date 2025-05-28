@@ -183,7 +183,7 @@
             productsHTML += `
               <div class="product-card">
                 <div class="product-image">
-                  <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+                  <a href="product-${generateSlug(product.title)}.html" class="product-link" data-id="${product.id}">
                     <img src="${product.image_url}" alt="${product.title}" loading="lazy">
                   </a>
                   <button class="wishlist-button active" aria-label="Удалить из избранного">
@@ -192,7 +192,7 @@
                 </div>
                 <div class="product-info">
                   <h3>
-                    <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a>
+                    <a href="product-${generateSlug(product.title)}.html" class="product-link" data-id="${product.id}">${product.title}</a>
                   </h3>
                   <div class="product-price">
                     ${priceDisplay}

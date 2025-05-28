@@ -173,10 +173,11 @@ function createProductCard(product) {
   
   // Подготовка блока маркетплейсов
   const marketplaceLinks = createMarketplaceLinksHtml(product);
+  const slug = generateSlug(product.title);
   
   card.innerHTML = `
     <div class="product-image">
-      <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+      <a href="product-${slug}.html" class="product-link" data-id="${product.id}">
         <img src="${product.image_url}" alt="${product.title}" loading="lazy">
       </a>
       <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
@@ -185,7 +186,7 @@ function createProductCard(product) {
     </div>
     <div class="product-info">
       <h3>
-        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a>
+        <a href="product-${slug}.html" class="product-link" data-id="${product.id}">${product.title}</a>
       </h3>
       <div class="product-price">
         ${priceDisplay}
