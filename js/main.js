@@ -78,29 +78,69 @@ document.addEventListener('DOMContentLoaded', function() {
 // Загрузка данных для главной страницы
 async function loadHomePageData() {
   try {
+    console.log('Загружаю данные для главной страницы...');
+    
     // Загружаем категории
     const categories = await loadCategories();
-    renderCategories(categories);
+    console.log('Категории загружены:', categories);
+    if (categories && categories.length > 0) {
+      renderCategories(categories);
+    } else {
+      console.warn('Категории не найдены');
+      renderCategoriesPlaceholder();
+    }
     
     // Загружаем популярные товары
     const products = await loadProducts({ limit: 8 });
-    renderProducts(products);
+    console.log('Товары загружены:', products);
+    if (products && products.length > 0) {
+      renderProducts(products);
+    } else {
+      console.warn('Товары не найдены');
+      renderProductsPlaceholder();
+    }
   } catch (error) {
-    console.error('Error loading home page data:', error);
+    console.error('Ошибка загрузки данных главной страницы:', error);
+    renderCategoriesPlaceholder();
+    renderProductsPlaceholder();
   }
 }
 
 // Рендеринг категорий
 function renderCategories(categories) {
   const container = document.getElementById('categoriesGrid');
-  if (!container) return;
+  if (!container) {
+    console.warn('Контейнер categoriesGrid не найден');
+    return;
+  }
   
   container.innerHTML = categories.map(category => `
     <div class="category-card">
       <a href="catalog.html?category=${encodeURIComponent(category.name)}">
-        ${category.imageUrl ? `<img src="${category.imageUrl}" alt="${category.name}" />` : ''}
+        ${category.image_url ? `<img src="${category.image_url}" alt="${category.name}" />` : ''}
         <h3>${category.name}</h3>
-        ${category.description ? `<p>${category.description}</p>` : ''}
+      </a>
+    </div>
+  `).join('');
+}
+
+// Плейсхолдер для категорий если данные не загрузились
+function renderCategoriesPlaceholder() {
+  const container = document.getElementById('categoriesGrid');
+  if (!container) return;
+  
+  const placeholderCategories = [
+    { name: 'Смарт-часы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Планшеты', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Проекторы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Наушники', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' }
+  ];
+  
+  container.innerHTML = placeholderCategories.map(category => `
+    <div class="category-card">
+      <a href="catalog.html?category=${encodeURIComponent(category.name)}">
+        <img src="${category.image_url}" alt="${category.name}" />
+        <h3>${category.name}</h3>
       </a>
     </div>
   `).join('');
@@ -109,22 +149,25 @@ function renderCategories(categories) {
 // Рендеринг товаров
 function renderProducts(products) {
   const container = document.getElementById('productsGrid');
-  if (!container) return;
+  if (!container) {
+    console.warn('Контейнер productsGrid не найден');
+    return;
+  }
   
   container.innerHTML = products.map(product => `
     <div class="product-card">
       <a href="product.html?id=${product.id}">
-        <img src="${product.imageUrl}" alt="${product.title}" loading="lazy" />
+        <img src="${product.image_url || '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png'}" alt="${product.title}" loading="lazy" />
         <h3>${product.title}</h3>
         <div class="price">
-          ${product.discountPrice ? 
-            `<span class="discount-price">${formatPrice(product.discountPrice)}</span>
+          ${product.discount_price ? 
+            `<span class="discount-price">${formatPrice(product.discount_price)}</span>
              <span class="original-price">${formatPrice(product.price)}</span>` :
             `<span class="price">${formatPrice(product.price)}</span>`
           }
         </div>
-        <div class="stock-status ${product.inStock ? 'in-stock' : 'out-of-stock'}">
-          ${product.inStock ? 'В наличии' : 'Нет в наличии'}
+        <div class="stock-status ${product.in_stock ? 'in-stock' : 'out-of-stock'}">
+          ${product.in_stock ? 'В наличии' : 'Нет в наличии'}
         </div>
       </a>
       <button class="add-to-cart-btn" data-product-id="${product.id}">
@@ -144,6 +187,64 @@ function renderProducts(products) {
   });
 }
 
+// Плейсхолдер для товаров если данные не загрузились
+function renderProductsPlaceholder() {
+  const container = document.getElementById('productsGrid');
+  if (!container) return;
+  
+  const placeholderProducts = [
+    {
+      id: '1',
+      title: 'Смарт-часы HK9 Ultra',
+      price: 2990,
+      discount_price: 1990,
+      image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png',
+      in_stock: true
+    },
+    {
+      id: '2', 
+      title: 'Планшет Android 512GB',
+      price: 15990,
+      image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png',
+      in_stock: true
+    },
+    {
+      id: '3',
+      title: 'Проектор Mini HD',
+      price: 8990,
+      image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png',
+      in_stock: true
+    },
+    {
+      id: '4',
+      title: 'Наушники Bluetooth',
+      price: 3990,
+      image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png',
+      in_stock: true
+    }
+  ];
+  
+  container.innerHTML = placeholderProducts.map(product => `
+    <div class="product-card">
+      <a href="product.html?id=${product.id}">
+        <img src="${product.image_url}" alt="${product.title}" loading="lazy" />
+        <h3>${product.title}</h3>
+        <div class="price">
+          ${product.discount_price ? 
+            `<span class="discount-price">${formatPrice(product.discount_price)}</span>
+             <span class="original-price">${formatPrice(product.price)}</span>` :
+            `<span class="price">${formatPrice(product.price)}</span>`
+          }
+        </div>
+        <div class="stock-status in-stock">В наличии</div>
+      </a>
+      <button class="add-to-cart-btn" data-product-id="${product.id}">
+        В корзину
+      </button>
+    </div>
+  `).join('');
+}
+
 // Форматирование цены
 function formatPrice(price) {
   return new Intl.NumberFormat('ru-RU', {
@@ -159,8 +260,6 @@ function initMobileMenu() {
   
   if (mobileMenuToggle) {
     mobileMenuToggle.addEventListener('click', function() {
-      // Здесь должен быть код для открытия/закрытия мобильного меню
-      // Для простоты реализации просто переключаем видимость навигации
       const mainNav = document.querySelector('.nav-links');
       
       if (mainNav) {
@@ -174,9 +273,9 @@ function initMobileMenu() {
 async function loadCategoriesForCatalog() {
   try {
     const categories = await loadCategories();
+    console.log('Категории для каталога загружены:', categories);
     // Здесь можно добавить рендеринг категорий в сайдбар каталога
-    console.log('Categories loaded for catalog:', categories);
   } catch (error) {
-    console.error('Error loading categories for catalog:', error);
+    console.error('Ошибка загрузки категорий для каталога:', error);
   }
 }
