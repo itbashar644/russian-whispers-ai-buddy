@@ -17,6 +17,9 @@ export const getYandexMetaTags = (
   hasStock?: boolean,
   displayArticleNumber?: string
 ) => {
+  const baseUrl = 'https://the-x.shop';
+  const productUrl = `${baseUrl}/product/${product.id}`;
+  
   return [
     { name: "yandex-verification", content: "товар" },
     { property: "product:price:amount", content: displayPrice?.toString() || product.price.toString() },
@@ -27,9 +30,11 @@ export const getYandexMetaTags = (
     { property: "product:retailer_item_id", content: displayArticleNumber || product.id },
     { property: "og:type", content: "product" },
     { property: "og:title", content: `${product.title} - The X Shop` },
-    { property: "og:description", content: product.description },
-    { property: "og:image", content: product.imageUrl },
-    { property: "og:url", content: typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}` },
+    { property: "og:description", content: product.description || `${product.title} - купить в The X Shop. Доставка по всей России.` },
+    { property: "og:image", content: product.imageUrl.startsWith('http') ? product.imageUrl : `${baseUrl}${product.imageUrl}` },
+    { property: "og:url", content: productUrl },
+    { property: "og:site_name", content: "The X Shop" },
+    { property: "product:category", content: product.category },
   ];
 };
 
@@ -40,7 +45,7 @@ const YandexMicrodata: React.FC<YandexMicrodataProps> = ({
   hasStock,
   displayArticleNumber
 }) => {
-  return null; // This component now only exports utility functions
+  return null; // Этот компонент теперь только экспортирует утилиты
 };
 
 export default YandexMicrodata;

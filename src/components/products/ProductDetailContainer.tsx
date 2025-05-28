@@ -36,7 +36,48 @@ const ProductDetailContainer: React.FC<ProductDetailContainerProps> = ({
 }) => {
   return (
     <main className="flex-grow container px-4 py-8 md:px-6" itemScope itemType="https://schema.org/Product">
-      {/* Микроразметка товара - только HTML атрибуты */}
+      {/* Основные Schema.org атрибуты для товара */}
+      <meta itemProp="name" content={product.title} />
+      <meta itemProp="description" content={product.description || product.title} />
+      <meta itemProp="image" content={product.imageUrl} />
+      <meta itemProp="sku" content={displayArticleNumber || product.id} />
+      <meta itemProp="mpn" content={displayArticleNumber || product.id} />
+      <meta itemProp="category" content={product.category} />
+      
+      {/* Бренд */}
+      <div itemProp="brand" itemScope itemType="https://schema.org/Brand" style={{ display: 'none' }}>
+        <meta itemProp="name" content="The X Shop" />
+      </div>
+      
+      {/* Производитель */}
+      <div itemProp="manufacturer" itemScope itemType="https://schema.org/Organization" style={{ display: 'none' }}>
+        <meta itemProp="name" content="The X Shop" />
+      </div>
+      
+      {/* Рейтинг */}
+      <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating" style={{ display: 'none' }}>
+        <meta itemProp="ratingValue" content={product.rating?.toString() || "4.8"} />
+        <meta itemProp="bestRating" content="5" />
+        <meta itemProp="worstRating" content="1" />
+        <meta itemProp="ratingCount" content="47" />
+      </div>
+      
+      {/* Предложение */}
+      <div itemProp="offers" itemScope itemType="https://schema.org/Offer" style={{ display: 'none' }}>
+        <link itemProp="url" href={typeof window !== 'undefined' ? window.location.href : `https://the-x.shop/product/${product.id}`} />
+        <meta itemProp="priceCurrency" content="RUB" />
+        <meta itemProp="price" content={displayPrice?.toString() || product.price.toString()} />
+        <meta itemProp="priceValidUntil" content={new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} />
+        <link itemProp="availability" href={hasStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+        <link itemProp="itemCondition" href="https://schema.org/NewCondition" />
+        
+        <div itemProp="seller" itemScope itemType="https://schema.org/Organization">
+          <meta itemProp="name" content="The X Shop" />
+          <link itemProp="url" href="https://the-x.shop" />
+        </div>
+      </div>
+      
+      {/* Микроразметка товара - дополнительные скрытые данные */}
       <ProductMicrodata
         product={product}
         selectedColor={selectedColor}

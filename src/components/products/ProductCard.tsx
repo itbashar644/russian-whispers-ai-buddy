@@ -56,9 +56,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <div className={`group relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}
          itemScope itemType="https://schema.org/Product">
       
-      {/* Структурированные данные */}
+      {/* Структурированные данные для Schema.org */}
       <meta itemProp="name" content={product.title} />
-      <meta itemProp="description" content={product.description} />
+      <meta itemProp="description" content={product.description || product.title} />
       <meta itemProp="category" content={product.category} />
       <meta itemProp="brand" content="The X Shop" />
       <meta itemProp="sku" content={product.articleNumber || product.id} />
@@ -106,7 +106,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price with structured data */}
         <div className="flex items-center gap-2 mb-3" itemProp="offers" itemScope itemType="https://schema.org/Offer">
           <meta itemProp="priceCurrency" content="RUB" />
-          <meta itemProp="availability" content={currentProduct.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <link itemProp="availability" href={currentProduct.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
           <meta itemProp="url" content={`https://the-x.shop/product/${product.id}`} />
           
           {currentProduct.discountPrice ? (
@@ -136,8 +136,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* Marketplace Links */}
-        {!compact && <MarketplaceLinks product={currentProduct} />}
+        {/* Marketplace Links - улучшенная адаптивность */}
+        {!compact && (
+          <div className="mb-3 min-w-0">
+            <MarketplaceLinks 
+              product={currentProduct} 
+              className="flex items-center gap-1 text-xs overflow-hidden"
+            />
+          </div>
+        )}
 
         {/* Add to Cart Button */}
         {cartAvailable && (

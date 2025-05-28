@@ -123,7 +123,7 @@ const AdminPanel = () => {
             <main className="flex-1 overflow-auto p-4 md:p-6 bg-gray-50">
               <div className="max-w-full mx-auto h-full">
                 <Routes>
-                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />
