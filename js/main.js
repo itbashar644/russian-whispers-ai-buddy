@@ -5,6 +5,8 @@ import { loadCategories, loadProducts } from './supabase.js';
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM загружен, инициализация приложения...');
+  
   // Функция для работы с корзиной
   if (typeof initCart === 'function') {
     initCart();
@@ -49,9 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Если мы на странице товара, загружаем детали товара
   if (window.location.pathname === '/product.html') {
-    if (typeof loadProductDetails === 'function') {
-      loadProductDetails();
-    }
+    console.log('Загружаем страницу товара...');
+    loadProductDetails();
   }
   
   // Находим форму обратной связи

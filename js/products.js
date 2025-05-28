@@ -1,4 +1,3 @@
-
 /**
  * Функционал для работы с товарами
  */
@@ -248,36 +247,45 @@ async function loadProductDetails() {
     const productId = urlParams.get('id');
     
     if (!productId) {
-      document.querySelector('.product-details-container').innerHTML = 
-        '<div class="error-message">Товар не найден</div>';
+      const container = document.querySelector('.product-details-container');
+      if (container) {
+        container.innerHTML = '<div class="error-message">Товар не найден</div>';
+      }
       return;
     }
     
     // Показываем состояние загрузки
-    document.querySelector('.product-details-container').innerHTML = 
-      '<div class="loading">Загрузка информации о товаре...</div>';
+    const container = document.querySelector('.product-details-container');
+    if (container) {
+      container.innerHTML = '<div class="loading">Загрузка информации о товаре...</div>';
+    }
     
     // Импортируем supabase клиент
     const { supabase } = await import('./supabase.js');
     
     // Загружаем данные о товаре с Supabase
-    const { data: products, error } = await supabase
+    const { data: product, error } = await supabase
       .from('products')
       .select('*')
       .eq('id', productId)
       .single();
     
-    if (error) {
+    if (error || !product) {
       console.error('Ошибка загрузки товара:', error);
-      document.querySelector('.product-details-container').innerHTML = 
-        '<div class="error-message">Товар не найден</div>';
+      if (container) {
+        container.innerHTML = '<div class="error-message">Товар не найден</div>';
+      }
       return;
     }
     
-    const product = products;
-    
     // Обновляем заголовок страницы
     document.title = `${product.title} | The X Shop`;
+    
+    // Обновляем breadcrumbs
+    const breadcrumbCategory = document.getElementById('breadcrumb-category');
+    const breadcrumbProduct = document.getElementById('breadcrumb-product');
+    if (breadcrumbCategory) breadcrumbCategory.textContent = product.category || 'Категория';
+    if (breadcrumbProduct) breadcrumbProduct.textContent = product.title;
     
     // Подготовка блока маркетплейсов
     const marketplaceLinks = createMarketplaceLinksHtml(product);
@@ -287,7 +295,7 @@ async function loadProductDetails() {
       <div class="product-details">
         <div class="product-gallery">
           <div class="main-image">
-            <img src="${product.image_url}" alt="${product.title}">
+            <img src="${product.image_url || '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png'}" alt="${product.title}">
           </div>
           ${product.additional_images && product.additional_images.length > 0 ? `
             <div class="additional-images">
@@ -303,13 +311,13 @@ async function loadProductDetails() {
           <h1>${product.title}</h1>
           <div class="product-price">
             ${product.discount_price 
-              ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
-              : `<span class="current-price">${product.price} ₽</span>`}
+              ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price">${formatPrice(product.discount_price)}</span>` 
+              : `<span class="current-price">${formatPrice(product.price)}</span>`}
           </div>
           <div class="product-meta">
             <div class="product-rating">
-              <span class="stars">${'★'.repeat(Math.floor(product.rating))}${product.rating % 1 > 0 ? '☆' : ''}</span>
-              <span class="rating-value">${product.rating}</span>
+              <span class="stars">${'★'.repeat(Math.floor(product.rating || 4.8))}${(product.rating || 4.8) % 1 > 0 ? '☆' : ''}</span>
+              <span class="rating-value">${product.rating || 4.8}</span>
             </div>
             <div class="product-availability">
               <span class="${product.in_stock ? 'in-stock' : 'out-of-stock'}">${product.in_stock ? 'В наличии' : 'Нет в наличии'}</span>
@@ -349,21 +357,66 @@ async function loadProductDetails() {
     `;
     
     // Обновляем контейнер
-    document.querySelector('.product-details-container').innerHTML = productHTML;
-    
-    // Инициализируем табы
-    initProductTabs();
-    
-    // Инициализируем галерею
-    initProductGallery();
-    
-    // Инициализируем кнопки
-    initProductButtons(product);
+    if (container) {
+      container.innerHTML = productHTML;
+      
+      // Инициализируем табы
+      initProductTabs();
+      
+      // Инициализируем галерею
+      initProductGallery();
+      
+      // Инициализируем кнопки
+      initProductButtons(product);
+      
+      // Загружаем похожие товары
+      loadRelatedProducts(product.category, product.id);
+    }
   } catch (error) {
     console.error('Ошибка при загрузке информации о товаре:', error);
-    document.querySelector('.product-details-container').innerHTML = 
-      '<div class="error-message">Ошибка при загрузке информации о товаре</div>';
+    const container = document.querySelector('.product-details-container');
+    if (container) {
+      container.innerHTML = '<div class="error-message">Ошибка при загрузке информации о товаре</div>';
+    }
   }
+}
+
+// Функция для загрузки похожих товаров
+async function loadRelatedProducts(category, currentProductId) {
+  try {
+    const relatedContainer = document.getElementById('related-products');
+    if (!relatedContainer) return;
+    
+    relatedContainer.innerHTML = '<div class="loading">Загрузка похожих товаров...</div>';
+    
+    const { loadProducts } = await import('./supabase.js');
+    const products = await loadProducts({ category });
+    
+    // Исключаем текущий товар и берем первые 4
+    const relatedProducts = products.filter(p => p.id !== currentProductId).slice(0, 4);
+    
+    if (relatedProducts.length > 0) {
+      relatedContainer.innerHTML = relatedProducts.map(product => createProductHTML(product)).join('');
+      addProductEventListeners(relatedContainer);
+    } else {
+      relatedContainer.innerHTML = '<div class="empty-message">Похожие товары не найдены</div>';
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки похожих товаров:', error);
+    const relatedContainer = document.getElementById('related-products');
+    if (relatedContainer) {
+      relatedContainer.innerHTML = '<div class="error-message">Ошибка загрузки похожих товаров</div>';
+    }
+  }
+}
+
+// Функция для форматирования цены
+function formatPrice(price) {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    minimumFractionDigits: 0
+  }).format(price);
 }
 
 // Инициализация табов на странице товара
