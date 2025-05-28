@@ -394,19 +394,14 @@ class StaticPageGenerator {
         </div>
     </div>
     
-    <!-- Автоматический редирект через 3 секунды -->
-    <script>
-        console.log('SEO страница загружена, редирект через 3 секунды...');
-        setTimeout(function() {
-            window.location.href = '/#/product/${product.id}';
-        }, 3000);
-        
-        // Немедленный переход при клике на CTA
-        document.querySelector('.cta-button').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = '/#/product/${product.id}';
-        });
-    </script>
+    <!-- Скрипты для функциональности страницы -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>`;
   }
