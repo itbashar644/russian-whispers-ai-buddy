@@ -9,12 +9,103 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container">
+        <a href="index.html" class="logo">The X Shop</a>
+        <div class="nav-links">
+          <a href="catalog.html">Каталог</a>
+          <a href="about.html">О нас</a>
+          <a href="contacts.html">Контакты</a>
+          <a href="delivery.html">Доставка</a>
+          <a href="cart.html">Корзина</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1>The X Shop:<br />Товары из Китая для вашего дома</h1>
+            <p>Минималистичный дизайн, высокое качество, доступные цены.</p>
+            <div class="hero-buttons">
+              <a href="catalog.html" class="btn btn-primary">Смотреть каталог</a>
+              <a href="catalog.html?category=Смарт-часы" class="btn btn-outline">Смарт-часы</a>
+            </div>
+          </div>
+          <div class="hero-image">
+            <img src="/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png" alt="Современные технологические товары" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+      <div class="container">
+        <h2>Категории товаров</h2>
+        <div class="categories-grid" id="categoriesGrid">
+          <!-- Categories will be loaded by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products">
+      <div class="container">
+        <h2>Бестселлеры</h2>
+        <div class="products-grid" id="productsGrid">
+          <!-- Products will be loaded by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits">
+      <div class="container">
+        <div class="benefits-grid">
+          <div class="benefit">
+            <h3>Качество</h3>
+            <p>Тщательный отбор товаров</p>
+          </div>
+          <div class="benefit">
+            <h3>Доставка</h3>
+            <p>Быстрая доставка по России</p>
+          </div>
+          <div class="benefit">
+            <h3>Поддержка</h3>
+            <p>Помощь в выборе товаров</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>The X Shop</h3>
+            <p>Товары из Китая для вашего дома</p>
+          </div>
+          <div class="footer-section">
+            <h4>Ссылки</h4>
+            <ul>
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="delivery.html">Доставка</a></li>
+              <li><a href="contacts.html">Контакты</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Load JavaScript -->
+    <script src="js/main.js"></script>
     
-    <!-- Load React app first -->
-    <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- GPT Engineer script - load after React -->
+    <!-- GPT Engineer script -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </body>
 </html>
