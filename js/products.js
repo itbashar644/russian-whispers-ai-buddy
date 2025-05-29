@@ -86,8 +86,11 @@ async function loadCatalogProducts(category = null) {
     if (searchQuery) {
       filters.search = searchQuery;
     }
-    // Загружаем товары
-    let products = await loadProducts(filters);
+    // Загружаем товары с таймаутом, чтобы не зависать бесконечно
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Время ожидания истекло')), 10000)
+    );
+    let products = await Promise.race([loadProducts(filters), timeout]);
     console.log('Товары загружены для каталога:', products);
     
     // Применяем фильтры на стороне клиента
