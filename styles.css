@@ -573,10 +573,36 @@ img {
   display: block;
 }
 .about-panel {
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);  
+  position: relative;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 25px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #007bff;
+  margin-bottom: 20px;
+}
+
+.about-panel h2 {
+  margin-top: 0;
+}
+
+.about-list {
+  list-style: none;
+  padding-left: 0;
+  text-align: left;
+}
+
+.about-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 8px;
+}
+
+.about-list li::before {
+  content: "\2714";
+  position: absolute;
+  left: 0;
+  color: #007bff;
 }
 
 /* Catalog styles */
