@@ -462,13 +462,17 @@ async function loadCatalogProducts(category = null) {
 function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'product-card';
-  
-  const priceDisplay = product.discount_price 
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
+
+  const priceDisplay = product.discount_price
+    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
     : `<span class="current-price">${product.price} ₽</span>`;
-  
-    const slug = generateSlug(product.title);
-  
+
+  const slug = generateSlug(product.title);
+  const categoryLink = product.category
+    ? `<a href="catalog.html?category=${encodeURIComponent(product.category)}" class="product-category">${product.category}</a>`
+    : '';
+  const marketplaceLinks = createMarketplaceLinksHtml(product);
+
   card.innerHTML = `
     <div class="product-image">
       <a href="product-${slug}.html" class="product-link" data-id="${product.id}">
@@ -482,16 +486,56 @@ function createProductCard(product) {
       <h3>
         <a href="product-${slug}.html" class="product-link" data-id="${product.id}">${product.title}</a>
       </h3>
+      ${categoryLink}
       <div class="product-price">
         ${priceDisplay}
       </div>
+      ${marketplaceLinks}
       <button class="add-to-cart-btn">В корзину</button>
     </div>
   `;
   
   return card;
 }
+function createMarketplaceLinksHtml(product) {
+  if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
+    return '';
+  }
 
+  let marketplaceIconsHtml = '';
+
+  if (product.wildberries_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+        <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
+      </a>
+    `;
+  }
+
+  if (product.ozon_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+        <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
+      </a>
+    `;
+  }
+
+  if (product.avito_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+        <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
+      </a>
+    `;
+  }
+
+  return `
+    <div class="marketplace-links">
+      <span class="marketplace-title">Доступно на:</span>
+      <div class="marketplace-icons">
+        ${marketplaceIconsHtml}
+      </div>
+    </div>`;
+}
 // Функция для отправки формы обратной связи
 async function submitContactForm(event) {
   event.preventDefault();
