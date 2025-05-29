@@ -417,6 +417,15 @@ img {
   color: #999;
   margin-right: 8px;
 }
+.product-category {
+  display: inline-block;
+  background: #3498db;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
 
 .add-to-cart-btn {
   width: 100%;
