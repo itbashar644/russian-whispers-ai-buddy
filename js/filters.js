@@ -25,7 +25,7 @@ function initFilters() {
   
   // Focus search input if requested via URL
   if (urlParams.get('focus') === 'search') {
-    const searchField = document.getElementById('search-input');
+    const searchField = document.querySelector('.catalog-search #search-input');
     if (searchField) {
       searchField.focus();
     }
@@ -53,9 +53,10 @@ function initFilters() {
 
   
   // Фильтр по поиску
-  const searchInput = document.getElementById('search-input');
-  const searchButton = document.getElementById('search-button');
-  const suggestionsContainer = document.getElementById('search-suggestions');
+  const searchContainer = document.querySelector('.catalog-search');
+  const searchInput = searchContainer?.querySelector('#search-input');
+  const searchButton = searchContainer?.querySelector('#search-button');
+  const suggestionsContainer = searchContainer?.querySelector('#search-suggestions');
 
   if (searchInput && searchButton) {
     // Восстанавливаем поисковый запрос из URL
@@ -198,7 +199,8 @@ function applyFilters() {
   
   
   // Добавляем поисковый запрос
-  const searchInput = document.getElementById('search-input');
+  const searchContainer = document.querySelector('.catalog-search');
+  const searchInput = searchContainer?.querySelector('#search-input');
   if (searchInput && searchInput.value.trim()) {
     newParams.set('search', searchInput.value.trim());
   }
