@@ -17,7 +17,11 @@ function initChat() {
   });
   
   // Обработчик нажатия на кнопку чата
-  chatButton.addEventListener('click', function() {
+  chatButton.addEventListener('click', function(event) {
+    // Останавливаем всплытие, чтобы обработчик документа не
+    // закрыл чат сразу после открытия
+    event.stopPropagation();
+
     if (chatContainer.classList.contains('hidden')) {
       openChat();
     } else {
