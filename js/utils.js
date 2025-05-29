@@ -157,3 +157,23 @@ async function sendData(url, data, method = 'POST') {
     throw error;
   }
 }
+
+// ===== Функции кэширования данных =====
+// Сохраняет данные с TTL в локальное хранилище
+function setCache(key, data, ttlMinutes = 10) {
+  const record = {
+    data,
+    expires: Date.now() + ttlMinutes * 60 * 1000,
+  };
+  saveToStorage(key, record);
+}
+
+// Получает данные из локального кэша, если они актуальны
+function getCache(key) {
+  const record = getFromStorage(key);
+  if (record && record.expires > Date.now()) {
+    return record.data;
+  }
+  localStorage.removeItem(key);
+  return null;
+}
