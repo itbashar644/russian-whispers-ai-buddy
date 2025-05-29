@@ -32,8 +32,9 @@ function initFilters() {
   }
   
   // Фильтр по цене
-  const priceMinInput = document.getElementById('price-min');
-  const priceMaxInput = document.getElementById('price-max');
+  // ID инпутов в разметке min-price/max-price, исправляем несоответствие
+  const priceMinInput = document.getElementById('min-price');
+  const priceMaxInput = document.getElementById('max-price');
   const applyPriceBtn = document.getElementById('apply-price-filter');
   
   if (priceMinInput && priceMaxInput && applyPriceBtn) {
@@ -186,8 +187,9 @@ function applyFilters() {
   }
   
   // Добавляем фильтр по цене
-  const priceMinInput = document.getElementById('price-min');
-  const priceMaxInput = document.getElementById('price-max');
+  // Используем правильные ID элементов из catalog.html
+  const priceMinInput = document.getElementById('min-price');
+  const priceMaxInput = document.getElementById('max-price');
   
   if (priceMinInput.value) {
     newParams.set('min_price', priceMinInput.value);
