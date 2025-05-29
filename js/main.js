@@ -1,3 +1,4 @@
+
 import { loadCategories, loadProducts } from './supabase.js';
 
 /**
@@ -34,7 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Загрузка товаров с Supabase, если мы находимся на главной странице
   const path = window.location.pathname.toLowerCase();
-  if (path === '/' || path.endsWith('/index.html')) {
+  if (path === '/' || path.endsWith('/index.html') || path === '/index.html') {
+    console.log('Загружаем данные для главной страницы...');
     loadHomePageData();
   }
   
@@ -132,6 +134,8 @@ function renderCategories(categories) {
     return;
   }
   
+  console.log('Рендерим категории в контейнер:', container);
+  
   container.innerHTML = categories.map(category => `
     <div class="category-card">
       <a href="catalog.html?category=${encodeURIComponent(category.name)}">
@@ -145,7 +149,12 @@ function renderCategories(categories) {
 // Плейсхолдер для категорий если данные не загрузились
 function renderCategoriesPlaceholder() {
   const container = document.getElementById('categoriesGrid');
-  if (!container) return;
+  if (!container) {
+    console.warn('Контейнер categoriesGrid не найден для плейсхолдера');
+    return;
+  }
+  
+  console.log('Рендерим плейсхолдер категорий');
   
   const placeholderCategories = [
     { name: 'Смарт-часы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
@@ -166,38 +175,48 @@ function renderCategoriesPlaceholder() {
 
 // Рендеринг секций товаров на главной странице
 function renderProductSections(bestsellers, newProducts, popularProducts) {
+  console.log('Рендерим секции товаров...');
+  
   // Рендерим бестселлеры
   const bestsellersContainer = document.getElementById('bestsellersGrid');
   if (bestsellersContainer) {
+    console.log('Рендерим бестселлеры:', bestsellers.length);
     if (bestsellers.length > 0) {
       bestsellersContainer.innerHTML = bestsellers.slice(0, 4).map(product => createProductHTML(product)).join('');
       addProductEventListeners(bestsellersContainer);
     } else {
       bestsellersContainer.innerHTML = '<div class="no-products">Бестселлеры скоро появятся</div>';
     }
+  } else {
+    console.warn('Контейнер bestsellersGrid не найден');
   }
   
   // Рендерим новинки
   const newProductsContainer = document.getElementById('newProductsGrid');
   if (newProductsContainer) {
+    console.log('Рендерим новинки:', newProducts.length);
     if (newProducts.length > 0) {
       newProductsContainer.innerHTML = newProducts.slice(0, 4).map(product => createProductHTML(product)).join('');
       addProductEventListeners(newProductsContainer);
     } else {
       newProductsContainer.innerHTML = '<div class="no-products">Новинки скоро появятся</div>';
     }
+  } else {
+    console.warn('Контейнер newProductsGrid не найден');
   }
   
   // Рендерим популярные товары
   const productsContainer = document.getElementById('productsGrid');
   if (productsContainer) {
+    console.log('Рендерим популярные товары:', popularProducts.length);
     productsContainer.innerHTML = popularProducts.slice(0, 8).map(product => createProductHTML(product)).join('');
     addProductEventListeners(productsContainer);
+  } else {
+    console.warn('Контейнер productsGrid не найден');
   }
 }
 
 // Создание HTML для товара
-
 function createProductHTML(product) {
     const priceHtml = product.discount_price
     ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price">${formatPrice(product.discount_price)}</span>`
@@ -235,6 +254,7 @@ function createProductHTML(product) {
       </div>
     </div>`;
 }
+
 function createMarketplaceLinksHtml(product) {
   if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
     return '';
@@ -274,6 +294,7 @@ function createMarketplaceLinksHtml(product) {
       </div>
     </div>`;
 }
+
 // Добавление обработчиков событий для товаров
 function addProductEventListeners(container) {
   container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
@@ -293,8 +314,11 @@ function renderProducts(products) {
 
 // Плейсхолдер для товаров если данные не загрузились
 function renderProductsPlaceholder() {
-  const container = document.getElementById('productsGrid');
-  if (!container) return;
+  console.log('Рендерим плейсхолдер товаров...');
+  
+  const bestsellersContainer = document.getElementById('bestsellersGrid');
+  const newProductsContainer = document.getElementById('newProductsGrid');
+  const productsContainer = document.getElementById('productsGrid');
   
   const placeholderProducts = [
     {
@@ -328,7 +352,17 @@ function renderProductsPlaceholder() {
     }
   ];
   
-  container.innerHTML = placeholderProducts.map(product => createProductHTML(product)).join('');
+  if (bestsellersContainer) {
+    bestsellersContainer.innerHTML = placeholderProducts.slice(0, 2).map(product => createProductHTML(product)).join('');
+  }
+  
+  if (newProductsContainer) {
+    newProductsContainer.innerHTML = placeholderProducts.slice(0, 2).map(product => createProductHTML(product)).join('');
+  }
+  
+  if (productsContainer) {
+    productsContainer.innerHTML = placeholderProducts.map(product => createProductHTML(product)).join('');
+  }
 }
 
 // Форматирование цены
