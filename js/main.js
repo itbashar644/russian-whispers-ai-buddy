@@ -33,12 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Загрузка товаров с Supabase, если мы находимся на главной странице
-  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+  const path = window.location.pathname.toLowerCase();
+  if (path === '/' || path.endsWith('/index.html')) {
     loadHomePageData();
   }
   
   // Загрузка товаров в каталоге
-  if (window.location.pathname.endsWith('catalog.html')) {
+  if (path.endsWith('/catalog') || path.endsWith('/catalog.html')) {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Если мы на странице товара, загружаем детали товара
-  if (window.location.pathname.endsWith('product.html')) {
+  if (path.endsWith('/product') || path.endsWith('/product.html')) {
     console.log('Загружаем страницу товара...');
     loadProductDetails();
   }
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Если мы на странице корзины, рендерим корзину
-  if (window.location.pathname.endsWith('cart.html')) {
+  if (path.endsWith('/cart') || path.endsWith('/cart.html')) {
     if (typeof renderCart === 'function') {
       renderCart();
     }
