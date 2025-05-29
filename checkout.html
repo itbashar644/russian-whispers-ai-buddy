@@ -256,12 +256,22 @@
       </div>
     </footer>
 
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/checkout.js"></script>
     <script>
+      // Утилиты
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error('Ошибка при чтении из localStorage:', error);
+          return defaultValue;
+        }
+      }
+
+      function formatPrice(price) {
+        return `${price.toLocaleString('ru-RU')} ₽`;
+      }
+
       // Скрипт для заполнения информации о заказе
       document.addEventListener('DOMContentLoaded', function() {
         // Получаем корзину
@@ -315,6 +325,36 @@
         // Обновляем итоговую стоимость
         document.getElementById('subtotal').textContent = formatPrice(subtotal);
         document.getElementById('grand-total').textContent = formatPrice(subtotal);
+
+        // Обработка отправки формы
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Получаем данные формы
+          const formData = new FormData(this);
+          const orderData = {};
+          
+          for (let [key, value] of formData.entries()) {
+            orderData[key] = value;
+          }
+          
+          // Генерируем номер заказа
+          const orderNumber = Math.floor(Math.random() * 100000);
+          
+          // Сохраняем информацию для страницы спасибо
+          localStorage.setItem('lastOrderNumber', orderNumber);
+          localStorage.setItem('lastContactMethod', orderData.contact_method);
+          
+          console.log('Заказ оформлен:', {
+            orderNumber,
+            customerData: orderData,
+            items: cart,
+            total: subtotal
+          });
+          
+          // Перенаправляем на страницу спасибо
+          window.location.href = `thank-you.html?order=${orderNumber}&contact=${orderData.contact_method}`;
+        });
       });
     </script>
   </body>

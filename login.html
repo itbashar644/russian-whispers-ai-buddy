@@ -230,8 +230,7 @@
             <span>или</span>
           </div>
 
-              
-                    <button id="googleLoginBtn" type="button" class="google-btn">
+          <button id="googleLoginBtn" type="button" class="google-btn">
              <svg class="h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M21.8055 10.0415H21V10H12V14H17.6515C16.827 16.3285 14.6115 18 12 18C8.6865 18 6 15.3135 6 12C6 8.6865 8.6865 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C6.4775 2 2 6.4775 2 12C2 17.5225 6.4775 22 12 22C17.5225 22 22 17.5225 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#FFC107"/>
               <path d="M3.15302 7.3455L6.43851 9.755C7.32752 7.554 9.48052 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C8.15902 2 4.82802 4.1685 3.15302 7.3455Z" fill="#FF3D00"/>
@@ -308,11 +307,20 @@
     <!-- Необходимый скрипт для Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
-    <!-- Скрипты для функциональности страницы -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/search.js"></script>
     <script>
+      // Конфигурация для Supabase
+      const CONFIG = {
+        supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        get apiHeaders() {
+          return {
+            'apikey': this.supabaseKey,
+            'Authorization': `Bearer ${this.supabaseKey}`,
+            'Content-Type': 'application/json'
+          };
+        }
+      };
+
       // Обработчик отправки формы авторизации
       document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -331,11 +339,32 @@
           window.location.href = 'index.html';
         }, 1500);
       });
-          </script>
+
+      function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #007bff;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 4px;
+          z-index: 1000;
+          animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+    </script>
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-      const supabase = createClient(CONFIG.supabaseUrl, CONFIG.apiHeaders.apikey, {
+      const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, {
         auth: {
           persistSession: true,
           detectSessionInUrl: true
@@ -351,6 +380,5 @@
         });
       });
     </script>
-          <script src="js/chat.js"></script>
   </body>
 </html>
