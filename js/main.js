@@ -75,11 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Инициализация чата, если он есть на странице
-  if (typeof initChat === 'function') {
-    initChat();
-  }
-  
   // Инициализация мобильного меню
   initMobileMenu();
 });
