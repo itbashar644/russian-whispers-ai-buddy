@@ -12,6 +12,13 @@ function debounce(fn, delay = 300) {
   };
 }
 
+// Подсветка части текста в подсказках
+function highlightQuery(text, query) {
+  const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(safeQuery, 'ig');
+  return text.replace(regex, match => `<mark>${match}</mark>`);
+}
+
 // Функция для инициализации фильтров
 function initFilters() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -70,9 +77,12 @@ function initFilters() {
     });
     
     // Подсказки при вводе
+       let activeIndex = -1;
+
     searchInput.addEventListener('input', debounce(async function() {
       if (!suggestionsContainer) return;
       const query = searchInput.value.trim();
+      activeIndex = -1;
       if (!query) {
         suggestionsContainer.style.display = 'none';
         suggestionsContainer.innerHTML = '';
@@ -85,17 +95,50 @@ function initFilters() {
         return;
       }
       suggestionsContainer.innerHTML = suggestions
-        .map(item => `<div class="suggestion-item">${item.title}</div>`)
+        .map(item =>
+          `<div class="suggestion-item" data-id="${item.id}">
+             <img src="${item.image_url}" alt="${item.title}">
+             <span>${highlightQuery(item.title, query)}</span>
+           </div>`)
         .join('');
       suggestionsContainer.style.display = 'block';
     }, 300));
+
+        searchInput.addEventListener('keydown', function(e) {
+      const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % items.length;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        e.preventDefault();
+        const id = items[activeIndex].getAttribute('data-id');
+        window.location.href = `product.html?id=${id}`;
+        return;
+      } else {
+        return;
+      }
+
+      items.forEach((el, idx) => {
+        if (idx === activeIndex) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    });
 
     // Выбор подсказки
     if (suggestionsContainer) {
       suggestionsContainer.addEventListener('click', function(e) {
         const item = e.target.closest('.suggestion-item');
         if (item) {
-          searchInput.value = item.textContent;
+          const textEl = item.querySelector('span');
+          searchInput.value = textEl ? textEl.textContent : item.textContent;
           suggestionsContainer.style.display = 'none';
           applyFilters();
         }
@@ -270,7 +313,7 @@ async function fetchSearchSuggestions(query) {
     const { supabase } = await import('./supabase.js');
     const { data, error } = await supabase
       .from('products')
-      .select('title')
+      .select('id,title,image_url')
       .ilike('title', `%${query}%`)
       .limit(5);
 
