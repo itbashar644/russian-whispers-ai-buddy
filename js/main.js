@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Загрузка товаров в каталоге
-  if (window.location.pathname === '/catalog.html') {
+  if (window.location.pathname.endsWith('catalog.html')) {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Если мы на странице товара, загружаем детали товара
-  if (window.location.pathname === '/product.html') {
+  if (window.location.pathname.endsWith('product.html')) {
     console.log('Загружаем страницу товара...');
     loadProductDetails();
   }
