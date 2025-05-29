@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Обработка входа</title>
+  <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container" style="padding: 40px; text-align: center;">
+    <h1>Пожалуйста, подождите...</h1>
+  </div>
+  <script src="js/config.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(CONFIG.supabaseUrl, CONFIG.apiHeaders.apikey, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    supabase.auth.onAuthStateChange(() => {
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>
