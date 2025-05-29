@@ -8,6 +8,34 @@ function initWishlist() {
   updateWishlistButtons();
 }
 
+// Функция для обновления состояния кнопок избранного
+function updateWishlistButtons() {
+  try {
+    // Получаем текущий список избранных товаров из localStorage
+    let wishlist = getFromStorage('wishlist', []);
+    
+    // Поддержка старого формата хранения (массив объектов)
+    if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+      wishlist = wishlist.map(item => item.id);
+      saveToStorage('wishlist', wishlist);
+    }
+    
+    // Обновляем состояние всех кнопок избранного на странице
+    document.querySelectorAll('.wishlist-button').forEach(button => {
+      const productId = button.getAttribute('data-id');
+      if (productId && wishlist.includes(productId)) {
+        button.classList.add('active');
+        button.querySelector('svg path').style.fill = 'currentColor';
+      } else {
+        button.classList.remove('active');
+        button.querySelector('svg path').style.fill = 'none';
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка при обновлении кнопок избранного:', error);
+  }
+}
+
 // Функция для добавления/удаления товара в избранное
 function toggleWishlist(productId, productTitle) {
   try {
@@ -19,8 +47,9 @@ function toggleWishlist(productId, productTitle) {
       wishlist = wishlist.map(item => item.id);
       saveToStorage('wishlist', wishlist);
     }
-  // Проверяем, есть ли уже этот товар в избранном
-  const existingIndex = wishlist.indexOf(productId);
+    
+    // Проверяем, есть ли уже этот товар в избранном
+    const existingIndex = wishlist.indexOf(productId);
     
     if (existingIndex >= 0) {
       // Если товар уже в избранном, удаляем его
@@ -67,141 +96,146 @@ function renderWishlist() {
   const wishlistContainer = document.getElementById('wishlist-container');
   if (!wishlistContainer) return;
   
-  // Получаем текущий список избранных товаров из localStorage
-  let wishlist = getFromStorage('wishlist', []);
+  try {
+    // Получаем текущий список избранных товаров из localStorage
+    let wishlist = getFromStorage('wishlist', []);
 
-  // Поддержка старого формата хранения (массив объектов)
-  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
-    wishlist = wishlist.map(item => item.id);
-    saveToStorage('wishlist', wishlist);
-  }
-  
-  if (wishlist.length === 0) {
-    // Если список пуст, показываем соответствующее сообщение
-    wishlistContainer.innerHTML = `
-      <div class="empty-wishlist">
-        <h2>Список избранного пуст</h2>
-        <p>Добавьте товары в избранное, чтобы вернуться к ним позже.</p>
-        <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
-      </div>
-    `;
-    return;
-  }
-  
-  // Показываем состояние загрузки
-  wishlistContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
-  
-  // Формируем строку с ID товаров для запроса
-  // Supabase требует экранирования строковых идентификаторов в запросе
-  const ids = wishlist.map(id => `"${id}"`).join(',');
-  
-  // Загружаем информацию о товарах из Supabase
-  fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})&select=*`, {
-    headers: CONFIG.apiHeaders
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Ошибка при загрузке избранных товаров');
-      }
-      return response.json();
-    })
-    .then(products => {
-      if (products.length === 0) {
-        wishlistContainer.innerHTML = `
-          <div class="empty-wishlist">
-            <h2>Товары не найдены</h2>
-            <p>Возможно, они были удалены или перемещены.</p>
-            <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
-          </div>
-        `;
-        return;
-      }
-      
-      // Формируем HTML для списка избранного
-      const wishlistHTML = `
-        <div class="wishlist-content">
-          <h2>Избранное</h2>
-          <div class="wishlist-items products-grid">
-            ${products.map(product => {
-              const priceDisplay = product.discount_price 
-                ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
-                : `<span class="current-price">${product.price} ₽</span>`;
-              
-              return `
-                <div class="product-card">
-                  <div class="product-image">
-                    <a href="product-${generateSlug(product.title)}.html">
-                      <img src="${product.image_url}" alt="${product.title}">
-                    </a>
-                    <button class="wishlist-button active" data-id="${product.id}">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-                    </button>
-                  </div>
-                  <div class="product-info">
-                    <h3><a href="product-${generateSlug(product.title)}.html">${product.title}</a></h3>
-                    <div class="product-price">
-                      ${priceDisplay}
-                    </div>
-                    <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
-                  </div>
-                </div>
-              `;
-            }).join('')}
+    // Поддержка старого формата хранения (массив объектов)
+    if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+      wishlist = wishlist.map(item => item.id);
+      saveToStorage('wishlist', wishlist);
+    }
+    
+    if (wishlist.length === 0) {
+      // Если список пуст, показываем соответствующее сообщение
+      wishlistContainer.innerHTML = `
+        <div class="empty-message">
+          <p>У вас нет избранных товаров</p>
+          <div class="section-actions" style="margin-top: 2rem;">
+            <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
           </div>
         </div>
       `;
-      
-      // Обновляем контейнер
-      wishlistContainer.innerHTML = wishlistHTML;
-      
-      // Инициализируем кнопки
-      document.querySelectorAll('.wishlist-button').forEach(button => {
-        button.addEventListener('click', function() {
-          const productId = this.getAttribute('data-id');
-          const productTitle = this.closest('.product-card').querySelector('h3 a').textContent;
-          toggleWishlist(productId, productTitle);
-        });
-      });
-      
-      document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', function() {
-          const productId = this.getAttribute('data-id');
-          const product = products.find(p => p.id === productId);
-          
-          if (product && typeof addToCart === 'function') {
-            addToCart({
-              id: product.id,
-              title: product.title,
-              price: parsePrice(product.discount_price || product.price),
-              image: product.image_url,
-              quantity: 1
-            });
-            
-            if (typeof showNotification === 'function') {
-              showNotification(`"${product.title}" добавлен в корзину`);
-            }
-          }
-        });
-      });
+      return;
+    }
+    
+    // Показываем состояние загрузки
+    wishlistContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
+    
+    // Формируем строку с ID товаров для запроса
+    // Supabase требует экранирования строковых идентификаторов в запросе
+    const ids = wishlist.map(id => `"${id}"`).join(',');
+    
+    // Загружаем информацию о товарах из Supabase
+    fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})&select=*`, {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI'
+      }
     })
-    .catch(error => {
-      console.error('Ошибка при загрузке избранных товаров:', error);
-      wishlistContainer.innerHTML = '<div class="error-message">Ошибка при загрузке избранных товаров</div>';
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Ошибка при загрузке избранных товаров');
+        }
+        return response.json();
+      })
+      .then(products => {
+        if (products.length === 0) {
+          wishlistContainer.innerHTML = `
+            <div class="empty-message">
+              <p>Товары из вашего списка избранного не найдены</p>
+              <div class="section-actions" style="margin-top: 2rem;">
+                <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+        
+        let productsHTML = '<div class="products-grid">';
+        
+        products.forEach(product => {
+          const priceDisplay = product.discount_price 
+            ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
+            : `<span class="current-price">${product.price} ₽</span>`;
+          
+          productsHTML += `
+            <div class="product-card">
+              <div class="product-image">
+                <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+                  <img src="${product.image_url}" alt="${product.title}" loading="lazy">
+                </a>
+                <button class="wishlist-button active" aria-label="Удалить из избранного" data-id="${product.id}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                </button>
+              </div>
+              <div class="product-info">
+                <h3>
+                  <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a>
+                </h3>
+                <div class="product-price">
+                  ${priceDisplay}
+                </div>
+                <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
+              </div>
+            </div>
+          `;
+        });
+        
+        productsHTML += '</div>';
+        wishlistContainer.innerHTML = productsHTML;
+        
+        // Инициализируем обработчики для кнопок после рендеринга
+        initAddToCartButtons();
+        initWishlistButtons();
+        
+      })
+      .catch(error => {
+        console.error('Ошибка при загрузке избранных товаров:', error);
+        wishlistContainer.innerHTML = `
+          <div class="error-message">
+            <p>Ошибка при загрузке избранных товаров: ${error.message}</p>
+            <div class="section-actions" style="margin-top: 2rem;">
+              <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+            </div>
+          </div>
+        `;
+      });
+  } catch (error) {
+    console.error('Ошибка при рендеринге избранного:', error);
+    wishlistContainer.innerHTML = `
+      <div class="error-message">
+        <p>Ошибка при загрузке избранных товаров</p>
+        <div class="section-actions" style="margin-top: 2rem;">
+          <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+        </div>
+      </div>
+    `;
+  }
 }
 
 // Инициализация кнопок избранного на странице
 function initWishlistButtons() {
   document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
-    button.addEventListener('click', function() {
+    // Удаляем старые обработчики событий
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    
+    newButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const productId = this.getAttribute('data-id');
       let productTitle = '';
       
       // Определяем заголовок товара в зависимости от страницы
-      if (/product-.*\.html$/.test(window.location.pathname)) {
-        productTitle = document.querySelector('h1').textContent;
+      if (/product.*\.html$/.test(window.location.pathname)) {
+        const titleElement = document.querySelector('h1');
+        productTitle = titleElement ? titleElement.textContent : 'Товар';
       } else {
-        productTitle = this.closest('.product-card').querySelector('h3 a').textContent;
+        const productCard = this.closest('.product-card');
+        const titleElement = productCard ? productCard.querySelector('h3 a') : null;
+        productTitle = titleElement ? titleElement.textContent : 'Товар';
       }
       
       toggleWishlist(productId, productTitle);

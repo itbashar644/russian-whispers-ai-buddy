@@ -53,6 +53,9 @@ async function initHomePage() {
   try {
     console.log('Загружаем товары для главной страницы...');
     
+    // Загружаем категории для секции категорий
+    await loadCategoriesForHomePage();
+    
     // Загружаем все товары
     const allProducts = await loadProducts();
     console.log('Все товары загружены:', allProducts.length);
@@ -67,7 +70,6 @@ async function initHomePage() {
     
     // Рендерим секции товаров
     console.log('Рендерим секции товаров...');
-    // ID контейнеров на главной странице
     renderProductSection('bestsellersGrid', bestsellers, 'бестселлеры');
     renderProductSection('newProductsGrid', newProducts, 'новинки');
     renderProductSection('productsGrid', popularProducts, 'популярные товары');
@@ -77,15 +79,55 @@ async function initHomePage() {
   }
 }
 
+// Загрузка категорий для главной страницы
+async function loadCategoriesForHomePage() {
+  try {
+    const categoriesContainer = document.getElementById('categoriesGrid');
+    if (!categoriesContainer) return;
+    
+    categoriesContainer.innerHTML = '<div class="loading">Загружаем категории...</div>';
+    
+    const categories = await loadCategories();
+    
+    if (categories.length === 0) {
+      categoriesContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
+      return;
+    }
+    
+    categoriesContainer.innerHTML = '';
+    
+    categories.forEach(category => {
+      const categoryCard = document.createElement('div');
+      categoryCard.className = 'category-card';
+      categoryCard.innerHTML = `
+        <a href="catalog.html?category=${encodeURIComponent(category.name)}" class="category-link">
+          <div class="category-image">
+            <img src="${category.image_url}" alt="${category.name}" loading="lazy">
+          </div>
+          <div class="category-info">
+            <h3>${category.name}</h3>
+          </div>
+        </a>
+      `;
+      categoriesContainer.appendChild(categoryCard);
+    });
+    
+  } catch (error) {
+    console.error('Ошибка при загрузке категорий:', error);
+    const categoriesContainer = document.getElementById('categoriesGrid');
+    if (categoriesContainer) {
+      categoriesContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
+    }
+  }
+}
+
 // Инициализация страницы каталога
 async function initCatalogPage() {
   try {
     console.log('Инициализируем каталог...');
     
     // Загружаем категории
-    if (typeof loadCategoriesFromSupabase === 'function') {
-      await loadCategoriesFromSupabase();
-    }
+    await loadCategoriesForHomePage();
     
     // Загружаем товары
     const urlParams = new URLSearchParams(window.location.search);
@@ -151,6 +193,19 @@ function renderProductSection(containerId, products, sectionName) {
       container.appendChild(productCard);
     }
   });
+  
+  // Инициализируем кнопки после добавления карточек
+  setTimeout(() => {
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof updateWishlistButtons === 'function') {
+      updateWishlistButtons();
+    }
+  }, 100);
 }
 
 // Обработчик изменения размера окна
