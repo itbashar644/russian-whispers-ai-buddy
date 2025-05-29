@@ -196,30 +196,78 @@ function renderProductSections(bestsellers, newProducts, popularProducts) {
 }
 
 // Создание HTML для товара
+
 function createProductHTML(product) {
+    const priceHtml = product.discount_price
+    ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price">${formatPrice(product.discount_price)}</span>`
+    : `<span class="current-price">${formatPrice(product.price)}</span>`;
+
+  const categoryLink = product.category
+    ? `<a href="catalog.html?category=${encodeURIComponent(product.category)}" class="product-category">${product.category}</a>`
+    : '';
+
+  const marketplaceLinks = createMarketplaceLinksHtml(product);
+
   return `
     <div class="product-card">
-      <a href="product.html?id=${product.id}">
-        <img src="${product.image_url || '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png'}" alt="${product.title}" loading="lazy" />
-        <h3>${product.title}</h3>
-        <div class="price">
-          ${product.discount_price ? 
-            `<span class="discount-price">${formatPrice(product.discount_price)}</span>
-             <span class="original-price">${formatPrice(product.price)}</span>` :
-            `<span class="price">${formatPrice(product.price)}</span>`
-          }
+      <div class="product-image">
+        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+          <img src="${product.image_url || '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png'}" alt="${product.title}" loading="lazy" />
+        </a>
+      </div>
+      <div class="product-info">
+        <h3><a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a></h3>
+        ${categoryLink}
+        <div class="product-price">
+          ${priceHtml}
         </div>
         <div class="stock-status ${product.in_stock ? 'in-stock' : 'out-of-stock'}">
           ${product.in_stock ? 'В наличии' : 'Нет в наличии'}
         </div>
-      </a>
-      <button class="add-to-cart-btn" data-product-id="${product.id}">
-        В корзину
-      </button>
-    </div>
-  `;
+        ${marketplaceLinks}
+        <button class="add-to-cart-btn" data-product-id="${product.id}">В корзину</button>
+      </div>
+    </div>`;
 }
+function createMarketplaceLinksHtml(product) {
+  if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
+    return '';
+  }
 
+  let marketplaceIconsHtml = '';
+
+    if (product.wildberries_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+        <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
+      </a>
+    `;
+  }
+
+  if (product.ozon_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+        <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
+      </a>
+    `;
+  }
+
+  if (product.avito_url) {
+    marketplaceIconsHtml += `
+      <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+        <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
+      </a>
+    `;
+  }
+
+  return `
+    <div class="marketplace-links">
+      <span class="marketplace-title">Доступно на:</span>
+      <div class="marketplace-icons">
+        ${marketplaceIconsHtml}
+      </div>
+    </div>`;
+}
 // Добавление обработчиков событий для товаров
 function addProductEventListeners(container) {
   container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
