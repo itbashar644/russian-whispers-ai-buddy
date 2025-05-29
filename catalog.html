@@ -54,6 +54,11 @@
       <section class="catalog-header section-padding-sm bg-light">
         <div class="container">
           <h1>Каталог товаров</h1>
+          <div class="catalog-search">
+            <input type="text" id="search-input" placeholder="Поиск по названию">
+            <div id="search-suggestions" class="search-suggestions"></div>
+            <button id="search-button" class="btn secondary-btn btn-sm">Найти</button>
+          </div>
         </div>
       </section>
       
@@ -86,14 +91,6 @@
                   </div>
                 </div>
                 
-                <!-- Search -->
-                <div class="filter-group">
-                  <h4>Поиск</h4>
-                  <div class="search-filter">
-                    <input type="text" id="search-input" placeholder="Поиск по названию">
-                    <button id="search-button" class="btn secondary-btn btn-sm">Найти</button>
-                  </div>
-                </div>
 
                 <!-- Sort -->
                 <div class="filter-group">
