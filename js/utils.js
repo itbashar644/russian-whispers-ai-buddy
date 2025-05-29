@@ -108,13 +108,19 @@ function updateCartCounter() {
 
 // Функция для обновления статуса кнопок избранного
 function updateWishlistButtons() {
-  const wishlist = getFromStorage('wishlist', []);
+  let wishlist = getFromStorage('wishlist', []);
+
+  // Поддержка старого формата хранения (массив объектов)
+  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+    wishlist = wishlist.map(item => item.id);
+    saveToStorage('wishlist', wishlist);
+  }
   
   // Обновляем все кнопки избранного
   document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
     const productId = button.getAttribute('data-id');
     
-    if (wishlist.some(item => item.id === productId)) {
+    if (wishlist.includes(productId)) {
       button.classList.add('active');
     } else {
       button.classList.remove('active');
