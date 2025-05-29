@@ -231,7 +231,7 @@ function createMarketplaceLinksHtml(product) {
   
   return `
     <div class="marketplace-links">
-      <span class="marketplace-title">Доступно на:</span>
+      <span class="marketplace-title">Доступен на:</span>
       <div class="marketplace-icons">
         ${marketplaceIconsHtml}
       </div>
