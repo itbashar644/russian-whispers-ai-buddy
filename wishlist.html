@@ -159,7 +159,13 @@
       
       async function renderWishlist() {
         const wishlistContainer = document.getElementById('wishlist-container');
-        const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+        // Поддержка старого формата хранения (массив объектов)
+        if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+          wishlist = wishlist.map(item => item.id);
+          localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        }
         
         if (wishlist.length === 0) {
           wishlistContainer.innerHTML = `
@@ -178,7 +184,9 @@
         try {
           // Собираем все идентификаторы товаров в строку для запроса
           // Для строковых идентификаторов необходимо заключать значения в кавычки
-          const productIds = wishlist.map(id => `"${id}"`).join(',');
+          const productIds = wishlist
+            .map(item => typeof item === 'object' ? `"${item.id}"` : `"${item}"`)
+            .join(',');
           
           // Отправляем запрос в Supabase для получения товаров
           const response = await fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${productIds})`, {
