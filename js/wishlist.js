@@ -85,7 +85,8 @@ function renderWishlist() {
   wishlistContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
   
   // Формируем строку с ID товаров для запроса
-  const ids = wishlist.map(item => item.id).join(',');
+  // Supabase требует экранирования строковых идентификаторов в запросе
+  const ids = wishlist.map(item => `"${item.id}"`).join(',');
   
   // Загружаем информацию о товарах из Supabase
   fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})`, {
