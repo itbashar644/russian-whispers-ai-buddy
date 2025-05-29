@@ -164,14 +164,20 @@ async function loadCatalogProducts(category = null) {
 function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'product-card';
-  
-  const priceDisplay = product.discount_price 
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
+
+  const priceDisplay = product.discount_price
+    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
     : `<span class="current-price">${product.price} ₽</span>`;
   
   // Подготовка блока маркетплейсов
   const marketplaceLinks = createMarketplaceLinksHtml(product);
+
   
+  // Обрезаем название до 50 символов для консистентного отображения
+  const displayTitle = product.title.length > 50
+    ? `${product.title.slice(0, 50)}…`
+    : product.title;
+
   card.innerHTML = `
     <div class="product-image">
       <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
@@ -183,7 +189,7 @@ function createProductCard(product) {
     </div>
     <div class="product-info">
       <h3>
-        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a>
+        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
       </h3>
       <div class="product-price">
         ${priceDisplay}
