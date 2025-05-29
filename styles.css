@@ -706,10 +706,23 @@ img {
 .suggestion-item {
   padding: 5px 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .suggestion-item:hover {
   background-color: #f3f3f3;
+}
+.suggestion-item img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.suggestion-item.active {
+  background-color: #e9ecef;
 }
 
 .price-inputs {
