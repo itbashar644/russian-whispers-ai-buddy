@@ -3,6 +3,15 @@
  * Функционал для работы с фильтрами в каталоге
  */
 
+// Простая функция дебаунса
+function debounce(fn, delay = 300) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
 // Функция для инициализации фильтров
 function initFilters() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -39,7 +48,8 @@ function initFilters() {
   // Фильтр по поиску
   const searchInput = document.getElementById('search-input');
   const searchButton = document.getElementById('search-button');
-  
+  const suggestionsContainer = document.getElementById('search-suggestions');
+
   if (searchInput && searchButton) {
     // Восстанавливаем поисковый запрос из URL
     const searchQuery = urlParams.get('search');
@@ -58,6 +68,39 @@ function initFilters() {
         applyFilters();
       }
     });
+    
+    // Подсказки при вводе
+    searchInput.addEventListener('input', debounce(async function() {
+      if (!suggestionsContainer) return;
+      const query = searchInput.value.trim();
+      if (!query) {
+        suggestionsContainer.style.display = 'none';
+        suggestionsContainer.innerHTML = '';
+        return;
+      }
+      const suggestions = await fetchSearchSuggestions(query);
+      if (suggestions.length === 0) {
+        suggestionsContainer.style.display = 'none';
+        suggestionsContainer.innerHTML = '';
+        return;
+      }
+      suggestionsContainer.innerHTML = suggestions
+        .map(item => `<div class="suggestion-item">${item.title}</div>`)
+        .join('');
+      suggestionsContainer.style.display = 'block';
+    }, 300));
+
+    // Выбор подсказки
+    if (suggestionsContainer) {
+      suggestionsContainer.addEventListener('click', function(e) {
+        const item = e.target.closest('.suggestion-item');
+        if (item) {
+          searchInput.value = item.textContent;
+          suggestionsContainer.style.display = 'none';
+          applyFilters();
+        }
+      });
+    }
   }
   
   // Сортировка
@@ -218,6 +261,27 @@ function clearAllFilters() {
   } else {
     // Если категории не было, полностью очищаем URL
     window.location.href = window.location.pathname;
+  }
+}
+// Загрузка подсказок по названию товаров
+async function fetchSearchSuggestions(query) {
+  if (!query) return [];
+  try {
+    const { supabase } = await import('./supabase.js');
+    const { data, error } = await supabase
+      .from('products')
+      .select('title')
+      .ilike('title', `%${query}%`)
+      .limit(5);
+
+    if (error) {
+      console.error('Ошибка загрузки подсказок:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error('Ошибка при загрузке подсказок:', err);
+    return [];
   }
 }
 
