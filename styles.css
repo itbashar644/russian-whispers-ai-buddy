@@ -580,6 +580,8 @@ img {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border-left: 4px solid #007bff;
   margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
 }
 
 .about-panel h2 {
