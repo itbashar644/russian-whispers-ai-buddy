@@ -260,18 +260,25 @@ async function loadProductDetails() {
       container.innerHTML = '<div class="loading">Загрузка информации о товаре...</div>';
     }
     
-    // Импортируем supabase клиент
-    const { supabase } = await import('./supabase.js');
-    
-    // Загружаем данные о товаре с Supabase
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', productId)
-      .single();
-    
-    if (error || !product) {
-      console.error('Ошибка загрузки товара:', error);
+    // Загружаем данные о товаре напрямую через REST API Supabase
+    const response = await fetch(
+      `${CONFIG.supabaseUrl}/rest/v1/products?id=eq.${productId}&select=*`,
+      { headers: CONFIG.apiHeaders }
+    );
+
+    if (!response.ok) {
+      console.error('Ошибка HTTP при загрузке товара:', response.status);
+      if (container) {
+        container.innerHTML = '<div class="error-message">Товар не найден</div>';
+      }
+      return;
+    }
+
+    const products = await response.json();
+    const product = products[0];
+
+    if (!product) {
+      console.error('Товар не найден');
       if (container) {
         container.innerHTML = '<div class="error-message">Товар не найден</div>';
       }
