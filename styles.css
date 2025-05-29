@@ -711,12 +711,28 @@ img {
   max-width: 400px;
 }
 
+.header-search {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  max-width: 400px;
+  margin-left: 20px;
+}
+
+
 .catalog-search input {
   flex: 1;
   padding: 5px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+.header-search input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
 
 .catalog-search .icon-button {
   margin-left: 0;
