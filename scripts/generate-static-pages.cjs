@@ -23,6 +23,19 @@ async function generateStaticPages() {
       fs.mkdirSync(publicDir, { recursive: true });
     }
     
+    // Копируем статические ресурсы (стили и скрипты)
+    const assets = [
+      { src: path.join(__dirname, '../styles.css'), dest: path.join(publicDir, 'styles.css') },
+      { src: path.join(__dirname, '../js'), dest: path.join(publicDir, 'js') }
+    ];
+
+    for (const { src, dest } of assets) {
+      try {
+        fs.cpSync(src, dest, { recursive: true });
+      } catch (err) {
+        console.error(`❌ Не удалось скопировать ${src} → ${dest}:`, err.message);
+      }
+    }
     // Получаем товары из Supabase
     const products = await supabaseClient.getProducts();
     
