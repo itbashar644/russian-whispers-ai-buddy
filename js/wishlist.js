@@ -96,7 +96,7 @@ function renderWishlist() {
   const ids = wishlist.map(id => `"${id}"`).join(',');
   
   // Загружаем информацию о товарах из Supabase
-  fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})`, {
+  fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})&select=*`, {
     headers: CONFIG.apiHeaders
   })
     .then(response => {
