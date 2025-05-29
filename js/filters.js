@@ -88,7 +88,11 @@ function initFilters() {
         suggestionsContainer.innerHTML = '';
         return;
       }
-      const suggestions = await fetchSearchSuggestions(query);
+      const currentQuery = query;
+      const suggestions = await fetchSearchSuggestions(currentQuery);
+      if (searchInput.value.trim() !== currentQuery) {
+        return;
+      }
       if (suggestions.length === 0) {
         suggestionsContainer.style.display = 'none';
         suggestionsContainer.innerHTML = '';
@@ -98,7 +102,7 @@ function initFilters() {
         .map(item =>
           `<div class="suggestion-item" data-id="${item.id}">
              <img src="${item.image_url}" alt="${item.title}">
-             <span>${highlightQuery(item.title, query)}</span>
+             <span>${highlightQuery(item.title, currentQuery)}</span>
            </div>`)
         .join('');
       suggestionsContainer.style.display = 'block';
