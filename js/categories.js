@@ -34,12 +34,7 @@ async function loadCategories() {
     const categories = await response.json();
     
     if (categories.length === 0) {
-      if (sectionContainer) {
-        sectionContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
-      }
-      if (listContainer) {
-        listContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
-      }
+      renderPlaceholderCategories(sectionContainer, listContainer);
       return;
     }
 
@@ -90,12 +85,42 @@ async function loadCategories() {
     }
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
-    if (sectionContainer) {
-      sectionContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
-    }
-    if (listContainer) {
-      listContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
-    }
+    renderPlaceholderCategories(sectionContainer, listContainer);
+  }
+}
+
+function renderPlaceholderCategories(sectionContainer, listContainer) {
+  const placeholderCategories = [
+    { name: 'Смарт-часы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Планшеты', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Проекторы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
+    { name: 'Наушники', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' }
+  ];
+
+  if (sectionContainer) {
+    sectionContainer.innerHTML = `
+      <h2 class="section-title">Категории</h2>
+      <div class="categories-grid">
+        ${placeholderCategories
+          .map(c => `
+            <a href="catalog.html?category=${encodeURIComponent(c.name)}" class="category-card">
+              <div class="category-image">
+                <img src="${c.image_url}" alt="${c.name}">
+              </div>
+              <h3>${c.name}</h3>
+            </a>
+          `)
+          .join('')}
+      </div>`;
+  }
+
+  if (listContainer) {
+    listContainer.innerHTML = `
+      <a href="catalog.html" class="category-link">Все категории</a>
+      ${placeholderCategories
+        .map(c => `<a href="catalog.html?category=${encodeURIComponent(c.name)}" class="category-link">${c.name}</a>`)
+        .join('')}
+    `;
   }
 }
 
