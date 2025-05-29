@@ -690,6 +690,11 @@ img {
   border-radius: 4px;
 }
 
+.catalog-search .icon-button {
+  margin-left: 0;
+}
+
+
 .search-suggestions {
   position: absolute;
   top: calc(100% + 4px);
