@@ -104,7 +104,14 @@ function initSearch() {
           suggestionsContainer.innerHTML = '';
           return;
         }
-        const suggestions = await fetchSearchSuggestions(query);
+
+        const currentQuery = query;
+        const suggestions = await fetchSearchSuggestions(currentQuery);
+        // If user typed a new query while this one was loading, ignore results
+        if (searchInput.value.trim() !== currentQuery) {
+          return;
+        }
+
         if (suggestions.length === 0) {
           suggestionsContainer.style.display = 'none';
           suggestionsContainer.innerHTML = '';
@@ -115,7 +122,7 @@ function initSearch() {
             item => `
           <div class="suggestion-item" data-id="${item.id}">
             <img src="${item.image_url}" alt="${item.title}">
-            <span>${highlightQuery(item.title, query)}</span>
+            <span>${highlightQuery(item.title, currentQuery)}</span>
           </div>`
           )
           .join('');
