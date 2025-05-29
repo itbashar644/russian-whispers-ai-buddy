@@ -1,6 +1,9 @@
 
 // Supabase client for vanilla JS
-import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+// Используем jsDelivr вместо skypack для большей стабильности
+// https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm отдаёт ESM-версию
+// библиотеки без необходимости сборки
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabaseUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI';
