@@ -21,9 +21,21 @@
       }
     });
 
-    supabase.auth.onAuthStateChange(() => {
-      window.location.href = 'index.html';
-    });
+    (async () => {
+      // Обработаем редирект и сохраним сессию
+      await supabase.auth.getSession();
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = 'index.html';
+      } else {
+        supabase.auth.onAuthStateChange((_event, newSession) => {
+          if (newSession) {
+            window.location.href = 'index.html';
+          }
+        });
+      }
+    })();
   </script>
 </body>
 </html>
