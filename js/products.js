@@ -330,9 +330,6 @@ async function loadProductDetails() {
               <span class="${product.in_stock ? 'in-stock' : 'out-of-stock'}">${product.in_stock ? 'В наличии' : 'Нет в наличии'}</span>
             </div>
           </div>
-          <div class="product-description">
-            <p>${product.description}</p>
-          </div>
           ${marketplaceLinks}
           <div class="product-actions">
             <button class="btn add-to-cart-btn-large" data-id="${product.id}">В корзину</button>
