@@ -83,6 +83,9 @@ async function loadCatalogProducts(category = null) {
       filters.category = category;
     }
     
+    if (searchQuery) {
+      filters.search = searchQuery;
+    }
     // Загружаем товары
     let products = await loadProducts(filters);
     console.log('Товары загружены для каталога:', products);
@@ -102,13 +105,6 @@ async function loadCatalogProducts(category = null) {
       });
     }
     
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      products = products.filter(product => 
-        product.title.toLowerCase().includes(searchLower) || 
-        (product.description && product.description.toLowerCase().includes(searchLower))
-      );
-    }
     
     // Применяем сортировку
     if (sortParam) {
