@@ -201,15 +201,202 @@
     </footer>
 
     <!-- Load JavaScript -->
-    <script defer src="js/config.js"></script>
-    <script defer src="js/utils.js"></script>
-    <script defer src="js/cart.js"></script>
-    <script defer src="js/wishlist.js"></script>
-    <script defer src="js/chat.js"></script>
-    <script defer src="js/products.js"></script>
-    <script defer src="js/search.js"></script>
-    <script defer src="js/categories.js"></script>
-    <script defer type="module" src="js/main.js"></script>
+    <script>
+      // Конфигурация для Supabase
+      const CONFIG = {
+        supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        get apiHeaders() {
+          return {
+            'apikey': this.supabaseKey,
+            'Authorization': `Bearer ${this.supabaseKey}`,
+            'Content-Type': 'application/json'
+          };
+        }
+      };
+
+      // Утилиты
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error('Ошибка при чтении из localStorage:', error);
+          return defaultValue;
+        }
+      }
+
+      function saveToStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+          console.error('Ошибка при сохранении в localStorage:', error);
+        }
+      }
+
+      function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #007bff;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 4px;
+          z-index: 1000;
+          animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+
+      // Загрузка категорий и товаров
+      async function loadCategories() {
+        try {
+          const response = await fetch(`${CONFIG.supabaseUrl}/rest/v1/categories?select=*&order=name.asc`, {
+            headers: CONFIG.apiHeaders
+          });
+          
+          if (!response.ok) {
+            throw new Error('Ошибка загрузки категорий');
+          }
+          
+          return await response.json();
+        } catch (error) {
+          console.error('Ошибка при загрузке категорий:', error);
+          return [];
+        }
+      }
+
+      async function loadProducts() {
+        try {
+          const response = await fetch(`${CONFIG.supabaseUrl}/rest/v1/products?select=*&archived=eq.false&in_stock=eq.true&order=created_at.desc`, {
+            headers: CONFIG.apiHeaders
+          });
+          
+          if (!response.ok) {
+            throw new Error('Ошибка загрузки товаров');
+          }
+          
+          return await response.json();
+        } catch (error) {
+          console.error('Ошибка при загрузке товаров:', error);
+          return [];
+        }
+      }
+
+      // Функция создания карточки товара
+      function createProductCard(product) {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+
+        const priceDisplay = product.discount_price
+          ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
+          : `<span class="current-price">${product.price} ₽</span>`;
+
+        const displayTitle = product.title.length > 50
+          ? `${product.title.slice(0, 50)}…`
+          : product.title;
+
+        card.innerHTML = `
+          <div class="product-image">
+            <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+              <img src="${product.image_url}" alt="${product.title}" loading="lazy">
+            </a>
+            <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </button>
+          </div>
+          <div class="product-info">
+            <h3>
+              <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
+            </h3>
+            <div class="product-price">
+              ${priceDisplay}
+            </div>
+            <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
+          </div>
+        `;
+        
+        return card;
+      }
+
+      // Инициализация главной страницы
+      async function initHomePage() {
+        try {
+          console.log('Загружаем товары для главной страницы...');
+          
+          // Загружаем категории
+          const categories = await loadCategories();
+          const categoriesContainer = document.getElementById('categoriesGrid');
+          if (categoriesContainer && categories.length > 0) {
+            categoriesContainer.innerHTML = '';
+            categories.forEach(category => {
+              const categoryCard = document.createElement('div');
+              categoryCard.className = 'category-card';
+              categoryCard.innerHTML = `
+                <a href="catalog.html?category=${encodeURIComponent(category.name)}" class="category-link">
+                  <div class="category-image">
+                    <img src="${category.image_url}" alt="${category.name}" loading="lazy">
+                  </div>
+                  <div class="category-info">
+                    <h3>${category.name}</h3>
+                  </div>
+                </a>
+              `;
+              categoriesContainer.appendChild(categoryCard);
+            });
+          }
+          
+          // Загружаем все товары
+          const allProducts = await loadProducts();
+          console.log('Все товары загружены:', allProducts.length);
+          
+          // Фильтруем товары
+          const bestsellers = allProducts.filter(product => product.is_bestseller).slice(0, 8);
+          const newProducts = allProducts.filter(product => product.is_new).slice(0, 8);
+          const popularProducts = allProducts.slice(0, 8);
+          
+          console.log('Бестселлеры найдены:', bestsellers.length);
+          console.log('Новинки найдены:', newProducts.length);
+          
+          // Рендерим секции товаров
+          renderProductSection('bestsellersGrid', bestsellers);
+          renderProductSection('newProductsGrid', newProducts);
+          renderProductSection('productsGrid', popularProducts);
+          
+        } catch (error) {
+          console.error('Ошибка при инициализации главной страницы:', error);
+        }
+      }
+
+      function renderProductSection(containerId, products) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        if (products.length === 0) {
+          container.innerHTML = '<div class="empty-message">Товары не найдены</div>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        products.forEach(product => {
+          const productCard = createProductCard(product);
+          container.appendChild(productCard);
+        });
+      }
+
+      // Инициализация при загрузке страницы
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM загружен, инициализируем приложение...');
+        initHomePage();
+      });
+    </script>
     
     <!-- GPT Engineer script -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
