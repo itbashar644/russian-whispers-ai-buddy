@@ -9,6 +9,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Load categories
 export async function loadCategories() {
+  const cached = typeof getCache === 'function' ? getCache('categories') : null;
+  if (cached) {
+    return cached;
+  }
   try {
     console.log('Загружаю категории из Supabase...');
     const { data, error } = await supabase
@@ -22,6 +26,7 @@ export async function loadCategories() {
     }
     
     console.log('Категории успешно загружены:', data);
+    if (typeof setCache === 'function') setCache('categories', data, 60);
     return data || [];
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
@@ -31,6 +36,11 @@ export async function loadCategories() {
 
 // Load products
 export async function loadProducts(filters = {}) {
+  const cacheKey = 'products:' + JSON.stringify(filters);
+  const cached = typeof getCache === 'function' ? getCache(cacheKey) : null;
+  if (cached) {
+    return cached;
+  }
   try {
     console.log('Загружаю товары из Supabase с фильтрами:', filters);
     
@@ -62,6 +72,7 @@ export async function loadProducts(filters = {}) {
     }
     
     console.log('Товары успешно загружены:', data);
+    if (typeof setCache === 'function') setCache(cacheKey, data, 5);
     return data || [];
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
