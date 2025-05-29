@@ -315,6 +315,8 @@ function initChat() {
 }
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initChat);
+} else {
   initChat();
-});
+}
