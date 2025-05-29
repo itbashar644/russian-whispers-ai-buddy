@@ -67,9 +67,10 @@ async function initHomePage() {
     
     // Рендерим секции товаров
     console.log('Рендерим секции товаров...');
-    renderProductSection('bestsellers-products', bestsellers, 'бестселлеры');
-    renderProductSection('new-products', newProducts, 'новинки');
-    renderProductSection('popular-products', popularProducts, 'популярные товары');
+    // ID контейнеров на главной странице
+    renderProductSection('bestsellersGrid', bestsellers, 'бестселлеры');
+    renderProductSection('newProductsGrid', newProducts, 'новинки');
+    renderProductSection('productsGrid', popularProducts, 'популярные товары');
     
   } catch (error) {
     console.error('Ошибка при инициализации главной страницы:', error);
