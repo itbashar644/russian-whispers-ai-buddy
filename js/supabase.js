@@ -46,6 +46,10 @@ export async function loadProducts(filters = {}) {
       query = query.eq('category', filters.category);
     }
     
+    if (filters.search) {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+
     if (filters.limit) {
       query = query.limit(filters.limit);
     }
