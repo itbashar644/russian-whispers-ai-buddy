@@ -61,6 +61,12 @@ function initWishlist() {
   // Получаем сохраненное избранное из localStorage или создаем пустой массив
   let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
   
+  // Поддержка старого формата хранения (массив объектов)
+  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+    wishlist = wishlist.map(item => item.id);
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  }
+  
   // Обновляем отображение кнопок избранного
   updateWishlistButtons(wishlist);
 }
@@ -190,6 +196,12 @@ function initWishlistButtons() {
 // Добавление/удаление товара из избранного
 function toggleWishlist(productId, productTitle) {
   let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+  
+  // Поддержка старого формата хранения (массив объектов)
+  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+    wishlist = wishlist.map(item => item.id);
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  }
   
   // Проверяем, есть ли товар в избранном
   const index = wishlist.indexOf(productId);
