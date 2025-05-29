@@ -14,8 +14,13 @@ function toggleWishlist(productId, productTitle) {
     // Получаем текущий список избранных товаров из localStorage
     let wishlist = getFromStorage('wishlist', []);
     
-    // Проверяем, есть ли уже этот товар в избранном
-    const existingIndex = wishlist.findIndex(item => item.id === productId);
+    // Поддержка старого формата хранения (массив объектов)
+    if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+      wishlist = wishlist.map(item => item.id);
+      saveToStorage('wishlist', wishlist);
+    }
+  // Проверяем, есть ли уже этот товар в избранном
+  const existingIndex = wishlist.indexOf(productId);
     
     if (existingIndex >= 0) {
       // Если товар уже в избранном, удаляем его
@@ -32,11 +37,7 @@ function toggleWishlist(productId, productTitle) {
       }
     } else {
       // Если товара нет в избранном, добавляем его
-      wishlist.push({
-        id: productId,
-        title: productTitle,
-        addedAt: new Date().toISOString()
-      });
+      wishlist.push(productId);
       
       // Сохраняем обновленный список
       saveToStorage('wishlist', wishlist);
@@ -67,7 +68,13 @@ function renderWishlist() {
   if (!wishlistContainer) return;
   
   // Получаем текущий список избранных товаров из localStorage
-  const wishlist = getFromStorage('wishlist', []);
+  let wishlist = getFromStorage('wishlist', []);
+
+  // Поддержка старого формата хранения (массив объектов)
+  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+    wishlist = wishlist.map(item => item.id);
+    saveToStorage('wishlist', wishlist);
+  }
   
   if (wishlist.length === 0) {
     // Если список пуст, показываем соответствующее сообщение
@@ -86,7 +93,7 @@ function renderWishlist() {
   
   // Формируем строку с ID товаров для запроса
   // Supabase требует экранирования строковых идентификаторов в запросе
-  const ids = wishlist.map(item => `"${item.id}"`).join(',');
+  const ids = wishlist.map(id => `"${id}"`).join(',');
   
   // Загружаем информацию о товарах из Supabase
   fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})`, {
