@@ -195,6 +195,8 @@ img {
   font-size: 1.5rem;
   font-weight: 700;
   margin-right: 30px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .logo a {
@@ -1756,6 +1758,12 @@ img {
   
   .logo {
     font-size: 1.2rem;
+  }
+  
+  .header-search {
+    flex: 1;
+    max-width: none;
+    margin-left: 10px;
   }
   
   .action-icon {
