@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Загрузка товаров в каталоге
-  if (path.endsWith('/catalog') || path.endsWith('/catalog.html')) {
+  if (path.endsWith('/catalog') || path.endsWith('/catalog.html') || path.endsWith('/catalog/')) {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Если мы на странице товара, загружаем детали товара
-  if (path.endsWith('/product') || path.endsWith('/product.html')) {
+  if (path.endsWith('/product') || path.endsWith('/product.html') || path.endsWith('/product/')) {
     console.log('Загружаем страницу товара...');
     loadProductDetails();
   }
