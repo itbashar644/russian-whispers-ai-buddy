@@ -43,12 +43,19 @@ async function fetchSearchSuggestions(query) {
 
 // Инициализация поиска
 function initSearch() {
-  const searchButton = document.getElementById('search-button');
-  const searchInput = document.getElementById('search-input');
-  const suggestionsContainer = document.getElementById('search-suggestions');
+  const searchContainers = document.querySelectorAll(
+    '.header-search, .catalog-search'
+  );
 
-  if (searchButton && searchInput) {
-    let activeIndex = -1;
+  if (searchContainers.length > 0) {
+    searchContainers.forEach(container => {
+      const searchButton = container.querySelector('#search-button');
+      const searchInput = container.querySelector('#search-input');
+      const suggestionsContainer = container.querySelector('#search-suggestions');
+
+      if (!searchButton || !searchInput) return;
+
+      let activeIndex = -1;
 
     const goSearch = () => {
       const query = searchInput.value.trim();
@@ -139,6 +146,7 @@ function initSearch() {
         }
       });
     }
+    }); // end forEach
   } else {
     const searchIcon = document.querySelector('.search-button');
     if (searchIcon) {
