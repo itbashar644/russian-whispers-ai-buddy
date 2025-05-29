@@ -660,6 +660,44 @@ img {
   border-radius: 4px;
 }
 
+.catalog-search {
+  margin-top: 10px;
+  position: relative;
+  display: flex;
+  gap: 8px;
+  max-width: 400px;
+}
+
+.catalog-search input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  z-index: 100;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: #f3f3f3;
+}
+
 .price-inputs {
   display: flex;
   align-items: center;
