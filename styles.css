@@ -747,6 +747,10 @@ img {
   margin-left: 0;
 }
 
+/* Search icon for mobile header */
+.mobile-search-button {
+  display: none;
+}
 
 .search-suggestions {
   position: absolute;
@@ -1691,6 +1695,13 @@ img {
     display: block;
   }
   
+  .header-search {
+    display: none;
+  }
+
+  .mobile-search-button {
+    display: flex;
+  }
   .hero-content,
   .about-content,
   .product-details {
@@ -1753,7 +1764,7 @@ img {
 @media (max-width: 480px) {
   .products-grid,
   .categories-grid {
-    grid-template-columns: 1fr;
+   grid-template-columns: repeat(2, 1fr);
   }
     .benefits-grid {
     grid-template-columns: 1fr;
@@ -1768,9 +1779,11 @@ img {
   }
   
   .header-search {
-    flex: 1;
-    max-width: none;
-    margin-left: 10px;
+    display: none;
+  }
+
+  .mobile-search-button {
+    display: flex;
   }
   
   .action-icon {
