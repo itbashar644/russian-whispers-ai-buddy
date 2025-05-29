@@ -209,6 +209,11 @@ function createProductHTML(product) {
 
   const marketplaceLinks = createMarketplaceLinksHtml(product);
 
+    // Текст для отображения ограничиваем 50 символами
+  const displayTitle = product.title.length > 50
+    ? `${product.title.slice(0, 50)}…`
+    : product.title;
+
   return `
     <div class="product-card">
       <div class="product-image">
@@ -217,7 +222,7 @@ function createProductHTML(product) {
         </a>
       </div>
       <div class="product-info">
-        <h3><a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a></h3>
+        <h3><a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a></h3>
         ${categoryLink}
         <div class="product-price">
           ${priceHtml}
