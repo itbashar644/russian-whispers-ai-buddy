@@ -53,7 +53,6 @@ async function loadCategories() {
 }
 
 async function loadCatalogProducts(category) {
-  // Эта функция будет реализована в других файлах
   console.log('loadCatalogProducts вызвана с категорией:', category);
 }
 
@@ -63,7 +62,6 @@ function renderProductSection(containerId, products) {
   
   container.innerHTML = '';
   
-  // Импортируем createProductCard из utils
   products.forEach(product => {
     let productCard;
     if (typeof createProductCard === 'function') {
@@ -110,45 +108,53 @@ window.loadFeaturedProducts = loadFeaturedProducts;
 window.loadCategories = loadCategories;
 window.loadCatalogProducts = loadCatalogProducts;
 
+// Минимальная инициализация только если main.js не загружен
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM загружен, инициализируем приложение...');
+  console.log('Scripts.js: DOM загружен...');
   
-  // Функция для работы с корзиной
-  if (typeof initCart === 'function') {
-    initCart();
-  }
+  // Проверяем, загружен ли main.js
+  const isMainPageWithMainJs = (window.location.pathname === '/' || window.location.pathname === '/index.html') && typeof window.initHomePage !== 'undefined';
   
-  // Обработка кнопок добавления в корзину
-  if (typeof initAddToCartButtons === 'function') {
-    initAddToCartButtons();
-  }
-  
-  // Инициализация избранного
-  if (typeof initWishlist === 'function') {
-    initWishlist();
-  }
-  
-  // Инициализация поиска
-  if (typeof initSearch === 'function') {
-    initSearch();
-  }
-  
-  // Инициализация чата
-  if (typeof initChat === 'function') {
-    console.log('Инициализируем чат из scripts.js');
-    initChat();
-  }
-  
-  // Загрузка товаров с Supabase, если мы находимся на главной странице
-  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-    loadFeaturedProducts();
-    loadCategories();
-  }
-  
-  // Загрузка товаров в каталоге
-  if (window.location.pathname.includes('catalog.html')) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryParam = urlParams.get('category');
-    loadCatalogProducts(categoryParam);
+  if (!isMainPageWithMainJs) {
+    console.log('Scripts.js: Инициализируем fallback функции...');
+    
+    // Функция для работы с корзиной
+    if (typeof initCart === 'function') {
+      initCart();
+    }
+    
+    // Обработка кнопок добавления в корзину
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    
+    // Инициализация избранного
+    if (typeof initWishlist === 'function') {
+      initWishlist();
+    }
+    
+    // Инициализация поиска
+    if (typeof initSearch === 'function') {
+      initSearch();
+    }
+    
+    // Инициализация чата
+    if (typeof initChat === 'function') {
+      console.log('Инициализируем чат из scripts.js');
+      initChat();
+    }
+    
+    // Загрузка товаров с Supabase, если мы находимся на главной странице
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      loadFeaturedProducts();
+      loadCategories();
+    }
+    
+    // Загрузка товаров в каталоге
+    if (window.location.pathname.includes('catalog.html')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const categoryParam = urlParams.get('category');
+      loadCatalogProducts(categoryParam);
+    }
   }
 });

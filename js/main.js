@@ -1,3 +1,4 @@
+
 import { loadCategories, loadProducts } from './supabase.js';
 import { createProductCard } from './utils/productCard.js';
 
@@ -60,7 +61,12 @@ async function initHomePage() {
     
     // Загружаем все товары
     const allProducts = await loadProducts();
-    console.log('Все товары загружены:', allProducts.length);
+    console.log('Все товары загружены:', allProducts ? allProducts.length : 0);
+    
+    if (!allProducts || allProducts.length === 0) {
+      console.log('Товары не загружены или пустой массив');
+      return;
+    }
     
     // Фильтруем бестселлеры и новинки
     const bestsellers = allProducts.filter(product => product.is_bestseller).slice(0, 8);
@@ -91,7 +97,7 @@ async function loadCategoriesForHomePage() {
     
     const categories = await loadCategories();
     
-    if (categories.length === 0) {
+    if (!categories || categories.length === 0) {
       categoriesContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
       return;
     }
@@ -183,9 +189,9 @@ function renderProductSection(containerId, products, sectionName) {
     return;
   }
   
-  console.log(`Рендерим ${sectionName}:`, products.length);
+  console.log(`Рендерим ${sectionName}:`, products ? products.length : 0);
   
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     container.innerHTML = '<div class="empty-message">Товары не найдены</div>';
     return;
   }

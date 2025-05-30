@@ -4,11 +4,13 @@
  */
 
 function initCart() {
+  console.log('Инициализируем корзину...');
   // Получаем сохраненную корзину из localStorage или создаем пустую
   let cart = getFromStorage('cart', []);
   
   // Обновляем счетчик товаров в корзине
   updateCartCounter(cart);
+  console.log('Корзина инициализирована, товаров:', cart.length);
 }
 
 function updateCartCounter(cart) {
@@ -16,12 +18,14 @@ function updateCartCounter(cart) {
     cart = getFromStorage('cart', []);
   }
   const counters = document.querySelectorAll('.cart-counter');
+  console.log('Обновляем счетчики корзины, найдено элементов:', counters.length);
   if (!counters.length) return;
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   counters.forEach(counter => {
     counter.textContent = totalItems > 0 ? totalItems : '';
     counter.style.display = totalItems > 0 ? 'flex' : 'none';
   });
+  console.log('Счетчики корзины обновлены, всего товаров:', totalItems);
 }
 
 function parsePrice(value) {
@@ -111,15 +115,21 @@ function handleAddToCart(event) {
   if (success) {
     if (typeof showNotification === 'function') {
       showNotification(`"${productTitle}" добавлен в корзину`);
+    } else {
+      console.log(`"${productTitle}" добавлен в корзину`);
     }
   } else {
     if (typeof showNotification === 'function') {
       showNotification('Ошибка при добавлении товара в корзину', 'error');
+    } else {
+      console.log('Ошибка при добавлении товара в корзину');
     }
   }
 }
 
 function initAddToCartButtons() {
+  console.log('Инициализируем кнопки корзины...');
+  
   // Удаляем старые обработчики
   document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
     const newButton = button.cloneNode(true);
@@ -127,11 +137,15 @@ function initAddToCartButtons() {
   });
   
   // Добавляем новые обработчики
-  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
+  const buttons = document.querySelectorAll('.add-to-cart-btn, .price-cart-btn');
+  console.log('Найдено кнопок корзины для инициализации:', buttons.length);
+  
+  buttons.forEach((button, index) => {
+    console.log(`Добавляем обработчик для кнопки ${index + 1}`);
     button.addEventListener('click', handleAddToCart);
   });
   
-  console.log('Обработчики кнопок корзины инициализированы для', document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').length, 'кнопок');
+  console.log('Обработчики кнопок корзины инициализированы для', buttons.length, 'кнопок');
 }
 
 // Делаем функции глобально доступными

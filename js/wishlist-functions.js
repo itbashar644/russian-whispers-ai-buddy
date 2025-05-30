@@ -21,7 +21,10 @@ function updateWishlistButtons() {
     }
     
     // Обновляем состояние всех кнопок избранного на странице
-    document.querySelectorAll('.wishlist-button').forEach(button => {
+    const buttons = document.querySelectorAll('.wishlist-button');
+    console.log('Найдено кнопок избранного для обновления:', buttons.length);
+    
+    buttons.forEach((button, index) => {
       const productCard = button.closest('.product-card');
       if (!productCard) return;
       
@@ -81,6 +84,8 @@ function toggleWishlist(productId, productTitle) {
       
       if (typeof showNotification === 'function') {
         showNotification(`"${productTitle}" удален из избранного`);
+      } else {
+        console.log(`"${productTitle}" удален из избранного`);
       }
     } else {
       // Если товара нет в избранном, добавляем его
@@ -94,6 +99,8 @@ function toggleWishlist(productId, productTitle) {
       
       if (typeof showNotification === 'function') {
         showNotification(`"${productTitle}" добавлен в избранное`);
+      } else {
+        console.log(`"${productTitle}" добавлен в избранное`);
       }
     }
     
@@ -114,7 +121,11 @@ function initWishlistButtons() {
   });
   
   // Добавляем новые обработчики
-  document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
+  const buttons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
+  console.log('Найдено кнопок избранного для инициализации:', buttons.length);
+  
+  buttons.forEach((button, index) => {
+    console.log(`Добавляем обработчик для кнопки избранного ${index + 1}`);
     button.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -157,7 +168,7 @@ function initWishlistButtons() {
   // Обновляем состояние кнопок
   updateWishlistButtons();
   
-  console.log('Кнопки избранного инициализированы для', document.querySelectorAll('.wishlist-button, .wishlist-btn-large').length, 'кнопок');
+  console.log('Кнопки избранного инициализированы для', buttons.length, 'кнопок');
 }
 
 // Делаем функции глобально доступными
