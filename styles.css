@@ -1071,7 +1071,7 @@ img {
 .main-image img {
   width: 100%;
   height: auto;
-  max-height: 400px;
+  max-height: 600px;
   object-fit: contain;
 }
 
