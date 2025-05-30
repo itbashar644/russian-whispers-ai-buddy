@@ -155,9 +155,9 @@ function renderWishlist() {
         let productsHTML = '<div class="products-grid">';
         
         products.forEach(product => {
-          const priceDisplay = product.discount_price 
-            ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
-            : `<span class="current-price">${product.price} ₽</span>`;
+          const priceDisplay = product.discount_price
+            ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
+            : `<span class="current-price with-background">${product.price} ₽</span>`;
           
           productsHTML += `
             <div class="product-card">
