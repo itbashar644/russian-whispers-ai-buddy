@@ -300,6 +300,10 @@
                 
                 if (container) {
                     container.innerHTML = productHTML;
+                    // Инициализируем кнопки для динамически добавленных элементов
+                    if (typeof initAddToCartButtons === 'function') initAddToCartButtons();
+                    if (typeof initWishlistButtons === 'function') initWishlistButtons();
+                    if (typeof initWishlist === 'function') initWishlist();
                 }
 
                 // Загружаем похожие товары
@@ -345,6 +349,9 @@
                     relatedContainer.appendChild(productCard);
                 });
                 
+                if (typeof initAddToCartButtons === 'function') initAddToCartButtons();
+                if (typeof initWishlistButtons === 'function') initWishlistButtons();
+                if (typeof initWishlist === 'function') initWishlist();
             } catch (error) {
                 console.error('Ошибка при загрузке похожих товаров:', error);
                 const relatedContainer = document.getElementById('related-products');
