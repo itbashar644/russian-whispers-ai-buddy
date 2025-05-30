@@ -172,6 +172,15 @@
                         <div class="main-image">
                             <img src="${product.image_url}" alt="${product.title}" id="main-product-image">
                         </div>
+                        ${product.additional_images && product.additional_images.length > 0 ? `
+                            <div class="additional-images">
+                                ${product.additional_images.map(img => `
+                                    <div class="thumbnail">
+                                        <img src="${img}" alt="${product.title}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}        
                     </div>
                     
                     <div class="product-info-detail">
@@ -310,6 +319,7 @@
                     if (typeof initAddToCartButtons === 'function') initAddToCartButtons();
                     if (typeof initWishlistButtons === 'function') initWishlistButtons();
                     if (typeof initWishlist === 'function') initWishlist();
+                    if (typeof initProductGallery === 'function') initProductGallery();             
                 }
 
                 // Загружаем похожие товары
