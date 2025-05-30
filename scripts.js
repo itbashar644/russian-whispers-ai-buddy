@@ -476,8 +476,8 @@ function createProductCard(product) {
   card.className = 'product-card';
 
   const priceDisplay = product.discount_price
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
-    : `<span class="current-price">${product.price} ₽</span>`;
+    ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
+    : `<span class="current-price with-background">${product.price} ₽</span>`;
 
   const slug = generateSlug(product.title);
   const categoryLink = product.category
