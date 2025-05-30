@@ -245,8 +245,30 @@ function renderProductSection(containerId, products) {
   
   container.innerHTML = '';
   
+  // Импортируем createProductCard из utils
   products.forEach(product => {
-    const productCard = createProductCard(product);
+    let productCard;
+    if (typeof createProductCard === 'function') {
+      productCard = createProductCard(product);
+    } else {
+      // Простая альтернатива если createProductCard недоступна
+      productCard = document.createElement('div');
+      productCard.className = 'product-card';
+      productCard.innerHTML = `
+        <div class="product-image">
+          <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+            <img src="${product.image_url}" alt="${product.title}" loading="lazy">
+          </a>
+        </div>
+        <div class="product-info">
+          <h3><a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${product.title}</a></h3>
+          <div class="product-price">
+            <span class="current-price">${product.price} ₽</span>
+          </div>
+          <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
+        </div>
+      `;
+    }
     container.appendChild(productCard);
   });
   

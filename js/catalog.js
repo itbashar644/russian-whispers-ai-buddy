@@ -1,4 +1,3 @@
-
 /**
  * Функционал для работы с каталогом товаров
  */
@@ -24,6 +23,7 @@ if (typeof parsePrice !== 'function') {
     const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
     return isNaN(numeric) ? 0 : numeric;
   }
+  window.parsePrice = parsePrice;
 }
 
 if (typeof formatPrice !== 'function') {
@@ -31,6 +31,7 @@ if (typeof formatPrice !== 'function') {
     const value = parsePrice(price);
     return value.toLocaleString('ru-RU') + ' ₽';
   }
+  window.formatPrice = formatPrice;
 }
 
 // Функция создания карточки товара
