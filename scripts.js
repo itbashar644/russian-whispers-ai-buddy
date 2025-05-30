@@ -102,7 +102,7 @@ function updateWishlistButtons(wishlist) {
 
 // Инициализация кнопок добавления в корзину
 function initAddToCartButtons() {
-  document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
     button.addEventListener('click', function(e) {
       e.preventDefault();
       
@@ -476,8 +476,8 @@ function createProductCard(product) {
   card.className = 'product-card';
 
   const priceDisplay = product.discount_price
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
-    : `<span class="current-price with-background">${product.price} ₽</span>`;
+    ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price with-background">${formatPrice(product.discount_price)}</span>`
+    : `<span class="current-price with-background">${formatPrice(product.price)}</span>`;
 
   const slug = generateSlug(product.title);
   const categoryLink = product.category
@@ -500,7 +500,10 @@ function createProductCard(product) {
       </h3>
       ${categoryLink}
       <div class="product-price">
-        ${priceDisplay}
+        <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
+          ${priceDisplay}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        </button>
       </div>
       ${marketplaceLinks}
       <button class="add-to-cart-btn">В корзину</button>
