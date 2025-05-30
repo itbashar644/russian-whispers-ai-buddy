@@ -54,6 +54,7 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         font-size: 1rem;
+        box-sizing: border-box;
       }
       
       .auth-form input:focus {
@@ -77,6 +78,11 @@
       
       .auth-form button:hover {
         background-color: #0069d9;
+      }
+      
+      .auth-form button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
       }
       
       .auth-links {
@@ -127,43 +133,72 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        transition: background-color 0.3s;
       }
 
       .google-btn:hover {
         background-color: #f7f7f7;
       }
+      
+      .google-btn:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+      }
+      
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        border-radius: 4px;
+        color: white;
+        z-index: 1000;
+        transition: opacity 0.3s ease;
+      }
+      
+      .notification.success {
+        background-color: #28a745;
+      }
+      
+      .notification.error {
+        background-color: #dc3545;
+      }
+      
+      .notification.info {
+        background-color: #007bff;
+      }
     </style>
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
-</head>
+    
+    <!-- Schema.org JSON-LD data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "The X Shop",
+      "url": "https://the-x.shop",
+      "logo": "https://the-x.shop/favicon.ico",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+7 (800) 123-45-67",
+        "contactType": "customer service",
+        "areaServed": "RU"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://the-x.shop",
+      "name": "The X Shop",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://the-x.shop/catalog.html?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+  </head>
   <body>
     <header class="header">
       <div class="container header-container">
@@ -219,7 +254,7 @@
               <input type="password" id="password" required placeholder="********">
             </div>
             
-            <button type="submit">Войти</button>
+            <button type="submit" id="loginBtn">Войти</button>
           </form>
           
           <div class="auth-links">
@@ -317,9 +352,10 @@
 
       const supabase = createClient(supabaseUrl, supabaseKey, {
         auth: {
+          storage: localStorage,
           persistSession: true,
-          detectSessionInUrl: true,
-          autoRefreshToken: true
+          autoRefreshToken: true,
+          detectSessionInUrl: true
         }
       });
 
@@ -327,30 +363,36 @@
       window.supabase = supabase;
 
       function showNotification(message, type = 'info') {
+        // Удаляем существующие уведомления
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
-          color: white;
-          padding: 12px 24px;
-          border-radius: 4px;
-          z-index: 1000;
-          animation: slideIn 0.3s ease;
-        `;
+        
         document.body.appendChild(notification);
+        
         setTimeout(() => {
-          notification.remove();
-        }, 3000);
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 5000);
       }
+
+      // Проверяем, авторизован ли пользователь при загрузке страницы
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          console.log('Пользователь уже авторизован, перенаправляем на главную');
+          window.location.href = 'index.html';
+        }
+      });
 
       // Обработчик отправки формы авторизации
       document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        const loginBtn = document.getElementById('loginBtn');
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value.trim();
 
@@ -360,7 +402,13 @@
           return;
         }
 
+        // Блокируем кнопку во время запроса
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Вход...';
+
         try {
+          console.log('Попытка авторизации с email:', email);
+          
           const { data, error } = await supabase.auth.signInWithPassword({ 
             email, 
             password 
@@ -368,23 +416,47 @@
           
           if (error) {
             console.error('Ошибка авторизации:', error);
-            showNotification(error.message || 'Ошибка авторизации', 'error');
+            let errorMessage = 'Ошибка авторизации';
+            
+            if (error.message.includes('Invalid login credentials')) {
+              errorMessage = 'Неверный email или пароль';
+            } else if (error.message.includes('Email not confirmed')) {
+              errorMessage = 'Подтвердите email перед входом';
+            } else if (error.message.includes('Too many requests')) {
+              errorMessage = 'Слишком много попыток. Попробуйте позже';
+            }
+            
+            showNotification(errorMessage, 'error');
             return;
           }
 
-          showNotification('Успешная авторизация!', 'success');
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1500);
+          if (data.user) {
+            console.log('Успешная авторизация:', data.user);
+            showNotification('Успешная авторизация!', 'success');
+            
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 1000);
+          }
         } catch (err) {
           console.error('Неожиданная ошибка при авторизации:', err);
-          showNotification('Не удалось войти', 'error');
+          showNotification('Не удалось войти. Попробуйте позже', 'error');
+        } finally {
+          // Разблокируем кнопку
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Войти';
         }
       });
 
       // Обработчик входа через Google
       document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        const googleBtn = document.getElementById('googleLoginBtn');
+        
+        googleBtn.disabled = true;
+        
         try {
+          console.log('Попытка входа через Google');
+          
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -399,6 +471,8 @@
         } catch (err) {
           console.error('Неожиданная ошибка при входе через Google:', err);
           showNotification('Не удалось войти через Google', 'error');
+        } finally {
+          googleBtn.disabled = false;
         }
       });
     </script>
