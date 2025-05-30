@@ -64,20 +64,20 @@ function addToCart(product) {
 
 // Функция для обновления счетчика корзины
 function updateCartCounter() {
-  const cartCounter = document.getElementById('cart-counter');
-  if (!cartCounter) return;
-  
+  const counters = document.querySelectorAll('.cart-counter');
+  if (!counters.length) return;
+
   const cart = getFromStorage('cart', []);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  
-  cartCounter.textContent = totalItems;
-  
-  // Добавляем класс active, если в корзине есть товары
-  if (totalItems > 0) {
-    cartCounter.classList.add('active');
-  } else {
-    cartCounter.classList.remove('active');
-  }
+
+  counters.forEach(counter => {
+    counter.textContent = totalItems;
+    if (totalItems > 0) {
+      counter.classList.add('active');
+    } else {
+      counter.classList.remove('active');
+    }
+  });
 }
 
 // Функция для удаления товара из корзины
