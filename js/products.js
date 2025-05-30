@@ -67,6 +67,29 @@ async function loadFeaturedProducts() {
     console.error('Ошибка при загрузке товаров:', error);
     const productsContainer = document.querySelector('.featured-products');
     if (productsContainer) {
+      try {
+        const fallback = await fetch('products-fallback.json');
+        if (fallback.ok) {
+          const products = await fallback.json();
+          productsContainer.innerHTML = '';
+          products.forEach(product => {
+            const productCard = createProductCard(product);
+            productsContainer.appendChild(productCard);
+          });
+          if (typeof initAddToCartButtons === 'function') {
+            initAddToCartButtons();
+          }
+          if (typeof initWishlistButtons === 'function') {
+            initWishlistButtons();
+          }
+          if (typeof initWishlist === 'function') {
+            initWishlist();
+          }
+          return;
+        }
+      } catch (fallbackError) {
+        console.error('Ошибка при загрузке fallback данных:', fallbackError);
+      }
       productsContainer.innerHTML = '<div class="error-message">Ошибка при загрузке товаров</div>';
     }
   }
