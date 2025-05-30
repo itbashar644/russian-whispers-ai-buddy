@@ -377,7 +377,7 @@
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-      window.supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, {
+      const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, {
         auth: {
           persistSession: true,
           detectSessionInUrl: true
