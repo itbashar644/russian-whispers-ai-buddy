@@ -639,6 +639,22 @@ img {
 .add-to-cart-btn:hover {
   background-color: #0069d9;
 }
+/* Button around price to add to cart */
+.price-cart-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.price-cart-btn svg {
+  width: 20px;
+  height: 20px;
+}
 
 /* Categories styles */
 .categories-grid {
