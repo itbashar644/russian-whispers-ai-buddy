@@ -1090,10 +1090,9 @@ img {
 
 /* Product details styles */
 .product-details {
-  display: grid;
-  grid-template-columns: max-content 1fr;
+  display: flex;
   gap: 30px;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .product-gallery {
@@ -1936,7 +1935,6 @@ img {
 
 @media (max-width: 768px) {
   .catalog-container {
-    grid-template-columns: 1fr;
   }
   
   .products-grid {
