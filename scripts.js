@@ -645,9 +645,9 @@ async function loadProductDetails() {
         <div class="product-info">
           <h1>${product.title}</h1>
           <div class="product-price">
-            ${product.discount_price 
-              ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>` 
-              : `<span class="current-price">${product.price} ₽</span>`}
+            ${product.discount_price
+              ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
+              : `<span class="current-price with-background">${product.price} ₽</span>`}
           </div>
           <div class="product-meta">
             <div class="product-rating">
