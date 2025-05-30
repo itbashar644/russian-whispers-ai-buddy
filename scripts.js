@@ -6,6 +6,14 @@ function parsePrice(value) {
   const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
   return isNaN(numeric) ? 0 : numeric;
 }
+
+// Format price with spaces between thousands and ruble sign
+if (typeof formatPrice !== 'function') {
+  function formatPrice(price) {
+    const value = parsePrice(price);
+    return value.toLocaleString('ru-RU') + ' ₽';
+  }
+}
   
 document.addEventListener('DOMContentLoaded', function() {
   // Функция для работы с корзиной
