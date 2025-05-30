@@ -369,18 +369,14 @@ img {
 
 .product-image {
   position: relative;
-  padding-top: 133.33%; /* 3:4 aspect ratio */
   background-color: #f8f9fa;
   overflow: hidden;
 }
 
 .product-image img {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
   transition: transform 0.3s ease;
 }
 
