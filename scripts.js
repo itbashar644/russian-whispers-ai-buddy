@@ -238,12 +238,24 @@ function initWishlistButtons() {
 }
 
 function initSearch() {
-  const searchButton = document.querySelector('.search-button');
+  console.log('Инициализируем поиск из scripts.js...');
+  
+  // Проверяем, есть ли уже инициализированная функция поиска
+  if (typeof window.initSearch === 'function' && window.initSearch !== initSearch) {
+    window.initSearch();
+    return;
+  }
+  
+  const searchButton = document.querySelector('.search-button, .mobile-search-button');
   
   if (searchButton) {
-    searchButton.addEventListener('click', function() {
+    console.log('Найдена кнопка поиска, добавляем обработчик');
+    searchButton.addEventListener('click', function(e) {
+      e.preventDefault();
       window.location.href = 'catalog.html?focus=search';
     });
+  } else {
+    console.log('Кнопка поиска не найдена');
   }
 }
 
