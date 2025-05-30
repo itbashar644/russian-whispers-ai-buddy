@@ -92,10 +92,11 @@ function saveToStorage(key, value) {
 // Функция для обновления счетчика корзины
 function updateCartCounter() {
   const cart = getFromStorage('cart', []);
-  const counter = document.getElementById('cart-counter');
-  
-  if (counter) {
-    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const counters = document.querySelectorAll('.cart-counter');
+  if (!counters.length) return;
+
+  const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  counters.forEach(counter => {
     counter.textContent = itemCount;
     
     if (itemCount > 0) {
@@ -103,7 +104,7 @@ function updateCartCounter() {
     } else {
       counter.classList.remove('active');
     }
-  }
+  });
 }
 
 // Функция для обновления статуса кнопок избранного
