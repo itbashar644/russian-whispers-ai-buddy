@@ -422,7 +422,13 @@ async function loadCatalogProducts(category = null) {
     if (category) {
       url += `&category=eq.${encodeURIComponent(category)}`;
     }
-    
+  
+    // Фильтр по поисковому запросу
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+    if (searchQuery) {
+      url += `&title=ilike.%${encodeURIComponent(searchQuery)}%`;
+    }  
     // Загружаем товары с Supabase
     const response = await fetch(url, {
       headers: {
