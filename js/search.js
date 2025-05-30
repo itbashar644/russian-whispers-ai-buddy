@@ -53,6 +53,13 @@ function initSearch() {
       const searchInput = container.querySelector('#search-input');
       const suggestionsContainer = container.querySelector('#search-suggestions');
 
+      // Восстанавливаем поисковый запрос из URL, если он есть
+      const params = new URLSearchParams(window.location.search);
+      const queryParam = params.get('search');
+      if (queryParam) {
+        searchInput.value = queryParam;
+      }
+
       if (!searchButton || !searchInput) return;
 
       let activeIndex = -1;
