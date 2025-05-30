@@ -349,6 +349,15 @@ function createProductDetailsHTML(product) {
           <img src="${product.image_url}" alt="${product.title}" id="main-product-image">
         </div>
       </div>
+        ${product.additional_images && product.additional_images.length > 0 ? `
+          <div class="additional-images">
+            ${product.additional_images.map(img => `
+              <div class="thumbnail">
+                <img src="${img}" alt="${product.title}">
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
       
       <div class="product-info-detail">
         <h1 class="product-title">${product.title}</h1>
@@ -393,6 +402,11 @@ function initProductPage(product) {
   if (typeof initAddToCartButtons === 'function') {
     initAddToCartButtons();
   }
+
+  if (typeof initProductGallery === 'function') {
+    initProductGallery();
+  }
+
   if (typeof initWishlistButtons === 'function') {
     initWishlistButtons();
   }
