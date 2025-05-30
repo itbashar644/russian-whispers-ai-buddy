@@ -43,52 +43,6 @@ function updateCartCounter(cart) {
   });
 }
 
-function initWishlist() {
-  // Получаем сохраненное избранное из localStorage или создаем пустой массив
-  let wishlist = getFromStorage('wishlist', []);
-  
-  // Поддержка старого формата хранения (массив объектов)
-  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
-    wishlist = wishlist.map(item => item.id);
-    saveToStorage('wishlist', wishlist);
-  }
-  
-  // Обновляем отображение кнопок избранного
-  updateWishlistButtons(wishlist);
-}
-
-function updateWishlistButtons(wishlist) {
-  if (!wishlist) {
-    wishlist = getFromStorage('wishlist', []);
-  }
-  
-  document.querySelectorAll('.wishlist-button').forEach(button => {
-    const productCard = button.closest('.product-card');
-    if (!productCard) return;
-    
-    const productLink = productCard.querySelector('.product-link');
-    if (!productLink) return;
-    
-    // Получаем ID товара из URL или атрибута
-    let productId;
-    if (productLink.href && productLink.href.includes('id=')) {
-      productId = productLink.href.split('id=')[1];
-    } else if (productLink.dataset.id) {
-      productId = productLink.dataset.id;
-    }
-    
-    if (!productId) return;
-    
-    if (wishlist.includes(productId)) {
-      button.classList.add('active');
-      button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>`;
-    } else {
-      button.classList.remove('active');
-      button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>`;
-    }
-  });
-}
-
 function addToCart(product) {
   console.log('Добавляем товар в корзину:', product);
   
@@ -186,78 +140,6 @@ function initAddToCartButtons() {
   });
   
   console.log('Обработчики кнопок корзины инициализированы для', document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').length, 'кнопок');
-}
-
-function toggleWishlist(productId, productTitle) {
-  let wishlist = getFromStorage('wishlist', []);
-  
-  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
-    wishlist = wishlist.map(item => item.id);
-    saveToStorage('wishlist', wishlist);
-  }
-  
-  const index = wishlist.indexOf(productId);
-  
-  if (index !== -1) {
-    wishlist.splice(index, 1);
-    showNotification(`"${productTitle}" удален из избранного`);
-  } else {
-    wishlist.push(productId);
-    showNotification(`"${productTitle}" добавлен в избранное`);
-  }
-  
-  saveToStorage('wishlist', wishlist);
-  updateWishlistButtons(wishlist);
-}
-
-function initWishlistButtons() {
-  document.querySelectorAll('.wishlist-button').forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const productCard = this.closest('.product-card');
-      if (!productCard) return;
-      
-      const productLink = productCard.querySelector('.product-link');
-      if (!productLink) return;
-      
-      let productId;
-      if (productLink.href && productLink.href.includes('id=')) {
-        productId = productLink.href.split('id=')[1];
-      } else if (productLink.dataset.id) {
-        productId = productLink.dataset.id;
-      }
-      
-      if (!productId) return;
-      
-      const productTitle = productCard.querySelector('h3').textContent;
-      
-      toggleWishlist(productId, productTitle);
-    });
-  });
-}
-
-function initSearch() {
-  console.log('Инициализируем поиск из scripts.js...');
-  
-  // Проверяем, есть ли уже инициализированная функция поиска
-  if (typeof window.initSearch === 'function' && window.initSearch !== initSearch) {
-    window.initSearch();
-    return;
-  }
-  
-  const searchButton = document.querySelector('.search-button, .mobile-search-button');
-  
-  if (searchButton) {
-    console.log('Найдена кнопка поиска, добавляем обработчик');
-    searchButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = 'catalog.html?focus=search';
-    });
-  } else {
-    console.log('Кнопка поиска не найдена');
-  }
 }
 
 function showNotification(message, type = 'success') {
@@ -371,8 +253,13 @@ function renderProductSection(containerId, products) {
   // Важно: инициализируем обработчики после добавления карточек
   setTimeout(() => {
     initAddToCartButtons();
-    initWishlistButtons();
-    updateWishlistButtons();
+    // Инициализируем кнопки избранного из внешнего файла
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof updateWishlistButtons === 'function') {
+      updateWishlistButtons();
+    }
     console.log('Обработчики событий инициализированы для секции:', containerId);
   }, 100);
 }
@@ -388,14 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Функция для работы с корзиной
   initCart();
   
-  // Функция для работы с избранным
-  initWishlist();
-  
   // Обработка кнопок добавления в корзину
   initAddToCartButtons();
-  
-  // Обработка кнопок добавления в избранное
-  initWishlistButtons();
   
   // Инициализация поиска
   initSearch();

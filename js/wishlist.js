@@ -21,12 +21,14 @@ if (typeof formatPrice !== 'function') {
 
 // Функция для инициализации избранного
 function initWishlist() {
+  console.log('Инициализируем избранное...');
   updateWishlistButtons();
 }
 
 // Функция для обновления состояния кнопок избранного
 function updateWishlistButtons() {
   try {
+    console.log('Обновляем кнопки избранного...');
     // Получаем текущий список избранных товаров из localStorage
     let wishlist = getFromStorage('wishlist', []);
     
@@ -38,15 +40,32 @@ function updateWishlistButtons() {
     
     // Обновляем состояние всех кнопок избранного на странице
     document.querySelectorAll('.wishlist-button').forEach(button => {
-      const productId = button.getAttribute('data-id');
-      if (productId && wishlist.includes(productId)) {
+      const productCard = button.closest('.product-card');
+      if (!productCard) return;
+      
+      const productLink = productCard.querySelector('.product-link');
+      if (!productLink) return;
+      
+      // Получаем ID товара из URL или атрибута
+      let productId;
+      if (productLink.href && productLink.href.includes('id=')) {
+        productId = productLink.href.split('id=')[1];
+      } else if (productLink.dataset.id) {
+        productId = productLink.dataset.id;
+      }
+      
+      if (!productId) return;
+      
+      if (wishlist.includes(productId)) {
         button.classList.add('active');
-        button.querySelector('svg path').style.fill = 'currentColor';
+        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>`;
       } else {
         button.classList.remove('active');
-        button.querySelector('svg path').style.fill = 'none';
+        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>`;
       }
     });
+    
+    console.log('Кнопки избранного обновлены, товаров в избранном:', wishlist.length);
   } catch (error) {
     console.error('Ошибка при обновлении кнопок избранного:', error);
   }
@@ -55,6 +74,8 @@ function updateWishlistButtons() {
 // Функция для добавления/удаления товара в избранное
 function toggleWishlist(productId, productTitle) {
   try {
+    console.log('Переключаем избранное для товара:', productId, productTitle);
+    
     // Получаем текущий список избранных товаров из localStorage
     let wishlist = getFromStorage('wishlist', []);
     
@@ -109,8 +130,13 @@ function toggleWishlist(productId, productTitle) {
 
 // Функция для рендеринга страницы избранного
 function renderWishlist() {
+  console.log('Рендерим страницу избранного...');
+  
   const wishlistContainer = document.getElementById('wishlist-container');
-  if (!wishlistContainer) return;
+  if (!wishlistContainer) {
+    console.log('Контейнер избранного не найден');
+    return;
+  }
   
   try {
     // Получаем текущий список избранных товаров из localStorage
@@ -121,6 +147,8 @@ function renderWishlist() {
       wishlist = wishlist.map(item => item.id);
       saveToStorage('wishlist', wishlist);
     }
+    
+    console.log('Загружаем избранные товары, ID:', wishlist);
     
     if (wishlist.length === 0) {
       // Если список пуст, показываем соответствующее сообщение
@@ -139,8 +167,9 @@ function renderWishlist() {
     wishlistContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
     
     // Формируем строку с ID товаров для запроса
-    // Supabase требует экранирования строковых идентификаторов в запросе
     const ids = wishlist.map(id => `"${id}"`).join(',');
+    
+    console.log('Запрашиваем товары из Supabase с ID:', ids);
     
     // Загружаем информацию о товарах из Supabase
     fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?id=in.(${ids})&select=*`, {
@@ -150,12 +179,15 @@ function renderWishlist() {
       }
     })
       .then(response => {
+        console.log('Ответ от Supabase:', response.status);
         if (!response.ok) {
           throw new Error('Ошибка при загрузке избранных товаров');
         }
         return response.json();
       })
       .then(products => {
+        console.log('Получены товары:', products.length);
+        
         if (products.length === 0) {
           wishlistContainer.innerHTML = `
             <div class="empty-message">
@@ -175,6 +207,45 @@ function renderWishlist() {
             ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price with-background">${formatPrice(product.discount_price)}</span>`
             : `<span class="current-price with-background">${formatPrice(product.price)}</span>`;
           
+          // Создаем ссылки на маркетплейсы если они есть
+          let marketplaceLinks = '';
+          if (product.ozon_url || product.wildberries_url || product.avito_url) {
+            let marketplaceIconsHtml = '';
+
+            if (product.wildberries_url) {
+              marketplaceIconsHtml += `
+                <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+                  <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
+                </a>
+              `;
+            }
+
+            if (product.ozon_url) {
+              marketplaceIconsHtml += `
+                <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+                  <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
+                </a>
+              `;
+            }
+
+            if (product.avito_url) {
+              marketplaceIconsHtml += `
+                <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+                  <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
+                </a>
+              `;
+            }
+
+            marketplaceLinks = `
+              <div class="marketplace-links">
+                <span class="marketplace-title">Доступен на:</span>
+                <div class="marketplace-icons">
+                  ${marketplaceIconsHtml}
+                </div>
+              </div>
+            `;
+          }
+          
           productsHTML += `
             <div class="product-card">
               <div class="product-image">
@@ -192,9 +263,9 @@ function renderWishlist() {
                 <div class="product-price">
                   <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
                     ${priceDisplay}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                   </button>
                 </div>
+                ${marketplaceLinks}
                 <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
               </div>
             </div>
@@ -205,8 +276,13 @@ function renderWishlist() {
         wishlistContainer.innerHTML = productsHTML;
         
         // Инициализируем обработчики для кнопок после рендеринга
-        initAddToCartButtons();
-        initWishlistButtons();
+        console.log('Инициализируем обработчики после рендеринга избранного');
+        setTimeout(() => {
+          if (typeof initAddToCartButtons === 'function') {
+            initAddToCartButtons();
+          }
+          initWishlistButtons();
+        }, 100);
         
       })
       .catch(error => {
@@ -235,6 +311,8 @@ function renderWishlist() {
 
 // Инициализация кнопок избранного на странице
 function initWishlistButtons() {
+  console.log('Инициализируем кнопки избранного...');
+  
   document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
     // Удаляем старые обработчики событий
     const newButton = button.cloneNode(true);
@@ -244,18 +322,22 @@ function initWishlistButtons() {
       e.preventDefault();
       e.stopPropagation();
       
-      const productId = this.getAttribute('data-id');
-      let productTitle = '';
+      const productCard = this.closest('.product-card');
+      if (!productCard) return;
       
-      // Определяем заголовок товара в зависимости от страницы
-      if (/product.*\.html$/.test(window.location.pathname)) {
-        const titleElement = document.querySelector('h1');
-        productTitle = titleElement ? titleElement.textContent : 'Товар';
-      } else {
-        const productCard = this.closest('.product-card');
-        const titleElement = productCard ? productCard.querySelector('h3 a') : null;
-        productTitle = titleElement ? titleElement.textContent : 'Товар';
+      const productLink = productCard.querySelector('.product-link');
+      if (!productLink) return;
+      
+      let productId;
+      if (productLink.href && productLink.href.includes('id=')) {
+        productId = productLink.href.split('id=')[1];
+      } else if (productLink.dataset.id) {
+        productId = productLink.dataset.id;
       }
+      
+      if (!productId) return;
+      
+      const productTitle = productCard.querySelector('h3 a').textContent;
       
       toggleWishlist(productId, productTitle);
     });
@@ -263,14 +345,18 @@ function initWishlistButtons() {
   
   // Обновляем состояние кнопок
   updateWishlistButtons();
+  
+  console.log('Кнопки избранного инициализированы для', document.querySelectorAll('.wishlist-button, .wishlist-btn-large').length, 'кнопок');
 }
 
 // Инициализируем избранное при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM загружен, инициализируем избранное...');
   initWishlist();
   
   // Если мы на странице избранного, рендерим ее
   if (window.location.pathname.endsWith('wishlist.html')) {
+    console.log('Мы на странице избранного, рендерим...');
     renderWishlist();
   }
 });
