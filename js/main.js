@@ -1,5 +1,5 @@
-
 import { loadCategories, loadProducts } from './supabase.js';
+import { createProductCard } from './utils/productCard.js';
 
 // Глобальная инициализация приложения
 document.addEventListener('DOMContentLoaded', async function() {
@@ -188,10 +188,8 @@ function renderProductSection(containerId, products, sectionName) {
   container.innerHTML = '';
   
   products.forEach(product => {
-    if (typeof createProductCard === 'function') {
-      const productCard = createProductCard(product);
-      container.appendChild(productCard);
-    }
+    const productCard = createProductCard(product);
+    container.appendChild(productCard);
   });
   
   // Инициализируем кнопки после добавления карточек
