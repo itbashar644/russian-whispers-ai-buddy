@@ -107,20 +107,31 @@ function toggleWishlist(productId, productTitle) {
 function initWishlistButtons() {
   console.log('Инициализируем кнопки избранного...');
   
+  // Сначала удаляем старые обработчики
   document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
-    // Удаляем старые обработчики событий
     const newButton = button.cloneNode(true);
     button.parentNode.replaceChild(newButton, button);
-    
-    newButton.addEventListener('click', function(e) {
+  });
+  
+  // Добавляем новые обработчики
+  document.querySelectorAll('.wishlist-button, .wishlist-btn-large').forEach(button => {
+    button.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
       
+      console.log('Кнопка избранного нажата');
+      
       const productCard = this.closest('.product-card');
-      if (!productCard) return;
+      if (!productCard) {
+        console.log('Карточка товара не найдена');
+        return;
+      }
       
       const productLink = productCard.querySelector('.product-link');
-      if (!productLink) return;
+      if (!productLink) {
+        console.log('Ссылка на товар не найдена');
+        return;
+      }
       
       let productId;
       if (productLink.href && productLink.href.includes('id=')) {
@@ -129,9 +140,15 @@ function initWishlistButtons() {
         productId = productLink.dataset.id;
       }
       
-      if (!productId) return;
+      if (!productId) {
+        console.log('ID товара не найден');
+        return;
+      }
       
-      const productTitle = productCard.querySelector('h3 a').textContent;
+      const productTitleElement = productCard.querySelector('h3 a');
+      const productTitle = productTitleElement ? productTitleElement.textContent : 'Товар';
+      
+      console.log('Данные для избранного:', { productId, productTitle });
       
       toggleWishlist(productId, productTitle);
     });

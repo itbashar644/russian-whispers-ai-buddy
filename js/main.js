@@ -3,7 +3,7 @@ import { createProductCard } from './utils/productCard.js';
 
 // Глобальная инициализация приложения
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log('DOM загружен, инициализируем приложение...');
+  console.log('Main.js: DOM загружен, инициализируем приложение...');
   
   // Инициализируем счетчик корзины
   if (typeof updateCartCounter === 'function') {
@@ -12,17 +12,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // Определяем текущую страницу
   const currentPage = window.location.pathname;
-  console.log('Текущая страница:', currentPage);
+  console.log('Main.js: Текущая страница:', currentPage);
   
   // Инициализация в зависимости от страницы
   if (currentPage === '/' || currentPage === '/index.html' || currentPage.endsWith('index.html')) {
-    console.log('Инициализируем главную страницу...');
+    console.log('Main.js: Инициализируем главную страницу...');
     await initHomePage();
   } else if (currentPage === '/catalog.html' || currentPage.endsWith('catalog.html')) {
-    console.log('Инициализируем страницу каталога...');
+    console.log('Main.js: Инициализируем страницу каталога...');
     await initCatalogPage();
   } else if (currentPage === '/product.html' || currentPage.endsWith('product.html')) {
-    console.log('Инициализируем страницу товара...');
+    console.log('Main.js: Инициализируем страницу товара...');
     await initProductPage();
   }
   
@@ -37,15 +37,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   // Инициализируем функциональность корзины и избранного
-  if (typeof initAddToCartButtons === 'function') {
-    initAddToCartButtons();
-  }
-  if (typeof initWishlistButtons === 'function') {
-    initWishlistButtons();
-  }
-  if (typeof initWishlist === 'function') {
-    initWishlist();
-  }
+  setTimeout(() => {
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof initWishlist === 'function') {
+      initWishlist();
+    }
+  }, 500);
 });
 
 // Инициализация главной страницы
