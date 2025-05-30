@@ -1068,12 +1068,15 @@ img {
 /* Product details styles */
 .product-details {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: max-content 1fr;
   gap: 30px;
+  align-items: start;
 }
 
 .product-gallery {
   position: relative;
+  justify-self: start;
+  width: fit-content;
 }
 
 .main-image {
@@ -1084,7 +1087,8 @@ img {
 }
 
 .main-image img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
   max-height: 600px;
   object-fit: contain;
