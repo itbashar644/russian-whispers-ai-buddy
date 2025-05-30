@@ -1,6 +1,21 @@
 /**
  * Функционал для работы с корзиной
  */
+// Provide helpers if utils.js is missing
+if (typeof parsePrice !== 'function') {
+  function parsePrice(value) {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+    return isNaN(numeric) ? 0 : numeric;
+  }
+}
+if (typeof formatPrice !== 'function') {
+  function formatPrice(price) {
+    const value = parsePrice(price);
+    return value.toLocaleString('ru-RU') + ' ₽';
+  }
+}
 
 // Функция для инициализации корзины
 function initCart() {
