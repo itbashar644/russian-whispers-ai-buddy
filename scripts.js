@@ -34,12 +34,13 @@ function updateCartCounter(cart) {
   if (!cart) {
     cart = getFromStorage('cart', []);
   }
-  const cartCounter = document.querySelector('.cart-counter');
-  if (cartCounter) {
-    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-    cartCounter.textContent = totalItems > 0 ? totalItems : '';
-    cartCounter.style.display = totalItems > 0 ? 'flex' : 'none';
-  }
+   const counters = document.querySelectorAll('.cart-counter');
+  if (!counters.length) return;
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+  counters.forEach(counter => {
+    counter.textContent = totalItems > 0 ? totalItems : '';
+    counter.style.display = totalItems > 0 ? 'flex' : 'none';
+  });
 }
 
 function initWishlist() {
