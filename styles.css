@@ -437,7 +437,16 @@ img {
   margin-bottom: 15px;
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Price detail section on product page */
+.product-price-detail {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
