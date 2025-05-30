@@ -453,8 +453,8 @@ img {
 }
 
 .current-price {
-  font-weight: 800;
-  font-size: 1.5rem;
+  font-weight: 600;
+  font-size: 1.3rem;
   background: linear-gradient(135deg, #ff6b6b, #ee5a52);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -483,9 +483,10 @@ img {
   -webkit-text-fill-color: initial;
   background-clip: initial;
   color: white;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 25px;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
   display: inline-block;
   transform: perspective(200px) rotateX(5deg);
