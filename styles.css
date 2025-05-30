@@ -668,13 +668,14 @@ img {
 /* Categories styles */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px;
 }
 
 .category-card {
+  position: relative;
   display: block;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -702,12 +703,21 @@ img {
   object-fit: cover;
 }
 
-.category-card h3 {
+.category-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   padding: 10px;
   text-align: center;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(2px);
+  color: #333;
+}
+
+.category-card h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 600;
 }
 
@@ -1878,7 +1888,7 @@ img {
 /* Responsive adjustments */
 @media (max-width: 992px) {
   .products-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
   
   .categories-grid {
@@ -1918,7 +1928,7 @@ img {
   }
   
   .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
    .benefits-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1972,7 +1982,7 @@ img {
 @media (max-width: 480px) {
   .products-grid,
   .categories-grid {
-   grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
     .benefits-grid {
     grid-template-columns: 1fr;
