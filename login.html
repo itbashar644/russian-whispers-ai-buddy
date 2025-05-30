@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -245,7 +244,8 @@
           </div>
         </div>
       </div>
-          <div class="chat-widget">
+      
+      <div class="chat-widget">
         <button id="chat-button" class="chat-toggle-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </button>
@@ -321,25 +321,6 @@
         }
       };
 
-      // Обработчик отправки формы авторизации
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        // В реальном проекте здесь будет отправка данных на сервер
-        console.log('Отправка формы авторизации:', { email, password });
-        
-        // Показываем уведомление
-        showNotification('Успешная авторизация!');
-        
-        // Перенаправляем на главную страницу
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 1500);
-      });
-
       function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -348,7 +329,7 @@
           position: fixed;
           top: 20px;
           right: 20px;
-          background: #007bff;
+          background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
           color: white;
           padding: 12px 24px;
           border-radius: 4px;
@@ -360,7 +341,30 @@
           notification.remove();
         }, 3000);
       }
+
+      // Обработчик отправки формы авторизации
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // Простая валидация
+        if (!email || !password) {
+          showNotification('Заполните все поля', 'error');
+          return;
+        }
+
+        // Показываем уведомление об успешной авторизации
+        showNotification('Успешная авторизация!', 'success');
+        
+        // Перенаправляем на главную страницу
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      });
     </script>
+    
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 

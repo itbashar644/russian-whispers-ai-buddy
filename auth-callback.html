@@ -1,41 +1,47 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Обработка входа</title>
-  <meta name="robots" content="noindex" />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация | The X Shop</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container" style="padding: 40px; text-align: center;">
-    <h1>Пожалуйста, подождите...</h1>
-  </div>
-  <script src="js/config.js"></script>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    <div class="container" style="text-align: center; padding: 2rem;">
+        <h1>Обработка авторизации...</h1>
+        <p>Пожалуйста, подождите</p>
+    </div>
 
-    const supabase = createClient(CONFIG.supabaseUrl, CONFIG.apiHeaders.apikey, {
-      auth: {
-        persistSession: true,
-        detectSessionInUrl: true
-      }
-    });
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    (async () => {
-      // Обработаем редирект и сохраним сессию
-      await supabase.auth.getSession();
+        const supabase = createClient(
+            'https://lpwvhyawvxibtuxfhitx.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI'
+        );
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        window.location.href = 'index.html';
-      } else {
-        supabase.auth.onAuthStateChange((_event, newSession) => {
-          if (newSession) {
-            window.location.href = 'index.html';
-          }
+        // Обработка OAuth callback
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                console.log('Пользователь авторизован:', session.user);
+                window.location.href = '/index.html';
+            } else if (event === 'SIGNED_OUT') {
+                window.location.href = '/login.html';
+            }
         });
-      }
-    })();
-  </script>
+
+        // Проверяем текущую сессию
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+            if (error) {
+                console.error('Ошибка авторизации:', error);
+                window.location.href = '/login.html';
+            } else if (session) {
+                window.location.href = '/index.html';
+            } else {
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
 </body>
 </html>
