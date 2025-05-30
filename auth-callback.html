@@ -1,61 +1,41 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация | The X Shop</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Обработка входа</title>
+  <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="container" style="text-align: center; padding: 2rem;">
-        <h1>Обработка авторизации...</h1>
-        <p>Пожалуйста, подождите</p>
-    </div>
+  <div class="container" style="padding: 40px; text-align: center;">
+    <h1>Пожалуйста, подождите...</h1>
+  </div>
+  <script src="js/config.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(CONFIG.supabaseUrl, CONFIG.apiHeaders.apikey, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
 
-        const supabase = createClient(
-            'https://lpwvhyawvxibtuxfhitx.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
-            {
-                auth: {
-                    storage: localStorage,
-                    persistSession: true,
-                    autoRefreshToken: true,
-                }
-            }
-        );
+    (async () => {
+      // Обработаем редирект и сохраним сессию
+      await supabase.auth.getSession();
 
-        async function handleAuthCallback() {
-            try {
-                // Получаем сессию из URL
-                const { data, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Ошибка при получении сессии:', error);
-                    window.location.href = '/login.html?error=auth_failed';
-                    return;
-                }
-
-                if (data.session) {
-                    console.log('Пользователь успешно авторизован:', data.session.user);
-                    // Успешная авторизация - переходим на главную
-                    window.location.href = '/index.html';
-                } else {
-                    // Нет сессии - переходим на страницу входа
-                    console.log('Сессия не найдена, переходим на страницу входа');
-                    window.location.href = '/login.html';
-                }
-            } catch (error) {
-                console.error('Неожиданная ошибка при обработке авторизации:', error);
-                window.location.href = '/login.html?error=unexpected';
-            }
-        }
-
-        // Запускаем обработку при загрузке страницы
-        document.addEventListener('DOMContentLoaded', handleAuthCallback);
-    </script>
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = 'index.html';
+      } else {
+        supabase.auth.onAuthStateChange((_event, newSession) => {
+          if (newSession) {
+            window.location.href = 'index.html';
+          }
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
