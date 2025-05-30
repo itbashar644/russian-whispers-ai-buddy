@@ -3,6 +3,22 @@
  * Функционал для работы с избранным
  */
 
+// Ensure price helpers exist when running without utils.js
+if (typeof parsePrice !== 'function') {
+  function parsePrice(price) {
+    if (typeof price === 'number') return price;
+    if (!price) return 0;
+    const numeric = parseFloat(String(price).replace(/[^0-9.-]+/g, ''));
+    return isNaN(numeric) ? 0 : numeric;
+  }
+}
+if (typeof formatPrice !== 'function') {
+  function formatPrice(price) {
+    const value = parsePrice(price);
+    return value.toLocaleString('ru-RU') + ' ₽';
+  }
+}
+
 // Функция для инициализации избранного
 function initWishlist() {
   updateWishlistButtons();
