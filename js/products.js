@@ -334,8 +334,8 @@ async function loadProductDetails() {
 // Функция для создания HTML страницы товара
 function createProductDetailsHTML(product) {
   const priceDisplay = product.discount_price
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
-    : `<span class="current-price">${product.price} ₽</span>`;
+    ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
+    : `<span class="current-price with-background">${product.price} ₽</span>`;
 
   const marketplaceLinks = createMarketplaceLinksHtml(product);
 
