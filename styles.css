@@ -1062,6 +1062,14 @@ img {
   margin-bottom: 20px;
 }
 
+.main-image img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+
 .additional-images {
   display: flex;
   gap: 10px;
