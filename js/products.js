@@ -180,8 +180,8 @@ function createProductCard(product) {
   card.className = 'product-card';
 
   const priceDisplay = product.discount_price
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
-    : `<span class="current-price with-background">${product.price} ₽</span>`;
+    ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price with-background">${formatPrice(product.discount_price)}</span>`
+    : `<span class="current-price with-background">${formatPrice(product.price)}</span>`;
   
   // Подготовка блока маркетплейсов
   const marketplaceLinks = createMarketplaceLinksHtml(product);
@@ -206,7 +206,10 @@ function createProductCard(product) {
       </h3>
       ${marketplaceLinks}
       <div class="product-price">
-        ${priceDisplay}
+        <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
+          ${priceDisplay}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        </button>
       </div>
       <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
     </div>
@@ -334,8 +337,8 @@ async function loadProductDetails() {
 // Функция для создания HTML страницы товара
 function createProductDetailsHTML(product) {
   const priceDisplay = product.discount_price
-    ? `<span class="old-price">${product.price} ₽</span><span class="current-price with-background">${product.discount_price} ₽</span>`
-    : `<span class="current-price with-background">${product.price} ₽</span>`;
+    ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price with-background">${formatPrice(product.discount_price)}</span>`
+    : `<span class="current-price with-background">${formatPrice(product.price)}</span>`;
 
   const marketplaceLinks = createMarketplaceLinksHtml(product);
 
@@ -358,7 +361,10 @@ function createProductDetailsHTML(product) {
         </div>
         
         <div class="product-price-detail">
-          ${priceDisplay}
+          <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
+            ${priceDisplay}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          </button>
         </div>
         
         <div class="product-description">
