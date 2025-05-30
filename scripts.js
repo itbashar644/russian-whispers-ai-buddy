@@ -400,6 +400,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Инициализация поиска
   initSearch();
   
+  // Инициализация чата
+  if (typeof initChat === 'function') {
+    console.log('Инициализируем чат из scripts.js');
+    initChat();
+  }
+  
   // Загрузка товаров с Supabase, если мы находимся на главной странице
   if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
     loadFeaturedProducts();

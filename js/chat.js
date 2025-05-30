@@ -1,14 +1,20 @@
-
 /**
  * Функционал чата с интеграцией с Telegram
  */
 
 // Функция для инициализации чата
 function initChat() {
+  console.log('Инициализируем чат...');
+  
   const chatButton = document.getElementById('chat-button');
   const chatContainer = document.getElementById('chat-container');
   
-  if (!chatButton || !chatContainer) return;
+  if (!chatButton || !chatContainer) {
+    console.log('Элементы чата не найдены:', { chatButton: !!chatButton, chatContainer: !!chatContainer });
+    return;
+  }
+  
+  console.log('Элементы чата найдены, добавляем обработчики');
   
   // Инициализируем состояние чата
   let chatState = getFromStorage('chat_state', {
@@ -18,6 +24,7 @@ function initChat() {
   
   // Обработчик нажатия на кнопку чата
   chatButton.addEventListener('click', function(event) {
+    console.log('Кнопка чата нажата');
     // Останавливаем всплытие, чтобы обработчик документа не
     // закрыл чат сразу после открытия
     event.stopPropagation();
@@ -43,6 +50,7 @@ function initChat() {
   
   // Функция для открытия чата
   function openChat() {
+    console.log('Открываем чат');
     if (chatContainer.innerHTML.trim() === '' || chatContainer.classList.contains('hidden')) {
       renderChatInterface();
     }
@@ -56,6 +64,7 @@ function initChat() {
   
   // Функция для закрытия чата
   function closeChat() {
+    console.log('Закрываем чат');
     chatContainer.classList.add('hidden');
     chatState.open = false;
     saveToStorage('chat_state', chatState);
@@ -63,6 +72,7 @@ function initChat() {
   
   // Функция для рендеринга интерфейса чата
   function renderChatInterface() {
+    console.log('Рендерим интерфейс чата');
     const chatHTML = `
       <div class="chat-header">
         <h3>Чат с оператором</h3>
@@ -86,25 +96,30 @@ function initChat() {
     chatContainer.innerHTML = chatHTML;
     
     // Добавляем обработчики событий
-    document.querySelector('.chat-close-btn').addEventListener('click', closeChat);
-    const sendBtn = document.getElementById('chat-send-btn');
-    const handleSendInteraction = function(event) {
-      event.preventDefault();
-      sendMessage();
-    };
-
-    sendBtn.addEventListener('pointerdown', handleSendInteraction);
-    sendBtn.addEventListener('touchstart', handleSendInteraction);
-    sendBtn.addEventListener('click', handleSendInteraction);
-    sendBtn.addEventListener('touchend', handleSendInteraction);
+    const closeBtn = document.querySelector('.chat-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeChat);
+    }
     
-    const chatInput = document.getElementById('chat-input');
-    chatInput.addEventListener('keydown', function(event) {
-      if (event.key === 'Enter' && !event.shiftKey) {
+    const sendBtn = document.getElementById('chat-send-btn');
+    if (sendBtn) {
+      const handleSendInteraction = function(event) {
         event.preventDefault();
         sendMessage();
-      }
-    });
+      };
+
+      sendBtn.addEventListener('click', handleSendInteraction);
+    }
+    
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+      chatInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
+        }
+      });
+    }
     
     // Приветственное сообщение при первом открытии
     if (chatState.messages.length === 0) {
@@ -316,8 +331,11 @@ function initChat() {
   if (chatState.open) {
     openChat();
   }
+  
+  console.log('Чат инициализирован');
 }
 
+// Убеждаемся, что функция вызывается после загрузки DOM
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initChat);
 } else {
