@@ -79,14 +79,6 @@ export async function loadProducts(filters = {}) {
     return data || [];
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
-    try {
-      const fallback = await fetch('/products-fallback.json');
-      if (fallback.ok) {
-        return await fallback.json();
-      }
-    } catch (fallbackError) {
-      console.error('Ошибка при загрузке fallback данных:', fallbackError);
-    }
     return [];
   }
 }
