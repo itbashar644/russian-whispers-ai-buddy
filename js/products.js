@@ -204,10 +204,10 @@ function createProductCard(product) {
       <h3>
         <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
       </h3>
+      ${marketplaceLinks}
       <div class="product-price">
         ${priceDisplay}
       </div>
-      ${marketplaceLinks}
       <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
     </div>
   `;
