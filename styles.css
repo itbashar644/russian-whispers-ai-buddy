@@ -359,6 +359,7 @@ img {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .product-card:hover {
@@ -415,6 +416,7 @@ img {
   padding: 15px;
   display: flex;
   flex-direction: column;
+  flex-grow: 1; 
 }
 
 .product-info h3 {
