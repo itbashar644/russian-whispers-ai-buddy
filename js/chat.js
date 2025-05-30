@@ -2,6 +2,31 @@
  * Функционал чата с интеграцией с Telegram
  */
 
+// Вспомогательные функции для работы с localStorage (если не загружены из utils.js)
+if (typeof getFromStorage !== 'function') {
+  function getFromStorage(key, defaultValue = null) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+      return defaultValue;
+    }
+  }
+}
+
+if (typeof saveToStorage !== 'function') {
+  function saveToStorage(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+      return false;
+    }
+  }
+}
+
 // Функция для инициализации чата
 function initChat() {
   console.log('Инициализируем чат...');
@@ -293,6 +318,12 @@ function initChat() {
     try {
       const chatId = getChatId();
       const deviceInfo = getDeviceInfo();
+
+      // Проверяем наличие CONFIG
+      if (typeof CONFIG === 'undefined') {
+        console.warn('CONFIG не определен, используем fallback');
+        return Promise.resolve({ success: true });
+      }
 
       const response = await fetch(`${CONFIG.supabaseUrl}/functions/v1/telegram-chat/send`, {
         method: 'POST',
