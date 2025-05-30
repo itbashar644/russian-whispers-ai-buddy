@@ -88,97 +88,125 @@ function updateWishlistButtons(wishlist) {
   });
 }
 
-function initAddToCartButtons() {
-  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      console.log('Кнопка добавления в корзину нажата');
-      
-      const productCard = this.closest('.product-card');
-      if (!productCard) {
-        console.log('Карточка товара не найдена');
-        return;
-      }
-      
-      const productLink = productCard.querySelector('.product-link');
-      if (!productLink) {
-        console.log('Ссылка на товар не найдена');
-        return;
-      }
-      
-      // Получаем ID товара из URL или атрибута
-      let productId;
-      if (productLink.href && productLink.href.includes('id=')) {
-        productId = productLink.href.split('id=')[1];
-      } else if (productLink.dataset.id) {
-        productId = productLink.dataset.id;
-      }
-      
-      if (!productId) {
-        console.log('ID товара не найден');
-        return;
-      }
-      
-      const productTitle = productCard.querySelector('h3').textContent;
-      const priceElement = productCard.querySelector('.current-price');
-      if (!priceElement) {
-        console.log('Элемент цены не найден');
-        return;
-      }
-      
-      const priceText = priceElement.textContent;
-      const productPrice = parsePrice(priceText);
-      const productImageElement = productCard.querySelector('.product-image img');
-      const productImage = productImageElement ? productImageElement.src : '';
-      
-      console.log('Добавляем товар в корзину:', {
-        id: productId,
-        title: productTitle,
-        price: productPrice,
-        image: productImage
-      });
-      
-      addToCart({
-        id: productId,
-        title: productTitle,
-        price: productPrice,
-        image: productImage,
-        quantity: 1
-      });
-      
-      // Показываем уведомление
-      showNotification(`"${productTitle}" добавлен в корзину`);
-    });
-  });
-}
-
 function addToCart(product) {
-  console.log('Функция addToCart вызвана с товаром:', product);
+  console.log('Добавляем товар в корзину:', product);
   
   let cart = getFromStorage('cart', []);
-  console.log('Текущая корзина:', cart);
   
-  // Проверяем, есть ли уже такой товар в корзине
   const existingProductIndex = cart.findIndex(item => item.id === product.id);
   
   if (existingProductIndex !== -1) {
-    // Если товар уже в корзине - увеличиваем количество
     cart[existingProductIndex].quantity += 1;
     console.log('Товар уже в корзине, увеличиваем количество');
   } else {
-    // Иначе добавляем новый товар
     cart.push(product);
     console.log('Добавляем новый товар в корзину');
   }
   
-  // Сохраняем корзину в localStorage
   const saved = saveToStorage('cart', cart);
   console.log('Корзина сохранена:', saved, cart);
   
-  // Обновляем счетчик товаров
   updateCartCounter(cart);
+  
+  return true;
+}
+
+function handleAddToCart(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  console.log('Кнопка добавления в корзину нажата');
+  
+  const productCard = event.target.closest('.product-card');
+  if (!productCard) {
+    console.log('Карточка товара не найдена');
+    return;
+  }
+  
+  const productLink = productCard.querySelector('.product-link');
+  if (!productLink) {
+    console.log('Ссылка на товар не найдена');
+    return;
+  }
+  
+  let productId;
+  if (productLink.href && productLink.href.includes('id=')) {
+    productId = productLink.href.split('id=')[1];
+  } else if (productLink.dataset.id) {
+    productId = productLink.dataset.id;
+  }
+  
+  if (!productId) {
+    console.log('ID товара не найден');
+    return;
+  }
+  
+  const productTitle = productCard.querySelector('h3').textContent;
+  const priceElement = productCard.querySelector('.current-price');
+  if (!priceElement) {
+    console.log('Элемент цены не найден');
+    return;
+  }
+  
+  const priceText = priceElement.textContent;
+  const productPrice = parsePrice(priceText);
+  const productImageElement = productCard.querySelector('.product-image img');
+  const productImage = productImageElement ? productImageElement.src : '';
+  
+  const product = {
+    id: productId,
+    title: productTitle,
+    price: productPrice,
+    image: productImage,
+    quantity: 1
+  };
+  
+  console.log('Данные товара для корзины:', product);
+  
+  const success = addToCart(product);
+  
+  if (success) {
+    showNotification(`"${productTitle}" добавлен в корзину`);
+  } else {
+    showNotification('Ошибка при добавлении товара в корзину', 'error');
+  }
+}
+
+function initAddToCartButtons() {
+  // Удаляем старые обработчики
+  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+  });
+  
+  // Добавляем новые обработчики
+  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
+    button.addEventListener('click', handleAddToCart);
+  });
+  
+  console.log('Обработчики кнопок корзины инициализированы для', document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').length, 'кнопок');
+}
+
+function toggleWishlist(productId, productTitle) {
+  let wishlist = getFromStorage('wishlist', []);
+  
+  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
+    wishlist = wishlist.map(item => item.id);
+    saveToStorage('wishlist', wishlist);
+  }
+  
+  const index = wishlist.indexOf(productId);
+  
+  if (index !== -1) {
+    wishlist.splice(index, 1);
+    showNotification(`"${productTitle}" удален из избранного`);
+  } else {
+    wishlist.push(productId);
+    showNotification(`"${productTitle}" добавлен в избранное`);
+  }
+  
+  saveToStorage('wishlist', wishlist);
+  updateWishlistButtons(wishlist);
 }
 
 function initWishlistButtons() {
@@ -193,7 +221,6 @@ function initWishlistButtons() {
       const productLink = productCard.querySelector('.product-link');
       if (!productLink) return;
       
-      // Получаем ID товара из URL или атрибута
       let productId;
       if (productLink.href && productLink.href.includes('id=')) {
         productId = productLink.href.split('id=')[1];
@@ -210,35 +237,6 @@ function initWishlistButtons() {
   });
 }
 
-function toggleWishlist(productId, productTitle) {
-  let wishlist = getFromStorage('wishlist', []);
-  
-  // Поддержка старого формата хранения (массив объектов)
-  if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
-    wishlist = wishlist.map(item => item.id);
-    saveToStorage('wishlist', wishlist);
-  }
-  
-  // Проверяем, есть ли товар в избранном
-  const index = wishlist.indexOf(productId);
-  
-  if (index !== -1) {
-    // Если товар уже в избранном - удаляем
-    wishlist.splice(index, 1);
-    showNotification(`"${productTitle}" удален из избранного`);
-  } else {
-    // Иначе добавляем
-    wishlist.push(productId);
-    showNotification(`"${productTitle}" добавлен в избранное`);
-  }
-  
-  // Сохраняем избранное в localStorage
-  saveToStorage('wishlist', wishlist);
-  
-  // Обновляем отображение кнопок
-  updateWishlistButtons(wishlist);
-}
-
 function initSearch() {
   const searchButton = document.querySelector('.search-button');
   
@@ -249,7 +247,7 @@ function initSearch() {
   }
 }
 
-function showNotification(message) {
+function showNotification(message, type = 'success') {
   // Создаем элемент уведомления
   const notification = document.createElement('div');
   notification.className = 'notification';
@@ -259,8 +257,8 @@ function showNotification(message) {
   notification.style.position = 'fixed';
   notification.style.bottom = '20px';
   notification.style.right = '20px';
-  notification.style.backgroundColor = 'white';
-  notification.style.color = 'var(--text-color)';
+  notification.style.backgroundColor = type === 'error' ? '#dc3545' : '#28a745';
+  notification.style.color = 'white';
   notification.style.padding = '10px 15px';
   notification.style.borderRadius = '4px';
   notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
@@ -357,11 +355,12 @@ function renderProductSection(containerId, products) {
     container.appendChild(productCard);
   });
   
-  // Инициализируем кнопки после добавления карточек
+  // Важно: инициализируем обработчики после добавления карточек
   setTimeout(() => {
     initAddToCartButtons();
     initWishlistButtons();
     updateWishlistButtons();
+    console.log('Обработчики событий инициализированы для секции:', containerId);
   }, 100);
 }
 
