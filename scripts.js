@@ -1,10 +1,30 @@
-
 import { parsePrice, formatPrice } from './js/utils/priceUtils.js';
 import { createProductCard } from './js/utils/productCard.js';
 
+// Вспомогательные функции для работы с localStorage
+function getFromStorage(key, defaultValue = null) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+    return defaultValue;
+  }
+}
+
+function saveToStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+    return false;
+  }
+}
+
 function initCart() {
   // Получаем сохраненную корзину из localStorage или создаем пустую
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let cart = getFromStorage('cart', []);
   
   // Обновляем счетчик товаров в корзине
   updateCartCounter(cart);
@@ -12,7 +32,7 @@ function initCart() {
 
 function updateCartCounter(cart) {
   if (!cart) {
-    cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart = getFromStorage('cart', []);
   }
   const cartCounter = document.querySelector('.cart-counter');
   if (cartCounter) {
@@ -24,12 +44,12 @@ function updateCartCounter(cart) {
 
 function initWishlist() {
   // Получаем сохраненное избранное из localStorage или создаем пустой массив
-  let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+  let wishlist = getFromStorage('wishlist', []);
   
   // Поддержка старого формата хранения (массив объектов)
   if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
     wishlist = wishlist.map(item => item.id);
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    saveToStorage('wishlist', wishlist);
   }
   
   // Обновляем отображение кнопок избранного
@@ -38,7 +58,7 @@ function initWishlist() {
 
 function updateWishlistButtons(wishlist) {
   if (!wishlist) {
-    wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    wishlist = getFromStorage('wishlist', []);
   }
   
   document.querySelectorAll('.wishlist-button').forEach(button => {
@@ -74,11 +94,19 @@ function initAddToCartButtons() {
       e.preventDefault();
       e.stopPropagation();
       
+      console.log('Кнопка добавления в корзину нажата');
+      
       const productCard = this.closest('.product-card');
-      if (!productCard) return;
+      if (!productCard) {
+        console.log('Карточка товара не найдена');
+        return;
+      }
       
       const productLink = productCard.querySelector('.product-link');
-      if (!productLink) return;
+      if (!productLink) {
+        console.log('Ссылка на товар не найдена');
+        return;
+      }
       
       // Получаем ID товара из URL или атрибута
       let productId;
@@ -88,16 +116,29 @@ function initAddToCartButtons() {
         productId = productLink.dataset.id;
       }
       
-      if (!productId) return;
+      if (!productId) {
+        console.log('ID товара не найден');
+        return;
+      }
       
       const productTitle = productCard.querySelector('h3').textContent;
       const priceElement = productCard.querySelector('.current-price');
-      if (!priceElement) return;
+      if (!priceElement) {
+        console.log('Элемент цены не найден');
+        return;
+      }
       
       const priceText = priceElement.textContent;
       const productPrice = parsePrice(priceText);
       const productImageElement = productCard.querySelector('.product-image img');
       const productImage = productImageElement ? productImageElement.src : '';
+      
+      console.log('Добавляем товар в корзину:', {
+        id: productId,
+        title: productTitle,
+        price: productPrice,
+        image: productImage
+      });
       
       addToCart({
         id: productId,
@@ -114,7 +155,10 @@ function initAddToCartButtons() {
 }
 
 function addToCart(product) {
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  console.log('Функция addToCart вызвана с товаром:', product);
+  
+  let cart = getFromStorage('cart', []);
+  console.log('Текущая корзина:', cart);
   
   // Проверяем, есть ли уже такой товар в корзине
   const existingProductIndex = cart.findIndex(item => item.id === product.id);
@@ -122,13 +166,16 @@ function addToCart(product) {
   if (existingProductIndex !== -1) {
     // Если товар уже в корзине - увеличиваем количество
     cart[existingProductIndex].quantity += 1;
+    console.log('Товар уже в корзине, увеличиваем количество');
   } else {
     // Иначе добавляем новый товар
     cart.push(product);
+    console.log('Добавляем новый товар в корзину');
   }
   
   // Сохраняем корзину в localStorage
-  localStorage.setItem('cart', JSON.stringify(cart));
+  const saved = saveToStorage('cart', cart);
+  console.log('Корзина сохранена:', saved, cart);
   
   // Обновляем счетчик товаров
   updateCartCounter(cart);
@@ -164,12 +211,12 @@ function initWishlistButtons() {
 }
 
 function toggleWishlist(productId, productTitle) {
-  let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+  let wishlist = getFromStorage('wishlist', []);
   
   // Поддержка старого формата хранения (массив объектов)
   if (wishlist.length > 0 && typeof wishlist[0] === 'object') {
     wishlist = wishlist.map(item => item.id);
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    saveToStorage('wishlist', wishlist);
   }
   
   // Проверяем, есть ли товар в избранном
@@ -186,7 +233,7 @@ function toggleWishlist(productId, productTitle) {
   }
   
   // Сохраняем избранное в localStorage
-  localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  saveToStorage('wishlist', wishlist);
   
   // Обновляем отображение кнопок
   updateWishlistButtons(wishlist);
@@ -324,6 +371,8 @@ window.loadCategories = loadCategories;
 window.loadCatalogProducts = loadCatalogProducts;
 
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM загружен, инициализируем приложение...');
+  
   // Функция для работы с корзиной
   initCart();
   
