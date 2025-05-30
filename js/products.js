@@ -3,6 +3,22 @@
  * Функционал для работы с товарами
  */
 
+// Ensure price helpers exist when this script runs standalone
+if (typeof parsePrice !== 'function') {
+  function parsePrice(price) {
+    if (typeof price === 'number') return price;
+    if (!price) return 0;
+    const numeric = parseFloat(String(price).replace(/[^0-9.-]+/g, ''));
+    return isNaN(numeric) ? 0 : numeric;
+  }
+}
+if (typeof formatPrice !== 'function') {
+  function formatPrice(price) {
+    const value = parsePrice(price);
+    return value.toLocaleString('ru-RU') + ' ₽';
+  }
+}
+
 // Функция для загрузки выделенных товаров с Supabase
 async function loadFeaturedProducts() {
   try {
