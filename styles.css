@@ -432,20 +432,178 @@ img {
   overflow: hidden;
 }
 
+/* Современные стили для цены в карточке товара */
 .product-price {
   margin-bottom: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .current-price {
-  font-weight: 700;
-  font-size: 1.3rem;
-  color: #ff7e5f;
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
+/* Добавим тень для большей выразительности */
+.current-price::after {
+  content: attr(data-price);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  color: rgba(255, 107, 107, 0.3);
+  filter: blur(8px);
+  transform: scale(1.05);
+}
+
+/* Альтернативный стиль - с фоном */
+.current-price.with-background {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+  display: inline-block;
+  transform: perspective(200px) rotateX(5deg);
+  transition: all 0.3s ease;
+}
+
+.current-price.with-background:hover {
+  transform: perspective(200px) rotateX(0deg) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+}
+
+/* Стиль для старой цены */
 .old-price {
   text-decoration: line-through;
   color: #999;
-  margin-right: 8px;
+  font-size: 1rem;
+  position: relative;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* Добавим бейдж скидки */
+.price-badge {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Цена с эффектом неона */
+.current-price.neon {
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: #00ff88;
+  text-shadow: 
+    0 0 5px #00ff88,
+    0 0 10px #00ff88,
+    0 0 15px #00ff88,
+    0 0 20px #00ff88;
+  animation: neonGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes neonGlow {
+  from {
+    text-shadow: 
+      0 0 5px #00ff88,
+      0 0 10px #00ff88,
+      0 0 15px #00ff88,
+      0 0 20px #00ff88;
+  }
+  to {
+    text-shadow: 
+      0 0 2px #00ff88,
+      0 0 5px #00ff88,
+      0 0 8px #00ff88,
+      0 0 12px #00ff88;
+  }
+}
+
+/* Минималистичный премиум стиль */
+.current-price.premium {
+  font-weight: 300;
+  font-size: 2rem;
+  color: #2c3e50;
+  position: relative;
+  letter-spacing: -0.05em;
+}
+
+.current-price.premium::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #f39c12, #e74c3c);
+  border-radius: 1px;
+}
+
+/* Стиль с тенью и объёмом */
+.current-price.shadow {
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #ff6b6b;
+  text-shadow: 
+    2px 2px 0px #ffffff,
+    4px 4px 0px rgba(255, 107, 107, 0.2);
+  transform: perspective(500px) rotateX(15deg);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .current-price {
+    font-size: 1.3rem;
+  }
+  
+  .current-price.with-background {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+  }
+  
+  .current-price.premium {
+    font-size: 1.6rem;
+  }
+  
+  .current-price.neon {
+    font-size: 1.4rem;
+  }
+}
+
+/* Дополнительный контейнер цены с анимацией при наведении */
+.product-card:hover .current-price {
+  animation: priceHighlight 0.6s ease;
+}
+
+@keyframes priceHighlight {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 .product-category {
   display: inline-block;
