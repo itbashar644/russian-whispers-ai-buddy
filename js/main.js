@@ -1,10 +1,50 @@
-
 import { loadCategories, loadProducts } from './supabase.js';
 import { createProductCard } from './utils/productCard.js';
+
+// Глобальная переменная для отслеживания инициализации
+let isInitialized = false;
 
 // Глобальная инициализация приложения
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('Main.js: DOM загружен, инициализируем приложение...');
+  
+  // Предотвращаем повторную инициализацию
+  if (isInitialized) {
+    console.log('Main.js: Приложение уже инициализировано');
+    return;
+  }
+  
+  isInitialized = true;
+  
+  // Загружаем утилиты для localStorage
+  if (typeof getFromStorage === 'undefined') {
+    await loadScript('js/storage.js');
+  }
+  
+  // Загружаем функции корзины
+  if (typeof initCart === 'undefined') {
+    await loadScript('js/cart-functions.js');
+  }
+  
+  // Загружаем функции избранного
+  if (typeof initWishlist === 'undefined') {
+    await loadScript('js/wishlist-functions.js');
+  }
+  
+  // Загружаем функции уведомлений
+  if (typeof showNotification === 'undefined') {
+    await loadScript('js/notifications.js');
+  }
+  
+  // Загружаем функции поиска
+  if (typeof initSearch === 'undefined') {
+    await loadScript('js/search.js');
+  }
+  
+  // Загружаем функции чата
+  if (typeof initChat === 'undefined') {
+    await loadScript('js/chat.js');
+  }
   
   // Инициализируем счетчик корзины
   if (typeof updateCartCounter === 'function') {
@@ -27,29 +67,87 @@ document.addEventListener('DOMContentLoaded', async function() {
     await initProductPage();
   }
   
+  // Инициализируем базовые функции
+  initializeBaseFunctions();
+});
+
+// Функция для загрузки скриптов
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+// Инициализация базовых функций
+function initializeBaseFunctions() {
+  console.log('Main.js: Инициализируем базовые функции...');
+  
   // Инициализируем поиск на всех страницах
-  if (typeof initSearch === 'function') {
-    initSearch();
-  }
+  setTimeout(() => {
+    if (typeof initSearch === 'function') {
+      initSearch();
+      console.log('Main.js: Поиск инициализирован');
+    }
+  }, 100);
   
   // Инициализируем чат на всех страницах
-  if (typeof initChat === 'function') {
-    initChat();
-  }
-  
-  // Инициализируем функциональность корзины и избранного
   setTimeout(() => {
-    if (typeof initAddToCartButtons === 'function') {
-      initAddToCartButtons();
+    if (typeof initChat === 'function') {
+      initChat();
+      console.log('Main.js: Чат инициализирован');
     }
-    if (typeof initWishlistButtons === 'function') {
-      initWishlistButtons();
+  }, 200);
+  
+  // Инициализируем корзину
+  setTimeout(() => {
+    if (typeof initCart === 'function') {
+      initCart();
+      console.log('Main.js: Корзина инициализирована');
     }
+  }, 300);
+  
+  // Инициализируем избранное
+  setTimeout(() => {
     if (typeof initWishlist === 'function') {
       initWishlist();
+      console.log('Main.js: Избранное инициализировано');
     }
+  }, 400);
+  
+  // Инициализируем кнопки после всего остального
+  setTimeout(() => {
+    initializeButtons();
   }, 500);
-});
+}
+
+// Инициализация кнопок
+function initializeButtons() {
+  console.log('Main.js: Инициализируем кнопки...');
+  
+  if (typeof initAddToCartButtons === 'function') {
+    initAddToCartButtons();
+    console.log('Main.js: Кнопки корзины инициализированы');
+  }
+  
+  if (typeof initWishlistButtons === 'function') {
+    initWishlistButtons();
+    console.log('Main.js: Кнопки избранного инициализированы');
+  }
+  
+  if (typeof updateWishlistButtons === 'function') {
+    updateWishlistButtons();
+    console.log('Main.js: Состояние кнопок избранного обновлено');
+  }
+}
 
 // Инициализация главной страницы
 async function initHomePage() {
@@ -226,3 +324,6 @@ window.addEventListener('resize', function() {
 window.addEventListener('beforeunload', function() {
   // Можно добавить логику сохранения данных
 });
+
+// Экспортируем функцию инициализации для использования в других местах
+window.initHomePage = initHomePage;

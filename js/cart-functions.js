@@ -3,8 +3,20 @@
  * Функции для работы с корзиной
  */
 
+// Глобальная переменная для предотвращения повторной инициализации
+let cartInitialized = false;
+let cartButtonsInitialized = false;
+
 function initCart() {
   console.log('Инициализируем корзину...');
+  
+  if (cartInitialized) {
+    console.log('Корзина уже инициализирована');
+    return;
+  }
+  
+  cartInitialized = true;
+  
   // Получаем сохраненную корзину из localStorage или создаем пустую
   let cart = getFromStorage('cart', []);
   
@@ -130,10 +142,17 @@ function handleAddToCart(event) {
 function initAddToCartButtons() {
   console.log('Инициализируем кнопки корзины...');
   
+  if (cartButtonsInitialized) {
+    console.log('Кнопки корзины уже инициализированы');
+    return;
+  }
+  
+  cartButtonsInitialized = true;
+  
   // Удаляем старые обработчики
-  document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
+  const existingButtons = document.querySelectorAll('.add-to-cart-btn, .price-cart-btn');
+  existingButtons.forEach(button => {
+    button.removeEventListener('click', handleAddToCart);
   });
   
   // Добавляем новые обработчики

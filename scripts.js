@@ -1,4 +1,7 @@
 
+// Упрощенный scripts.js без дублирования функциональности
+// Только для загрузки товаров, вся остальная логика в main.js
+
 import { parsePrice, formatPrice } from './js/utils/priceUtils.js';
 import { createProductCard } from './js/utils/productCard.js';
 
@@ -52,10 +55,6 @@ async function loadCategories() {
   }
 }
 
-async function loadCatalogProducts(category) {
-  console.log('loadCatalogProducts вызвана с категорией:', category);
-}
-
 function renderProductSection(containerId, products) {
   const container = document.getElementById(containerId);
   if (!container || !products) return;
@@ -87,74 +86,10 @@ function renderProductSection(containerId, products) {
     }
     container.appendChild(productCard);
   });
-  
-  // Важно: инициализируем обработчики после добавления карточек
-  setTimeout(() => {
-    if (typeof initAddToCartButtons === 'function') {
-      initAddToCartButtons();
-    }
-    if (typeof initWishlistButtons === 'function') {
-      initWishlistButtons();
-    }
-    if (typeof updateWishlistButtons === 'function') {
-      updateWishlistButtons();
-    }
-    console.log('Обработчики событий инициализированы для секции:', containerId);
-  }, 100);
 }
 
 // Делаем функции глобально доступными
 window.loadFeaturedProducts = loadFeaturedProducts;
 window.loadCategories = loadCategories;
-window.loadCatalogProducts = loadCatalogProducts;
 
-// Минимальная инициализация только если main.js не загружен
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Scripts.js: DOM загружен...');
-  
-  // Проверяем, загружен ли main.js
-  const isMainPageWithMainJs = (window.location.pathname === '/' || window.location.pathname === '/index.html') && typeof window.initHomePage !== 'undefined';
-  
-  if (!isMainPageWithMainJs) {
-    console.log('Scripts.js: Инициализируем fallback функции...');
-    
-    // Функция для работы с корзиной
-    if (typeof initCart === 'function') {
-      initCart();
-    }
-    
-    // Обработка кнопок добавления в корзину
-    if (typeof initAddToCartButtons === 'function') {
-      initAddToCartButtons();
-    }
-    
-    // Инициализация избранного
-    if (typeof initWishlist === 'function') {
-      initWishlist();
-    }
-    
-    // Инициализация поиска
-    if (typeof initSearch === 'function') {
-      initSearch();
-    }
-    
-    // Инициализация чата
-    if (typeof initChat === 'function') {
-      console.log('Инициализируем чат из scripts.js');
-      initChat();
-    }
-    
-    // Загрузка товаров с Supabase, если мы находимся на главной странице
-    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-      loadFeaturedProducts();
-      loadCategories();
-    }
-    
-    // Загрузка товаров в каталоге
-    if (window.location.pathname.includes('catalog.html')) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const categoryParam = urlParams.get('category');
-      loadCatalogProducts(categoryParam);
-    }
-  }
-});
+// НЕ ИНИЦИАЛИЗИРУЕМ НИЧЕГО ЗДЕСЬ - все инициализация в main.js

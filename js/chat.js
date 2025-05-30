@@ -30,9 +30,18 @@ if (typeof saveToStorage !== 'function') {
   window.saveToStorage = saveToStorage;
 }
 
+// Глобальная переменная для предотвращения повторной инициализации
+let chatInitialized = false;
+
 // Функция для инициализации чата
 function initChat() {
   console.log('Инициализируем чат...');
+  
+  // Предотвращаем повторную инициализацию
+  if (chatInitialized) {
+    console.log('Чат уже инициализирован');
+    return;
+  }
   
   const chatButton = document.getElementById('chat-button');
   const chatContainer = document.getElementById('chat-container');
@@ -46,10 +55,7 @@ function initChat() {
   }
   
   console.log('Элементы чата найдены, добавляем обработчики');
-  
-  // Удаляем старые обработчики
-  const newChatButton = chatButton.cloneNode(true);
-  chatButton.parentNode.replaceChild(newChatButton, chatButton);
+  chatInitialized = true;
   
   // Инициализируем состояние чата
   let chatState = getFromStorage('chat_state', {
@@ -57,29 +63,38 @@ function initChat() {
     messages: []
   });
   
+  // Очищаем старые обработчики, если есть
+  chatButton.removeEventListener('click', handleChatButtonClick);
+  document.removeEventListener('click', handleDocumentClick);
+  
   // Обработчик нажатия на кнопку чата
-  newChatButton.addEventListener('click', function(event) {
+  function handleChatButtonClick(event) {
     console.log('Кнопка чата нажата');
     event.stopPropagation();
+    event.preventDefault();
 
     if (chatContainer.classList.contains('hidden')) {
       openChat();
     } else {
       closeChat();
     }
-  });
+  }
   
   // Обработчик событий на документе, чтобы закрывать чат по клику вне его
-  document.addEventListener('click', function(event) {
+  function handleDocumentClick(event) {
     if (!chatContainer.classList.contains('hidden')) {
       const isClickInsideChat = chatContainer.contains(event.target);
-      const isClickOnChatButton = newChatButton.contains(event.target);
+      const isClickOnChatButton = chatButton.contains(event.target);
       
       if (!isClickInsideChat && !isClickOnChatButton) {
         closeChat();
       }
     }
-  });
+  }
+  
+  // Добавляем обработчики
+  chatButton.addEventListener('click', handleChatButtonClick);
+  document.addEventListener('click', handleDocumentClick);
   
   // Функция для открытия чата
   function openChat() {
@@ -288,9 +303,4 @@ function initChat() {
 // Делаем функцию глобально доступной
 window.initChat = initChat;
 
-// Инициализируем чат при загрузке DOM
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initChat);
-} else {
-  initChat();
-}
+// НЕ автоинициализируем чат здесь - это делается в main.js
