@@ -1,3 +1,4 @@
+
 import { parsePrice, formatPrice } from './js/utils/priceUtils.js';
 import { createProductCard } from './js/utils/productCard.js';
 
@@ -36,6 +37,10 @@ function initWishlist() {
 }
 
 function updateWishlistButtons(wishlist) {
+  if (!wishlist) {
+    wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+  }
+  
   document.querySelectorAll('.wishlist-button').forEach(button => {
     const productCard = button.closest('.product-card');
     if (!productCard) return;
@@ -45,7 +50,7 @@ function updateWishlistButtons(wishlist) {
     
     // Получаем ID товара из URL или атрибута
     let productId;
-    if (productLink.href.includes('id=')) {
+    if (productLink.href && productLink.href.includes('id=')) {
       productId = productLink.href.split('id=')[1];
     } else if (productLink.dataset.id) {
       productId = productLink.dataset.id;
@@ -67,6 +72,7 @@ function initAddToCartButtons() {
   document.querySelectorAll('.add-to-cart-btn, .price-cart-btn').forEach(button => {
     button.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       
       const productCard = this.closest('.product-card');
       if (!productCard) return;
@@ -76,7 +82,7 @@ function initAddToCartButtons() {
       
       // Получаем ID товара из URL или атрибута
       let productId;
-      if (productLink.href.includes('id=')) {
+      if (productLink.href && productLink.href.includes('id=')) {
         productId = productLink.href.split('id=')[1];
       } else if (productLink.dataset.id) {
         productId = productLink.dataset.id;
@@ -85,9 +91,13 @@ function initAddToCartButtons() {
       if (!productId) return;
       
       const productTitle = productCard.querySelector('h3').textContent;
-      const priceText = productCard.querySelector('.current-price').textContent;
+      const priceElement = productCard.querySelector('.current-price');
+      if (!priceElement) return;
+      
+      const priceText = priceElement.textContent;
       const productPrice = parsePrice(priceText);
-      const productImage = productCard.querySelector('.product-image img').src;
+      const productImageElement = productCard.querySelector('.product-image img');
+      const productImage = productImageElement ? productImageElement.src : '';
       
       addToCart({
         id: productId,
@@ -138,7 +148,7 @@ function initWishlistButtons() {
       
       // Получаем ID товара из URL или атрибута
       let productId;
-      if (productLink.href.includes('id=')) {
+      if (productLink.href && productLink.href.includes('id=')) {
         productId = productLink.href.split('id=')[1];
       } else if (productLink.dataset.id) {
         productId = productLink.dataset.id;
@@ -227,10 +237,91 @@ function showNotification(message) {
     notification.style.transform = 'translateY(20px)';
     
     setTimeout(() => {
-      document.body.removeChild(notification);
+      if (notification.parentNode) {
+        document.body.removeChild(notification);
+      }
     }, 300);
   }, 3000);
 }
+
+// Экспортируем глобальные функции для загрузки товаров
+async function loadFeaturedProducts() {
+  try {
+    const { loadProducts } = await import('./js/supabase.js');
+    const products = await loadProducts();
+    
+    if (products && products.length > 0) {
+      const bestsellers = products.filter(product => product.is_bestseller).slice(0, 8);
+      const newProducts = products.filter(product => product.is_new).slice(0, 8);
+      const popularProducts = products.slice(0, 8);
+      
+      renderProductSection('bestsellersGrid', bestsellers);
+      renderProductSection('newProductsGrid', newProducts);
+      renderProductSection('productsGrid', popularProducts);
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке товаров:', error);
+  }
+}
+
+async function loadCategories() {
+  try {
+    const { loadCategories: loadCategoriesFromSupabase } = await import('./js/supabase.js');
+    const categories = await loadCategoriesFromSupabase();
+    
+    const categoriesContainer = document.getElementById('categoriesGrid');
+    if (!categoriesContainer || !categories) return;
+    
+    categoriesContainer.innerHTML = '';
+    
+    categories.forEach(category => {
+      const categoryCard = document.createElement('div');
+      categoryCard.className = 'category-card';
+      categoryCard.innerHTML = `
+        <a href="catalog.html?category=${encodeURIComponent(category.name)}" class="category-link">
+          <div class="category-image">
+            <img src="${category.image_url}" alt="${category.name}" loading="lazy">
+          </div>
+          <div class="category-info">
+            <h3>${category.name}</h3>
+          </div>
+        </a>
+      `;
+      categoriesContainer.appendChild(categoryCard);
+    });
+  } catch (error) {
+    console.error('Ошибка при загрузке категорий:', error);
+  }
+}
+
+async function loadCatalogProducts(category) {
+  // Эта функция будет реализована в других файлах
+  console.log('loadCatalogProducts вызвана с категорией:', category);
+}
+
+function renderProductSection(containerId, products) {
+  const container = document.getElementById(containerId);
+  if (!container || !products) return;
+  
+  container.innerHTML = '';
+  
+  products.forEach(product => {
+    const productCard = createProductCard(product);
+    container.appendChild(productCard);
+  });
+  
+  // Инициализируем кнопки после добавления карточек
+  setTimeout(() => {
+    initAddToCartButtons();
+    initWishlistButtons();
+    updateWishlistButtons();
+  }, 100);
+}
+
+// Делаем функции глобально доступными
+window.loadFeaturedProducts = loadFeaturedProducts;
+window.loadCategories = loadCategories;
+window.loadCatalogProducts = loadCatalogProducts;
 
 document.addEventListener('DOMContentLoaded', function() {
   // Функция для работы с корзиной

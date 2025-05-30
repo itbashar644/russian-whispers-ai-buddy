@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -307,19 +308,23 @@
     <!-- Необходимый скрипт для Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
-    <script>
-      // Конфигурация для Supabase
-      const CONFIG = {
-        supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
-        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
-        get apiHeaders() {
-          return {
-            'apikey': this.supabaseKey,
-            'Authorization': `Bearer ${this.supabaseKey}`,
-            'Content-Type': 'application/json'
-          };
+    <script type="module">
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+      // Правильная конфигурация Supabase
+      const supabaseUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI';
+
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: true,
+          detectSessionInUrl: true,
+          autoRefreshToken: true
         }
-      };
+      });
+
+      // Делаем supabase доступным глобально
+      window.supabase = supabase;
 
       function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
@@ -356,7 +361,11 @@
         }
 
         try {
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          const { data, error } = await supabase.auth.signInWithPassword({ 
+            email, 
+            password 
+          });
+          
           if (error) {
             console.error('Ошибка авторизации:', error);
             showNotification(error.message || 'Ошибка авторизации', 'error');
@@ -372,28 +381,30 @@
           showNotification('Не удалось войти', 'error');
         }
       });
-    </script>
-    
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-      window.supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, {
-        auth: {
-          persistSession: true,
-          detectSessionInUrl: true
+      // Обработчик входа через Google
+      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        try {
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: `${window.location.origin}/auth-callback.html`
+            }
+          });
+          
+          if (error) {
+            console.error('Ошибка входа через Google:', error);
+            showNotification('Ошибка входа через Google', 'error');
+          }
+        } catch (err) {
+          console.error('Неожиданная ошибка при входе через Google:', err);
+          showNotification('Не удалось войти через Google', 'error');
         }
       });
-
-      document.getElementById('googleLoginBtn').addEventListener('click', () => {
-        supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth-callback.html`
-          }
-        });
-      });
     </script>
-    <script src="/js/utils.js"></script>
+    
+    <script src="scripts.js"></script>
+    <script src="/js/search.js"></script>
     <script src="/js/chat.js"></script>
   </body>
 </html>
