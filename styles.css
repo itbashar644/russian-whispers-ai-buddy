@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -1097,7 +1099,7 @@ img {
 }
 
 .stars {
-  color: #ffc107;
+  color: #ffc107;  
   margin-right: 5px;
 }
 
@@ -1117,6 +1119,12 @@ img {
 .product-description {
   margin: 20px 0;
   line-height: 1.6;
+  background-color: #f9fafb;
+  padding: 20px;
+  border-left: 4px solid #007bff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
 }
 
 .product-actions {
