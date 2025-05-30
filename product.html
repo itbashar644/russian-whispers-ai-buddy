@@ -1,165 +1,365 @@
 
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Товар | The X Shop</title>
-    <meta name="description" content="Товары из Китая высокого качества по доступным ценам. Аналоги популярных брендов.">
+    <meta name="description" content="Товар из каталога The X Shop">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
 </head>
-  <body>
-    <header class="main-header">
-      <div class="container">
-        <div class="header-content">
-          <div class="logo">
-            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
-          </div>
-          
-          <nav class="main-nav">
-            <ul class="nav-list">
-              <li><a href="index.html" class="nav-link">Главная</a></li>
-              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
-              <li><a href="about.html" class="nav-link">О нас</a></li>
-              <li><a href="contacts.html" class="nav-link">Контакты</a></li>
-            </ul>
-          </nav>
-          
-          <div class="header-actions">
-          <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
-          <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
-            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span id="cart-counter" class="counter">0</span>
-            </a>
-            <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </a>
-          </div>
-          
-          <button class="mobile-menu-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-          </button>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="catalog.html">Каталог</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contacts.html">Контакты</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <div class="header-search">
+                    <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                    <button id="search-button" class="icon-button search-button" aria-label="Поиск">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    </button>
+                </div>
+                <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                </a>
+                <a href="wishlist.html" class="icon-button" aria-label="Избранное">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                </a>
+                <a href="cart.html" class="icon-button" aria-label="Корзина">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                    <span class="cart-counter"></span>
+                </a>
+                <a href="login.html" class="icon-button" aria-label="Личный кабинет">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </a>
+            </div>
         </div>
-      </div>
     </header>
 
     <main>
-      <!-- Product Content -->
-      <section class="section-padding">
         <div class="container">
-          <div class="breadcrumbs">
-            <a href="index.html">Главная</a> / <a href="catalog.html">Каталог</a> / <span id="breadcrumb-category">Категория</span> / <span id="breadcrumb-product">Товар</span>
-          </div>
-          
-          <div class="product-details-container">
-            <div class="loading">Загрузка информации о товаре...</div>
-          </div>
+            <nav class="breadcrumbs">
+                <a href="index.html">Главная</a>
+                <span class="separator">/</span>
+                <a href="catalog.html">Каталог</a>
+                <span class="separator">/</span>
+                <span id="breadcrumb-category">Категория</span>
+                <span class="separator">/</span>
+                <span id="breadcrumb-product">Товар</span>
+            </nav>
+
+            <div class="product-details-container">
+                <div class="loading">Загрузка информации о товаре...</div>
+            </div>
+
+            <section class="related-products-section">
+                <div class="container">
+                    <h2>Похожие товары</h2>
+                    <div class="products-grid" id="related-products">
+                        <div class="loading">Загрузка похожих товаров...</div>
+                    </div>
+                </div>
+            </section>
         </div>
-      </section>
-      
-      <!-- Related Products -->
-      <section class="related-products-section section-padding bg-light">
-        <div class="container">
-          <h2 class="section-title">Похожие товары</h2>
-          <div id="related-products" class="products-grid">
-            <div class="loading">Загрузка похожих товаров...</div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- Chat Button -->
-      <div class="chat-widget">
-        <button id="chat-button" class="chat-toggle-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        </button>
-        <div id="chat-container" class="chat-container hidden">
-          <!-- Chat interface will be loaded here -->
-        </div>
-      </div>
     </main>
 
     <footer class="main-footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-column">
-            <h3 class="footer-title">The X Shop</h3>
-            <p>Качественные товары из Китая по доступным ценам</p>
-          </div>
-          
-          <div class="footer-column">
-                       <h4 class="footer-title">Каталог</h4>
-            <ul class="footer-links">
-              <li><a href="catalog.html">Все товары</a></li>
-              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
-            </ul>
-          </div>
-          
-          <div class="footer-column">
-            <h4 class="footer-title">Информация</h4>
-            <ul class="footer-links">
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка и оплата</a></li>
-              <li><a href="returns.html">Возврат и обмен</a></li>
-            </ul>
-          </div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">The X Shop</h3>
+                    <p>Качественные товары из Китая по доступным ценам</p>
+                </div>
+                <div class="footer-column">
+                    <h4 class="footer-title">Каталог</h4>
+                    <ul class="footer-links">
+                        <li><a href="catalog.html">Все товары</a></li>
+                        <li><a href="catalog.html?category=Электроника">Электроника</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4 class="footer-title">Информация</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="delivery.html">Доставка и оплата</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2020 The X Shop. Все права защищены.</p>
+            </div>
         </div>
-        
-        <div class="footer-bottom">
-          <p>&copy; 2020 The X Shop. Все права защищены.</p>
-        </div>
-      </div>
     </footer>
 
-    <script defer src="js/config.js"></script>
-    <script defer src="js/utils.js"></script>
-    <script defer src="js/products.js"></script>
-    <script defer src="js/search.js"></script>
-    <script defer src="js/cart.js"></script>
-    <script defer src="js/wishlist.js"></script>
-    <script defer src="js/chat.js"></script>
-    <script defer type="module" src="js/main.js"></script>
-  </body>
+    <script>
+        // Конфигурация для Supabase
+        const CONFIG = {
+            supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
+            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+            get apiHeaders() {
+                return {
+                    'apikey': this.supabaseKey,
+                    'Authorization': `Bearer ${this.supabaseKey}`,
+                    'Content-Type': 'application/json'
+                };
+            }
+        };
+
+        // Функция для создания HTML-блока с маркетплейсами
+        function createMarketplaceLinksHtml(product) {
+            if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
+                return '';
+            }
+
+            let marketplaceIconsHtml = '';
+
+            if (product.wildberries_url) {
+                marketplaceIconsHtml += `
+                    <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+                        <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
+                    </a>
+                `;
+            }
+
+            if (product.ozon_url) {
+                marketplaceIconsHtml += `
+                    <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+                        <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
+                    </a>
+                `;
+            }
+
+            if (product.avito_url) {
+                marketplaceIconsHtml += `
+                    <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+                        <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
+                    </a>
+                `;
+            }
+
+            return `
+                <div class="marketplace-links">
+                    <span class="marketplace-title">Доступен на:</span>
+                    <div class="marketplace-icons">
+                        ${marketplaceIconsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Функция для создания HTML страницы товара
+        function createProductDetailsHTML(product) {
+            const priceDisplay = product.discount_price
+                ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
+                : `<span class="current-price">${product.price} ₽</span>`;
+
+            const marketplaceLinks = createMarketplaceLinksHtml(product);
+
+            return `
+                <div class="product-details">
+                    <div class="product-gallery">
+                        <div class="main-image">
+                            <img src="${product.image_url}" alt="${product.title}" id="main-product-image">
+                        </div>
+                    </div>
+                    
+                    <div class="product-info-detail">
+                        <h1 class="product-title">${product.title}</h1>
+                        
+                        <div class="product-rating">
+                            <div class="stars">
+                                ${'★'.repeat(Math.floor(product.rating || 4.8))}${'☆'.repeat(5 - Math.floor(product.rating || 4.8))}
+                            </div>
+                            <span class="rating-value">${product.rating || 4.8}</span>
+                        </div>
+                        
+                        <div class="product-price-detail">
+                            ${priceDisplay}
+                        </div>
+                        
+                        <div class="product-description">
+                            <p>${product.description}</p>
+                        </div>
+                        
+                        ${marketplaceLinks}
+                        
+                        <div class="product-actions">
+                            <button class="add-to-cart-btn btn primary-btn" data-id="${product.id}">
+                                Добавить в корзину
+                            </button>
+                            <button class="wishlist-button btn secondary-btn" data-id="${product.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                                В избранное
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Функция для создания карточки товара
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+
+            const priceDisplay = product.discount_price
+                ? `<span class="old-price">${product.price} ₽</span><span class="current-price">${product.discount_price} ₽</span>`
+                : `<span class="current-price">${product.price} ₽</span>`;
+
+            const displayTitle = product.title.length > 50
+                ? `${product.title.slice(0, 50)}…`
+                : product.title;
+            const marketplaceLinks = createMarketplaceLinksHtml(product);
+
+            card.innerHTML = `
+                <div class="product-image">
+                    <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
+                        <img src="${product.image_url}" alt="${product.title}" loading="lazy">
+                    </a>
+                    <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                    </button>
+                </div>
+                <div class="product-info">
+                    <h3>
+                        <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
+                    </h3>
+                    <div class="product-price">
+                        ${priceDisplay}
+                    </div>
+                    ${marketplaceLinks}
+                    <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Функция для загрузки данных о товаре
+        async function loadProductDetails() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id');
+                
+                if (!productId) {
+                    const container = document.querySelector('.product-details-container');
+                    if (container) {
+                        container.innerHTML = '<div class="error-message">Товар не найден</div>';
+                    }
+                    return;
+                }
+                
+                const container = document.querySelector('.product-details-container');
+                if (container) {
+                    container.innerHTML = '<div class="loading">Загрузка информации о товаре...</div>';
+                }
+                
+                const response = await fetch(
+                    `${CONFIG.supabaseUrl}/rest/v1/products?id=eq.${productId}&select=*`,
+                    { headers: CONFIG.apiHeaders }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить данные о товаре');
+                }
+
+                const products = await response.json();
+                
+                if (!products || products.length === 0) {
+                    if (container) {
+                        container.innerHTML = '<div class="error-message">Товар не найден</div>';
+                    }
+                    return;
+                }
+
+                const product = products[0];
+
+                // Обновляем breadcrumbs
+                const breadcrumbCategory = document.getElementById('breadcrumb-category');
+                const breadcrumbProduct = document.getElementById('breadcrumb-product');
+                
+                if (breadcrumbCategory) breadcrumbCategory.textContent = product.category || 'Категория';
+                if (breadcrumbProduct) breadcrumbProduct.textContent = product.title;
+
+                // Обновляем title страницы
+                document.title = `${product.title} | The X Shop`;
+
+                // Создаем HTML для страницы товара
+                const productHTML = createProductDetailsHTML(product);
+                
+                if (container) {
+                    container.innerHTML = productHTML;
+                }
+
+                // Загружаем похожие товары
+                loadRelatedProducts(product.category, product.id);
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке товара:', error);
+                const container = document.querySelector('.product-details-container');
+                if (container) {
+                    container.innerHTML = '<div class="error-message">Ошибка при загрузке товара: ' + error.message + '</div>';
+                }
+            }
+        }
+
+        // Функция для загрузки похожих товаров
+        async function loadRelatedProducts(category, currentProductId) {
+            try {
+                const relatedContainer = document.getElementById('related-products');
+                if (!relatedContainer) return;
+                
+                relatedContainer.innerHTML = '<div class="loading">Загрузка похожих товаров...</div>';
+                
+                const response = await fetch(
+                    `${CONFIG.supabaseUrl}/rest/v1/products?category=eq.${encodeURIComponent(category)}&archived=eq.false&in_stock=eq.true&id=neq.${currentProductId}&limit=4`,
+                    { headers: CONFIG.apiHeaders }
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить похожие товары');
+                }
+                
+                const products = await response.json();
+                
+                if (products.length === 0) {
+                    relatedContainer.innerHTML = '<div class="empty-message">Похожие товары не найдены</div>';
+                    return;
+                }
+                
+                relatedContainer.innerHTML = '';
+                
+                products.forEach(product => {
+                    const productCard = createProductCard(product);
+                    relatedContainer.appendChild(productCard);
+                });
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке похожих товаров:', error);
+                const relatedContainer = document.getElementById('related-products');
+                if (relatedContainer) {
+                    relatedContainer.innerHTML = '<div class="error-message">Ошибка при загрузке похожих товаров</div>';
+                }
+            }
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductDetails();
+        });
+    </script>
+
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+</body>
 </html>
