@@ -252,8 +252,9 @@ function renderProductSection(containerId, products) {
   
   // Важно: инициализируем обработчики после добавления карточек
   setTimeout(() => {
-    initAddToCartButtons();
-    // Инициализируем кнопки избранного из внешнего файла
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
     if (typeof initWishlistButtons === 'function') {
       initWishlistButtons();
     }
@@ -273,13 +274,24 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM загружен, инициализируем приложение...');
   
   // Функция для работы с корзиной
-  initCart();
+  if (typeof initCart === 'function') {
+    initCart();
+  }
   
   // Обработка кнопок добавления в корзину
-  initAddToCartButtons();
+  if (typeof initAddToCartButtons === 'function') {
+    initAddToCartButtons();
+  }
+  
+  // Инициализация избранного
+  if (typeof initWishlist === 'function') {
+    initWishlist();
+  }
   
   // Инициализация поиска
-  initSearch();
+  if (typeof initSearch === 'function') {
+    initSearch();
+  }
   
   // Инициализация чата
   if (typeof initChat === 'function') {
@@ -294,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Загрузка товаров в каталоге
-  if (window.location.pathname === '/catalog.html') {
+  if (window.location.pathname.includes('catalog.html')) {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     loadCatalogProducts(categoryParam);
