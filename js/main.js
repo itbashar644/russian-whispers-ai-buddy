@@ -145,7 +145,10 @@ async function initCatalogPage() {
     // Фокус на поиске если нужно
     const focus = urlParams.get('focus');
     if (focus === 'search') {
-      const searchInput = document.getElementById('search-input');
+      let searchInput = document.querySelector('.catalog-search #search-input');
+      if (!searchInput) {
+        searchInput = document.getElementById('search-input');
+      }
       if (searchInput) {
         searchInput.focus();
       }
