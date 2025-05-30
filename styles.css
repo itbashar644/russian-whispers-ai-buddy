@@ -1,5 +1,5 @@
 
-/* Reset and base styles */
+/* Reset and base styles! */
 * {
   margin: 0;
   padding: 0;
@@ -432,13 +432,20 @@ img {
   overflow: hidden;
 }
 
-.product-price {
-  margin-bottom: 15px;
+.product-price,
+.product-price-detail {
+  margin: 12px 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
 }
 
 .current-price {
-  font-weight: 700;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: #ff7e5f;
 }
 
@@ -446,6 +453,7 @@ img {
   text-decoration: line-through;
   color: #999;
   margin-right: 8px;
+  font-size: 0.9rem;
 }
 .product-category {
   display: inline-block;
