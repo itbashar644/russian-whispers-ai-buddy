@@ -201,7 +201,7 @@
       </div>
     </footer>
 
-    <!-- Load JavaScript in correct order -->
+    <!-- Global config and utilities -->
     <script>
       // Global config for Supabase and app
       const CONFIG = {
@@ -217,15 +217,16 @@
       };
     </script>
     
-    <!-- Load dependencies in correct order -->
+    <!-- Load base utilities first -->
     <script src="js/storage.js"></script>
     <script src="js/notifications.js"></script>
+    
+    <!-- Load feature scripts -->
     <script src="js/cart-functions.js"></script>
     <script src="js/wishlist-functions.js"></script>
     <script src="js/search.js"></script>
-    <script src="js/chat.js"></script>
     
-    <!-- Main application initialization -->
+    <!-- Load modular application -->
     <script type="module" src="js/main.js"></script>
     
     <!-- GPT Engineer script -->
