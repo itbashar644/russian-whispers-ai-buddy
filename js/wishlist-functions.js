@@ -5,7 +5,6 @@
 
 // Глобальная переменная для предотвращения повторной инициализации
 let wishlistInitialized = false;
-let wishlistButtonsInitialized = false;
 
 function initWishlist() {
   console.log('Инициализируем избранное...');
@@ -163,17 +162,11 @@ function handleWishlistClick(event) {
 function initWishlistButtons() {
   console.log('Инициализируем кнопки избранного...');
   
-  if (wishlistButtonsInitialized) {
-    console.log('Кнопки избранного уже инициализированы');
-    return;
-  }
-  
-  wishlistButtonsInitialized = true;
-  
   // Сначала удаляем старые обработчики
   const existingButtons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
   existingButtons.forEach(button => {
-    button.removeEventListener('click', handleWishlistClick);
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
   });
   
   // Добавляем новые обработчики

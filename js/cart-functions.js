@@ -5,7 +5,6 @@
 
 // Глобальная переменная для предотвращения повторной инициализации
 let cartInitialized = false;
-let cartButtonsInitialized = false;
 
 function initCart() {
   console.log('Инициализируем корзину...');
@@ -31,7 +30,7 @@ function updateCartCounter(cart) {
   }
   const counters = document.querySelectorAll('.cart-counter');
   console.log('Обновляем счетчики корзины, найдено элементов:', counters.length);
-  if (!counters.length) return;
+  
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
   counters.forEach(counter => {
     counter.textContent = totalItems > 0 ? totalItems : '';
@@ -142,17 +141,11 @@ function handleAddToCart(event) {
 function initAddToCartButtons() {
   console.log('Инициализируем кнопки корзины...');
   
-  if (cartButtonsInitialized) {
-    console.log('Кнопки корзины уже инициализированы');
-    return;
-  }
-  
-  cartButtonsInitialized = true;
-  
   // Удаляем старые обработчики
   const existingButtons = document.querySelectorAll('.add-to-cart-btn, .price-cart-btn');
   existingButtons.forEach(button => {
-    button.removeEventListener('click', handleAddToCart);
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
   });
   
   // Добавляем новые обработчики

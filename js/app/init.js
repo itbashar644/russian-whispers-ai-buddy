@@ -19,65 +19,25 @@ export function initializeApp() {
   console.log('Инициализируем приложение...');
   isAppInitialized = true;
   
-  // Инициализируем базовые функции синхронно
-  initializeBaseFunctions();
-  
   // Определяем и инициализируем текущую страницу
   const currentPage = getCurrentPage();
   initializePage(currentPage);
-}
-
-function initializeBaseFunctions() {
-  console.log('Инициализируем базовые функции...');
   
-  // Инициализируем поиск
-  if (typeof initSearch === 'function') {
-    initSearch();
-    console.log('Поиск инициализирован');
-  }
-  
-  // Инициализируем чат
-  initChat();
-  console.log('Чат инициализирован');
-  
-  // Инициализируем корзину
-  if (typeof initCart === 'function') {
-    initCart();
-    console.log('Корзина инициализирована');
-  }
-  
-  // Инициализируем избранное
-  if (typeof initWishlist === 'function') {
-    initWishlist();
-    console.log('Избранное инициализировано');
-  }
-  
-  // Инициализируем кнопки
-  initializeButtons();
-}
-
-function initializeButtons() {
-  console.log('Инициализируем кнопки...');
-  
-  if (typeof initAddToCartButtons === 'function') {
-    initAddToCartButtons();
-    console.log('Кнопки корзины инициализированы');
-  }
-  
-  if (typeof initWishlistButtons === 'function') {
-    initWishlistButtons();
-    console.log('Кнопки избранного инициализированы');
-  }
-  
-  if (typeof updateWishlistButtons === 'function') {
-    updateWishlistButtons();
-    console.log('Состояние кнопок избранного обновлено');
-  }
-  
-  if (typeof updateCartCounter === 'function') {
-    updateCartCounter();
-    console.log('Счетчик корзины обновлен');
-  }
+  // Дополнительная инициализация кнопок
+  setTimeout(() => {
+    if (typeof initAddToCartButtons === 'function') {
+      initAddToCartButtons();
+    }
+    if (typeof initWishlistButtons === 'function') {
+      initWishlistButtons();
+    }
+    if (typeof updateWishlistButtons === 'function') {
+      updateWishlistButtons();
+    }
+    if (typeof updateCartCounter === 'function') {
+      updateCartCounter();
+    }
+  }, 300);
 }
 
 function getCurrentPage() {

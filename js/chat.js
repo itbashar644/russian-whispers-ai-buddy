@@ -3,20 +3,27 @@
  * Основной файл чата - обеспечивает глобальную доступность
  */
 
-// Импортируем модульную версию чата и делаем её глобально доступной
 let chatModuleLoaded = false;
+let chatInitialized = false;
 
 // Функция инициализации чата, которая работает везде
 function initChat() {
   console.log('Глобальная инициализация чата...');
   
+  if (chatInitialized) {
+    console.log('Чат уже инициализирован');
+    return;
+  }
+  
   // Попытка загрузить модульную версию
-  if (!chatModuleLoaded && typeof window.initChat !== 'function') {
+  if (!chatModuleLoaded) {
     try {
       import('./app/chat.js').then(module => {
         chatModuleLoaded = true;
-        module.initChat();
-        console.log('Модульный чат загружен и инициализирован');
+        if (module.initChat) {
+          module.initChat();
+          console.log('Модульный чат загружен и инициализирован');
+        }
       }).catch(error => {
         console.log('Модульный чат не загружен, используем простую версию');
         initBasicChat();
@@ -25,23 +32,21 @@ function initChat() {
       console.log('Ошибка загрузки модульного чата, используем простую версию');
       initBasicChat();
     }
-  } else if (typeof window.initChat === 'function' && window.initChat !== initChat) {
-    // Если есть другая функция initChat, используем её
-    try {
-      window.initChat();
-    } catch (error) {
-      console.error('Ошибка инициализации чата:', error);
-      initBasicChat();
-    }
   } else {
-    // Используем простую версию
+    // Модуль уже загружен, просто инициализируем
     initBasicChat();
   }
 }
 
 // Простая версия чата для совместимости
 function initBasicChat() {
+  if (chatInitialized) {
+    console.log('Базовый чат уже инициализирован');
+    return;
+  }
+  
   console.log('Инициализируем простую версию чата...');
+  chatInitialized = true;
   
   const chatButton = document.getElementById('chat-button');
   const chatContainer = document.getElementById('chat-container');
@@ -88,7 +93,8 @@ function initBasicChat() {
   console.log('Простой чат инициализирован');
 }
 
-// Делаем функцию глобально доступной
+// Делаем функции глобально доступными
 window.initChat = initChat;
+window.initBasicChat = initBasicChat;
 
 console.log('Chat.js загружен');
