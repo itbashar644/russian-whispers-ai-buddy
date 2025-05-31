@@ -1,6 +1,6 @@
 
 /**
- * Функции для работы с избранным
+ * Упрощенные функции для работы с избранным
  */
 
 // Глобальная переменная для предотвращения повторной инициализации
@@ -122,66 +122,74 @@ function toggleWishlist(productId, productTitle) {
 }
 
 function handleWishlistClick(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  
-  console.log('Кнопка избранного нажата');
-  
-  const productCard = event.target.closest('.product-card');
-  if (!productCard) {
-    console.log('Карточка товара не найдена');
-    return;
+  try {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log('Кнопка избранного нажата');
+    
+    const productCard = event.target.closest('.product-card');
+    if (!productCard) {
+      console.log('Карточка товара не найдена');
+      return;
+    }
+    
+    const productLink = productCard.querySelector('.product-link');
+    if (!productLink) {
+      console.log('Ссылка на товар не найдена');
+      return;
+    }
+    
+    let productId;
+    if (productLink.href && productLink.href.includes('id=')) {
+      productId = productLink.href.split('id=')[1];
+    } else if (productLink.dataset.id) {
+      productId = productLink.dataset.id;
+    }
+    
+    if (!productId) {
+      console.log('ID товара не найден');
+      return;
+    }
+    
+    const productTitleElement = productCard.querySelector('h3 a') || productCard.querySelector('h3');
+    const productTitle = productTitleElement ? productTitleElement.textContent : 'Товар';
+    
+    console.log('Данные для избранного:', { productId, productTitle });
+    
+    toggleWishlist(productId, productTitle);
+  } catch (error) {
+    console.error('Ошибка в handleWishlistClick:', error);
   }
-  
-  const productLink = productCard.querySelector('.product-link');
-  if (!productLink) {
-    console.log('Ссылка на товар не найдена');
-    return;
-  }
-  
-  let productId;
-  if (productLink.href && productLink.href.includes('id=')) {
-    productId = productLink.href.split('id=')[1];
-  } else if (productLink.dataset.id) {
-    productId = productLink.dataset.id;
-  }
-  
-  if (!productId) {
-    console.log('ID товара не найден');
-    return;
-  }
-  
-  const productTitleElement = productCard.querySelector('h3 a');
-  const productTitle = productTitleElement ? productTitleElement.textContent : 'Товар';
-  
-  console.log('Данные для избранного:', { productId, productTitle });
-  
-  toggleWishlist(productId, productTitle);
 }
 
 function initWishlistButtons() {
-  console.log('Инициализируем кнопки избранного...');
-  
-  // Сначала удаляем старые обработчики
-  const existingButtons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
-  existingButtons.forEach(button => {
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
-  });
-  
-  // Добавляем новые обработчики
-  const buttons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
-  console.log('Найдено кнопок избранного для инициализации:', buttons.length);
-  
-  buttons.forEach((button, index) => {
-    console.log(`Добавляем обработчик для кнопки избранного ${index + 1}`);
-    button.addEventListener('click', handleWishlistClick);
-  });
-  
-  // Обновляем состояние кнопок
-  updateWishlistButtons();
-  
-  console.log('Кнопки избранного инициализированы для', buttons.length, 'кнопок');
+  try {
+    console.log('Инициализируем кнопки избранного...');
+    
+    // Сначала удаляем старые обработчики
+    const existingButtons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
+    existingButtons.forEach(button => {
+      const newButton = button.cloneNode(true);
+      button.parentNode.replaceChild(newButton, button);
+    });
+    
+    // Добавляем новые обработчики
+    const buttons = document.querySelectorAll('.wishlist-button, .wishlist-btn-large');
+    console.log('Найдено кнопок избранного для инициализации:', buttons.length);
+    
+    buttons.forEach((button, index) => {
+      console.log(`Добавляем обработчик для кнопки избранного ${index + 1}`);
+      button.addEventListener('click', handleWishlistClick);
+    });
+    
+    // Обновляем состояние кнопок
+    updateWishlistButtons();
+    
+    console.log('Кнопки избранного инициализированы для', buttons.length, 'кнопок');
+  } catch (error) {
+    console.error('Ошибка при инициализации кнопок избранного:', error);
+  }
 }
 
 // Делаем функции глобально доступными
@@ -189,3 +197,4 @@ window.initWishlist = initWishlist;
 window.updateWishlistButtons = updateWishlistButtons;
 window.toggleWishlist = toggleWishlist;
 window.initWishlistButtons = initWishlistButtons;
+window.handleWishlistClick = handleWishlistClick;

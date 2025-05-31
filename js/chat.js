@@ -1,52 +1,19 @@
 
 /**
- * Основной файл чата - обеспечивает глобальную доступность
+ * Упрощенный чат без модульных зависимостей
  */
 
-let chatModuleLoaded = false;
 let chatInitialized = false;
+let chatState = null;
 
-// Функция инициализации чата, которая работает везде
+// Функция инициализации чата
 function initChat() {
-  console.log('Глобальная инициализация чата...');
+  console.log('Инициализируем чат...');
   
   if (chatInitialized) {
     console.log('Чат уже инициализирован');
     return;
   }
-  
-  // Попытка загрузить модульную версию
-  if (!chatModuleLoaded) {
-    try {
-      import('./app/chat.js').then(module => {
-        chatModuleLoaded = true;
-        if (module.initChat) {
-          module.initChat();
-          console.log('Модульный чат загружен и инициализирован');
-        }
-      }).catch(error => {
-        console.log('Модульный чат не загружен, используем простую версию');
-        initBasicChat();
-      });
-    } catch (error) {
-      console.log('Ошибка загрузки модульного чата, используем простую версию');
-      initBasicChat();
-    }
-  } else {
-    // Модуль уже загружен, просто инициализируем
-    initBasicChat();
-  }
-}
-
-// Простая версия чата для совместимости
-function initBasicChat() {
-  if (chatInitialized) {
-    console.log('Базовый чат уже инициализирован');
-    return;
-  }
-  
-  console.log('Инициализируем простую версию чата...');
-  chatInitialized = true;
   
   const chatButton = document.getElementById('chat-button');
   const chatContainer = document.getElementById('chat-container');
@@ -56,45 +23,221 @@ function initBasicChat() {
     return;
   }
   
-  // Удаляем старые обработчики
-  chatButton.replaceWith(chatButton.cloneNode(true));
-  const newChatButton = document.getElementById('chat-button');
+  chatInitialized = true;
   
-  newChatButton.addEventListener('click', function(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    if (chatContainer.classList.contains('hidden')) {
-      chatContainer.classList.remove('hidden');
-      if (chatContainer.innerHTML.trim() === '') {
-        chatContainer.innerHTML = `
-          <div class="chat-header">
-            <h3>Чат с оператором</h3>
-            <button class="chat-close-btn" onclick="document.getElementById('chat-container').classList.add('hidden')">×</button>
-          </div>
-          <div class="chat-body">
-            <div class="chat-messages">
-              <div class="chat-message system-message">
-                <div class="message-content">Здравствуйте! Чем мы можем вам помочь?</div>
-              </div>
-            </div>
-          </div>
-          <div class="chat-footer">
-            <textarea placeholder="Введите сообщение..." rows="2"></textarea>
-            <button class="chat-send-btn">Отправить</button>
-          </div>
-        `;
-      }
-    } else {
-      chatContainer.classList.add('hidden');
-    }
+  // Инициализируем состояние чата
+  chatState = getFromStorage('chat_state', {
+    open: false,
+    messages: []
   });
   
-  console.log('Простой чат инициализирован');
+  // Очищаем старые обработчики
+  const newChatButton = chatButton.cloneNode(true);
+  chatButton.parentNode.replaceChild(newChatButton, chatButton);
+  
+  // Добавляем обработчик клика
+  document.getElementById('chat-button').addEventListener('click', handleChatButtonClick);
+  
+  // Добавляем обработчик клика вне чата
+  document.addEventListener('click', handleDocumentClick);
+  
+  console.log('Чат инициализирован');
+}
+
+function handleChatButtonClick(event) {
+  console.log('Кнопка чата нажата');
+  event.stopPropagation();
+  event.preventDefault();
+
+  const chatContainer = document.getElementById('chat-container');
+  if (chatContainer.classList.contains('hidden')) {
+    openChat();
+  } else {
+    closeChat();
+  }
+}
+
+function handleDocumentClick(event) {
+  const chatContainer = document.getElementById('chat-container');
+  const chatButton = document.getElementById('chat-button');
+  
+  if (!chatContainer.classList.contains('hidden')) {
+    const isClickInsideChat = chatContainer.contains(event.target);
+    const isClickOnChatButton = chatButton && chatButton.contains(event.target);
+    
+    if (!isClickInsideChat && !isClickOnChatButton) {
+      closeChat();
+    }
+  }
+}
+
+function openChat() {
+  console.log('Открываем чат');
+  const chatContainer = document.getElementById('chat-container');
+  
+  if (chatContainer.innerHTML.trim() === '') {
+    renderChatInterface();
+  }
+  
+  chatContainer.classList.remove('hidden');
+  chatState.open = true;
+  saveToStorage('chat_state', chatState);
+  
+  setTimeout(() => {
+    scrollToLatestMessage();
+  }, 100);
+}
+
+function closeChat() {
+  console.log('Закрываем чат');
+  const chatContainer = document.getElementById('chat-container');
+  chatContainer.classList.add('hidden');
+  chatState.open = false;
+  saveToStorage('chat_state', chatState);
+}
+
+function renderChatInterface() {
+  console.log('Рендерим интерфейс чата');
+  const chatContainer = document.getElementById('chat-container');
+  
+  const chatHTML = `
+    <div class="chat-header">
+      <h3>Чат с оператором</h3>
+      <button class="chat-close-btn" onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-body">
+      <div class="chat-messages" id="chat-messages">
+        ${renderChatMessages()}
+      </div>
+    </div>
+    <div class="chat-footer">
+      <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+      <button class="chat-send-btn" onclick="sendMessage()">Отправить</button>
+    </div>
+  `;
+  
+  chatContainer.innerHTML = chatHTML;
+  
+  // Обработчик Enter в текстовом поле
+  const chatInput = document.getElementById('chat-input');
+  if (chatInput) {
+    chatInput.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+  
+  // Приветственное сообщение при первом открытии
+  if (chatState.messages.length === 0) {
+    addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
+  }
+}
+
+function renderChatMessages() {
+  return chatState.messages.map(message => {
+    let messageClass = '';
+    let nameLabel = '';
+    
+    switch (message.type) {
+      case 'user':
+        messageClass = 'user-message';
+        nameLabel = 'Вы';
+        break;
+      case 'operator':
+        messageClass = 'operator-message';
+        nameLabel = 'Оператор';
+        break;
+      case 'system':
+        messageClass = 'system-message';
+        nameLabel = 'Система';
+        break;
+      default:
+        messageClass = '';
+        nameLabel = '';
+    }
+    
+    return `
+      <div class="chat-message ${messageClass}">
+        <span class="message-name">${nameLabel}</span>
+        <div class="message-content">${message.text}</div>
+        <span class="message-time">${formatDate(message.time)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function addSystemMessage(text) {
+  const message = {
+    type: 'system',
+    text: text,
+    time: new Date().toISOString()
+  };
+  
+  chatState.messages.push(message);
+  saveToStorage('chat_state', chatState);
+  updateChatMessages();
+}
+
+function updateChatMessages() {
+  const chatMessagesEl = document.getElementById('chat-messages');
+  if (chatMessagesEl) {
+    chatMessagesEl.innerHTML = renderChatMessages();
+    scrollToLatestMessage();
+  }
+}
+
+function scrollToLatestMessage() {
+  const chatMessagesEl = document.getElementById('chat-messages');
+  if (chatMessagesEl) {
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function sendMessage() {
+  const chatInput = document.getElementById('chat-input');
+  const message = chatInput.value.trim();
+  
+  if (!message) return;
+  
+  // Добавляем сообщение пользователя
+  const userMessage = {
+    type: 'user',
+    text: message,
+    time: new Date().toISOString()
+  };
+  
+  chatState.messages.push(userMessage);
+  saveToStorage('chat_state', chatState);
+  updateChatMessages();
+  
+  // Очищаем поле ввода
+  chatInput.value = '';
+  
+  // Демо ответ через 2 секунды
+  setTimeout(() => {
+    const operatorMessage = {
+      type: 'operator',
+      text: 'Спасибо за ваше сообщение! Наш оператор свяжется с вами в ближайшее время.',
+      time: new Date().toISOString()
+    };
+    
+    chatState.messages.push(operatorMessage);
+    saveToStorage('chat_state', chatState);
+    updateChatMessages();
+  }, 2000);
 }
 
 // Делаем функции глобально доступными
 window.initChat = initChat;
-window.initBasicChat = initBasicChat;
-
-console.log('Chat.js загружен');
+window.openChat = openChat;
+window.closeChat = closeChat;
+window.sendMessage = sendMessage;

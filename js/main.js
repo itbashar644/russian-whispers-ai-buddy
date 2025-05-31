@@ -1,6 +1,6 @@
 
 /**
- * Главный файл инициализации приложения
+ * Главный файл инициализации приложения - упрощенная версия
  */
 
 // Глобальная переменная для отслеживания инициализации
@@ -18,24 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   isMainInitialized = true;
   
-  // Инициализируем базовые функции
+  // Инициализируем базовые функции сразу, без модулей
   initializeBaseFunctions();
-  
-  // Пытаемся загрузить модульную версию, но не блокируем работу при ошибке
-  setTimeout(() => {
-    try {
-      import('./app/init.js').then(module => {
-        if (module.initializeApp) {
-          module.initializeApp();
-          console.log('Модульная инициализация выполнена');
-        }
-      }).catch(error => {
-        console.log('Модульная инициализация недоступна, используем базовую');
-      });
-    } catch (error) {
-      console.log('Ошибка при загрузке модулей, работаем без них');
-    }
-  }, 100);
 });
 
 function initializeBaseFunctions() {
@@ -65,10 +49,28 @@ function initializeBaseFunctions() {
     console.log('Чат инициализирован');
   }
   
+  // Инициализируем страницу
+  initCurrentPage();
+  
   // Инициализируем кнопки
   setTimeout(() => {
     initializeButtons();
   }, 200);
+}
+
+function initCurrentPage() {
+  const path = window.location.pathname;
+  console.log('Инициализируем текущую страницу:', path);
+  
+  if (path === '/' || path === '/index.html' || path.endsWith('index.html')) {
+    if (typeof initHomePage === 'function') {
+      initHomePage();
+    }
+  } else if (path === '/catalog.html' || path.endsWith('catalog.html')) {
+    if (typeof initCatalogPage === 'function') {
+      initCatalogPage();
+    }
+  }
 }
 
 function initializeButtons() {
@@ -94,3 +96,11 @@ function initializeButtons() {
     console.log('Счетчик корзины обновлен');
   }
 }
+
+// Глобальная функция для переинициализации (для использования из других скриптов)
+window.reinitializeApp = function() {
+  console.log('Переинициализация приложения...');
+  setTimeout(() => {
+    initializeButtons();
+  }, 100);
+};
