@@ -22,5 +22,45 @@ document.addEventListener('DOMContentLoaded', function() {
   isMainInitialized = true;
   
   // Запускаем основную инициализацию
-  initializeApp();
+  try {
+    initializeApp();
+  } catch (error) {
+    console.error('Ошибка при инициализации приложения:', error);
+    
+    // Фоллбэк - инициализируем базовые функции напрямую
+    setTimeout(() => {
+      console.log('Запускаем фоллбэк инициализацию...');
+      
+      if (typeof initCart === 'function') {
+        initCart();
+      }
+      
+      if (typeof initWishlist === 'function') {
+        initWishlist();
+      }
+      
+      if (typeof initSearch === 'function') {
+        initSearch();
+      }
+      
+      if (typeof initChat === 'function') {
+        initChat();
+      }
+      
+      // Инициализируем кнопки
+      setTimeout(() => {
+        if (typeof initAddToCartButtons === 'function') {
+          initAddToCartButtons();
+        }
+        
+        if (typeof initWishlistButtons === 'function') {
+          initWishlistButtons();
+        }
+        
+        if (typeof updateCartCounter === 'function') {
+          updateCartCounter();
+        }
+      }, 500);
+    }, 100);
+  }
 });

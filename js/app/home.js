@@ -37,8 +37,38 @@ export async function initHomePage() {
     renderProductSection('newProductsGrid', newProducts, 'новинки');
     renderProductSection('productsGrid', popularProducts, 'популярные товары');
     
+    // Принудительно инициализируем кнопки после рендеринга
+    setTimeout(() => {
+      initializeHomePageButtons();
+    }, 100);
+    
   } catch (error) {
     console.error('Ошибка при инициализации главной страницы:', error);
+  }
+}
+
+// Инициализация кнопок на главной странице
+function initializeHomePageButtons() {
+  console.log('Принудительная инициализация кнопок на главной странице...');
+  
+  if (typeof initAddToCartButtons === 'function') {
+    initAddToCartButtons();
+    console.log('Кнопки корзины переинициализированы');
+  }
+  
+  if (typeof initWishlistButtons === 'function') {
+    initWishlistButtons();
+    console.log('Кнопки избранного переинициализированы');
+  }
+  
+  if (typeof updateWishlistButtons === 'function') {
+    updateWishlistButtons();
+    console.log('Состояние кнопок избранного обновлено');
+  }
+  
+  if (typeof updateCartCounter === 'function') {
+    updateCartCounter();
+    console.log('Счетчик корзины обновлен');
   }
 }
 
@@ -106,18 +136,7 @@ function renderProductSection(containerId, products, sectionName) {
     container.appendChild(productCard);
   });
   
-  // Инициализируем кнопки после добавления карточек
-  setTimeout(() => {
-    if (typeof initAddToCartButtons === 'function') {
-      initAddToCartButtons();
-    }
-    if (typeof initWishlistButtons === 'function') {
-      initWishlistButtons();
-    }
-    if (typeof updateWishlistButtons === 'function') {
-      updateWishlistButtons();
-    }
-  }, 100);
+  console.log(`Секция ${sectionName} отрендерена`);
 }
 
 // Делаем функцию глобально доступной

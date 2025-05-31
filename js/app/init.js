@@ -19,7 +19,7 @@ export function initializeApp() {
   console.log('Инициализируем приложение...');
   isAppInitialized = true;
   
-  // Инициализируем базовые функции последовательно
+  // Инициализируем базовые функции синхронно
   initializeBaseFunctions();
   
   // Определяем и инициализируем текущую страницу
@@ -30,37 +30,30 @@ export function initializeApp() {
 function initializeBaseFunctions() {
   console.log('Инициализируем базовые функции...');
   
-  // Таймауты для правильной последовательности инициализации
-  setTimeout(() => {
-    if (typeof initSearch === 'function') {
-      initSearch();
-      console.log('Поиск инициализирован');
-    }
-  }, 100);
+  // Инициализируем поиск
+  if (typeof initSearch === 'function') {
+    initSearch();
+    console.log('Поиск инициализирован');
+  }
   
-  setTimeout(() => {
-    initChat();
-    console.log('Чат инициализирован');
-  }, 200);
+  // Инициализируем чат
+  initChat();
+  console.log('Чат инициализирован');
   
-  setTimeout(() => {
-    if (typeof initCart === 'function') {
-      initCart();
-      console.log('Корзина инициализирована');
-    }
-  }, 300);
+  // Инициализируем корзину
+  if (typeof initCart === 'function') {
+    initCart();
+    console.log('Корзина инициализирована');
+  }
   
-  setTimeout(() => {
-    if (typeof initWishlist === 'function') {
-      initWishlist();
-      console.log('Избранное инициализировано');
-    }
-  }, 400);
+  // Инициализируем избранное
+  if (typeof initWishlist === 'function') {
+    initWishlist();
+    console.log('Избранное инициализировано');
+  }
   
-  // Инициализируем кнопки после всех базовых функций
-  setTimeout(() => {
-    initializeButtons();
-  }, 500);
+  // Инициализируем кнопки
+  initializeButtons();
 }
 
 function initializeButtons() {
