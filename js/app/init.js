@@ -3,6 +3,10 @@
  * Основная инициализация приложения
  */
 
+import { initHomePage } from './home.js';
+import { initCatalogPage } from './catalog.js';
+import { initChat } from './chat.js';
+
 let isAppInitialized = false;
 
 // Основная функция инициализации
@@ -35,10 +39,8 @@ function initializeBaseFunctions() {
   }, 100);
   
   setTimeout(() => {
-    if (typeof initChat === 'function') {
-      initChat();
-      console.log('Чат инициализирован');
-    }
+    initChat();
+    console.log('Чат инициализирован');
   }, 200);
   
   setTimeout(() => {
@@ -102,14 +104,10 @@ function initializePage(pageType) {
   
   switch (pageType) {
     case 'home':
-      if (typeof initHomePage === 'function') {
-        initHomePage();
-      }
+      initHomePage();
       break;
     case 'catalog':
-      if (typeof initCatalogPage === 'function') {
-        initCatalogPage();
-      }
+      initCatalogPage();
       break;
     case 'product':
       if (typeof initProductPage === 'function') {
@@ -119,5 +117,8 @@ function initializePage(pageType) {
   }
 }
 
-// Делаем функцию глобально доступной
+// Делаем функции глобально доступными
 window.initializeApp = initializeApp;
+window.initHomePage = initHomePage;
+window.initCatalogPage = initCatalogPage;
+window.initChat = initChat;
