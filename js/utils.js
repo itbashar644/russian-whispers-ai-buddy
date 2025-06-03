@@ -1,4 +1,3 @@
-
 // Утилиты приложения
 
 // Утилиты для работы с localStorage
@@ -32,7 +31,7 @@ function parsePrice(value) {
 
 function formatPrice(price) {
   const value = parsePrice(price);
-  return value.toLocaleString('ru-RU') + ' ₽';
+  return value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
 }
 
 // Обновление счетчика корзины
