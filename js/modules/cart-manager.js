@@ -124,9 +124,9 @@ class CartManager {
           <h2>Товары в корзине</h2>
           <div class="cart-items">
             ${cart.map(item => {
-              // Используем цену после скидки если есть
-              const itemPrice = this.parsePrice(item.discount_price || item.price);
-              const itemTotal = itemPrice * item.quantity;
+              // Используем только цену после скидки (discount_price) если она есть, иначе обычную цену
+              const displayPrice = item.discount_price || item.price;
+              const itemTotal = this.parsePrice(displayPrice) * item.quantity;
               return `
                 <div class="cart-item" data-id="${item.id}">
                   <div class="cart-item-image">
@@ -134,7 +134,7 @@ class CartManager {
                   </div>
                   <div class="cart-item-info">
                     <h3>${item.title}</h3>
-                    <div class="cart-item-price">${this.formatPrice(itemPrice)}</div>
+                    <div class="cart-item-price">${this.formatPrice(displayPrice)}</div>
                   </div>
                   <div class="cart-item-quantity">
                     <button class="quantity-btn minus" onclick="cartManager.updateCartQuantity('${item.id}', ${item.quantity - 1})">
@@ -202,9 +202,9 @@ class CartManager {
                     <span>Почта России</span>
                   </label>
                   <label class="radio-label">
-                    <input type="radio" name="delivery_method" value="courier">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
-                    <span>Курьер</span>
+                    <input type="radio" name="delivery_method" value="wbtrack">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    <span>WbTrack</span>
                   </label>
                 </div>
               </div>
@@ -219,12 +219,16 @@ class CartManager {
                   </label>
                   <label class="radio-label">
                     <input type="radio" name="contact_method" value="telegram">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.905 7.864l-1.612 7.596c-.121.572-.439.714-.89.444l-2.458-1.81-1.185 1.14c-.131.131-.242.242-.497.242l.177-2.525 4.578-4.135c.198-.177-.043-.275-.308-.098l-5.661 3.565-2.438-.762c-.53-.166-.541-.53.111-.784l9.542-3.677c.442-.166.829.098.685.784z"/>
+                    </svg>
                     <span>Telegram</span>
                   </label>
                   <label class="radio-label">
                     <input type="radio" name="contact_method" value="whatsapp">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8l-5 5"></path><path d="M13 13l5-5"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12.017 2.001C6.486 2.001 2.003 6.482 2.003 12.014c-.001 1.752.458 3.466 1.33 4.967L2.001 22l5.233-1.237c1.438.784 3.052 1.196 4.784 1.196 5.531 0 10.014-4.481 10.014-10.014C21.932 6.484 17.548 2.001 12.017 2.001zm5.542 14.204c-.246.69-1.228 1.267-1.98 1.318-.523.034-1.204.156-3.478-.727-2.45-1.197-4.039-3.694-4.16-3.866-.121-.171-.989-1.305-.989-2.49 0-1.185.623-1.771.844-2.013.221-.242.482-.303.643-.303.161 0 .322.007.462.013.148.006.346-.056.541.413.196.469.669 1.628.728 1.747.059.119.098.259.02.42-.079.161-.118.26-.237.402-.118.142-.249.317-.356.425-.118.118-.241.246-.103.482.138.236.615 1.014 1.32 1.641.905.806 1.667 1.055 1.903 1.174.236.118.373.099.509-.059.136-.158.582-.679.737-.912.155-.233.31-.194.522-.116.212.078 1.344.634 1.575.749.231.115.385.173.442.269.057.096.057.556-.189 1.095z"/>
+                    </svg>
                     <span>WhatsApp</span>
                   </label>
                 </div>
