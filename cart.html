@@ -185,42 +185,146 @@
         }
 
         const cartHTML = `
-          <div class="cart-items">
-            ${cart.map(item => `
-              <div class="cart-item" data-id="${item.id}">
-                <div class="cart-item-image">
-                  <img src="${item.image_url || '/placeholder.svg'}" alt="${item.title}" loading="lazy" onerror="this.src='/placeholder.svg'">
-                </div>
-                <div class="cart-item-info">
-                  <h3>${item.title}</h3>
-                  <div class="cart-item-price">${formatPrice(item.price)}</div>
-                </div>
-                <div class="cart-item-quantity">
-                  <button class="quantity-btn minus" onclick="updateCartQuantity('${item.id}', ${item.quantity - 1})">-</button>
-                  <span class="quantity">${item.quantity}</span>
-                  <button class="quantity-btn plus" onclick="updateCartQuantity('${item.id}', ${item.quantity + 1})">+</button>
-                </div>
-                <div class="cart-item-total">
-                  ${formatPrice(parsePrice(item.price) * item.quantity)}
-                </div>
-                <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Удалить товар">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"></polyline><path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path></svg>
-                </button>
+          <div class="cart-container">
+            <div class="cart-items-section">
+              <h2>Товары в корзине</h2>
+              <div class="cart-items">
+                ${cart.map(item => {
+                  const itemPrice = parsePrice(item.price);
+                  const itemTotal = itemPrice * item.quantity;
+                  return `
+                    <div class="cart-item" data-id="${item.id}">
+                      <div class="cart-item-image">
+                        <img src="${item.image_url || '/placeholder.svg'}" alt="${item.title}" loading="lazy" onerror="this.src='/placeholder.svg'">
+                      </div>
+                      <div class="cart-item-info">
+                        <h3>${item.title}</h3>
+                        <div class="cart-item-price">${formatPrice(itemPrice)}</div>
+                      </div>
+                      <div class="cart-item-quantity">
+                        <button class="quantity-btn minus" onclick="updateCartQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                        <span class="quantity">${item.quantity}</span>
+                        <button class="quantity-btn plus" onclick="updateCartQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                      </div>
+                      <div class="cart-item-total">
+                        ${formatPrice(itemTotal)}
+                      </div>
+                      <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Удалить товар">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"></polyline><path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path></svg>
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
               </div>
-            `).join('')}
-          </div>
-          <div class="cart-summary">
-            <div class="cart-total">
-              <h3>Итого: ${formatPrice(getCartTotal())}</h3>
             </div>
-            <div class="cart-actions">
-              <button onclick="clearCart()" class="btn btn-outline">Очистить корзину</button>
-              <a href="checkout.html" class="btn btn-primary">Оформить заказ</a>
+            
+            <div class="cart-sidebar">
+              <div class="cart-summary">
+                <h3>Итого: ${formatPrice(getCartTotal())}</h3>
+                <div class="cart-actions">
+                  <button onclick="clearCart()" class="btn btn-outline">Очистить корзину</button>
+                </div>
+              </div>
+              
+              <div class="checkout-form">
+                <h3>Информация для заказа</h3>
+                <form id="checkout-form">
+                  <div class="form-group">
+                    <label for="name">ФИО *</label>
+                    <input type="text" id="name" name="name" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="phone">Телефон *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="address">Адрес доставки *</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Способ связи</label>
+                    <div class="radio-group">
+                      <label class="radio-label">
+                        <input type="radio" name="contact_method" value="phone" checked>
+                        <span>По телефону</span>
+                      </label>
+                      <label class="radio-label">
+                        <input type="radio" name="contact_method" value="telegram">
+                        <span>Telegram</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div id="telegram-username-container" class="form-group" style="display: none;">
+                    <label for="telegram_username">Telegram username</label>
+                    <input type="text" id="telegram_username" name="telegram_username" placeholder="@username">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="comment">Комментарий к заказу</label>
+                    <textarea id="comment" name="comment" rows="2"></textarea>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-primary btn-full">Оформить заказ</button>
+                </form>
+              </div>
             </div>
           </div>
         `;
 
         cartContent.innerHTML = cartHTML;
+        
+        // Инициализируем обработчики формы
+        initCheckoutForm();
+      }
+
+      function initCheckoutForm() {
+        const form = document.getElementById('checkout-form');
+        const contactMethodRadios = document.querySelectorAll('input[name="contact_method"]');
+        const telegramUsernameContainer = document.getElementById('telegram-username-container');
+        
+        if (contactMethodRadios && telegramUsernameContainer) {
+          contactMethodRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+              if (this.value === 'telegram') {
+                telegramUsernameContainer.style.display = 'block';
+                document.getElementById('telegram_username').setAttribute('required', '');
+              } else {
+                telegramUsernameContainer.style.display = 'none';
+                document.getElementById('telegram_username').removeAttribute('required');
+              }
+            });
+          });
+        }
+
+        if (form) {
+          form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            const cart = getFromStorage('cart', []);
+            
+            if (cart.length === 0) {
+              showNotification('Корзина пуста', 'error');
+              return;
+            }
+            
+            showNotification('Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+            
+            setTimeout(() => {
+              clearCart();
+              form.reset();
+            }, 2000);
+          });
+        }
       }
 
       function showNotification(message, type = 'info') {
@@ -348,7 +452,7 @@
         const chatHTML = `
           <div class="chat-header">
             <h3>Чат с оператором</h3>
-            <button class="chat-close-btn">
+            <button class="chat-close-btn" onclick="closeChat()">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
@@ -359,26 +463,13 @@
           </div>
           <div class="chat-footer">
             <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
-            <button class="chat-send-btn" id="chat-send-btn">
+            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
           </div>
         `;
         
         chatContainer.innerHTML = chatHTML;
-        
-        const closeBtn = chatContainer.querySelector('.chat-close-btn');
-        if (closeBtn) {
-          closeBtn.addEventListener('click', closeChat);
-        }
-        
-        const sendBtn = chatContainer.querySelector('#chat-send-btn');
-        if (sendBtn) {
-          sendBtn.addEventListener('click', function(event) {
-            event.preventDefault();
-            sendMessage();
-          });
-        }
         
         const chatInput = chatContainer.querySelector('#chat-input');
         if (chatInput) {
@@ -500,6 +591,8 @@
       window.removeFromCart = removeFromCart;
       window.updateCartQuantity = updateCartQuantity;
       window.clearCart = clearCart;
+      window.closeChat = closeChat;
+      window.sendMessage = sendMessage;
 
       // Инициализация при загрузке страницы
       document.addEventListener('DOMContentLoaded', function() {
