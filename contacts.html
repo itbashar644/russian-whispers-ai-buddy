@@ -230,13 +230,410 @@
       </div>
     </footer>
 
-    <!-- Подключаем необходимые скрипты -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/modules/chat-module.js"></script>
-
     <script>
+      // Конфигурация приложения
+      const CONFIG = {
+        supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        get apiHeaders() {
+          return {
+            'apikey': this.supabaseKey,
+            'Authorization': `Bearer ${this.supabaseKey}`,
+            'Content-Type': 'application/json'
+          };
+        }
+      };
+      window.CONFIG = CONFIG;
+
+      // Утилиты для работы с localStorage
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+          return defaultValue;
+        }
+      }
+
+      function saveToStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (error) {
+          console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+          return false;
+        }
+      }
+
+      // Утилиты для работы с ценами
+      function parsePrice(value) {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+        return isNaN(numeric) ? 0 : numeric;
+      }
+
+      function formatPrice(price) {
+        const value = parsePrice(price);
+        return value.toLocaleString('ru-RU') + ' ₽';
+      }
+
+      // Обновление счетчика корзины
+      function updateCartCounter() {
+        const cart = getFromStorage('cart', []);
+        const counters = document.querySelectorAll('.cart-counter');
+        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+        counters.forEach(counter => {
+          counter.textContent = totalItems > 0 ? totalItems : '';
+          counter.style.display = totalItems > 0 ? 'flex' : 'none';
+        });
+      }
+
+      // Экспорт в глобальный scope
+      window.getFromStorage = getFromStorage;
+      window.saveToStorage = saveToStorage;
+      window.parsePrice = parsePrice;
+      window.formatPrice = formatPrice;
+      window.updateCartCounter = updateCartCounter;
+
+      // Функциональность поиска
+      let searchTimeout;
+
+      function initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchSuggestions = document.getElementById('search-suggestions');
+
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function() {
+          const query = this.value.trim();
+          
+          clearTimeout(searchTimeout);
+          
+          if (query.length < 2) {
+            if (searchSuggestions) {
+              searchSuggestions.innerHTML = '';
+              searchSuggestions.style.display = 'none';
+            }
+            return;
+          }
+          
+          searchTimeout = setTimeout(() => {
+            performSearch(query);
+          }, 300);
+        });
+
+        if (searchButton) {
+          searchButton.addEventListener('click', function() {
+            const query = searchInput.value.trim();
+            if (query) {
+              window.location.href = `catalog.html?search=${encodeURIComponent(query)}`;
+            }
+          });
+        }
+
+        searchInput.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter') {
+            const query = this.value.trim();
+            if (query) {
+              window.location.href = `catalog.html?search=${encodeURIComponent(query)}`;
+            }
+          }
+        });
+      }
+
+      async function performSearch(query) {
+        const searchSuggestions = document.getElementById('search-suggestions');
+        if (!searchSuggestions) return;
+
+        try {
+          const response = await fetch(`https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?title=ilike.*${query}*&select=id,title&limit=5`, {
+            headers: CONFIG.apiHeaders
+          });
+          
+          if (!response.ok) throw new Error('Ошибка поиска');
+          
+          const products = await response.json();
+          
+          if (products.length > 0) {
+            searchSuggestions.innerHTML = products.map(product => 
+              `<div class="search-suggestion" onclick="goToProduct('${product.id}')">${product.title}</div>`
+            ).join('');
+            searchSuggestions.style.display = 'block';
+          } else {
+            searchSuggestions.innerHTML = '<div class="search-suggestion">Ничего не найдено</div>';
+            searchSuggestions.style.display = 'block';
+          }
+        } catch (error) {
+          console.error('Ошибка поиска:', error);
+          searchSuggestions.style.display = 'none';
+        }
+      }
+
+      function goToProduct(productId) {
+        window.location.href = `product.html?id=${productId}`;
+      }
+
+      // Чат модуль
+      let chatInitialized = false;
+      let chatState = null;
+
+      function initChat() {
+        console.log('Инициализируем чат...');
+        
+        if (chatInitialized) {
+          console.log('Чат уже инициализирован');
+          return;
+        }
+        
+        const chatButton = document.getElementById('chat-button');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (!chatButton || !chatContainer) {
+          console.log('Элементы чата не найдены:', { 
+            chatButton: !!chatButton, 
+            chatContainer: !!chatContainer 
+          });
+          return;
+        }
+        
+        chatInitialized = true;
+        
+        chatState = getFromStorage('chat_state', {
+          open: false,
+          messages: []
+        });
+        
+        chatButton.removeEventListener('click', handleChatButtonClick);
+        document.removeEventListener('click', handleDocumentClick);
+        
+        chatButton.addEventListener('click', handleChatButtonClick);
+        document.addEventListener('click', handleDocumentClick);
+        
+        console.log('Чат инициализирован');
+      }
+
+      function handleChatButtonClick(event) {
+        console.log('Кнопка чата нажата');
+        event.stopPropagation();
+        event.preventDefault();
+
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer.classList.contains('hidden')) {
+          openChat();
+        } else {
+          closeChat();
+        }
+      }
+
+      function handleDocumentClick(event) {
+        const chatContainer = document.getElementById('chat-container');
+        const chatButton = document.getElementById('chat-button');
+        
+        if (!chatContainer.classList.contains('hidden')) {
+          const isClickInsideChat = chatContainer.contains(event.target);
+          const isClickOnChatButton = chatButton && chatButton.contains(event.target);
+          
+          if (!isClickInsideChat && !isClickOnChatButton) {
+            closeChat();
+          }
+        }
+      }
+
+      function openChat() {
+        console.log('Открываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (chatContainer.innerHTML.trim() === '') {
+          renderChatInterface();
+        }
+        
+        chatContainer.classList.remove('hidden');
+        chatState.open = true;
+        saveToStorage('chat_state', chatState);
+        
+        setTimeout(() => {
+          scrollToLatestMessage();
+        }, 100);
+      }
+
+      function closeChat() {
+        console.log('Закрываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.classList.add('hidden');
+        chatState.open = false;
+        saveToStorage('chat_state', chatState);
+      }
+
+      function renderChatInterface() {
+        console.log('Рендерим интерфейс чата');
+        const chatContainer = document.getElementById('chat-container');
+        
+        const chatHTML = `
+          <div class="chat-header">
+            <h3>Чат с оператором</h3>
+            <button class="chat-close-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="chat-body">
+            <div class="chat-messages" id="chat-messages">
+              ${renderChatMessages()}
+            </div>
+          </div>
+          <div class="chat-footer">
+            <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+            <button class="chat-send-btn" id="chat-send-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        `;
+        
+        chatContainer.innerHTML = chatHTML;
+        
+        const closeBtn = chatContainer.querySelector('.chat-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeChat);
+        }
+        
+        const sendBtn = chatContainer.querySelector('#chat-send-btn');
+        if (sendBtn) {
+          sendBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            sendMessage();
+          });
+        }
+        
+        const chatInput = chatContainer.querySelector('#chat-input');
+        if (chatInput) {
+          chatInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              sendMessage();
+            }
+          });
+        }
+        
+        if (chatState.messages.length === 0) {
+          addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
+        }
+      }
+
+      function renderChatMessages() {
+        return chatState.messages.map(message => {
+          let messageClass = '';
+          let nameLabel = '';
+          
+          switch (message.type) {
+            case 'user':
+              messageClass = 'user-message';
+              nameLabel = 'Вы';
+              break;
+            case 'operator':
+              messageClass = 'operator-message';
+              nameLabel = 'Оператор';
+              break;
+            case 'system':
+              messageClass = 'system-message';
+              nameLabel = 'Система';
+              break;
+            default:
+              messageClass = '';
+              nameLabel = '';
+          }
+          
+          return `
+            <div class="chat-message ${messageClass}">
+              <span class="message-name">${nameLabel}</span>
+              <div class="message-content">${message.text}</div>
+              <span class="message-time">${formatDate(message.time)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function addSystemMessage(text) {
+        const message = {
+          type: 'system',
+          text: text,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(message);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+      }
+
+      function updateChatMessages() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.innerHTML = renderChatMessages();
+          scrollToLatestMessage();
+        }
+      }
+
+      function scrollToLatestMessage() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+      }
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      function sendMessage() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = chatContainer.querySelector('#chat-input');
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        const userMessage = {
+          type: 'user',
+          text: message,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(userMessage);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+        
+        chatInput.value = '';
+        
+        setTimeout(() => {
+          const operatorMessage = {
+            type: 'operator',
+            text: 'Спасибо за обращение! Как я могу вам помочь?',
+            time: new Date().toISOString()
+          };
+          
+          chatState.messages.push(operatorMessage);
+          saveToStorage('chat_state', chatState);
+          updateChatMessages();
+        }, 2000);
+      }
+
+      // Скрытие подсказок при клике вне поиска
+      document.addEventListener('click', function(event) {
+        const searchSuggestions = document.getElementById('search-suggestions');
+        const searchInput = document.getElementById('search-input');
+        
+        if (searchSuggestions && searchInput) {
+          if (!searchInput.contains(event.target) && !searchSuggestions.contains(event.target)) {
+            searchSuggestions.style.display = 'none';
+          }
+        }
+      });
+
       // Обработчик отправки формы
       document.getElementById('contactForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -292,11 +689,8 @@
       // Инициализация при загрузке DOM
       document.addEventListener('DOMContentLoaded', function() {
         updateCartCounter();
-        
-        // Инициализация чата
-        if (typeof window.initChat === 'function') {
-          window.initChat();
-        }
+        initSearch();
+        initChat();
       });
     </script>
   </body>
