@@ -16,10 +16,15 @@ function addToCart(product) {
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
+    // Определяем правильную цену - используем discount_price если есть, иначе price
+    const price = product.discount_price && product.discount_price !== product.price 
+      ? product.discount_price 
+      : product.price;
+    
     cart.push({
       id: product.id,
       title: product.title,
-      price: product.discount_price || product.price,
+      price: price,
       original_price: product.price,
       image_url: product.image_url,
       quantity: 1
@@ -126,7 +131,16 @@ function handleAddToCart(event) {
 }
 
 function extractPriceFromElement(element) {
-  const priceElement = element.querySelector('.current-price, .product-price');
+  // Сначала ищем скидочную цену
+  const discountPriceElement = element.querySelector('.current-price:not(.old-price)');
+  if (discountPriceElement) {
+    const priceText = discountPriceElement.textContent.replace(/[^\d]/g, '');
+    const price = parseInt(priceText) || 0;
+    if (price > 0) return price;
+  }
+  
+  // Если скидочной цены нет, берем обычную цену
+  const priceElement = element.querySelector('.product-price, .current-price');
   if (priceElement) {
     const priceText = priceElement.textContent.replace(/[^\d]/g, '');
     return parseInt(priceText) || 0;
