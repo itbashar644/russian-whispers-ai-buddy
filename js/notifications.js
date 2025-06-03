@@ -1,49 +1,48 @@
 
 /**
- * Функции для показа уведомлений
+ * Система уведомлений
  */
 
-function showNotification(message, type = 'success') {
-  // Создаем элемент уведомления
+function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
-  notification.className = 'notification';
+  notification.className = `notification notification-${type}`;
   notification.textContent = message;
   
-  // Добавляем стили
-  notification.style.position = 'fixed';
-  notification.style.bottom = '20px';
-  notification.style.right = '20px';
-  notification.style.backgroundColor = type === 'error' ? '#dc3545' : '#28a745';
-  notification.style.color = 'white';
-  notification.style.padding = '10px 15px';
-  notification.style.borderRadius = '4px';
-  notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-  notification.style.zIndex = '1000';
-  notification.style.opacity = '0';
-  notification.style.transform = 'translateY(20px)';
-  notification.style.transition = 'opacity 0.3s, transform 0.3s';
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    color: white;
+    border-radius: 4px;
+    z-index: 10000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  `;
   
-  // Добавляем на страницу
   document.body.appendChild(notification);
   
-  // Анимация появления
-  setTimeout(() => {
-    notification.style.opacity = '1';
-    notification.style.transform = 'translateY(0)';
-  }, 10);
-  
-  // Удаление через 3 секунды
   setTimeout(() => {
     notification.style.opacity = '0';
-    notification.style.transform = 'translateY(20px)';
-    
+    notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
       if (notification.parentNode) {
-        document.body.removeChild(notification);
+        notification.parentNode.removeChild(notification);
       }
     }, 300);
   }, 3000);
 }
 
-// Делаем функцию глобально доступной
+function showSuccess(message) {
+  showNotification(message, 'success');
+}
+
+function showError(message) {
+  showNotification(message, 'error');
+}
+
+// Экспорт в глобальный scope
 window.showNotification = showNotification;
+window.showSuccess = showSuccess;
+window.showError = showError;

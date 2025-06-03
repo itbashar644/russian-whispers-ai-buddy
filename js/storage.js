@@ -1,6 +1,6 @@
 
 /**
- * Утилиты для работы с localStorage
+ * Функции для работы с localStorage
  */
 
 function getFromStorage(key, defaultValue = null) {
@@ -23,6 +23,17 @@ function saveToStorage(key, value) {
   }
 }
 
-// Делаем функции глобально доступными
+function removeFromStorage(key) {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    console.error(`Ошибка при удалении из localStorage (${key}):`, error);
+    return false;
+  }
+}
+
+// Экспорт в глобальный scope
 window.getFromStorage = getFromStorage;
 window.saveToStorage = saveToStorage;
+window.removeFromStorage = removeFromStorage;

@@ -1,483 +1,500 @@
+
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Корзина | The X Shop</title>
-    <meta name="description" content="Корзина товаров из Китая высокого качества по доступным ценам">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="css/chat-styles.css">
-    
-    <!-- Schema.org JSON-LD data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "The X Shop",
-      "url": "https://the-x.shop",
-      "logo": "https://the-x.shop/favicon.ico",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+7 (800) 123-45-67",
-        "contactType": "customer service",
-        "areaServed": "RU"
-      }
-    }
-    </script>
-
-    <style>
-    /* Современные стили для корзины */
-    .cart-container {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-    }
-
-    .cart-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .cart-header h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-
-    .clear-cart-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .clear-cart-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-1px);
-    }
-
-    .cart-item {
-      display: flex;
-      align-items: center;
-      padding: 20px;
-      border-bottom: 1px solid #f3f4f6;
-      transition: all 0.2s;
-    }
-
-    .cart-item:hover {
-      background: #f9fafb;
-    }
-
-    .cart-item:last-child {
-      border-bottom: none;
-    }
-
-    .cart-item-image {
-      width: 80px;
-      height: 80px;
-      margin-right: 16px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .cart-item-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .cart-item-info {
-      flex: 1;
-      margin-right: 16px;
-    }
-
-    .cart-item-info h3 {
-      margin: 0 0 8px 0;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #1f2937;
-      line-height: 1.4;
-    }
-
-    .cart-item-price {
-      color: #6b7280;
-      font-size: 0.9rem;
-    }
-
-    .cart-item-controls {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .quantity-controls {
-      display: flex;
-      align-items: center;
-      background: #f3f4f6;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .quantity-btn {
-      background: none;
-      border: none;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #374151;
-      font-size: 1.2rem;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .quantity-btn:hover {
-      background: #e5e7eb;
-      color: #1f2937;
-    }
-
-    .quantity {
-      min-width: 40px;
-      text-align: center;
-      font-weight: 500;
-      color: #1f2937;
-      background: white;
-      padding: 0 8px;
-      line-height: 36px;
-    }
-
-    .item-total {
-      font-weight: 600;
-      color: #1f2937;
-      min-width: 80px;
-      text-align: right;
-      font-size: 1.1rem;
-    }
-
-    .remove-btn {
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-      color: #dc2626;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .remove-btn:hover {
-      background: #fecaca;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
-    }
-
-    .cart-summary {
-      background: #f9fafb;
-      padding: 20px;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .cart-total {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .total-price {
-      color: #059669;
-      font-size: 1.5rem;
-    }
-
-    .empty-cart {
-      text-align: center;
-      padding: 60px 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .empty-cart-icon {
-      color: #d1d5db;
-      margin-bottom: 20px;
-    }
-
-    .empty-cart h2 {
-      color: #374151;
-      margin-bottom: 12px;
-      font-size: 1.5rem;
-    }
-
-    .empty-cart p {
-      color: #6b7280;
-      margin-bottom: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .cart-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      
-      .cart-item-image {
-        width: 60px;
-        height: 60px;
-        margin-right: 0;
-      }
-      
-      .cart-item-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-    }
-    </style>
-  </head>
-  <body>
+</head>
+<body>
     <header class="main-header">
-      <div class="container">
-        <div class="header-content">
-          <div class="logo">
-            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
-          </div>
-          
-          <nav class="main-nav">
-            <ul class="nav-list">
-              <li><a href="index.html" class="nav-link">Главная</a></li>
-              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
-              <li><a href="about.html" class="nav-link">О нас</a></li>
-              <li><a href="contacts.html" class="nav-link">Контакты</a></li>
-            </ul>
-          </nav>
-          
-          <div class="header-actions">
-          <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
-          <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
-            <a href="cart.html" class="action-icon cart-icon active" title="Корзина">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span id="cart-counter" class="cart-counter counter">0</span>
-            </a>
-            <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </a>
-          </div>
-          
-          <button class="mobile-menu-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-          </button>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+                </div>
+                <nav class="main-nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Главная</a></li>
+                        <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+                        <li><a href="about.html" class="nav-link">О нас</a></li>
+                        <li><a href="contacts.html" class="nav-link">Контакты</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                    </a>
+                    <a href="cart.html" class="action-icon cart-icon active" title="Корзина">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                        <span class="cart-counter"></span>
+                    </a>
+                    <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
     </header>
 
     <main>
-      <section class="section-padding-sm bg-light">
-        <div class="container">
-          <h1>Корзина</h1>
-          <div class="breadcrumbs">
-            <a href="index.html">Главная</a> / <span>Корзина</span>
-          </div>
-        </div>
-      </section>
-      
-      <section class="section-padding">
-        <div class="container">
-          <div class="cart-page-layout">
-            <div id="cart-container" class="cart-container">
-              <!-- Cart will be loaded dynamically here -->
-            </div>
-            
-            <div id="checkout-form-container" class="checkout-form-container">
-              <div class="checkout-form-wrapper">
-                <h2>Оформление заказа</h2>
-                <form id="checkout-form">
-                  <div class="form-section">
-                    <h3>Контактные данные</h3>
-                    <div class="form-row form-row-2">
-                      <div class="form-group">
-                        <label for="name">ФИО <span class="required">*</span></label>
-                        <input type="text" id="name" name="name" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="phone">Телефон <span class="required">*</span></label>
-                        <input type="tel" id="phone" name="phone" required>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label for="email">Email <span class="required">*</span></label>
-                      <input type="email" id="email" name="email" required>
-                    </div>
-                  </div>
-                  
-                  <div class="form-section">
-                    <h3>Адрес доставки</h3>
-                    <div class="form-group">
-                      <label for="address">Полный адрес <span class="required">*</span></label>
-                      <textarea id="address" name="address" rows="3" required placeholder="Город, улица, дом, квартира, индекс"></textarea>
-                    </div>
-                    </div>
-                  <div class="form-group">
-                    <label for="comment">Комментарий к заказу</label>
-                    <textarea id="comment" name="comment" rows="2" placeholder="Дополнительные пожелания к заказу"></textarea>
-                  </div>
+        <section class="cart-section section-padding">
+            <div class="container">
+                <h1>Корзина</h1>
+                <div id="cart-content" class="cart-content">
+                    <div class="loading">Загрузка корзины...</div>
                 </div>
-                <div class="form-section">
-                  <h3>Способ доставки</h3>
-                  <div class="contact-methods">
-                    <label class="contact-method">
-                      <input type="radio" name="delivery_method" value="cdek" checked>
-                      <span class="contact-method-name">СДЭК</span>
-                    </label>
-                    <label class="contact-method">
-                      <input type="radio" name="delivery_method" value="russianpost">
-                      <span class="contact-method-name">Почта РФ</span>
-                    </label>
-                    <label class="contact-method">
-                      <input type="radio" name="delivery_method" value="wbtrack">
-                      <span class="contact-method-name">WB Track</span>
-                    </label>
-                  </div>
-                </div>
-                  
-                  <div class="form-section">
-                    <h3>Предпочтительный способ связи</h3>
-                    <div class="contact-methods">
-                      <label class="contact-method">
-                        <input type="radio" name="contact_method" value="phone" checked>
-                        <div class="contact-method-icon phone-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        </div>
-                        <span class="contact-method-name">По телефону</span>
-                      </label>
-                      <label class="contact-method">
-                        <input type="radio" name="contact_method" value="telegram">
-                        <div class="contact-method-icon">
-                          <img src="lovable-uploads/eeca568c-aa0a-4169-8a72-46a1d9746536.png" alt="Telegram" width="24" height="24">
-                        </div>
-                        <span class="contact-method-name">Telegram</span>
-                      </label>
-                      <label class="contact-method">
-                        <input type="radio" name="contact_method" value="whatsapp">
-                        <div class="contact-method-icon">
-                          <img src="lovable-uploads/6fc205ab-6c5e-4d07-97bf-08052b285a4f.png" alt="WhatsApp" width="24" height="24">
-                        </div>
-                        <span class="contact-method-name">WhatsApp</span>
-                      </label>
-                    </div>
-                    
-                    <div id="telegram-username-container" class="telegram-username-container" style="display: none;">
-                      <div class="form-group">
-                        <label for="telegram_username">Ваш Telegram username <span class="required">*</span></label>
-                        <input type="text" id="telegram_username" name="telegram_username" placeholder="@username">
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="form-section checkout-agreement">
-                    <label class="checkbox-label">
-                      <input type="checkbox" required name="agreement">
-                      <span>Я согласен с <a href="terms.html" target="_blank">условиями оферты</a> и <a href="privacy.html" target="_blank">политикой конфиденциальности</a></span>
-                    </label>
-                  </div>
-                  
-                  <div class="form-actions">
-                    <button type="submit" class="btn primary-btn place-order-btn">Оформить заказ</button>
-                  </div>
-                </form>
-              </div>
             </div>
-          </div>
+        </section>
+
+        <!-- Chat Button -->
+        <div class="chat-widget">
+            <button id="chat-button" class="chat-toggle-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+            <div id="chat-container" class="chat-container hidden">
+                <!-- Chat interface will be loaded here -->
+            </div>
         </div>
-      </section>
-      
-      <!-- Chat Button -->
-      <div class="chat-widget">
-        <button id="chat-button" class="chat-toggle-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        </button>
-        <div id="chat-container" class="chat-container hidden">
-          <!-- Chat interface will be loaded here -->
-        </div>
-      </div>
     </main>
 
     <footer class="main-footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-column">
-            <h3 class="footer-title">The X Shop</h3>
-            <p>Качественные товары из Китая по доступным ценам</p>
-          </div>
-          
-          <div class="footer-column">
-            <h4 class="footer-title">Каталог</h4>
-            <ul class="footer-links">
-              <li><a href="catalog.html">Все товары</a></li>
-              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
-            </ul>
-          </div>
-          
-          <div class="footer-column">
-            <h4 class="footer-title">Информация</h4>
-            <ul class="footer-links">
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка и оплата</a></li>
-            </ul>
-          </div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">The X Shop</h3>
+                    <p>Качественные товары из Китая по доступным ценам</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2020 The X Shop. Все права защищены.</p>
+            </div>
         </div>
-        
-        <div class="footer-bottom">
-          <p>&copy; 2020 The X Shop. Все права защищены.</p>
-        </div>
-      </div>
     </footer>
 
-    <!-- Подключаем модули -->
-    <script src="js/modules/cart-module.js"></script>
-    <script src="js/modules/chat-module.js"></script>
-
     <script>
+      // Утилиты
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+          return defaultValue;
+        }
+      }
+
+      function saveToStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (error) {
+          console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+          return false;
+        }
+      }
+
+      function parsePrice(value) {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+        return isNaN(numeric) ? 0 : numeric;
+      }
+
+      function formatPrice(price) {
+        const value = parsePrice(price);
+        return value.toLocaleString('ru-RU') + ' ₽';
+      }
+
+      function updateCartCounter() {
+        const cart = getFromStorage('cart', []);
+        const counters = document.querySelectorAll('.cart-counter');
+        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+        counters.forEach(counter => {
+          counter.textContent = totalItems > 0 ? totalItems : '';
+          counter.style.display = totalItems > 0 ? 'flex' : 'none';
+        });
+      }
+
+      // Функции корзины
+      function removeFromCart(productId) {
+        const cart = getFromStorage('cart', []);
+        const updatedCart = cart.filter(item => item.id !== productId);
+        saveToStorage('cart', updatedCart);
+        updateCartCounter();
+        renderCart();
+        showNotification('Товар удален из корзины', 'success');
+      }
+
+      function updateCartQuantity(productId, quantity) {
+        const cart = getFromStorage('cart', []);
+        const item = cart.find(item => item.id === productId);
+        
+        if (item) {
+          if (quantity <= 0) {
+            removeFromCart(productId);
+          } else {
+            item.quantity = quantity;
+            saveToStorage('cart', cart);
+            updateCartCounter();
+            renderCart();
+          }
+        }
+      }
+
+      function getCartTotal() {
+        const cart = getFromStorage('cart', []);
+        return cart.reduce((total, item) => total + (parsePrice(item.price) * item.quantity), 0);
+      }
+
+      function clearCart() {
+        saveToStorage('cart', []);
+        updateCartCounter();
+        renderCart();
+        showNotification('Корзина очищена', 'success');
+      }
+
+      function renderCart() {
+        const cartContent = document.getElementById('cart-content');
+        const cart = getFromStorage('cart', []);
+
+        if (cart.length === 0) {
+          cartContent.innerHTML = `
+            <div class="empty-cart">
+              <h2>Корзина пуста</h2>
+              <p>Добавьте товары из каталога</p>
+              <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+            </div>
+          `;
+          return;
+        }
+
+        const cartHTML = `
+          <div class="cart-items">
+            ${cart.map(item => `
+              <div class="cart-item" data-id="${item.id}">
+                <div class="cart-item-image">
+                  <img src="${item.image_url}" alt="${item.title}" loading="lazy">
+                </div>
+                <div class="cart-item-info">
+                  <h3>${item.title}</h3>
+                  <div class="cart-item-price">${formatPrice(item.price)}</div>
+                </div>
+                <div class="cart-item-quantity">
+                  <button class="quantity-btn minus" onclick="updateCartQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                  <span class="quantity">${item.quantity}</span>
+                  <button class="quantity-btn plus" onclick="updateCartQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                </div>
+                <div class="cart-item-total">
+                  ${formatPrice(parsePrice(item.price) * item.quantity)}
+                </div>
+                <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Удалить товар">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"></polyline><path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path></svg>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+          <div class="cart-summary">
+            <div class="cart-total">
+              <h3>Итого: ${formatPrice(getCartTotal())}</h3>
+            </div>
+            <div class="cart-actions">
+              <button onclick="clearCart()" class="btn btn-outline">Очистить корзину</button>
+              <a href="checkout.html" class="btn btn-primary">Оформить заказ</a>
+            </div>
+          </div>
+        `;
+
+        cartContent.innerHTML = cartHTML;
+      }
+
+      function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 12px 20px;
+          background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+          color: white;
+          border-radius: 4px;
+          z-index: 10000;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          transition: all 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateX(100%)';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 300);
+        }, 3000);
+      }
+
+      // Чат функциональность
+      let chatInitialized = false;
+      let chatState = null;
+
+      function initChat() {
+        console.log('Инициализируем чат...');
+        
+        if (chatInitialized) {
+          console.log('Чат уже инициализирован');
+          return;
+        }
+        
+        const chatButton = document.getElementById('chat-button');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (!chatButton || !chatContainer) {
+          console.log('Элементы чата не найдены');
+          return;
+        }
+        
+        chatInitialized = true;
+        
+        chatState = getFromStorage('chat_state', {
+          open: false,
+          messages: []
+        });
+        
+        chatButton.removeEventListener('click', handleChatButtonClick);
+        document.removeEventListener('click', handleDocumentClick);
+        
+        chatButton.addEventListener('click', handleChatButtonClick);
+        document.addEventListener('click', handleDocumentClick);
+        
+        console.log('Чат инициализирован');
+      }
+
+      function handleChatButtonClick(event) {
+        console.log('Кнопка чата нажата');
+        event.stopPropagation();
+        event.preventDefault();
+
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer.classList.contains('hidden')) {
+          openChat();
+        } else {
+          closeChat();
+        }
+      }
+
+      function handleDocumentClick(event) {
+        const chatContainer = document.getElementById('chat-container');
+        const chatButton = document.getElementById('chat-button');
+        
+        if (!chatContainer.classList.contains('hidden')) {
+          const isClickInsideChat = chatContainer.contains(event.target);
+          const isClickOnChatButton = chatButton && chatButton.contains(event.target);
+          
+          if (!isClickInsideChat && !isClickOnChatButton) {
+            closeChat();
+          }
+        }
+      }
+
+      function openChat() {
+        console.log('Открываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (chatContainer.innerHTML.trim() === '') {
+          renderChatInterface();
+        }
+        
+        chatContainer.classList.remove('hidden');
+        chatState.open = true;
+        saveToStorage('chat_state', chatState);
+        
+        setTimeout(() => {
+          scrollToLatestMessage();
+        }, 100);
+      }
+
+      function closeChat() {
+        console.log('Закрываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.classList.add('hidden');
+        chatState.open = false;
+        saveToStorage('chat_state', chatState);
+      }
+
+      function renderChatInterface() {
+        const chatContainer = document.getElementById('chat-container');
+        
+        const chatHTML = `
+          <div class="chat-header">
+            <h3>Чат с оператором</h3>
+            <button class="chat-close-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="chat-body">
+            <div class="chat-messages" id="chat-messages">
+              ${renderChatMessages()}
+            </div>
+          </div>
+          <div class="chat-footer">
+            <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+            <button class="chat-send-btn" id="chat-send-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        `;
+        
+        chatContainer.innerHTML = chatHTML;
+        
+        const closeBtn = chatContainer.querySelector('.chat-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeChat);
+        }
+        
+        const sendBtn = chatContainer.querySelector('#chat-send-btn');
+        if (sendBtn) {
+          sendBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            sendMessage();
+          });
+        }
+        
+        const chatInput = chatContainer.querySelector('#chat-input');
+        if (chatInput) {
+          chatInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              sendMessage();
+            }
+          });
+        }
+        
+        if (chatState.messages.length === 0) {
+          addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
+        }
+      }
+
+      function renderChatMessages() {
+        return chatState.messages.map(message => {
+          let messageClass = '';
+          let nameLabel = '';
+          
+          switch (message.type) {
+            case 'user':
+              messageClass = 'user-message';
+              nameLabel = 'Вы';
+              break;
+            case 'operator':
+              messageClass = 'operator-message';
+              nameLabel = 'Оператор';
+              break;
+            case 'system':
+              messageClass = 'system-message';
+              nameLabel = 'Система';
+              break;
+            default:
+              messageClass = '';
+              nameLabel = '';
+          }
+          
+          return `
+            <div class="chat-message ${messageClass}">
+              <span class="message-name">${nameLabel}</span>
+              <div class="message-content">${message.text}</div>
+              <span class="message-time">${formatDate(message.time)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function addSystemMessage(text) {
+        const message = {
+          type: 'system',
+          text: text,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(message);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+      }
+
+      function updateChatMessages() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.innerHTML = renderChatMessages();
+          scrollToLatestMessage();
+        }
+      }
+
+      function scrollToLatestMessage() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+      }
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      function sendMessage() {
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = chatContainer.querySelector('#chat-input');
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        const userMessage = {
+          type: 'user',
+          text: message,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(userMessage);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+        
+        chatInput.value = '';
+        
+        setTimeout(() => {
+          const operatorMessage = {
+            type: 'operator',
+            text: 'Спасибо за обращение! Как я могу вам помочь?',
+            time: new Date().toISOString()
+          };
+          
+          chatState.messages.push(operatorMessage);
+          saveToStorage('chat_state', chatState);
+          updateChatMessages();
+        }, 2000);
+      }
+
+      // Глобальные функции
+      window.removeFromCart = removeFromCart;
+      window.updateCartQuantity = updateCartQuantity;
+      window.clearCart = clearCart;
+
       // Инициализация при загрузке страницы
       document.addEventListener('DOMContentLoaded', function() {
-        console.log('Инициализируем страницу корзины...');
-        
+        console.log('DOM загружен, инициализируем корзину...');
         updateCartCounter();
-        displayCart();
+        renderCart();
         initChat();
-        initCheckoutForm();
-        
-        console.log('Страница корзины инициализирована');
       });
     </script>
-  </body>
+</body>
 </html>
