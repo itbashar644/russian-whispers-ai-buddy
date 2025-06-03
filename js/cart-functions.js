@@ -140,7 +140,10 @@ function extractPriceFromElement(element) {
   }
   
   // Если скидочной цены нет, берем обычную цену
-  const priceElement = element.querySelector('.product-price, .current-price');
+  const priceElement =
+    element.querySelector('.current-price:not(.old-price)') ||
+    element.querySelector('.current-price') ||
+    element.querySelector('.product-price');
   if (priceElement) {
     const priceText = priceElement.textContent.replace(/[^\d]/g, '');
     return parseInt(priceText) || 0;
