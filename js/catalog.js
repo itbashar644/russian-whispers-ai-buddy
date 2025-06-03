@@ -1,19 +1,7 @@
-/**
- * Функционал для работы с каталогом товаров
- */
 
-// Конфигурация для Supabase
-const CATALOG_CONFIG = {
-  supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
-  get apiHeaders() {
-    return {
-      'apikey': this.supabaseKey,
-      'Authorization': `Bearer ${this.supabaseKey}`,
-      'Content-Type': 'application/json'
-    };
-  }
-};
+/**
+ * Функционал для работы с каталогом товаров - упрощенная версия
+ */
 
 // Fallback helpers if utils.js failed to load
 if (typeof parsePrice !== 'function') {
@@ -34,49 +22,8 @@ if (typeof formatPrice !== 'function') {
   window.formatPrice = formatPrice;
 }
 
-// Функция создания карточки товара
-function createMarketplaceLinksHtml(product) {
-  if (!product.ozon_url && !product.wildberries_url && !product.avito_url) {
-    return '';
-  }
-
-  let marketplaceIconsHtml = '';
-
-  if (product.wildberries_url) {
-    marketplaceIconsHtml += `
-      <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
-        <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
-      </a>
-    `;
-  }
-
-  if (product.ozon_url) {
-    marketplaceIconsHtml += `
-      <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
-        <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
-      </a>
-    `;
-  }
-
-  if (product.avito_url) {
-    marketplaceIconsHtml += `
-      <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
-        <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
-      </a>
-    `;
-  }
-
-  return `
-    <div class="marketplace-links">
-      <span class="marketplace-title">Доступен на:</span>
-      <div class="marketplace-icons">
-        ${marketplaceIconsHtml}
-      </div>
-    </div>
-  `;
-}
-
-function createProductCard(product) {
+// Функция создания карточки товара для каталога
+function createCatalogProductCard(product) {
   const card = document.createElement('div');
   card.className = 'product-card';
 
@@ -87,7 +34,45 @@ function createProductCard(product) {
   const displayTitle = product.title.length > 50
     ? `${product.title.slice(0, 50)}…`
     : product.title;
-  const marketplaceLinks = createMarketplaceLinksHtml(product);
+
+  // Создаем блок маркетплейсов
+  let marketplaceLinks = '';
+  if (product.ozon_url || product.wildberries_url || product.avito_url) {
+    let marketplaceIconsHtml = '';
+    
+    if (product.wildberries_url) {
+      marketplaceIconsHtml += `
+        <a href="${product.wildberries_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon wildberries-icon" title="Открыть на Wildberries">
+          <img src="/lovable-uploads/e338f2d1-bca5-46f1-b305-fdc8cff079f6.png" alt="Wildberries">
+        </a>
+      `;
+    }
+    
+    if (product.ozon_url) {
+      marketplaceIconsHtml += `
+        <a href="${product.ozon_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon ozon-icon" title="Открыть на Ozon">
+          <img src="/lovable-uploads/cdd6cfcc-2939-4048-ad14-0718ccb5108b.png" alt="Ozon">
+        </a>
+      `;
+    }
+    
+    if (product.avito_url) {
+      marketplaceIconsHtml += `
+        <a href="${product.avito_url}" target="_blank" rel="noopener noreferrer" class="marketplace-icon avito-icon" title="Открыть на Авито">
+          <img src="/lovable-uploads/c9a01e33-cfba-4882-bd76-bf5242276fda.png" alt="Авито">
+        </a>
+      `;
+    }
+    
+    marketplaceLinks = `
+      <div class="marketplace-links">
+        <span class="marketplace-title">Доступен на:</span>
+        <div class="marketplace-icons">
+          ${marketplaceIconsHtml}
+        </div>
+      </div>
+    `;
+  }
 
   card.innerHTML = `
     <div class="product-image">
@@ -102,15 +87,16 @@ function createProductCard(product) {
       <h3>
         <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
       </h3>
-        <div class="product-price">
-          <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
-            ${priceDisplay}
-         </button>
-        </div>
-        ${marketplaceLinks}
-        <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
-        </div>
-    `;
+      ${marketplaceLinks}
+      <div class="product-price">
+        <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
+          ${priceDisplay}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        </button>
+      </div>
+      <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
+    </div>
+  `;
   
   return card;
 }
@@ -135,7 +121,7 @@ async function loadCatalogProducts() {
     console.log('Параметры поиска:', { category, searchQuery });
     
     // Строим URL для запроса
-    let apiUrl = `${CATALOG_CONFIG.supabaseUrl}/rest/v1/products?select=*&archived=eq.false&in_stock=eq.true`;
+    let apiUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?select=*&archived=eq.false&in_stock=eq.true';
     
     if (category) {
       apiUrl += `&category=eq.${encodeURIComponent(category)}`;
@@ -150,7 +136,11 @@ async function loadCatalogProducts() {
     console.log('URL запроса товаров:', apiUrl);
     
     const response = await fetch(apiUrl, {
-      headers: CATALOG_CONFIG.apiHeaders
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        'Content-Type': 'application/json'
+      }
     });
     
     if (!response.ok) {
@@ -167,7 +157,7 @@ async function loadCatalogProducts() {
     
     productsContainer.innerHTML = '';
     products.forEach(product => {
-      const productCard = createProductCard(product);
+      const productCard = createCatalogProductCard(product);
       productsContainer.appendChild(productCard);
     });
     
@@ -201,8 +191,12 @@ async function loadCatalogCategories() {
       return;
     }
     
-    const response = await fetch(`${CATALOG_CONFIG.supabaseUrl}/rest/v1/categories?select=*&order=name.asc`, {
-      headers: CATALOG_CONFIG.apiHeaders
+    const response = await fetch('https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/categories?select=*&order=name.asc', {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
+        'Content-Type': 'application/json'
+      }
     });
     
     if (!response.ok) {
@@ -274,3 +268,4 @@ document.addEventListener('DOMContentLoaded', function() {
 // Экспортируем функции для использования в других файлах
 window.loadCatalogProducts = loadCatalogProducts;
 window.loadCatalogCategories = loadCatalogCategories;
+window.createCatalogProductCard = createCatalogProductCard;
