@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 const path = require('path');
 
@@ -193,7 +194,7 @@ class ProductPageGenerator {
     <meta property="og:type" content="product">
     <meta property="og:url" content="${this.baseUrl}/product-${product.id}.html">
     
-    <!-- Canonical URL -->
+    <!-- Canonical URL for the static page -->
     <link rel="canonical" href="${this.baseUrl}/product-${product.id}.html">
     
     <!-- Микроразметка Schema.org для товара (JSON-LD) -->
@@ -226,16 +227,30 @@ class ProductPageGenerator {
             .product-grid { grid-template-columns: 1fr; }
             .container { padding: 10px; }
         }
+        .redirect-notice {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <!-- Уведомление о переходе на основной сайт -->
+    <div class="redirect-notice">
+        <p><strong>Вы просматриваете SEO-версию страницы.</strong></p>
+        <p>Для покупки и полного функционала перейдите на <a href="${this.baseUrl}/#/product/${product.id}">основную версию сайта</a></p>
+    </div>
+
     <!-- Микроразметка товара с использованием Microdata -->
     <div class="container" itemscope itemtype="https://schema.org/Product">
         <!-- Хлебные крошки -->
         <nav class="breadcrumb">
-            <a href="/">Главная</a> → 
-            <a href="/catalog">Каталог</a> → 
-            <a href="/catalog?category=${encodeURIComponent(product.category)}">${product.category}</a> → 
+            <a href="${this.baseUrl}">Главная</a> → 
+            <a href="${this.baseUrl}/catalog">Каталог</a> → 
+            <a href="${this.baseUrl}/catalog?category=${encodeURIComponent(product.category)}">${product.category}</a> → 
             <span itemprop="name">${product.title}</span>
         </nav>
         
@@ -277,7 +292,7 @@ class ProductPageGenerator {
                 <!-- Название товара -->
                 <h1 itemprop="name">${product.title}</h1>
                 
-                <p><strong>Артикул:</strong> <span>${product.article_number || `product-${product.id}`}</span></p>
+                <p><strong>Артикул:</strong> <span itemprop="sku">${product.article_number || `product-${product.id}`}</span></p>
                 
                 <!-- Описание товара -->
                 <div itemprop="description"><p>${product.description}</p></div>
@@ -307,14 +322,14 @@ class ProductPageGenerator {
                     ${product.in_stock ? '✓ В наличии' : '✗ Нет в наличии'}
                 </div>
                 
-                <a href="/#/product/${product.id}" class="cta-button">
+                <a href="${this.baseUrl}/#/product/${product.id}" class="cta-button">
                     ${product.in_stock ? `Купить за ${price} ₽` : 'Уведомить о поступлении'}
                 </a>
                 
                 <!-- Характеристики -->
                 ${this.generateSpecifications(product)}
                 
-                <p><strong>Страна происхождения:</strong> ${product.country_of_origin || 'Нет'}</p>
+                <p><strong>Страна происхождения:</strong> ${product.country_of_origin || 'Не указана'}</p>
             </div>
         </div>
         
@@ -341,11 +356,16 @@ class ProductPageGenerator {
         </div>
     </div>
     
-    <!-- Переход на основной сайт -->
+    <!-- Автоматический переход на основной сайт через 3 секунды -->
     <script>
+        setTimeout(function() {
+            window.location.href = '${this.baseUrl}/#/product/${product.id}';
+        }, 3000);
+        
+        // Немедленный переход при клике на кнопку
         document.querySelector('.cta-button').addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = '/#/product/${product.id}';
+            window.location.href = '${this.baseUrl}/#/product/${product.id}';
         });
     </script>
 </body>
