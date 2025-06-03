@@ -11,6 +11,7 @@
     
     <!-- CSS стили -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/chat-styles.css">
     <style>
       /* Улучшенные стили для формы обратной связи */
       .contact-section {
@@ -27,7 +28,6 @@
         box-shadow: 0 5px 30px rgba(0,0,0,0.05);
         padding: 40px 30px;
       }
-      
       
       .contact-form-container {
         padding: 40px 30px;
@@ -91,80 +91,67 @@
         }
       }
     </style>
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
 
-</head>
+    <!-- Schema.org JSON-LD data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "The X Shop",
+      "url": "https://the-x.shop",
+      "logo": "https://the-x.shop/favicon.ico",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+7 (800) 123-45-67",
+        "contactType": "customer service",
+        "areaServed": "RU"
+      }
+    }
+    </script>
+  </head>
   <body>
-<header class="main-header">
-  <div class="container">
-    <div class="header-content">
-      <div class="logo">
-        <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
-      </div>
-      <nav class="main-nav">
-        <ul class="nav-list">
-          <li><a href="index.html" class="nav-link">Главная</a></li>
-          <li><a href="catalog.html" class="nav-link">Каталог</a></li>
-          <li><a href="about.html" class="nav-link">О нас</a></li>
-          <li><a href="contacts.html" class="nav-link active">Контакты</a></li>
-        </ul>
-      </nav>
-      <div class="header-actions">
-        <div class="header-search">
-          <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-          <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
+    <header class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+          </div>
+          <nav class="main-nav">
+            <ul class="nav-list">
+              <li><a href="index.html" class="nav-link">Главная</a></li>
+              <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+              <li><a href="about.html" class="nav-link">О нас</a></li>
+              <li><a href="contacts.html" class="nav-link active">Контакты</a></li>
+            </ul>
+          </nav>
+          <div class="header-actions">
+            <div class="header-search">
+              <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
+              <div id="search-suggestions" class="search-suggestions"></div>
+              <button id="search-button" class="icon-button search-button" aria-label="Поиск">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+              </button>
+            </div>
+            <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            </a>
+            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </a>
+            <a href="cart.html" class="action-icon cart-icon" title="Корзина">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              <span id="cart-counter" class="cart-counter counter">0</span>
+            </a>
+            <a href="auth-callback.html" class="action-icon profile-icon" title="Личный кабинет">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </a>
+          </div>
+          <button class="mobile-menu-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
         </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-        </a>
-        <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-        </a>
-        <a href="cart.html" class="action-icon cart-icon" title="Корзина">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          <span id="cart-counter" class="cart-counter counter">0</span>
-        </a>
-        <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </a>
       </div>
-      <button class="mobile-menu-toggle">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-</header>
+    </header>
 
     <main>
       <div class="container py-4">
@@ -202,33 +189,33 @@
             </div>
           </div>
         </div>
-              </section>
-        <div class="chat-widget">
-          <button id="chat-button" class="chat-toggle-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          </button>
-          <div id="chat-container" class="chat-container hidden">
-            <!-- Chat interface will be loaded here -->
-          </div>
+      </section>
+
+      <!-- Chat Button -->
+      <div class="chat-widget">
+        <button id="chat-button" class="chat-toggle-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+        <div id="chat-container" class="chat-container hidden">
+          <!-- Chat interface will be loaded here -->
         </div>
-      </main>
+      </div>
+    </main>
     
-<footer class="main-footer">
+    <footer class="main-footer">
       <div class="container">
         <div class="footer-content">
           <div class="footer-column">
             <h3 class="footer-title">The X Shop</h3>
             <p>Качественные товары из Китая по доступным ценам</p>
           </div>
-
           <div class="footer-column">
-                       <h4 class="footer-title">Каталог</h4>
+            <h4 class="footer-title">Каталог</h4>
             <ul class="footer-links">
               <li><a href="catalog.html">Все товары</a></li>
               <li><a href="catalog.html?category=Электроника">Электроника</a></li>
             </ul>
           </div>
-
           <div class="footer-column">
             <h4 class="footer-title">Информация</h4>
             <ul class="footer-links">
@@ -237,40 +224,18 @@
             </ul>
           </div>
         </div>
-
         <div class="footer-bottom">
           <p>&copy; 2020 The X Shop. Все права защищены.</p>
         </div>
       </div>
     </footer>
 
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-       ym(101964387, "init", {
-            defer: true,
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true,
-            webvisor:true,
-            ecommerce:"dataLayer"
-       });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/101964387" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-    
-    <!-- Необходимый скрипт для Lovable -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    
-    <!-- Скрипты для функциональности страницы -->
+    <!-- Подключаем необходимые скрипты -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/search.js"></script>
+    <script src="js/modules/chat-module.js"></script>
+
     <script>
       // Обработчик отправки формы
       document.getElementById('contactForm').addEventListener('submit', function(e) {
@@ -280,29 +245,23 @@
         const email = document.getElementById('email').value;
         const message = document.getElementById('message').value;
         
-        // В реальном проекте здесь будет отправка данных на сервер
         console.log('Отправка формы:', { name, email, message });
         
-        // Показываем уведомление об успешной отправке
         showNotification('Сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.');
-        
-        // Очищаем форму
         this.reset();
       });
       
       // Функция для показа уведомления
       function showNotification(message) {
-        // Создаем элемент уведомления
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.textContent = message;
         
-        // Добавляем стили
         notification.style.position = 'fixed';
         notification.style.bottom = '20px';
         notification.style.right = '20px';
-        notification.style.backgroundColor = 'white';
-        notification.style.color = 'var(--text-color)';
+        notification.style.backgroundColor = '#28a745';
+        notification.style.color = 'white';
         notification.style.padding = '10px 15px';
         notification.style.borderRadius = '4px';
         notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
@@ -311,26 +270,34 @@
         notification.style.transform = 'translateY(20px)';
         notification.style.transition = 'opacity 0.3s, transform 0.3s';
         
-        // Добавляем на страницу
         document.body.appendChild(notification);
         
-        // Анимация появления
         setTimeout(() => {
           notification.style.opacity = '1';
           notification.style.transform = 'translateY(0)';
         }, 10);
         
-        // Удаление через 3 секунды
         setTimeout(() => {
           notification.style.opacity = '0';
           notification.style.transform = 'translateY(20px)';
           
           setTimeout(() => {
-            document.body.removeChild(notification);
+            if (notification.parentNode) {
+              document.body.removeChild(notification);
+            }
           }, 300);
         }, 3000);
       }
+
+      // Инициализация при загрузке DOM
+      document.addEventListener('DOMContentLoaded', function() {
+        updateCartCounter();
+        
+        // Инициализация чата
+        if (typeof window.initChat === 'function') {
+          window.initChat();
+        }
+      });
     </script>
-      <script src="js/chat.js"></script>
-    </body>
+  </body>
 </html>

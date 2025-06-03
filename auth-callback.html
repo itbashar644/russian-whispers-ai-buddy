@@ -6,13 +6,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизация | The X Shop</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/chat-styles.css">
 </head>
 <body>
-    <div class="container" style="text-align: center; padding: 2rem;">
-        <h1>Обработка авторизации...</h1>
-        <p>Пожалуйста, подождите</p>
-    </div>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+                </div>
+                <nav class="main-nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Главная</a></li>
+                        <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+                        <li><a href="about.html" class="nav-link">О нас</a></li>
+                        <li><a href="contacts.html" class="nav-link">Контакты</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
 
+    <main>
+        <div class="container" style="text-align: center; padding: 4rem 2rem; min-height: 60vh;">
+            <div id="auth-status" class="auth-status">
+                <h1>Вход в систему</h1>
+                <p>Загрузка...</p>
+            </div>
+            
+            <div id="login-form" class="login-form" style="display: none; max-width: 400px; margin: 0 auto;">
+                <h2>Авторизация</h2>
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                        <button type="button" id="signup-btn" class="btn btn-outline">Регистрация</button>
+                    </div>
+                </form>
+                <div id="auth-error" class="error-message" style="display: none; color: red; margin-top: 1rem;"></div>
+            </div>
+
+            <div id="signup-form" class="signup-form" style="display: none; max-width: 400px; margin: 0 auto;">
+                <h2>Регистрация</h2>
+                <form id="signup-form-element">
+                    <div class="form-group">
+                        <label for="signup-email">Email:</label>
+                        <input type="email" id="signup-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Пароль:</label>
+                        <input type="password" id="signup-password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                        <button type="button" id="login-btn" class="btn btn-outline">Уже есть аккаунт?</button>
+                    </div>
+                </form>
+                <div id="signup-error" class="error-message" style="display: none; color: red; margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+        <!-- Chat Button -->
+        <div class="chat-widget">
+            <button id="chat-button" class="chat-toggle-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+            <div id="chat-container" class="chat-container hidden">
+                <!-- Chat interface will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">The X Shop</h3>
+                    <p>Качественные товары из Китая по доступным ценам</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2020 The X Shop. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/modules/chat-module.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -28,34 +114,126 @@
             }
         );
 
-        async function handleAuthCallback() {
+        const authStatus = document.getElementById('auth-status');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const authForm = document.getElementById('auth-form');
+        const signupFormElement = document.getElementById('signup-form-element');
+
+        async function checkAuthStatus() {
             try {
-                // Получаем сессию из URL
                 const { data, error } = await supabase.auth.getSession();
                 
                 if (error) {
                     console.error('Ошибка при получении сессии:', error);
-                    window.location.href = '/login.html?error=auth_failed';
+                    showLoginForm();
                     return;
                 }
 
                 if (data.session) {
-                    console.log('Пользователь успешно авторизован:', data.session.user);
-                    // Успешная авторизация - переходим на главную
-                    window.location.href = '/index.html';
+                    authStatus.innerHTML = `
+                        <h1>Добро пожаловать!</h1>
+                        <p>Вы успешно авторизованы</p>
+                        <button onclick="window.location.href='/index.html'" class="btn btn-primary">Перейти на главную</button>
+                        <button onclick="logout()" class="btn btn-outline">Выйти</button>
+                    `;
                 } else {
-                    // Нет сессии - переходим на страницу входа
-                    console.log('Сессия не найдена, переходим на страницу входа');
-                    window.location.href = '/login.html';
+                    showLoginForm();
                 }
             } catch (error) {
-                console.error('Неожиданная ошибка при обработке авторизации:', error);
-                window.location.href = '/login.html?error=unexpected';
+                console.error('Ошибка:', error);
+                showLoginForm();
             }
         }
 
-        // Запускаем обработку при загрузке страницы
-        document.addEventListener('DOMContentLoaded', handleAuthCallback);
+        function showLoginForm() {
+            authStatus.style.display = 'none';
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+        }
+
+        function showSignupForm() {
+            authStatus.style.display = 'none';
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+        }
+
+        // Event listeners
+        document.getElementById('signup-btn').addEventListener('click', showSignupForm);
+        document.getElementById('login-btn').addEventListener('click', showLoginForm);
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('auth-error');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (error) {
+                    errorDiv.textContent = 'Ошибка входа: ' + error.message;
+                    errorDiv.style.display = 'block';
+                } else {
+                    window.location.href = '/index.html';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Произошла ошибка: ' + error.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        signupFormElement.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const errorDiv = document.getElementById('signup-error');
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth-callback.html`
+                    }
+                });
+
+                if (error) {
+                    errorDiv.textContent = 'Ошибка регистрации: ' + error.message;
+                    errorDiv.style.display = 'block';
+                } else {
+                    authStatus.innerHTML = `
+                        <h1>Регистрация успешна!</h1>
+                        <p>Проверьте email для подтверждения аккаунта</p>
+                        <button onclick="showLoginForm()" class="btn btn-primary">Войти</button>
+                    `;
+                    authStatus.style.display = 'block';
+                    signupForm.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Произошла ошибка: ' + error.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        window.logout = async function() {
+            await supabase.auth.signOut();
+            window.location.href = '/auth-callback.html';
+        };
+
+        window.showLoginForm = showLoginForm;
+        window.showSignupForm = showSignupForm;
+
+        // Инициализация чата
+        if (typeof window.initChat === 'function') {
+            window.initChat();
+        }
+
+        // Проверка статуса авторизации при загрузке
+        checkAuthStatus();
     </script>
 </body>
 </html>
