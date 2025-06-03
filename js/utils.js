@@ -31,7 +31,7 @@ function parsePrice(value) {
 
 function formatPrice(price) {
   const value = parsePrice(price);
-  return value.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+  return value.toLocaleString('ru-RU') + ' ₽';
 }
 
 // Обновление счетчика корзины
