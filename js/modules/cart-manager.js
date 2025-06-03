@@ -1,4 +1,3 @@
-
 /**
  * Современный модуль управления корзиной
  */
@@ -49,34 +48,65 @@ class CartManager {
 
   parsePrice(value) {
     try {
+      console.log('Парсим цену:', value, 'тип:', typeof value);
+      
       if (typeof value === 'number') {
-        // Если число слишком большое (больше 1 миллиона), вероятно это ошибка
-        if (value > 1000000) {
-          console.warn('Подозрительно большая цена:', value);
-          return Math.round(value / 1000); // Попробуем разделить на 1000
+        // Если число больше 100000, скорее всего это ошибка в копейках
+        if (value > 100000) {
+          console.warn('Цена выглядит как копейки, конвертируем:', value);
+          return Math.round(value / 100);
         }
         return value;
       }
-      if (!value) return 0;
       
-      // Удаляем все кроме цифр, точки и запятой
-      let cleanValue = String(value).replace(/[^0-9.,]/g, '');
-      
-      // Заменяем запятую на точку для корректного парсинга
-      cleanValue = cleanValue.replace(',', '.');
-      
-      const numeric = parseFloat(cleanValue);
-      
-      if (isNaN(numeric)) return 0;
-      
-      // Если получившееся число больше миллиона, скорее всего это ошибка
-      if (numeric > 1000000) {
-        console.warn('Подозрительно большая цена после парсинга:', numeric, 'из:', value);
-        // Попробуем разделить на 1000
-        return Math.round(numeric / 1000);
+      if (!value) {
+        console.log('Пустое значение цены, возвращаем 0');
+        return 0;
       }
       
-      return numeric;
+      const stringValue = String(value);
+      console.log('Строковое значение цены:', stringValue);
+      
+      // Удаляем все кроме цифр, точки и запятой
+      let cleanValue = stringValue.replace(/[^0-9.,]/g, '');
+      console.log('Очищенное значение:', cleanValue);
+      
+      // Если есть и точка и запятая, берем последний разделитель как десятичный
+      if (cleanValue.includes('.') && cleanValue.includes(',')) {
+        const lastDotIndex = cleanValue.lastIndexOf('.');
+        const lastCommaIndex = cleanValue.lastIndexOf(',');
+        
+        if (lastDotIndex > lastCommaIndex) {
+          // Точка используется как десятичный разделитель
+          cleanValue = cleanValue.replace(/,/g, '');
+        } else {
+          // Запятая используется как десятичный разделитель
+          cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
+        }
+      } else {
+        // Заменяем запятую на точку
+        cleanValue = cleanValue.replace(',', '.');
+      }
+      
+      console.log('Значение после обработки разделителей:', cleanValue);
+      
+      const numeric = parseFloat(cleanValue);
+      console.log('Числовое значение:', numeric);
+      
+      if (isNaN(numeric)) {
+        console.warn('Не удалось распарсить цену:', value);
+        return 0;
+      }
+      
+      // Если получившееся число больше 100000, скорее всего это копейки
+      if (numeric > 100000) {
+        console.warn('Цена выглядит как копейки, конвертируем:', numeric);
+        return Math.round(numeric / 100);
+      }
+      
+      const result = Math.round(numeric);
+      console.log('Финальная цена:', result);
+      return result;
     } catch (error) {
       console.error('Ошибка при парсинге цены:', error, value);
       return 0;
@@ -106,7 +136,6 @@ class CartManager {
     }
   }
 
-  // Функции корзины
   removeFromCart(productId) {
     try {
       const cart = this.getFromStorage('cart', []);
@@ -193,6 +222,7 @@ class CartManager {
 
       const cart = this.getFromStorage('cart', []);
       console.log('Товаров в корзине:', cart.length);
+      console.log('Данные корзины:', cart);
 
       if (cart.length === 0) {
         cartContent.innerHTML = `
@@ -211,10 +241,21 @@ class CartManager {
             <h2>Товары в корзине</h2>
             <div class="cart-items">
               ${cart.map(item => {
+                console.log('Обрабатываем товар:', item);
+                
                 // Основная цена - цена после скидки если есть, иначе обычная цена
                 const mainPrice = item.discount_price || item.price;
                 const originalPrice = item.price;
                 const hasDiscount = item.discount_price && item.discount_price !== item.price;
+                
+                console.log('Цены для товара:', {
+                  mainPrice: mainPrice,
+                  originalPrice: originalPrice,
+                  hasDiscount: hasDiscount,
+                  parsedMainPrice: this.parsePrice(mainPrice),
+                  parsedOriginalPrice: this.parsePrice(originalPrice)
+                });
+                
                 const itemTotal = this.parsePrice(mainPrice) * item.quantity;
                 
                 return `
