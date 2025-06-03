@@ -85,19 +85,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM загружен, инициализируем страницу корзины...');
             
-            // Инициализируем современный менеджер корзины
-            if (typeof cartManager !== 'undefined') {
-                console.log('CartManager инициализирован');
-            } else {
-                console.log('CartManager не найден, используем fallback');
-                // Fallback на старые функции
-                if (typeof initCart === 'function') {
-                    initCart();
+            // Ждем немного, чтобы все скрипты загрузились
+            setTimeout(() => {
+                if (typeof cartManager !== 'undefined') {
+                    console.log('CartManager найден, принудительно рендерим корзину');
+                    cartManager.renderCart();
+                } else {
+                    console.log('CartManager не найден, используем fallback функции');
+                    if (typeof renderCart === 'function') {
+                        renderCart();
+                    } else if (typeof initCart === 'function') {
+                        initCart();
+                    } else {
+                        console.error('Нет доступных функций для отображения корзины');
+                        document.getElementById('cart-content').innerHTML = `
+                            <div class="error-message">
+                                <p>Ошибка загрузки корзины</p>
+                                <button onclick="location.reload()" class="btn btn-primary">Обновить страницу</button>
+                            </div>
+                        `;
+                    }
                 }
-                if (typeof renderCart === 'function') {
-                    renderCart();
-                }
-            }
+            }, 100);
         });
     </script>
 </body>
