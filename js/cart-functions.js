@@ -15,16 +15,13 @@ function addToCart(product) {
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    // Определяем правильную цену - используем discount_price если есть, иначе price
-    const price = product.discount_price && product.discount_price !== product.price 
-      ? product.discount_price 
-      : product.price;
-    
+    // Сохраняем обе цены: оригинальную и со скидкой (если есть)
     cart.push({
       id: product.id,
       title: product.title,
-      price: price,
-      original_price: product.price,
+      price: product.discount_price || product.price, // действующая цена
+      original_price: product.price, // оригинальная цена
+      discount_price: product.discount_price, // цена со скидкой (если есть)
       image_url: product.image_url,
       quantity: 1
     });
@@ -75,7 +72,11 @@ function clearCart() {
 // Подсчет общей суммы корзины
 function getCartTotal() {
   const cart = getFromStorage('cart', []);
-  return cart.reduce((total, item) => total + (parsePrice(item.price) * item.quantity), 0);
+  return cart.reduce((total, item) => {
+    // Используем цену со скидкой, если она есть, иначе обычную цену
+    const currentPrice = item.discount_price || item.price;
+    return total + (parsePrice(currentPrice) * item.quantity);
+  }, 0);
 }
 
 // Обновление счетчика корзины
