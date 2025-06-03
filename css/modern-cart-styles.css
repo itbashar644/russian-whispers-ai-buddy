@@ -1,4 +1,3 @@
-
 /* Современные стили для корзины */
 .cart-layout {
   display: grid;
@@ -49,9 +48,21 @@
 }
 
 .cart-item-price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cart-item-price .old-price {
+  color: #999;
+  text-decoration: line-through;
+  font-size: 0.9em;
+}
+
+.cart-item-price .current-price {
   color: #059669;
-  font-size: 14px;
   font-weight: 600;
+  font-size: 1.1em;
 }
 
 .cart-item-quantity {
