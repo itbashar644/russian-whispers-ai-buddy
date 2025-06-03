@@ -36,10 +36,16 @@ function addToCart(product) {
       existingItem.quantity += product.quantity || 1;
     } else {
       // Если товара нет в корзине, добавляем его
+      // Обрабатываем цены через parsePrice
+      const originalPrice = parsePrice(product.price);
+      const discountPrice = product.discount_price ? parsePrice(product.discount_price) : null;
+      
       cart.push({
         id: product.id,
         title: product.title,
-        price: product.price,
+        price: discountPrice || originalPrice, // действующая цена
+        original_price: originalPrice, // оригинальная цена
+        discount_price: discountPrice, // цена со скидкой (если есть)
         image: product.image,
         quantity: product.quantity || 1
       });
