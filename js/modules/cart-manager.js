@@ -1,4 +1,3 @@
-
 /**
  * Современный модуль управления корзиной
  */
@@ -40,10 +39,34 @@ class CartManager {
   }
 
   parsePrice(value) {
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') {
+      // Если число слишком большое (больше 1 миллиона), вероятно это ошибка
+      if (value > 1000000) {
+        console.warn('Подозрительно большая цена:', value);
+        return value / 1000; // Попробуем разделить на 1000
+      }
+      return value;
+    }
     if (!value) return 0;
-    const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
-    return isNaN(numeric) ? 0 : numeric;
+    
+    // Удаляем все кроме цифр, точки и запятой
+    let cleanValue = String(value).replace(/[^0-9.,]/g, '');
+    
+    // Заменяем запятую на точку для корректного парсинга
+    cleanValue = cleanValue.replace(',', '.');
+    
+    const numeric = parseFloat(cleanValue);
+    
+    if (isNaN(numeric)) return 0;
+    
+    // Если получившееся число больше миллиона, скорее всего это ошибка
+    if (numeric > 1000000) {
+      console.warn('Подозрительно большая цена после парсинга:', numeric, 'из:', value);
+      // Попробуем разделить на 1000
+      return numeric / 1000;
+    }
+    
+    return numeric;
   }
 
   formatPrice(price) {
