@@ -1,4 +1,3 @@
-
 /**
  * Функции для работы с корзиной
  */
@@ -18,14 +17,14 @@ function addToCart(product) {
   } else {
     // Определяем правильную цену - используем discount_price если есть, иначе price
     const price = product.discount_price && product.discount_price !== product.price 
-      ? product.discount_price 
-      : product.price;
+      ? parsePrice(product.discount_price) 
+      : parsePrice(product.price);
     
     cart.push({
       id: product.id,
       title: product.title,
       price: price,
-      original_price: product.price,
+      original_price: parsePrice(product.price),
       image_url: product.image_url,
       quantity: 1
     });
@@ -76,7 +75,10 @@ function clearCart() {
 // Подсчет общей суммы корзины
 function getCartTotal() {
   const cart = getFromStorage('cart', []);
-  return cart.reduce((total, item) => total + (parsePrice(item.price) * item.quantity), 0);
+  return cart.reduce((total, item) => {
+    const itemPrice = parsePrice(item.price);
+    return total + (itemPrice * item.quantity);
+  }, 0);
 }
 
 // Обновление счетчика корзины
