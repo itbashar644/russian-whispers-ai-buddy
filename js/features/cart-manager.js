@@ -55,40 +55,32 @@ function handleAddToCart(event) {
     event.preventDefault();
     event.stopPropagation();
     
-    const productCard = event.target.closest('.product-card');
-    if (!productCard) return;
+    const button = event.target.closest('.add-to-cart-btn, .price-cart-btn');
+    if (!button) return;
     
-    const productLink = productCard.querySelector('.product-link');
-    if (!productLink) return;
+    // Получаем данные из data-атрибутов кнопки
+    const productId = button.dataset.id;
+    const productTitle = button.dataset.title;
+    const productPrice = button.dataset.price; // Это уже актуальная цена (со скидкой если есть)
+    const originalPrice = button.dataset.originalPrice;
+    const discountPrice = button.dataset.discountPrice;
+    const productImage = button.dataset.image;
     
-    let productId;
-    if (productLink.href && productLink.href.includes('id=')) {
-      productId = productLink.href.split('id=')[1];
-    } else if (productLink.dataset.id) {
-      productId = productLink.dataset.id;
+    if (!productId || !productTitle || !productPrice) {
+      console.error('Недостаточно данных для добавления товара в корзину');
+      return;
     }
-    
-    if (!productId) return;
-    
-    const titleElement = productCard.querySelector('h3');
-    if (!titleElement) return;
-    const productTitle = titleElement.textContent;
-    
-    const priceElement = productCard.querySelector('.current-price');
-    if (!priceElement) return;
-    
-    const priceText = priceElement.textContent;
-    const productPrice = parsePrice(priceText);
-    const productImageElement = productCard.querySelector('.product-image img');
-    const productImage = productImageElement ? productImageElement.src : '';
     
     const product = {
       id: productId,
       title: productTitle,
-      price: productPrice,
-      image: productImage,
+      price: originalPrice, // Оригинальная цена
+      discount_price: discountPrice || null, // Цена со скидкой (если есть)
+      image_url: productImage,
       quantity: 1
     };
+    
+    console.log('Добавляем товар в корзину:', product);
     
     const success = addToCart(product);
     
