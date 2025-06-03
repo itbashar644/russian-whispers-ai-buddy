@@ -6,6 +6,7 @@
     <title>The X Shop | Товары из Китая для вашего дома</title>
     <meta name="description" content="Товары из Китая высокого качества по доступным ценам. Аналоги популярных брендов.">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/chat-styles.css">
     
     <!-- Schema.org JSON-LD data -->
     <script type="application/ld+json">
@@ -364,6 +365,9 @@
         </div>
       </div>
     </footer>
+
+    <!-- Подключаем модуль чата -->
+    <script src="js/modules/chat-module.js"></script>
 
     <script>
       // Встроенный JavaScript код для главной страницы
@@ -889,6 +893,7 @@
         
         initCart();
         initWishlist();
+        initChat(); // Добавляем инициализацию чата
         
         const path = window.location.pathname;
         if (path === '/' || path === '/index.html' || path.endsWith('index.html')) {
