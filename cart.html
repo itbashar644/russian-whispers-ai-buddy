@@ -74,39 +74,29 @@
         </div>
     </footer>
 
-    <!-- Подключаем существующие модули -->
+    <!-- Подключаем только необходимые модули -->
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/cart-functions.js"></script>
     <script src="js/modules/cart-manager.js"></script>
 
     <script>
-        // Инициализация при загрузке страницы
+        // Простая инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем страницу корзины...');
+            console.log('DOM загружен, инициализируем корзину...');
             
-            // Ждем немного, чтобы все скрипты загрузились
-            setTimeout(() => {
-                if (typeof cartManager !== 'undefined') {
-                    console.log('CartManager найден, принудительно рендерим корзину');
-                    cartManager.renderCart();
-                } else {
-                    console.log('CartManager не найден, используем fallback функции');
-                    if (typeof renderCart === 'function') {
-                        renderCart();
-                    } else if (typeof initCart === 'function') {
-                        initCart();
-                    } else {
-                        console.error('Нет доступных функций для отображения корзины');
-                        document.getElementById('cart-content').innerHTML = `
-                            <div class="error-message">
-                                <p>Ошибка загрузки корзины</p>
-                                <button onclick="location.reload()" class="btn btn-primary">Обновить страницу</button>
-                            </div>
-                        `;
-                    }
-                }
-            }, 100);
+            // Проверяем, что cartManager доступен
+            if (typeof cartManager !== 'undefined') {
+                console.log('CartManager найден, инициализируем...');
+                // cartManager уже инициализируется автоматически через конструктор
+            } else {
+                console.error('CartManager не найден');
+                document.getElementById('cart-content').innerHTML = `
+                    <div class="error-message">
+                        <p>Ошибка загрузки корзины</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Обновить страницу</button>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>
