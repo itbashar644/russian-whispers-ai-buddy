@@ -78,23 +78,26 @@
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/cart-functions.js"></script>
-    <script src="js/cart.js"></script>
+    <script src="js/modules/cart-manager.js"></script>
 
     <script>
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM загружен, инициализируем страницу корзины...');
             
-            // Инициализируем корзину
-            if (typeof initCart === 'function') {
-                initCart();
+            // Инициализируем современный менеджер корзины
+            if (typeof cartManager !== 'undefined') {
+                console.log('CartManager инициализирован');
+            } else {
+                console.log('CartManager не найден, используем fallback');
+                // Fallback на старые функции
+                if (typeof initCart === 'function') {
+                    initCart();
+                }
+                if (typeof renderCart === 'function') {
+                    renderCart();
+                }
             }
-            
-            if (typeof renderCart === 'function') {
-                renderCart();
-            }
-            
-            console.log('Корзина инициализирована');
         });
     </script>
 </body>
