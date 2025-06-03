@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -215,19 +214,77 @@
           };
         }
       };
+
+      // Встроенные утилиты для работы с localStorage
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+          return defaultValue;
+        }
+      }
+
+      function saveToStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (error) {
+          console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+          return false;
+        }
+      }
+
+      // Встроенная функция для показа уведомлений
+      function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.backgroundColor = type === 'error' ? '#dc3545' : '#28a745';
+        notification.style.color = 'white';
+        notification.style.padding = '10px 15px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+        notification.style.zIndex = '1000';
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(20px)';
+        notification.style.transition = 'opacity 0.3s, transform 0.3s';
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.style.opacity = '1';
+          notification.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateY(20px)';
+          
+          setTimeout(() => {
+            if (notification.parentNode) {
+              document.body.removeChild(notification);
+            }
+          }, 300);
+        }, 3000);
+      }
+
+      // Делаем функции глобально доступными
+      window.getFromStorage = getFromStorage;
+      window.saveToStorage = saveToStorage;
+      window.showNotification = showNotification;
     </script>
     
-    <!-- Load base utilities in correct order -->
-    <script src="js/storage.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/search.js"></script>
-    
-    <!-- Load feature scripts -->
+    <!-- Загружаем только существующие файлы -->
+    <script src="js/main.js"></script>
+    <script src="js/catalog.js"></script>
     <script src="js/cart-functions.js"></script>
     <script src="js/wishlist-functions.js"></script>
     <script src="js/chat.js"></script>
-    
-    <!-- Load main application -->
-    <script src="js/main.js"></script>
   </body>
 </html>
