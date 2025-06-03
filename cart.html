@@ -251,30 +251,497 @@
       </div>
     </footer>
 
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/main.js"></script>
     <script>
-      // Скрипт для отображения поля telegram username при выборе Telegram как способа связи
-      document.addEventListener('DOMContentLoaded', function() {
+      // Встроенный JavaScript для cart.html
+      
+      // Утилиты для работы с localStorage
+      function getFromStorage(key, defaultValue = null) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error(`Ошибка при чтении из localStorage (${key}):`, error);
+          return defaultValue;
+        }
+      }
+
+      function saveToStorage(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (error) {
+          console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
+          return false;
+        }
+      }
+
+      // Утилиты для работы с ценами
+      function parsePrice(value) {
+        if (typeof value === 'number') return value;
+        if (!value) return 0;
+        const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+        return isNaN(numeric) ? 0 : numeric;
+      }
+
+      function formatPrice(price) {
+        const value = parsePrice(price);
+        return value.toLocaleString('ru-RU') + ' ₽';
+      }
+
+      // Система уведомлений
+      function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.backgroundColor = type === 'error' ? '#dc3545' : '#28a745';
+        notification.style.color = 'white';
+        notification.style.padding = '10px 15px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+        notification.style.zIndex = '1000';
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(20px)';
+        notification.style.transition = 'opacity 0.3s, transform 0.3s';
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.style.opacity = '1';
+          notification.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transform = 'translateY(20px)';
+          
+          setTimeout(() => {
+            if (notification.parentNode) {
+              document.body.removeChild(notification);
+            }
+          }, 300);
+        }, 3000);
+      }
+
+      // Функции для корзины
+      function getCart() {
+        return getFromStorage('cart', []);
+      }
+
+      function saveCart(cart) {
+        return saveToStorage('cart', cart);
+      }
+
+      function updateCartCounter() {
+        const cart = getCart();
+        const counter = document.getElementById('cart-counter');
+        if (counter) {
+          const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+          counter.textContent = totalItems > 0 ? totalItems : '';
+          counter.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+      }
+
+      function removeFromCart(productId) {
+        let cart = getCart();
+        cart = cart.filter(item => item.id !== productId);
+        saveCart(cart);
+        updateCartCounter();
+        displayCart();
+        showNotification('Товар удален из корзины');
+      }
+
+      function updateQuantity(productId, newQuantity) {
+        let cart = getCart();
+        const item = cart.find(item => item.id === productId);
+        
+        if (item) {
+          if (newQuantity <= 0) {
+            removeFromCart(productId);
+          } else {
+            item.quantity = newQuantity;
+            saveCart(cart);
+            updateCartCounter();
+            displayCart();
+          }
+        }
+      }
+
+      function clearCart() {
+        saveToStorage('cart', []);
+        updateCartCounter();
+        displayCart();
+        showNotification('Корзина очищена');
+      }
+
+      function displayCart() {
+        const cart = getCart();
+        const cartContainer = document.getElementById('cart-container');
+        const checkoutFormContainer = document.getElementById('checkout-form-container');
+        
+        if (!cartContainer) return;
+
+        if (cart.length === 0) {
+          cartContainer.innerHTML = `
+            <div class="empty-cart">
+              <div class="empty-cart-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+              </div>
+              <h2>Корзина пустая</h2>
+              <p>Добавьте товары из каталога</p>
+              <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+            </div>
+          `;
+          
+          if (checkoutFormContainer) {
+            checkoutFormContainer.style.display = 'none';
+          }
+          return;
+        }
+
+        if (checkoutFormContainer) {
+          checkoutFormContainer.style.display = 'block';
+        }
+
+        let total = 0;
+        let cartHTML = `
+          <div class="cart-header">
+            <h2>Товары в корзине</h2>
+            <button class="clear-cart-btn" onclick="clearCart()">Очистить корзину</button>
+          </div>
+          <div class="cart-items">
+        `;
+
+        cart.forEach(item => {
+          const itemTotal = item.price * item.quantity;
+          total += itemTotal;
+          
+          cartHTML += `
+            <div class="cart-item" data-id="${item.id}">
+              <div class="cart-item-image">
+                <img src="${item.image}" alt="${item.title}" loading="lazy">
+              </div>
+              <div class="cart-item-info">
+                <h3>${item.title}</h3>
+                <div class="cart-item-price">${formatPrice(item.price)}</div>
+              </div>
+              <div class="cart-item-controls">
+                <div class="quantity-controls">
+                  <button class="quantity-btn minus" onclick="updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                  <span class="quantity">${item.quantity}</span>
+                  <button class="quantity-btn plus" onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                </div>
+                <div class="item-total">${formatPrice(itemTotal)}</div>
+                <button class="remove-btn" onclick="removeFromCart('${item.id}')" aria-label="Удалить товар">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        cartHTML += `
+          </div>
+          <div class="cart-summary">
+            <div class="cart-total">
+              <span class="total-label">Итого:</span>
+              <span class="total-price">${formatPrice(total)}</span>
+            </div>
+          </div>
+        `;
+
+        cartContainer.innerHTML = cartHTML;
+      }
+
+      // Чат функциональность
+      let chatInitialized = false;
+      let chatState = null;
+
+      function initChat() {
+        console.log('Инициализируем чат...');
+        
+        if (chatInitialized) {
+          console.log('Чат уже инициализирован');
+          return;
+        }
+        
+        const chatButton = document.getElementById('chat-button');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (!chatButton || !chatContainer) {
+          console.log('Элементы чата не найдены');
+          return;
+        }
+        
+        chatInitialized = true;
+        
+        chatState = getFromStorage('chat_state', {
+          open: false,
+          messages: []
+        });
+        
+        const newChatButton = chatButton.cloneNode(true);
+        chatButton.parentNode.replaceChild(newChatButton, chatButton);
+        
+        document.getElementById('chat-button').addEventListener('click', handleChatButtonClick);
+        document.addEventListener('click', handleDocumentClick);
+        
+        console.log('Чат инициализирован');
+      }
+
+      function handleChatButtonClick(event) {
+        console.log('Кнопка чата нажата');
+        event.stopPropagation();
+        event.preventDefault();
+
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer.classList.contains('hidden')) {
+          openChat();
+        } else {
+          closeChat();
+        }
+      }
+
+      function handleDocumentClick(event) {
+        const chatContainer = document.getElementById('chat-container');
+        const chatButton = document.getElementById('chat-button');
+        
+        if (!chatContainer.classList.contains('hidden')) {
+          const isClickInsideChat = chatContainer.contains(event.target);
+          const isClickOnChatButton = chatButton && chatButton.contains(event.target);
+          
+          if (!isClickInsideChat && !isClickOnChatButton) {
+            closeChat();
+          }
+        }
+      }
+
+      function openChat() {
+        console.log('Открываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        
+        if (chatContainer.innerHTML.trim() === '') {
+          renderChatInterface();
+        }
+        
+        chatContainer.classList.remove('hidden');
+        chatState.open = true;
+        saveToStorage('chat_state', chatState);
+        
+        setTimeout(() => {
+          scrollToLatestMessage();
+        }, 100);
+      }
+
+      function closeChat() {
+        console.log('Закрываем чат');
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.classList.add('hidden');
+        chatState.open = false;
+        saveToStorage('chat_state', chatState);
+      }
+
+      function renderChatInterface() {
+        console.log('Рендерим интерфейс чата');
+        const chatContainer = document.getElementById('chat-container');
+        
+        const chatHTML = `
+          <div class="chat-header">
+            <h3>Чат с оператором</h3>
+            <button class="chat-close-btn" onclick="closeChat()">×</button>
+          </div>
+          <div class="chat-body">
+            <div class="chat-messages" id="chat-messages">
+              ${renderChatMessages()}
+            </div>
+          </div>
+          <div class="chat-footer">
+            <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+            <button class="chat-send-btn" onclick="sendMessage()">Отправить</button>
+          </div>
+        `;
+        
+        chatContainer.innerHTML = chatHTML;
+        
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+          chatInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              sendMessage();
+            }
+          });
+        }
+        
+        if (chatState.messages.length === 0) {
+          addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
+        }
+      }
+
+      function renderChatMessages() {
+        return chatState.messages.map(message => {
+          let messageClass = '';
+          let nameLabel = '';
+          
+          switch (message.type) {
+            case 'user':
+              messageClass = 'user-message';
+              nameLabel = 'Вы';
+              break;
+            case 'operator':
+              messageClass = 'operator-message';
+              nameLabel = 'Оператор';
+              break;
+            case 'system':
+              messageClass = 'system-message';
+              nameLabel = 'Система';
+              break;
+            default:
+              messageClass = '';
+              nameLabel = '';
+          }
+          
+          return `
+            <div class="chat-message ${messageClass}">
+              <span class="message-name">${nameLabel}</span>
+              <div class="message-content">${message.text}</div>
+              <span class="message-time">${formatDate(message.time)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function addSystemMessage(text) {
+        const message = {
+          type: 'system',
+          text: text,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(message);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+      }
+
+      function updateChatMessages() {
+        const chatMessagesEl = document.getElementById('chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.innerHTML = renderChatMessages();
+          scrollToLatestMessage();
+        }
+      }
+
+      function scrollToLatestMessage() {
+        const chatMessagesEl = document.getElementById('chat-messages');
+        if (chatMessagesEl) {
+          chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+      }
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      function sendMessage() {
+        const chatInput = document.getElementById('chat-input');
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        const userMessage = {
+          type: 'user',
+          text: message,
+          time: new Date().toISOString()
+        };
+        
+        chatState.messages.push(userMessage);
+        saveToStorage('chat_state', chatState);
+        updateChatMessages();
+        
+        chatInput.value = '';
+        
+        setTimeout(() => {
+          const operatorMessage = {
+            type: 'operator',
+            text: 'Спасибо за ваше сообщение! Наш оператор свяжется с вами в ближайшее время.',
+            time: new Date().toISOString()
+          };
+          
+          chatState.messages.push(operatorMessage);
+          saveToStorage('chat_state', chatState);
+          updateChatMessages();
+        }, 2000);
+      }
+
+      // Форма заказа
+      function initCheckoutForm() {
+        const form = document.getElementById('checkout-form');
         const contactMethodRadios = document.querySelectorAll('input[name="contact_method"]');
         const telegramUsernameContainer = document.getElementById('telegram-username-container');
         
-        contactMethodRadios.forEach(radio => {
-          radio.addEventListener('change', function() {
-            if (this.value === 'telegram') {
-              telegramUsernameContainer.style.display = 'block';
-              document.getElementById('telegram_username').setAttribute('required', '');
-            } else {
-              telegramUsernameContainer.style.display = 'none';
-              document.getElementById('telegram_username').removeAttribute('required');
-            }
+        if (contactMethodRadios && telegramUsernameContainer) {
+          contactMethodRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+              if (this.value === 'telegram') {
+                telegramUsernameContainer.style.display = 'block';
+                document.getElementById('telegram_username').setAttribute('required', '');
+              } else {
+                telegramUsernameContainer.style.display = 'none';
+                document.getElementById('telegram_username').removeAttribute('required');
+              }
+            });
           });
-        });
+        }
+
+        if (form) {
+          form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            const cart = getCart();
+            
+            if (cart.length === 0) {
+              showNotification('Корзина пуста', 'error');
+              return;
+            }
+            
+            // Симуляция отправки заказа
+            showNotification('Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
+            
+            // Очищаем корзину после оформления заказа
+            setTimeout(() => {
+              clearCart();
+              form.reset();
+            }, 2000);
+          });
+        }
+      }
+
+      // Инициализация при загрузке страницы
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('Инициализируем страницу корзины...');
+        
+        updateCartCounter();
+        displayCart();
+        initChat();
+        initCheckoutForm();
+        
+        console.log('Страница корзины инициализирована');
       });
+
+      // Глобальные функции
+      window.removeFromCart = removeFromCart;
+      window.updateQuantity = updateQuantity;
+      window.clearCart = clearCart;
+      window.openChat = openChat;
+      window.closeChat = closeChat;
+      window.sendMessage = sendMessage;
     </script>
   </body>
 </html>
