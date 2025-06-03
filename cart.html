@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -73,12 +74,11 @@
         </div>
     </footer>
 
-    <!-- Подключаем модули -->
+    <!-- Подключаем существующие модули -->
     <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
     <script src="js/cart-functions.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/modules/cart-manager.js"></script>
-    <script src="js/modules/modern-chat.js"></script>
 
     <script>
         // Инициализация при загрузке страницы
@@ -86,12 +86,15 @@
             console.log('DOM загружен, инициализируем страницу корзины...');
             
             // Инициализируем корзину
-            initCart();
-            renderCart();
-            
-            if (window.modernChat) {
-                console.log('Чат инициализирован');
+            if (typeof initCart === 'function') {
+                initCart();
             }
+            
+            if (typeof renderCart === 'function') {
+                renderCart();
+            }
+            
+            console.log('Корзина инициализирована');
         });
     </script>
 </body>
