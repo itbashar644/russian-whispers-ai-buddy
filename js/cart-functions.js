@@ -116,10 +116,18 @@ function handleAddToCart(event) {
   // Получаем данные товара из DOM или делаем запрос к API
   const productCard = this.closest('.product-card');
   if (productCard) {
+    // Извлекаем цены
+    const originalPriceElement = productCard.querySelector('.old-price');
+    const currentPriceElement = productCard.querySelector('.current-price:not(.old-price)');
+    
+    const originalPrice = originalPriceElement ? parsePrice(originalPriceElement.textContent) : 0;
+    const currentPrice = currentPriceElement ? parsePrice(currentPriceElement.textContent) : originalPrice;
+    
     const product = {
       id: productId,
       title: productCard.querySelector('h3 a, .product-title')?.textContent?.trim() || 'Товар',
-      price: extractPriceFromElement(productCard),
+      price: originalPrice,
+      discount_price: currentPrice < originalPrice ? currentPrice : null,
       image_url: productCard.querySelector('img')?.src || '/placeholder.svg'
     };
     
