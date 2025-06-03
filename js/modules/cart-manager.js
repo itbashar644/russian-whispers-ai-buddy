@@ -80,9 +80,9 @@ class CartManager {
   getCartTotal() {
     const cart = this.getFromStorage('cart', []);
     return cart.reduce((total, item) => {
-      // Всегда используем цену после скидки если есть, иначе обычную цену
-      const currentPrice = item.discount_price || item.price;
-      return total + (this.parsePrice(currentPrice) * item.quantity);
+      // Основная цена теперь - цена после скидки если есть, иначе обычная цена
+      const mainPrice = item.discount_price || item.price;
+      return total + (this.parsePrice(mainPrice) * item.quantity);
     }, 0);
   }
 
@@ -124,9 +124,12 @@ class CartManager {
           <h2>Товары в корзине</h2>
           <div class="cart-items">
             ${cart.map(item => {
-              // Используем цену после скидки если есть, иначе обычную цену
-              const currentPrice = item.discount_price || item.price;
-              const itemTotal = this.parsePrice(currentPrice) * item.quantity;
+              // Основная цена - цена после скидки если есть, иначе обычная цена
+              const mainPrice = item.discount_price || item.price;
+              const originalPrice = item.price;
+              const hasDiscount = item.discount_price && item.discount_price !== item.price;
+              const itemTotal = this.parsePrice(mainPrice) * item.quantity;
+              
               return `
                 <div class="cart-item" data-id="${item.id}">
                   <div class="cart-item-image">
@@ -134,7 +137,10 @@ class CartManager {
                   </div>
                   <div class="cart-item-info">
                     <h3>${item.title}</h3>
-                    <div class="cart-item-price">${this.formatPrice(currentPrice)}</div>
+                    <div class="cart-item-price">
+                      ${this.formatPrice(mainPrice)}
+                      ${hasDiscount ? `<span class="original-price">${this.formatPrice(originalPrice)}</span>` : ''}
+                    </div>
                   </div>
                   <div class="cart-item-quantity">
                     <button class="quantity-btn minus" onclick="cartManager.updateCartQuantity('${item.id}', ${item.quantity - 1})">
