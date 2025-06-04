@@ -47,86 +47,10 @@ class CartManager {
   }
 
   parsePrice(value) {
-    try {
-      console.log('Парсим цену:', value, 'тип:', typeof value);
-      
-      if (typeof value === 'number') {
-        // Проверяем, если число больше 50000, скорее всего это копейки
-        if (value > 50000) {
-          console.log('Цена выглядит как копейки, конвертируем:', value);
-          const convertedPrice = Math.round(value / 100);
-          console.log('Конвертированная цена:', convertedPrice);
-          return convertedPrice;
-        }
-        return Math.round(value);
-      }
-      
-      if (!value) {
-        console.log('Пустое значение цены, возвращаем 0');
-        return 0;
-      }
-      
-      const stringValue = String(value);
-      console.log('Строковое значение цены:', stringValue);
-      
-      // Удаляем все кроме цифр, точки и запятой
-      let cleanValue = stringValue.replace(/[^0-9.,]/g, '');
-      console.log('Очищенное значение:', cleanValue);
-      
-      if (!cleanValue) {
-        console.log('После очистки значение пустое, возвращаем 0');
-        return 0;
-      }
-      
-      // Обработка разделителей
-      if (cleanValue.includes('.') && cleanValue.includes(',')) {
-        const lastDotIndex = cleanValue.lastIndexOf('.');
-        const lastCommaIndex = cleanValue.lastIndexOf(',');
-        
-        if (lastDotIndex > lastCommaIndex) {
-          // Точка используется как десятичный разделитель
-          cleanValue = cleanValue.replace(/,/g, '');
-        } else {
-          // Запятая используется как десятичный разделитель
-          cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-        }
-      } else if (cleanValue.includes(',')) {
-        // Определяем, является ли запятая разделителем тысяч или десятичным
-        const parts = cleanValue.split(',');
-        if (parts.length === 2 && parts[1].length <= 2) {
-          // Скорее всего десятичный разделитель
-          cleanValue = cleanValue.replace(',', '.');
-        } else {
-          // Скорее всего разделитель тысяч
-          cleanValue = cleanValue.replace(/,/g, '');
-        }
-      }
-      
-      console.log('Значение после обработки разделителей:', cleanValue);
-      
-      const numeric = parseFloat(cleanValue);
-      console.log('Числовое значение:', numeric);
-      
-      if (isNaN(numeric)) {
-        console.warn('Не удалось распарсить цену:', value);
-        return 0;
-      }
-      
-      // Проверяем, если получившееся число больше 50000, скорее всего это копейки
-      if (numeric > 50000) {
-        console.log('Цена выглядит как копейки, конвертируем:', numeric);
-        const convertedPrice = Math.round(numeric / 100);
-        console.log('Конвертированная цена:', convertedPrice);
-        return convertedPrice;
-      }
-      
-      const result = Math.round(numeric);
-      console.log('Финальная цена:', result);
-      return result;
-    } catch (error) {
-      console.error('Ошибка при парсинге цены:', error, value);
-      return 0;
-    }
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+    return isNaN(numeric) ? 0 : numeric;
   }
 
   formatPrice(price) {
