@@ -420,18 +420,41 @@
         }, 5000);
       }
 
-      // Проверяем, авторизован ли пользователь при загрузке страницы
-      // УБИРАЕМ автоматический редирект, просто показываем соответствующий интерфейс
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          console.log('Пользователь уже авторизован');
-          document.getElementById('auth-status').style.display = 'block';
-          document.getElementById('login-section').style.display = 'none';
-        } else {
-          document.getElementById('auth-status').style.display = 'none';
-          document.getElementById('login-section').style.display = 'block';
-        }
-      });
+      // Проверяем, есть ли в URL параметры OAuth callback
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token');
+      
+      if (accessToken) {
+        console.log('Обнаружен OAuth callback, обрабатываем...');
+        // Устанавливаем сессию из URL параметров
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        }).then(() => {
+          // Очищаем URL от параметров
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showNotification('Успешная авторизация через Google!', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        }).catch(error => {
+          console.error('Ошибка при установке сессии:', error);
+          showNotification('Ошибка при авторизации через Google', 'error');
+        });
+      } else {
+        // Обычная проверка сессии
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            console.log('Пользователь уже авторизован');
+            document.getElementById('auth-status').style.display = 'block';
+            document.getElementById('login-section').style.display = 'none';
+          } else {
+            document.getElementById('auth-status').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+          }
+        });
+      }
 
       // Функция выхода из аккаунта
       window.handleLogout = async function() {
@@ -520,7 +543,7 @@
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: `${window.location.origin}/auth-callback.html`
+              redirectTo: `${window.location.origin}/login.html`
             }
           });
           
