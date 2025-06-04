@@ -74,28 +74,30 @@
         </div>
     </footer>
 
-    <!-- Подключаем только необходимые модули -->
-    <script src="js/utils.js"></script>
+    <!-- Подключаем только основные утилиты -->
     <script src="js/storage.js"></script>
     <script src="js/modules/cart-manager.js"></script>
 
     <script>
-        // Простая инициализация при загрузке страницы
+        // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем корзину...');
+            console.log('DOM загружен, проверяем корзину...');
             
-            // Проверяем, что cartManager доступен
-            if (typeof cartManager !== 'undefined') {
-                console.log('CartManager найден, инициализируем...');
-                // cartManager уже инициализируется автоматически через конструктор
+            // Убеждаемся что cartManager доступен
+            if (typeof window.cartManager !== 'undefined') {
+                console.log('CartManager найден и готов к работе');
             } else {
-                console.error('CartManager не найден');
-                document.getElementById('cart-content').innerHTML = `
-                    <div class="error-message">
-                        <p>Ошибка загрузки корзины</p>
-                        <button onclick="location.reload()" class="btn btn-primary">Обновить страницу</button>
-                    </div>
-                `;
+                console.error('CartManager не найден, показываем ошибку');
+                const cartContent = document.getElementById('cart-content');
+                if (cartContent) {
+                    cartContent.innerHTML = `
+                        <div class="error-message" style="text-align: center; padding: 40px;">
+                            <h2>Ошибка загрузки корзины</h2>
+                            <p>Не удалось инициализировать корзину</p>
+                            <button onclick="location.reload()" class="btn btn-primary">Обновить страницу</button>
+                        </div>
+                    `;
+                }
             }
         });
     </script>

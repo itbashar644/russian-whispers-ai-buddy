@@ -1,3 +1,4 @@
+
 /**
  * Современный модуль управления корзиной
  */
@@ -49,14 +50,21 @@ class CartManager {
   parsePrice(value) {
     if (typeof value === 'number') return value;
     if (!value) return 0;
-    const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+    
+    // Убираем все нечисловые символы кроме точки и запятой
+    let cleanValue = String(value).replace(/[^\d.,]/g, '');
+    
+    // Заменяем запятую на точку для корректного парсинга
+    cleanValue = cleanValue.replace(',', '.');
+    
+    const numeric = parseFloat(cleanValue);
     return isNaN(numeric) ? 0 : numeric;
   }
 
   formatPrice(price) {
     try {
       const value = this.parsePrice(price);
-      return value.toLocaleString('ru-RU') + ' ₽';
+      return Math.round(value).toLocaleString('ru-RU') + ' ₽';
     } catch (error) {
       console.error('Ошибка при форматировании цены:', error);
       return '0 ₽';
@@ -115,7 +123,6 @@ class CartManager {
     try {
       const cart = this.getFromStorage('cart', []);
       return cart.reduce((total, item) => {
-        // Основная цена теперь - цена после скидки если есть, иначе обычная цена
         const mainPrice = item.discount_price || item.price;
         return total + (this.parsePrice(mainPrice) * item.quantity);
       }, 0);
@@ -183,7 +190,6 @@ class CartManager {
               ${cart.map(item => {
                 console.log('Обрабатываем товар:', item);
                 
-                // Основная цена - цена после скидки если есть, иначе обычная цена
                 const mainPrice = item.discount_price || item.price;
                 const originalPrice = item.price;
                 const hasDiscount = item.discount_price && item.discount_price !== item.price;
@@ -346,10 +352,12 @@ class CartManager {
           radio.addEventListener('change', () => {
             if (radio.value === 'telegram') {
               telegramUsernameContainer.style.display = 'block';
-              document.getElementById('telegram_username').setAttribute('required', '');
+              const telegramInput = document.getElementById('telegram_username');
+              if (telegramInput) telegramInput.setAttribute('required', '');
             } else {
               telegramUsernameContainer.style.display = 'none';
-              document.getElementById('telegram_username').removeAttribute('required');
+              const telegramInput = document.getElementById('telegram_username');
+              if (telegramInput) telegramInput.removeAttribute('required');
             }
           });
         });
@@ -416,6 +424,11 @@ class CartManager {
   }
 }
 
-// Глобальный экземпляр
-console.log('Создаем глобальный экземпляр CartManager...');
-window.cartManager = new CartManager();
+// Глобальный экземпляр - убеждаемся что он создается только один раз
+if (typeof window.cartManager === 'undefined') {
+  console.log('Создаем глобальный экземпляр CartManager...');
+  window.cartManager = new CartManager();
+} else {
+  console.log('CartManager уже существует, переинициализируем...');
+  window.cartManager.init();
+}
