@@ -3,38 +3,21 @@
  * Функционал для работы с фильтрами в каталоге
  */
 
-// Простая функция дебаунса
-function debounce(fn, delay = 300) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-
-// Подсветка части текста в подсказках
-function highlightQuery(text, query) {
-  const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(safeQuery, 'ig');
-  return text.replace(regex, match => `<mark>${match}</mark>`);
-}
-
 // Функция для инициализации фильтров
 function initFilters() {
   const urlParams = new URLSearchParams(window.location.search);
   
   // Focus search input if requested via URL
   if (urlParams.get('focus') === 'search') {
-    const searchField = document.querySelector('.catalog-search #search-input');
+    const searchField = document.getElementById('search-input');
     if (searchField) {
       searchField.focus();
     }
   }
   
   // Фильтр по цене
-  // ID инпутов в разметке min-price/max-price, исправляем несоответствие
-  const priceMinInput = document.getElementById('min-price');
-  const priceMaxInput = document.getElementById('max-price');
+  const priceMinInput = document.getElementById('price-min');
+  const priceMaxInput = document.getElementById('price-max');
   const applyPriceBtn = document.getElementById('apply-price-filter');
   
   if (priceMinInput && priceMaxInput && applyPriceBtn) {
@@ -54,11 +37,9 @@ function initFilters() {
 
   
   // Фильтр по поиску
-  const searchContainer = document.querySelector('.catalog-search');
-  const searchInput = searchContainer?.querySelector('#search-input');
-  const searchButton = searchContainer?.querySelector('#search-button');
-  const suggestionsContainer = searchContainer?.querySelector('#search-suggestions');
-
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
+  
   if (searchInput && searchButton) {
     // Восстанавливаем поисковый запрос из URL
     const searchQuery = urlParams.get('search');
@@ -77,79 +58,6 @@ function initFilters() {
         applyFilters();
       }
     });
-    
-    // Подсказки при вводе
-       let activeIndex = -1;
-
-    searchInput.addEventListener('input', debounce(async function() {
-      if (!suggestionsContainer) return;
-      const query = searchInput.value.trim();
-      activeIndex = -1;
-      if (!query) {
-        suggestionsContainer.style.display = 'none';
-        suggestionsContainer.innerHTML = '';
-        return;
-      }
-      const currentQuery = query;
-      const suggestions = await fetchSearchSuggestions(currentQuery);
-      if (searchInput.value.trim() !== currentQuery) {
-        return;
-      }
-      if (suggestions.length === 0) {
-        suggestionsContainer.style.display = 'none';
-        suggestionsContainer.innerHTML = '';
-        return;
-      }
-      suggestionsContainer.innerHTML = suggestions
-        .map(item =>
-          `<div class="suggestion-item" data-id="${item.id}">
-             <img src="${item.image_url}" alt="${item.title}">
-             <span>${highlightQuery(item.title, currentQuery)}</span>
-           </div>`)
-        .join('');
-      suggestionsContainer.style.display = 'block';
-    }, 300));
-
-        searchInput.addEventListener('keydown', function(e) {
-      const items = suggestionsContainer.querySelectorAll('.suggestion-item');
-      if (items.length === 0) return;
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        activeIndex = (activeIndex + 1) % items.length;
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        activeIndex = (activeIndex - 1 + items.length) % items.length;
-      } else if (e.key === 'Enter' && activeIndex >= 0) {
-        e.preventDefault();
-        const id = items[activeIndex].getAttribute('data-id');
-        window.location.href = `product.html?id=${id}`;
-        return;
-      } else {
-        return;
-      }
-
-      items.forEach((el, idx) => {
-        if (idx === activeIndex) {
-          el.classList.add('active');
-        } else {
-          el.classList.remove('active');
-        }
-      });
-    });
-
-    // Выбор подсказки
-    if (suggestionsContainer) {
-      suggestionsContainer.addEventListener('click', function(e) {
-        const item = e.target.closest('.suggestion-item');
-        if (item) {
-          const textEl = item.querySelector('span');
-          searchInput.value = textEl ? textEl.textContent : item.textContent;
-          suggestionsContainer.style.display = 'none';
-          applyFilters();
-        }
-      });
-    }
   }
   
   // Сортировка
@@ -187,9 +95,8 @@ function applyFilters() {
   }
   
   // Добавляем фильтр по цене
-  // Используем правильные ID элементов из catalog.html
-  const priceMinInput = document.getElementById('min-price');
-  const priceMaxInput = document.getElementById('max-price');
+  const priceMinInput = document.getElementById('price-min');
+  const priceMaxInput = document.getElementById('price-max');
   
   if (priceMinInput.value) {
     newParams.set('min_price', priceMinInput.value);
@@ -201,8 +108,7 @@ function applyFilters() {
   
   
   // Добавляем поисковый запрос
-  const searchContainer = document.querySelector('.catalog-search');
-  const searchInput = searchContainer?.querySelector('#search-input');
+  const searchInput = document.getElementById('search-input');
   if (searchInput && searchInput.value.trim()) {
     newParams.set('search', searchInput.value.trim());
   }
@@ -312,27 +218,6 @@ function clearAllFilters() {
   } else {
     // Если категории не было, полностью очищаем URL
     window.location.href = window.location.pathname;
-  }
-}
-// Загрузка подсказок по названию товаров
-async function fetchSearchSuggestions(query) {
-  if (!query) return [];
-  try {
-    const { supabase } = await import('./supabase.js');
-    const { data, error } = await supabase
-      .from('products')
-      .select('id,title,image_url')
-      .ilike('title', `%${query}%`)
-      .limit(5);
-
-    if (error) {
-      console.error('Ошибка загрузки подсказок:', error);
-      return [];
-    }
-    return data || [];
-  } catch (err) {
-    console.error('Ошибка при загрузке подсказок:', err);
-    return [];
   }
 }
 

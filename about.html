@@ -11,42 +11,12 @@
     
     <!-- CSS стили -->
     <link rel="stylesheet" href="styles.css">
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
-</head>
+  </head>
   <body>
     <header class="header">
       <div class="container header-container">
         <div class="header-left">
-          <a href="index.html" class="logo"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+          <a href="index.html" class="logo">The X Shop</a>
           <nav class="main-nav">
             <ul>
               <li><a href="index.html">Главная</a></li>
@@ -57,24 +27,16 @@
           </nav>
         </div>
         <div class="header-actions">
-          <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
+          <button class="icon-button search-button" aria-label="Поиск">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
+          </button>
           <a href="wishlist.html" class="icon-button" aria-label="Избранное">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
           </a>
           <a href="cart.html" class="icon-button" aria-label="Корзина">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-            <span class="cart-counter"></span>
           </a>
-          <a href="login.html" class="icon-button" aria-label="Личный кабинет">
+          <a href="/login" class="icon-button" aria-label="Личный кабинет">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </a>
         </div>
@@ -82,59 +44,40 @@
     </header>
 
     <main>
-         <section class="hero-section about-hero">
-        <div class="container">
-          <div class="hero-content">
-            <div class="hero-text">
-              <h1>Добро пожаловать в The X Shop</h1>
-              <p>Мы собираем лучшие новинки из Китая и доставляем их прямо к вам. Присоединяйтесь к тысячам довольных покупателей!</p>
-              <div class="hero-buttons">
-                <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section class="about-section container page-content">
         <h1 class="page-title">О нас</h1>
         
         <div class="about-content">
-          <div class="about-panel">
           <p class="lead-text">
-            Мы делаем покупки из Китая простыми и выгодными уже более 5 лет.
+            Компания The X Shop уже более 5 лет занимается поставкой и реализацией товаров из Китая.
           </p>
-          </div>
           
-          <div class="about-panel">
           <p>
-            Благодаря прямым договорам с производителями мы предлагаем новинки по честным ценам и постоянно расширяем ассортимент.
+            Мы напрямую сотрудничаем с производителями, что позволяет предлагать нашим клиентам 
+            качественные товары по доступным ценам без лишних наценок.
           </p>
-
-          </div>
-          <div class="about-panel">
-          <p>
-            Тысячи клиентов по всей России доверяют The X Shop за честный сервис, быструю доставку и поддержку на каждом этапе заказа.
-          </p>
-          </div>  
           
-          <div class="about-panel">
+          <p>
+            За годы работы мы зарекомендовали себя как надёжный партнёр, поставляющий 
+            широкий ассортимент электроники и товаров для дома.
+          </p>
+          
           <h2>Наши преимущества:</h2>
           
           <ul class="about-list">
-            <li>Прямые поставки от проверенных производителей</li>
-            <li>100% оригинальная продукция с гарантией</li>
-            <li>Молниеносная доставка по всей России</li>
-            <li>5 лет на рынке и тысячи довольных клиентов</li>
-            <li>Постоянные акции и специальные предложения</li>
+            <li>Прямые поставки из Китая</li>
+            <li>Оригинальная продукция с гарантией</li>
+            <li>Доставка по всей России различными способами</li>
+            <li>Более 5 лет успешной работы на рынке</li>
+            <li>Тщательный отбор только надёжных поставщиков</li>
           </ul>
-          </div>
-          <div class="about-panel">
           
           <p class="contact-link-text">
-            Готовы к выгодным покупкам? <a href="catalog.html" class="text-link">Загляните в каталог</a>
-            или изучите раздел <a href="delivery.html" class="text-link">Доставка</a>.
-            Возникли вопросы? <a href="contacts.html" class="text-link">Свяжитесь с нами</a> – мы всегда на связи!
+            Если у вас остались вопросы, вы можете ознакомиться с разделом 
+            <a href="delivery.html" class="text-link">Доставка</a> 
+            или посетить страницу
+            <a href="contacts.html" class="text-link">Контакты</a>,
+            чтобы связаться с нами напрямую.
           </p>
         </div>
         </section>
@@ -205,8 +148,7 @@
     <!-- Скрипты для функциональности страницы -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/search.js"></script>
-    <script type="module" src="scripts.js"></script>
+    <script src="scripts.js"></script>
      <script src="js/chat.js"></script>
     </body>
 </html>

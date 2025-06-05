@@ -8,43 +8,13 @@
     <meta name="description" content="Оформление заказа на товары из Китая">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
-</head>
+  </head>
   <body>
     <header class="main-header">
       <div class="container">
         <div class="header-content">
           <div class="logo">
-            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+            <a href="index.html">The X Shop</a>
           </div>
           
           <nav class="main-nav">
@@ -57,22 +27,15 @@
           </nav>
           
           <div class="header-actions">
-          <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
-          <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
+            <a href="catalog.html?focus=search" class="action-icon search-icon" title="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </a>
+            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </a>
             <a href="cart.html" class="action-icon cart-icon" title="Корзина">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span id="cart-counter" class="cart-counter counter">0</span>
+              <span id="cart-counter" class="counter">0</span>
             </a>
             <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -256,22 +219,11 @@
       </div>
     </footer>
 
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/checkout.js"></script>
     <script>
-      // Утилиты
-      function getFromStorage(key, defaultValue = null) {
-        try {
-          const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : defaultValue;
-        } catch (error) {
-          console.error('Ошибка при чтении из localStorage:', error);
-          return defaultValue;
-        }
-      }
-
-      function formatPrice(price) {
-        return `${price.toLocaleString('ru-RU')} ₽`;
-      }
-
       // Скрипт для заполнения информации о заказе
       document.addEventListener('DOMContentLoaded', function() {
         // Получаем корзину
@@ -325,38 +277,7 @@
         // Обновляем итоговую стоимость
         document.getElementById('subtotal').textContent = formatPrice(subtotal);
         document.getElementById('grand-total').textContent = formatPrice(subtotal);
-
-        // Обработка отправки формы
-        document.getElementById('checkout-form').addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          // Получаем данные формы
-          const formData = new FormData(this);
-          const orderData = {};
-          
-          for (let [key, value] of formData.entries()) {
-            orderData[key] = value;
-          }
-          
-          // Генерируем номер заказа
-          const orderNumber = Math.floor(Math.random() * 100000);
-          
-          // Сохраняем информацию для страницы спасибо
-          localStorage.setItem('lastOrderNumber', orderNumber);
-          localStorage.setItem('lastContactMethod', orderData.contact_method);
-          
-          console.log('Заказ оформлен:', {
-            orderNumber,
-            customerData: orderData,
-            items: cart,
-            total: subtotal
-          });
-          
-          // Перенаправляем на страницу спасибо
-          window.location.href = `thank-you.html?order=${orderNumber}&contact=${orderData.contact_method}`;
-        });
       });
     </script>
-    <script src="js/chat.js"></script>
   </body>
 </html>

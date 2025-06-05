@@ -10,11 +10,4 @@ location = "./supabase/scripts/before-supabase-migrations.sql"
 # Add site URL configuration
 [auth]
 site_url = "https://the-x.shop"
-additional_redirect_urls = [
-  "https://the-x.shop/auth/callback",
-  "https://the-x.shop/auth-callback.html",
-  "https://the-x.shop/reset-password",
-  "http://localhost:5173/auth/callback",
-  "http://localhost:5173/auth-callback.html",
-  "http://localhost:5173/reset-password"
-]
+additional_redirect_urls = ["https://the-x.shop/auth/callback", "https://the-x.shop/reset-password", "http://localhost:5173/auth/callback", "http://localhost:5173/reset-password"]

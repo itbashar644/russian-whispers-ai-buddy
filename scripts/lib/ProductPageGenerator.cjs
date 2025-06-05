@@ -194,8 +194,8 @@ class ProductPageGenerator {
     <meta property="og:type" content="product">
     <meta property="og:url" content="${this.baseUrl}/product-${product.id}.html">
     
-    <!-- Canonical URL for the static page -->
-    <link rel="canonical" href="${this.baseUrl}/product-${product.id}.html">
+    <!-- Canonical URL - указывает на React-версию как основную -->
+    <link rel="canonical" href="${this.baseUrl}/#/product/${product.id}">
     
     <!-- Микроразметка Schema.org для товара (JSON-LD) -->
     <script type="application/ld+json">

@@ -1,38 +1,6 @@
 /**
  * Функционал для работы с корзиной
  */
-// Проверяем наличие необходимых функций
-if (typeof getFromStorage !== 'function') {
-  console.error('Функция getFromStorage не найдена');
-}
-
-if (typeof saveToStorage !== 'function') {
-  console.error('Функция saveToStorage не найдена');
-}
-
-if (typeof parsePrice !== 'function') {
-  console.error('Функция parsePrice не найдена');
-}
-
-if (typeof formatPrice !== 'function') {
-  console.error('Функция formatPrice не найдена');
-}
-
-// Provide helpers if utils.js is missing
-if (typeof parsePrice !== 'function') {
-  function parsePrice(value) {
-    if (typeof value === 'number') return value;
-    if (!value) return 0;
-    const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
-    return isNaN(numeric) ? 0 : numeric;
-  }
-}
-if (typeof formatPrice !== 'function') {
-  function formatPrice(price) {
-    const value = parsePrice(price);
-    return value.toLocaleString('ru-RU') + ' ₽';
-  }
-}
 
 // Функция для инициализации корзины
 function initCart() {
@@ -53,16 +21,10 @@ function addToCart(product) {
       existingItem.quantity += product.quantity || 1;
     } else {
       // Если товара нет в корзине, добавляем его
-      // Обрабатываем цены через parsePrice
-      const originalPrice = parsePrice(product.price);
-      const discountPrice = product.discount_price ? parsePrice(product.discount_price) : null;
-      
       cart.push({
         id: product.id,
         title: product.title,
-        price: discountPrice || originalPrice, // действующая цена
-        original_price: originalPrice, // оригинальная цена
-        discount_price: discountPrice, // цена со скидкой (если есть)
+        price: product.price,
         image: product.image,
         quantity: product.quantity || 1
       });
@@ -87,20 +49,20 @@ function addToCart(product) {
 
 // Функция для обновления счетчика корзины
 function updateCartCounter() {
-  const counters = document.querySelectorAll('.cart-counter');
-  if (!counters.length) return;
-
+  const cartCounter = document.getElementById('cart-counter');
+  if (!cartCounter) return;
+  
   const cart = getFromStorage('cart', []);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  counters.forEach(counter => {
-    counter.textContent = totalItems;
-    if (totalItems > 0) {
-      counter.classList.add('active');
-    } else {
-      counter.classList.remove('active');
-    }
-  });
+  
+  cartCounter.textContent = totalItems;
+  
+  // Добавляем класс active, если в корзине есть товары
+  if (totalItems > 0) {
+    cartCounter.classList.add('active');
+  } else {
+    cartCounter.classList.remove('active');
+  }
 }
 
 // Функция для удаления товара из корзины
@@ -192,140 +154,167 @@ function clearCart() {
 
 // Функция для отображения страницы корзины
 function renderCart() {
-  const cartContainer = document.getElementById('cart-content');
+  const cartContainer = document.getElementById('cart-container');
+  const checkoutFormContainer = document.getElementById('checkout-form-container');
   
-  if (!cartContainer) {
-    console.error('Контейнер корзины не найден');
+  if (!cartContainer) return;
+  
+  // Получаем текущую корзину из localStorage
+  const cart = getFromStorage('cart', []);
+  
+  if (cart.length === 0) {
+    // Если корзина пуста, показываем сообщение
+    cartContainer.innerHTML = `
+      <div class="empty-cart">
+        <h2>Корзина пуста</h2>
+        <p>Добавьте товары из каталога, чтобы оформить заказ.</p>
+        <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
+      </div>
+    `;
+    
+    // Скрываем форму оформления заказа
+    if (checkoutFormContainer) {
+      checkoutFormContainer.style.display = 'none';
+    }
+    
     return;
   }
   
-  try {
-    // Получаем текущую корзину из localStorage
-    const cart = getFromStorage('cart', []);
-    
-    if (cart.length === 0) {
-      // Если корзина пуста, показываем сообщение
-      cartContainer.innerHTML = `
-        <div class="empty-cart">
-          <h2>Корзина пуста</h2>
-          <p>Добавьте товары из каталога, чтобы оформить заказ.</p>
-          <a href="catalog.html" class="btn primary-btn">Перейти в каталог</a>
-        </div>
-      `;
-      return;
-    }
-    
-    // Рассчитываем общую стоимость по действующим ценам
-    const totalPrice = cart.reduce((total, item) => {
-      const currentPrice = item.discount_price || item.price;
-      return total + (parsePrice(currentPrice) * item.quantity);
-    }, 0);
-    
-    // Формируем HTML для корзины
-    const cartHTML = `
-      <div class="cart-content">
-        <h2>Ваши товары</h2>
-        <div class="cart-items">
-          ${cart.map(item => `
-            <div class="cart-item">
-              <div class="cart-item-image">
-                <img src="${item.image_url || item.image || '/placeholder.svg'}" alt="${item.title}" onerror="this.src='/placeholder.svg'">
-              </div>
-              <div class="cart-item-info">
-                <h3 class="cart-item-title">${item.title}</h3>
-                <div class="cart-item-price">
-                  ${item.discount_price ? `
-                    <span class="old-price">${formatPrice(item.original_price)}</span>
-                    <span class="current-price">${formatPrice(item.discount_price)}</span>
-                  ` : `
-                    <span class="current-price">${formatPrice(item.price)}</span>
-                  `}
-                </div>
-              </div>
-              <div class="cart-item-quantity">
-                <button class="quantity-btn decrease" data-id="${item.id}">-</button>
-                <span class="quantity-value">${item.quantity}</span>
-                <button class="quantity-btn increase" data-id="${item.id}">+</button>
-              </div>
-              <div class="cart-item-total">
-                ${formatPrice((item.discount_price || item.price) * item.quantity)}
-              </div>
-              <button class="cart-item-remove" data-id="${item.id}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-              </button>
+  // Показываем форму оформления заказа, если она есть
+  if (checkoutFormContainer) {
+    checkoutFormContainer.style.display = 'block';
+  }
+  
+  // Рассчитываем общую стоимость - убедимся, что у нас числа
+    // Учитываем возможность хранения цены строкой
+  const totalPrice = cart.reduce((total, item) => {
+    const itemPrice = parsePrice(item.price);
+    return total + itemPrice * item.quantity;
+  }, 0);
+  
+  // Формируем HTML для корзины
+  const cartHTML = `
+    <div class="cart-content">
+      <h2>Ваши товары</h2>
+      <div class="cart-items">
+        ${cart.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-image">
+              <img src="${item.image}" alt="${item.title}">
             </div>
-          `).join('')}
-        </div>
-        <div class="cart-summary">
-          <div class="cart-totals">
-            <div class="cart-total-row">
-              <span>Товары (${cart.reduce((count, item) => count + item.quantity, 0)} шт.):</span>
-              <span>${formatPrice(totalPrice)}</span>
+            <div class="cart-item-info">
+              <h3 class="cart-item-title">${item.title}</h3>
+              <div class="cart-item-price">${formatPrice(item.price)}</div>
             </div>
-            <div class="cart-total-row">
-              <span>Доставка:</span>
-              <span>Бесплатно</span>
+            <div class="cart-item-quantity">
+              <button class="quantity-btn decrease" data-id="${item.id}">-</button>
+              <span class="quantity-value">${item.quantity}</span>
+              <button class="quantity-btn increase" data-id="${item.id}">+</button>
             </div>
-            <div class="cart-total-row cart-grand-total">
-              <span>Итого:</span>
-              <span>${formatPrice(totalPrice)}</span>
+            <div class="cart-item-total">
+              ${formatPrice(parsePrice(item.price) * item.quantity)}
             </div>
+            <button class="cart-item-remove" data-id="${item.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
           </div>
-          <div class="cart-actions">
-            <button id="clear-cart" class="btn secondary-btn">Очистить корзину</button>
+        `).join('')}
+      </div>
+      <div class="cart-summary">
+        <div class="cart-totals">
+          <div class="cart-total-row">
+            <span>Товары (${cart.reduce((count, item) => count + item.quantity, 0)} шт.):</span>
+            <span>${formatPrice(totalPrice)}</span>
           </div>
+          <div class="cart-total-row">
+            <span>Доставка:</span>
+            <span>Бесплатно</span>
+          </div>
+          <div class="cart-total-row cart-grand-total">
+            <span>Итого:</span>
+            <span>${formatPrice(totalPrice)}</span>
+          </div>
+        </div>
+        <div class="cart-actions">
+          <button id="clear-cart" class="btn secondary-btn">Очистить корзину</button>
         </div>
       </div>
-    `;
-    
-    // Обновляем контейнер
-    cartContainer.innerHTML = cartHTML;
-    
-    // Добавляем обработчики событий
-    // Кнопки удаления товаров
-    document.querySelectorAll('.cart-item-remove').forEach(button => {
-      button.addEventListener('click', function() {
-        const productId = this.getAttribute('data-id');
-        removeFromCart(productId);
-      });
+    </div>
+  `;
+  
+  // Обновляем контейнер
+  cartContainer.innerHTML = cartHTML;
+  
+  // Добавляем обработчики событий
+  // Кнопки удаления товаров
+  document.querySelectorAll('.cart-item-remove').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      removeFromCart(productId);
     });
-    
-    // Кнопки изменения количества товара
-    document.querySelectorAll('.quantity-btn.decrease').forEach(button => {
-      button.addEventListener('click', function() {
-        const productId = this.getAttribute('data-id');
-        const item = cart.find(item => item.id === productId);
-        if (item) {
-          updateCartItemQuantity(productId, item.quantity - 1);
-        }
-      });
-    });
-    
-    document.querySelectorAll('.quantity-btn.increase').forEach(button => {
-      button.addEventListener('click', function() {
-        const productId = this.getAttribute('data-id');
-        const item = cart.find(item => item.id === productId);
-        if (item) {
-          updateCartItemQuantity(productId, item.quantity + 1);
-        }
-      });
-    });
-    
-    // Кнопка очистки корзины
-    document.getElementById('clear-cart').addEventListener('click', function() {
-      if (confirm('Вы уверены, что хотите очистить корзину?')) {
-        clearCart();
+  });
+  
+  // Кнопки изменения количества товара
+  document.querySelectorAll('.quantity-btn.decrease').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const item = cart.find(item => item.id === productId);
+      if (item) {
+        updateCartItemQuantity(productId, item.quantity - 1);
       }
     });
-    
-  } catch (error) {
-    console.error('Ошибка при отображении корзины:', error);
-    cartContainer.innerHTML = `
-      <div class="error-message">
-        <p>Произошла ошибка при загрузке корзины</p>
-        <button onclick="renderCart()" class="btn primary-btn">Попробовать снова</button>
-      </div>
-    `;
+  });
+  
+  document.querySelectorAll('.quantity-btn.increase').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const item = cart.find(item => item.id === productId);
+      if (item) {
+        updateCartItemQuantity(productId, item.quantity + 1);
+      }
+    });
+  });
+  
+  // Кнопка очистки корзины
+  document.getElementById('clear-cart').addEventListener('click', function() {
+    if (confirm('Вы уверены, что хотите очистить корзину?')) {
+      clearCart();
+    }
+  });
+  
+  // Обработчик отправки формы оформления заказа
+  const checkoutForm = document.getElementById('checkout-form');
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Проверка заполнения обязательных полей
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const address = document.getElementById('address').value.trim();
+      
+      if (!name || !phone || !email || !address) {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        return;
+      }
+      
+      // Собираем данные формы
+      const formData = {
+        name: name,
+        phone: phone,
+        email: email,
+        address: address,
+        comment: document.getElementById('comment').value.trim(),
+        contact_method: document.querySelector('input[name="contact_method"]:checked')?.value || 'phone',
+        telegram_username: document.getElementById('telegram_username')?.value.trim(),
+        delivery_method: document.querySelector('input[name="delivery_method"]:checked')?.value || 'cdek',
+        payment_method: document.querySelector('input[name="payment_method"]:checked')?.value || 'cash'
+      };
+      
+      // Отправляем заказ
+      submitOrder(formData);
+    });
   }
 }
 

@@ -5,17 +5,15 @@
 
 // Функция для загрузки категорий с Supabase
 async function loadCategories() {
-  // На главной странице категории выводятся в блоке #categoriesGrid,
-  // а в каталоге используется список #categories-list
-  const gridContainer = document.getElementById('categoriesGrid');
+  const sectionContainer = document.querySelector('.categories-section');
   const listContainer = document.getElementById('categories-list');
 
   try {
-    if (!gridContainer && !listContainer) return;
+    if (!sectionContainer && !listContainer) return;
 
     // Показываем состояние загрузки
-    if (gridContainer) {
-      gridContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
+    if (sectionContainer) {
+      sectionContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
     }
     if (listContainer) {
       listContainer.innerHTML = '<div class="loading">Загрузка категорий...</div>';
@@ -36,21 +34,31 @@ async function loadCategories() {
     const categories = await response.json();
     
     if (categories.length === 0) {
-      renderPlaceholderCategories(gridContainer, listContainer);
+      if (sectionContainer) {
+        sectionContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
+      }
+      if (listContainer) {
+        listContainer.innerHTML = '<div class="empty-message">Категории не найдены</div>';
+      }
       return;
     }
 
     // Создаем HTML для секции с карточками категорий
-    if (gridContainer) {
-      const gridHTML = categories.map(category => `
-        <a href="catalog.html?category=${category.name}" class="category-card">
-          <div class="category-image">
-            <img src="${category.image_url || '/placeholder.svg'}" alt="${category.name}">
-          </div>
-          <h3>${category.name}</h3>
-        </a>
-      `).join('');
-      gridContainer.innerHTML = gridHTML;
+    if (sectionContainer) {
+      const sectionHTML = `
+        <h2 class="section-title">Категории</h2>
+        <div class="categories-grid">
+          ${categories.map(category => `
+            <a href="catalog.html?category=${category.name}" class="category-card">
+              <div class="category-image">
+                <img src="${category.image_url || '/placeholder.svg'}" alt="${category.name}">
+              </div>
+              <h3>${category.name}</h3>
+            </a>
+          `).join('')}
+        </div>
+      `;
+      sectionContainer.innerHTML = sectionHTML;
     }
 
     // Создаем HTML для списка категорий в каталоге
@@ -82,38 +90,12 @@ async function loadCategories() {
     }
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
-    renderPlaceholderCategories(gridContainer, listContainer);
-  }
-}
-
-function renderPlaceholderCategories(gridContainer, listContainer) {
-  const placeholderCategories = [
-    { name: 'Смарт-часы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
-    { name: 'Планшеты', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
-    { name: 'Проекторы', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' },
-    { name: 'Наушники', image_url: '/lovable-uploads/5e17e20e-4457-4c61-be22-2d405cd6a88e.png' }
-  ];
-
-  if (gridContainer) {
-    gridContainer.innerHTML = `${placeholderCategories
-      .map(c => `
-        <a href="catalog.html?category=${encodeURIComponent(c.name)}" class="category-card">
-          <div class="category-image">
-            <img src="${c.image_url}" alt="${c.name}">
-          </div>
-          <h3>${c.name}</h3>
-        </a>
-      `)
-      .join('')}`;
-  }
-
-  if (listContainer) {
-    listContainer.innerHTML = `
-      <a href="catalog.html" class="category-link">Все категории</a>
-      ${placeholderCategories
-        .map(c => `<a href="catalog.html?category=${encodeURIComponent(c.name)}" class="category-link">${c.name}</a>`)
-        .join('')}
-    `;
+    if (sectionContainer) {
+      sectionContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
+    }
+    if (listContainer) {
+      listContainer.innerHTML = '<div class="error-message">Ошибка при загрузке категорий</div>';
+    }
   }
 }
 

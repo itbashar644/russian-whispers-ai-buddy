@@ -7,43 +7,14 @@
     <title>Каталог товаров | The X Shop</title>
     <meta name="description" content="Каталог товаров из Китая высокого качества по доступным ценам. Аналоги популярных брендов.">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="css/chat-styles.css">
-    <!-- Schema.org JSON-LD data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "The X Shop",
-      "url": "https://the-x.shop",
-      "logo": "https://the-x.shop/favicon.ico",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+7 (800) 123-45-67",
-        "contactType": "customer service",
-        "areaServed": "RU"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "url": "https://the-x.shop",
-      "name": "The X Shop",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
   <body>
     <header class="main-header">
       <div class="container">
         <div class="header-content">
           <div class="logo">
-            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+            <a href="index.html">The X Shop</a>
           </div>
           
           <nav class="main-nav">
@@ -56,22 +27,15 @@
           </nav>
           
           <div class="header-actions">
-            <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
-          <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-          </a>
+            <a href="catalog.html?focus=search" class="action-icon search-icon" title="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </a>
+            <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </a>
             <a href="cart.html" class="action-icon cart-icon" title="Корзина">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span class="cart-counter"></span>
+              <span id="cart-counter" class="counter">0</span>
             </a>
             <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -90,13 +54,6 @@
       <section class="catalog-header section-padding-sm bg-light">
         <div class="container">
           <h1>Каталог товаров</h1>
-          <div class="catalog-search">
-            <input type="search" id="catalog-search-input" placeholder="Поиск по названию" autocomplete="off">
-            <button id="catalog-search-button" class="icon-button search-button" aria-label="Поиск">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-            <div id="catalog-search-suggestions" class="search-suggestions"></div>
-          </div>
         </div>
       </section>
       
@@ -106,14 +63,14 @@
           <div class="catalog-container">
             <!-- Catalog Sidebar -->
             <div class="catalog-sidebar">
-              <div class="sidebar-block categories-block">
+              <div class="sidebar-block">
                 <h3>Категории</h3>
                 <div id="categories-list" class="categories-list">
-                  <div class="loading">Загрузка категорий...</div>
+                  <!-- Categories will be loaded dynamically here -->
                 </div>
               </div>
-
-              <div class="sidebar-block filters-block">
+              
+              <div class="sidebar-block">
                 <h3>Фильтры</h3>
                 
                 <!-- Price Filter -->
@@ -125,10 +82,18 @@
                       <span>—</span>
                       <input type="number" id="max-price" placeholder="до">
                     </div>
-                    <button id="apply-price-filter" class="btn modern-btn btn-sm">Применить</button>
+                    <button id="apply-price-filter" class="btn secondary-btn btn-sm">Применить</button>
                   </div>
                 </div>
                 
+                <!-- Search -->
+                <div class="filter-group">
+                  <h4>Поиск</h4>
+                  <div class="search-filter">
+                    <input type="text" id="search-input" placeholder="Поиск по названию">
+                    <button id="search-button" class="btn secondary-btn btn-sm">Найти</button>
+                  </div>
+                </div>
 
                 <!-- Sort -->
                 <div class="filter-group">
@@ -147,7 +112,7 @@
             <div class="catalog-content">
               <div id="active-filters" class="active-filters"></div>
               <div id="products-container" class="products-grid">
-                <div class="loading">Загрузка товаров...</div>
+                <!-- Products will be loaded dynamically here -->
               </div>
             </div>
           </div>
@@ -171,6 +136,14 @@
           <div class="footer-column">
             <h3 class="footer-title">The X Shop</h3>
             <p>Качественные товары из Китая по доступным ценам</p>
+            <div class="social-icons">
+              <a href="#" class="social-icon" title="Telegram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 2.73a2.5 2.5 0 0 0-3.53 0l-13 13a.75.75 0 0 0-.2.34l-1 5a.75.75 0 0 0 .9.9l5-1a.75.75 0 0 0 .34-.2l13-13a2.5 2.5 0 0 0 0-3.54Z"/><path d="m16 6 2 2"/></svg>
+              </a>
+              <a href="#" class="social-icon" title="WhatsApp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4"/><path d="M17 8l-5 5-5-5"/><path d="M7 3h10"/></svg>
+              </a>
+            </div>
           </div>
           
           <div class="footer-column">
@@ -198,588 +171,14 @@
       </div>
     </footer>
 
-    <!-- Встроенные скрипты -->
-    <script>
-      // Конфигурация приложения
-      const CONFIG = {
-        supabaseUrl: 'https://lpwvhyawvxibtuxfhitx.supabase.co',
-        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI',
-        get apiHeaders() {
-          return {
-            'apikey': this.supabaseKey,
-            'Authorization': `Bearer ${this.supabaseKey}`,
-            'Content-Type': 'application/json'
-          };
-        }
-      };
-      window.CONFIG = CONFIG;
-
-      // Утилиты
-      function getFromStorage(key, defaultValue = null) {
-        try {
-          const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : defaultValue;
-        } catch (error) {
-          console.error(`Ошибка при чтении из localStorage (${key}):`, error);
-          return defaultValue;
-        }
-      }
-
-      function saveToStorage(key, value) {
-        try {
-          localStorage.setItem(key, JSON.stringify(value));
-          return true;
-        } catch (error) {
-          console.error(`Ошибка при сохранении в localStorage (${key}):`, error);
-          return false;
-        }
-      }
-
-      function parsePrice(value) {
-        if (typeof value === 'number') return value;
-        if (!value) return 0;
-        const numeric = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
-        return isNaN(numeric) ? 0 : numeric;
-      }
-
-      function formatPrice(price) {
-        const value = parsePrice(price);
-        return value.toLocaleString('ru-RU') + ' ₽';
-      }
-
-      function updateCartCounter() {
-        const cart = getFromStorage('cart', []);
-        const counters = document.querySelectorAll('.cart-counter');
-        const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-        counters.forEach(counter => {
-          counter.textContent = totalItems > 0 ? totalItems : '';
-          counter.style.display = totalItems > 0 ? 'flex' : 'none';
-        });
-      }
-
-      // Функции корзины
-      function addToCart(product) {
-        if (!product || !product.id) {
-          console.error('Некорректный товар для добавления в корзину');
-          return false;
-        }
-
-        const cart = getFromStorage('cart', []);
-        const existingItem = cart.find(item => item.id === product.id);
-
-        if (existingItem) {
-          existingItem.quantity += 1;
-        } else {
-          cart.push({
-            id: product.id,
-            title: product.title,
-            price: product.discount_price || product.price,
-            original_price: product.price,
-            image_url: product.image_url,
-            quantity: 1
-          });
-        }
-
-        saveToStorage('cart', cart);
-        updateCartCounter();
-        showNotification('Товар добавлен в корзину', 'success');
-        return true;
-      }
-
-      // Функции уведомлений
-      function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          padding: 12px 20px;
-          background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-          color: white;
-          border-radius: 4px;
-          z-index: 10000;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-          transition: all 0.3s ease;
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.style.opacity = '0';
-          notification.style.transform = 'translateX(100%)';
-          setTimeout(() => {
-            if (notification.parentNode) {
-              notification.parentNode.removeChild(notification);
-            }
-          }, 300);
-        }, 3000);
-      }
-
-      // Функции каталога
-      function createCatalogProductCard(product) {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-
-        const priceDisplay = product.discount_price
-          ? `<span class="old-price">${formatPrice(product.price)}</span><span class="current-price with-background">${formatPrice(product.discount_price)}</span>`
-          : `<span class="current-price with-background">${formatPrice(product.price)}</span>`;
-
-        const displayTitle = product.title.length > 50
-          ? `${product.title.slice(0, 50)}…`
-          : product.title;
-
-        card.innerHTML = `
-          <div class="product-image">
-            <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">
-              <img src="${product.image_url}" alt="${product.title}" loading="lazy">
-            </a>
-            <button class="wishlist-button" aria-label="Добавить в избранное" data-id="${product.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-            </button>
-          </div>
-          <div class="product-info">
-            <h3>
-              <a href="product.html?id=${product.id}" class="product-link" data-id="${product.id}">${displayTitle}</a>
-            </h3>
-            <div class="product-price">
-              <button class="price-cart-btn" data-id="${product.id}" aria-label="Добавить в корзину">
-                ${priceDisplay}
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              </button>
-            </div>
-            <button class="add-to-cart-btn" data-id="${product.id}">В корзину</button>
-          </div>
-        `;
-        
-        return card;
-      }
-
-      // Загрузка товаров для каталога
-      async function loadCatalogProducts() {
-        try {
-          console.log('Начинаем загрузку товаров для каталога...');
-          const productsContainer = document.getElementById('products-container');
-          if (!productsContainer) {
-            console.log('Контейнер товаров не найден');
-            return;
-          }
-          
-          productsContainer.innerHTML = '<div class="loading">Загрузка товаров...</div>';
-          
-          // Получаем параметры из URL
-          const urlParams = new URLSearchParams(window.location.search);
-          const category = urlParams.get('category');
-          const searchQuery = urlParams.get('search');
-          
-          console.log('Параметры поиска:', { category, searchQuery });
-          
-          // Строим URL для запроса
-          let apiUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/products?select=*&archived=eq.false&in_stock=eq.true';
-          
-          if (category) {
-            apiUrl += `&category=eq.${encodeURIComponent(category)}`;
-          }
-          
-          if (searchQuery) {
-            apiUrl += `&title=ilike.%${encodeURIComponent(searchQuery)}%`;
-          }
-          
-          apiUrl += '&order=created_at.desc';
-          
-          console.log('URL запроса товаров:', apiUrl);
-          
-          const response = await fetch(apiUrl, {
-            headers: CONFIG.apiHeaders
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const products = await response.json();
-          console.log('Товары загружены:', products.length);
-          
-          if (products.length === 0) {
-            productsContainer.innerHTML = '<div class="empty-message">Товары не найдены</div>';
-            return;
-          }
-          
-          productsContainer.innerHTML = '';
-          products.forEach(product => {
-            const productCard = createCatalogProductCard(product);
-            productsContainer.appendChild(productCard);
-          });
-          
-          // Инициализируем обработчики для кнопок после рендеринга
-          setTimeout(() => {
-            initAddToCartButtons();
-            console.log('Обработчики событий инициализированы для каталога');
-          }, 100);
-          
-        } catch (error) {
-          console.error('Ошибка при загрузке товаров:', error);
-          const productsContainer = document.getElementById('products-container');
-          if (productsContainer) {
-            productsContainer.innerHTML = '<div class="error-message">Ошибка при загрузке товаров: ' + error.message + '</div>';
-          }
-        }
-      }
-
-      // Загрузка категорий
-      async function loadCatalogCategories() {
-        try {
-          console.log('Начинаем загрузку категорий для каталога...');
-          const categoriesContainer = document.getElementById('categories-list');
-          if (!categoriesContainer) {
-            console.log('Контейнер категорий не найден');
-            return;
-          }
-          
-          const response = await fetch('https://lpwvhyawvxibtuxfhitx.supabase.co/rest/v1/categories?select=*&order=name.asc', {
-            headers: CONFIG.apiHeaders
-          });
-          
-          if (!response.ok) {
-            throw new Error('Ошибка загрузки категорий');
-          }
-          
-          const categories = await response.json();
-          console.log('Категории загружены:', categories.length);
-          
-          categoriesContainer.innerHTML = '';
-          
-          // Добавляем ссылку "Все категории"
-          const allCategoriesLink = document.createElement('a');
-          allCategoriesLink.href = 'catalog.html';
-          allCategoriesLink.className = 'category-item';
-          allCategoriesLink.textContent = 'Все категории';
-          categoriesContainer.appendChild(allCategoriesLink);
-          
-          categories.forEach(category => {
-            const categoryItem = document.createElement('a');
-            categoryItem.href = `catalog.html?category=${encodeURIComponent(category.name)}`;
-            categoryItem.className = 'category-item';
-            categoryItem.textContent = category.name;
-            categoriesContainer.appendChild(categoryItem);
-          });
-          
-          // Выделяем активную категорию
-          const urlParams = new URLSearchParams(window.location.search);
-          const activeCategory = urlParams.get('category');
-          
-          if (activeCategory) {
-            const activeLink = categoriesContainer.querySelector(`a[href="catalog.html?category=${encodeURIComponent(activeCategory)}"]`);
-            if (activeLink) {
-              activeLink.classList.add('active');
-            }
-          } else {
-            allCategoriesLink.classList.add('active');
-          }
-          
-        } catch (error) {
-          console.error('Ошибка при загрузке категорий:', error);
-          const categoriesContainer = document.getElementById('categories-list');
-          if (categoriesContainer) {
-            categoriesContainer.innerHTML = '<div class="error-message">Ошибка загрузки категорий</div>';
-          }
-        }
-      }
-
-      // Инициализация обработчиков кнопок "В корзину"
-      function initAddToCartButtons() {
-        const buttons = document.querySelectorAll('.add-to-cart-btn, .price-cart-btn');
-        
-        buttons.forEach(button => {
-          button.removeEventListener('click', handleAddToCart);
-          button.addEventListener('click', handleAddToCart);
-        });
-      }
-
-      function handleAddToCart(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const productId = this.getAttribute('data-id');
-        if (!productId) {
-          console.error('Не найден ID товара');
-          return;
-        }
-        
-        const productCard = this.closest('.product-card');
-        if (productCard) {
-          const product = {
-            id: productId,
-            title: productCard.querySelector('h3 a, .product-title')?.textContent?.trim() || 'Товар',
-            price: extractPriceFromElement(productCard),
-            image_url: productCard.querySelector('img')?.src || '/placeholder.svg'
-          };
-          
-          addToCart(product);
-        }
-      }
-
-      function extractPriceFromElement(element) {
-        const priceElement = element.querySelector('.current-price, .product-price');
-        if (priceElement) {
-          const priceText = priceElement.textContent.replace(/[^\d]/g, '');
-          return parseInt(priceText) || 0;
-        }
-        return 0;
-      }
-
-      // Чат функциональность
-      let chatInitialized = false;
-      let chatState = null;
-
-      function initChat() {
-        console.log('Инициализируем чат...');
-        
-        if (chatInitialized) {
-          console.log('Чат уже инициализирован');
-          return;
-        }
-        
-        const chatButton = document.getElementById('chat-button');
-        const chatContainer = document.getElementById('chat-container');
-        
-        if (!chatButton || !chatContainer) {
-          console.log('Элементы чата не найдены');
-          return;
-        }
-        
-        chatInitialized = true;
-        
-        chatState = getFromStorage('chat_state', {
-          open: false,
-          messages: []
-        });
-        
-        chatButton.removeEventListener('click', handleChatButtonClick);
-        document.removeEventListener('click', handleDocumentClick);
-        
-        chatButton.addEventListener('click', handleChatButtonClick);
-        document.addEventListener('click', handleDocumentClick);
-        
-        console.log('Чат инициализирован');
-      }
-
-      function handleChatButtonClick(event) {
-        console.log('Кнопка чата нажата');
-        event.stopPropagation();
-        event.preventDefault();
-
-        const chatContainer = document.getElementById('chat-container');
-        if (chatContainer.classList.contains('hidden')) {
-          openChat();
-        } else {
-          closeChat();
-        }
-      }
-
-      function handleDocumentClick(event) {
-        const chatContainer = document.getElementById('chat-container');
-        const chatButton = document.getElementById('chat-button');
-        
-        if (!chatContainer.classList.contains('hidden')) {
-          const isClickInsideChat = chatContainer.contains(event.target);
-          const isClickOnChatButton = chatButton && chatButton.contains(event.target);
-          
-          if (!isClickInsideChat && !isClickOnChatButton) {
-            closeChat();
-          }
-        }
-      }
-
-      function openChat() {
-        console.log('Открываем чат');
-        const chatContainer = document.getElementById('chat-container');
-        
-        if (chatContainer.innerHTML.trim() === '') {
-          renderChatInterface();
-        }
-        
-        chatContainer.classList.remove('hidden');
-        chatState.open = true;
-        saveToStorage('chat_state', chatState);
-        
-        setTimeout(() => {
-          scrollToLatestMessage();
-        }, 100);
-      }
-
-      function closeChat() {
-        console.log('Закрываем чат');
-        const chatContainer = document.getElementById('chat-container');
-        chatContainer.classList.add('hidden');
-        chatState.open = false;
-        saveToStorage('chat_state', chatState);
-      }
-
-      function renderChatInterface() {
-        const chatContainer = document.getElementById('chat-container');
-        
-        const chatHTML = `
-          <div class="chat-header">
-            <h3>Чат с оператором</h3>
-            <button class="chat-close-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-          <div class="chat-body">
-            <div class="chat-messages" id="chat-messages">
-              ${renderChatMessages()}
-            </div>
-          </div>
-          <div class="chat-footer">
-            <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
-            <button class="chat-send-btn" id="chat-send-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-          </div>
-        `;
-        
-        chatContainer.innerHTML = chatHTML;
-        
-        const closeBtn = chatContainer.querySelector('.chat-close-btn');
-        if (closeBtn) {
-          closeBtn.addEventListener('click', closeChat);
-        }
-        
-        const sendBtn = chatContainer.querySelector('#chat-send-btn');
-        if (sendBtn) {
-          sendBtn.addEventListener('click', function(event) {
-            event.preventDefault();
-            sendMessage();
-          });
-        }
-        
-        const chatInput = chatContainer.querySelector('#chat-input');
-        if (chatInput) {
-          chatInput.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault();
-              sendMessage();
-            }
-          });
-        }
-        
-        if (chatState.messages.length === 0) {
-          addSystemMessage('Здравствуйте! Чем мы можем вам помочь?');
-        }
-      }
-
-      function renderChatMessages() {
-        return chatState.messages.map(message => {
-          let messageClass = '';
-          let nameLabel = '';
-          
-          switch (message.type) {
-            case 'user':
-              messageClass = 'user-message';
-              nameLabel = 'Вы';
-              break;
-            case 'operator':
-              messageClass = 'operator-message';
-              nameLabel = 'Оператор';
-              break;
-            case 'system':
-              messageClass = 'system-message';
-              nameLabel = 'Система';
-              break;
-            default:
-              messageClass = '';
-              nameLabel = '';
-          }
-          
-          return `
-            <div class="chat-message ${messageClass}">
-              <span class="message-name">${nameLabel}</span>
-              <div class="message-content">${message.text}</div>
-              <span class="message-time">${formatDate(message.time)}</span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      function addSystemMessage(text) {
-        const message = {
-          type: 'system',
-          text: text,
-          time: new Date().toISOString()
-        };
-        
-        chatState.messages.push(message);
-        saveToStorage('chat_state', chatState);
-        updateChatMessages();
-      }
-
-      function updateChatMessages() {
-        const chatContainer = document.getElementById('chat-container');
-        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
-        if (chatMessagesEl) {
-          chatMessagesEl.innerHTML = renderChatMessages();
-          scrollToLatestMessage();
-        }
-      }
-
-      function scrollToLatestMessage() {
-        const chatContainer = document.getElementById('chat-container');
-        const chatMessagesEl = chatContainer.querySelector('#chat-messages');
-        if (chatMessagesEl) {
-          chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-        }
-      }
-
-      function formatDate(dateString) {
-        const date = new Date(dateString);
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      }
-
-      function sendMessage() {
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = chatContainer.querySelector('#chat-input');
-        const message = chatInput.value.trim();
-        
-        if (!message) return;
-        
-        const userMessage = {
-          type: 'user',
-          text: message,
-          time: new Date().toISOString()
-        };
-        
-        chatState.messages.push(userMessage);
-        saveToStorage('chat_state', chatState);
-        updateChatMessages();
-        
-        chatInput.value = '';
-        
-        setTimeout(() => {
-          const operatorMessage = {
-            type: 'operator',
-            text: 'Спасибо за обращение! Как я могу вам помочь?',
-            time: new Date().toISOString()
-          };
-          
-          chatState.messages.push(operatorMessage);
-          saveToStorage('chat_state', chatState);
-          updateChatMessages();
-        }, 2000);
-      }
-
-      // Инициализация при загрузке страницы
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM загружен, инициализируем каталог...');
-        updateCartCounter();
-        loadCatalogCategories();
-        loadCatalogProducts();
-        initChat();
-      });
-    </script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

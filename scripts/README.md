@@ -31,6 +31,7 @@ node scripts/generate-product-pages.js
 - Mobile-responsive design
 - SEO-optimized meta tags
 - Open Graph tags for social sharing
+- Automatic redirects to the main React application for interactions
 
 ## Requirements
 

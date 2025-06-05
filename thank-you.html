@@ -4,47 +4,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Спасибо за заказ | The X Shop</title>
-    <meta name="description" content="Ваш заказ успешно оформлен. Спасибо за покупку в The X Shop!">
+    <title>Заказ оформлен | The X Shop</title>
+    <meta name="description" content="Спасибо за ваш заказ в магазине The X Shop.">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-  <!-- Schema.org JSON-LD data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "The X Shop",
-  "url": "https://the-x.shop",
-  "logo": "https://the-x.shop/favicon.ico",
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "telephone": "+7 (800) 123-45-67",
-    "contactType": "customer service",
-    "areaServed": "RU"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "url": "https://the-x.shop",
-  "name": "The X Shop",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-
-</head>
+  </head>
   <body>
     <header class="main-header">
       <div class="container">
         <div class="header-content">
           <div class="logo">
-            <a href="index.html"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+            <a href="index.html">The X Shop</a>
           </div>
           
           <nav class="main-nav">
@@ -57,22 +27,15 @@
           </nav>
           
           <div class="header-actions">
-            <div class="header-search">
-              <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-              <div id="search-suggestions" class="search-suggestions"></div>
-              <button id="search-button" class="icon-button search-button" aria-label="Поиск">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-              </button>
-            </div>
-            <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <a href="catalog.html?focus=search" class="action-icon search-icon" title="Поиск">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </a>
             <a href="wishlist.html" class="action-icon wishlist-icon" title="Избранное">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
             </a>
             <a href="cart.html" class="action-icon cart-icon" title="Корзина">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-              <span id="cart-counter" class="cart-counter counter">0</span>
+              <span id="cart-counter" class="counter">0</span>
             </a>
             <a href="login.html" class="action-icon profile-icon" title="Личный кабинет">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -90,39 +53,19 @@
       <!-- Thank You Content -->
       <section class="section-padding">
         <div class="container">
-          <div class="thank-you-container" style="text-align: center; max-width: 600px; margin: 0 auto;">
-            <div class="success-icon" style="margin-bottom: 2rem;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto; display: block;">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22,4 12,14.01 9,11.01"></polyline>
-              </svg>
+          <div class="thank-you-content">
+            <div class="thank-you-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
-            
-            <h1 style="color: #28a745; margin-bottom: 1rem;">Спасибо за заказ!</h1>
-            
-            <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
-              Ваш заказ успешно оформлен и передан в обработку.
+            <h1 class="thank-you-title">Спасибо за заказ!</h1>
+            <p class="thank-you-text">
+              Ваш заказ <span id="order-number" class="order-number">loading...</span> успешно оформлен. В ближайшее время наш менеджер свяжется с вами для подтверждения заказа.
             </p>
-            
-            <div class="order-info" style="background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
-              <h2 style="margin-bottom: 1rem;">Информация о заказе</h2>
-              <p id="order-number" style="font-size: 1.1rem; margin-bottom: 0.5rem;"><strong>Номер заказа:</strong> #<span></span></p>
-              <p style="margin-bottom: 0.5rem;"><strong>Статус:</strong> Принят в обработку</p>
-              <p style="margin-bottom: 0.5rem;"><strong>Способ связи:</strong> <span id="contact-method"></span></p>
-            </div>
-            
-            <div class="next-steps" style="margin-bottom: 2rem;">
-              <h3 style="margin-bottom: 1rem;">Что дальше?</h3>
-              <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
-                <li style="margin-bottom: 0.5rem;">Мы свяжемся с вами в течение 24 часов</li>
-                <li style="margin-bottom: 0.5rem;">Уточним детали заказа и способ доставки</li>
-                <li style="margin-bottom: 0.5rem;">Отправим товар и предоставим трек-номер</li>
-              </ul>
-            </div>
-            
-            <div class="action-buttons" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <p class="thank-you-text">
+              Информация о заказе отправлена на вашу электронную почту.
+            </p>
+            <div class="thank-you-actions">
               <a href="catalog.html" class="btn primary-btn">Продолжить покупки</a>
-              <a href="index.html" class="btn secondary-btn">На главную</a>
             </div>
           </div>
         </div>
@@ -145,6 +88,14 @@
           <div class="footer-column">
             <h3 class="footer-title">The X Shop</h3>
             <p>Качественные товары из Китая по доступным ценам</p>
+            <div class="social-icons">
+              <a href="#" class="social-icon" title="Telegram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.73 2.73a2.5 2.5 0 0 0-3.53 0l-13 13a.75.75 0 0 0-.2.34l-1 5a.75.75 0 0 0 .9.9l5-1a.75.75 0 0 0 .34-.2l13-13a2.5 2.5 0 0 0 0-3.54Z"/><path d="m16 6 2 2"/></svg>
+              </a>
+              <a href="#" class="social-icon" title="WhatsApp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4"/><path d="M17 8l-5 5-5-5"/><path d="M7 3h10"/></svg>
+              </a>
+            </div>
           </div>
           
           <div class="footer-column">
@@ -160,8 +111,10 @@
             <ul class="footer-links">
               <li><a href="about.html">О нас</a></li>
               <li><a href="delivery.html">Доставка и оплата</a></li>
+              <li><a href="returns.html">Возврат и обмен</a></li>
             </ul>
           </div>
+          
         </div>
         
         <div class="footer-bottom">
@@ -170,32 +123,28 @@
       </div>
     </footer>
 
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/main.js"></script>
     <script>
-      // Получаем параметры заказа из URL или localStorage
       document.addEventListener('DOMContentLoaded', function() {
+        const orderNumberElement = document.getElementById('order-number');
         const urlParams = new URLSearchParams(window.location.search);
-        const orderNumber = urlParams.get('order') || localStorage.getItem('lastOrderNumber') || Math.floor(Math.random() * 100000);
-        const contactMethod = urlParams.get('contact') || localStorage.getItem('lastContactMethod') || 'телефон';
+        const orderId = urlParams.get('order_id');
         
-        // Заполняем информацию о заказе
-        const orderNumberSpan = document.querySelector('#order-number span');
-        const contactMethodSpan = document.getElementById('contact-method');
-        
-        if (orderNumberSpan) {
-          orderNumberSpan.textContent = orderNumber;
+        if (orderId) {
+          orderNumberElement.textContent = orderId;
+        } else {
+          orderNumberElement.textContent = 'Unknown';
         }
         
-        if (contactMethodSpan) {
-          contactMethodSpan.textContent = contactMethod;
+        // Обновляем счетчик корзины
+        if (typeof updateCartCounter === 'function') {
+          updateCartCounter();
         }
-        
-        // Очищаем корзину после успешного заказа
-        localStorage.removeItem('cart');
-        localStorage.removeItem('lastOrderNumber');
-        localStorage.removeItem('lastContactMethod');
       });
     </script>
-    <script src="js/utils.js"></script>
-    <script src="js/chat.js"></script>
   </body>
 </html>

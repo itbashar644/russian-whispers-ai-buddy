@@ -54,7 +54,6 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         font-size: 1rem;
-        box-sizing: border-box;
       }
       
       .auth-form input:focus {
@@ -78,11 +77,6 @@
       
       .auth-form button:hover {
         background-color: #0069d9;
-      }
-      
-      .auth-form button:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
       }
       
       .auth-links {
@@ -133,104 +127,18 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: background-color 0.3s;
       }
 
       .google-btn:hover {
         background-color: #f7f7f7;
       }
-      
-      .google-btn:disabled {
-        background-color: #f5f5f5;
-        cursor: not-allowed;
-      }
-      
-      .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 24px;
-        border-radius: 4px;
-        color: white;
-        z-index: 1000;
-        transition: opacity 0.3s ease;
-      }
-      
-      .notification.success {
-        background-color: #28a745;
-      }
-      
-      .notification.error {
-        background-color: #dc3545;
-      }
-      
-      .notification.info {
-        background-color: #007bff;
-      }
-
-      .logout-section {
-        margin-top: 20px;
-        text-align: center;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-      }
-
-      .logout-section h3 {
-        margin-bottom: 10px;
-        color: #28a745;
-      }
-
-      .logout-btn {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 10px;
-      }
-
-      .logout-btn:hover {
-        background-color: #c82333;
-      }
     </style>
-    
-    <!-- Schema.org JSON-LD data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "The X Shop",
-      "url": "https://the-x.shop",
-      "logo": "https://the-x.shop/favicon.ico",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+7 (800) 123-45-67",
-        "contactType": "customer service",
-        "areaServed": "RU"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "url": "https://the-x.shop",
-      "name": "The X Shop",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://the-x.shop/catalog.html?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
   </head>
   <body>
     <header class="header">
       <div class="container header-container">
         <div class="header-left">
-          <a href="index.html" class="logo"><img src="public/The X Shop text.svg" alt="The X Shop" /></a>
+          <a href="index.html" class="logo">The X Shop</a>
           <nav class="main-nav">
             <ul>
               <li><a href="index.html">Главная</a></li>
@@ -241,16 +149,9 @@
           </nav>
         </div>
         <div class="header-actions">
-          <div class="header-search">
-            <input type="search" id="search-input" placeholder="Поиск по названию" autocomplete="off">
-            <div id="search-suggestions" class="search-suggestions"></div>
-            <button id="search-button" class="icon-button search-button" aria-label="Поиск">
+          <button class="icon-button search-button" aria-label="Поиск">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </button>
-          </div>
-          <a href="catalog.html?focus=search" class="icon-button search-button mobile-search-button" aria-label="Поиск">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-          </a>
+          </button>
           <a href="wishlist.html" class="icon-button" aria-label="Избранное">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
           </a>
@@ -268,61 +169,47 @@
     <main>
       <div class="container py-8">
         <div class="auth-container">
-          <div id="auth-status" style="display: none;">
-            <!-- Этот блок будет показан, если пользователь уже авторизован -->
-            <div class="logout-section">
-              <h3>Вы уже авторизованы!</h3>
-              <p>Вы можете перейти на главную страницу или выйти из аккаунта</p>
-              <div style="margin-top: 15px;">
-                <button onclick="window.location.href='index.html'" class="auth-form button" style="margin-right: 10px; display: inline-block; width: auto; padding: 10px 20px;">На главную</button>
-                <button onclick="handleLogout()" class="logout-btn" style="display: inline-block; width: auto;">Выйти</button>
-              </div>
+          <h1 class="auth-title">Вход в личный кабинет</h1>
+          
+          <form class="auth-form" id="loginForm">
+            <div class="form-group">
+              <label for="email">Электронная почта</label>
+              <input type="email" id="email" required placeholder="example@mail.com">
             </div>
+            
+            <div class="form-group">
+              <label for="password">Пароль</label>
+              <input type="password" id="password" required placeholder="********">
+            </div>
+            
+            <button type="submit">Войти</button>
+          </form>
+          
+          <div class="auth-links">
+            <a href="#">Забыли пароль?</a>
+          </div>
+          
+          <div class="auth-separator">
+            <span>или</span>
           </div>
 
-          <div id="login-section">
-            <h1 class="auth-title">Вход в личный кабинет</h1>
-            
-            <form class="auth-form" id="loginForm">
-              <div class="form-group">
-                <label for="email">Электронная почта</label>
-                <input type="email" id="email" required placeholder="example@mail.com">
-              </div>
               
-              <div class="form-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" required placeholder="********">
-              </div>
-              
-              <button type="submit" id="loginBtn">Войти</button>
-            </form>
-            
-            <div class="auth-links">
-              <a href="#">Забыли пароль?</a>
-            </div>
-            
-            <div class="auth-separator">
-              <span>или</span>
-            </div>
+                    <button id="googleLoginBtn" type="button" class="google-btn">
+             <svg class="h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.8055 10.0415H21V10H12V14H17.6515C16.827 16.3285 14.6115 18 12 18C8.6865 18 6 15.3135 6 12C6 8.6865 8.6865 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C6.4775 2 2 6.4775 2 12C2 17.5225 6.4775 22 12 22C17.5225 22 22 17.5225 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#FFC107"/>
+              <path d="M3.15302 7.3455L6.43851 9.755C7.32752 7.554 9.48052 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C8.15902 2 4.82802 4.1685 3.15302 7.3455Z" fill="#FF3D00"/>
+              <path d="M12 22C14.583 22 16.93 21.0115 18.7045 19.404L15.6095 16.785C14.5718 17.5742 13.3037 18.001 12 18C9.39903 18 7.19053 16.3415 6.35853 14.027L3.09753 16.5395C4.75253 19.778 8.11353 22 12 22Z" fill="#4CAF50"/>
+              <path d="M21.8055 10.0415H21V10H12V14H17.6515C17.2571 15.1082 16.5467 16.0766 15.608 16.7855L15.6095 16.7845L18.7045 19.4035C18.4855 19.6025 22 17 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#1976D2"/>
+            </svg>
+            Войти через Google
+          </button>
 
-            <button id="googleLoginBtn" type="button" class="google-btn">
-               <svg class="h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.8055 10.0415H21V10H12V14H17.6515C16.827 16.3285 14.6115 18 12 18C8.6865 18 6 15.3135 6 12C6 8.6865 8.6865 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C6.4775 2 2 6.4775 2 12C2 17.5225 6.4775 22 12 22C17.5225 22 22 17.5225 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#FFC107"/>
-                <path d="M3.15302 7.3455L6.43851 9.755C7.32752 7.554 9.48052 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C8.15902 2 4.82802 4.1685 3.15302 7.3455Z" fill="#FF3D00"/>
-                <path d="M12 22C14.583 22 16.93 21.0115 18.7045 19.404L15.6095 16.785C14.5718 17.5742 13.3037 18.001 12 18C9.39903 18 7.19053 16.3415 6.35853 14.027L3.09753 16.5395C4.75253 19.778 8.11353 22 12 22Z" fill="#4CAF50"/>
-                <path d="M21.8055 10.0415H21V10H12V14H17.6515C17.2571 15.1082 16.5467 16.0766 15.608 16.7855L15.6095 16.7845L18.7045 19.4035C18.4855 19.6025 22 17 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#1976D2"/>
-              </svg>
-              Войти через Google
-            </button>
-
-            <div class="auth-links">
-              <a href="register.html">Зарегистрироваться</a>
-            </div>
+          <div class="auth-links">
+            <a href="register.html">Зарегистрироваться</a>
           </div>
         </div>
       </div>
-      
-      <div class="chat-widget">
+          <div class="chat-widget">
         <button id="chat-button" class="chat-toggle-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </button>
@@ -332,25 +219,25 @@
       </div>
     </main>
     
-    <footer class="main-footer">
+    <footer class="footer">
       <div class="container">
-        <div class="footer-content">
+        <div class="footer-grid">
           <div class="footer-column">
-            <h3 class="footer-title">The X Shop</h3>
-            <p>Качественные товары из Китая по доступным ценам</p>
+            <h4>The X Shop</h4>
+            <p>Товары из Китая для вашего дома</p>
           </div>
           <div class="footer-column">
-                       <h4 class="footer-title">Каталог</h4>
-            <ul class="footer-links">
-              <li><a href="catalog.html">Все товары</a></li>
-              <li><a href="catalog.html?category=Электроника">Электроника</a></li>
+            <h4>Информация</h4>
+            <ul>
+              <li><a href="about.html">О нас</a></li>
+              <li><a href="delivery.html">Доставка</a></li>
             </ul>
           </div>
           <div class="footer-column">
-            <h4 class="footer-title">Информация</h4>
-            <ul class="footer-links">
-              <li><a href="about.html">О нас</a></li>
-              <li><a href="delivery.html">Доставка и оплата</a></li>
+            <h4>Помощь</h4>
+            <ul>
+              <li><a href="terms.html">Условия использования</a></li>
+              <li><a href="privacy.html">Политика конфиденциальности</a></li>
             </ul>
           </div>
         
@@ -384,200 +271,48 @@
     <!-- Необходимый скрипт для Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     
+    <!-- Скрипты для функциональности страницы -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+      // Обработчик отправки формы авторизации
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // В реальном проекте здесь будет отправка данных на сервер
+        console.log('Отправка формы авторизации:', { email, password });
+        
+        // Показываем уведомление
+        showNotification('Успешная авторизация!');
+        
+        // Перенаправляем на главную страницу
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      });
+          </script>
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-      // Правильная конфигурация Supabase
-      const supabaseUrl = 'https://lpwvhyawvxibtuxfhitx.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwd3ZoeWF3dnhpYnR1eGZoaXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MzIyOTUsImV4cCI6MjA2MjEwODI5NX0.-2aL1s3lUq4Oeos9jWoEd0Fn1g_-_oaQ_QWVEDByaOI';
-
-      const supabase = createClient(supabaseUrl, supabaseKey, {
+      const supabase = createClient(CONFIG.supabaseUrl, CONFIG.apiHeaders.apikey, {
         auth: {
-          storage: localStorage,
           persistSession: true,
-          autoRefreshToken: true,
           detectSessionInUrl: true
         }
       });
 
-      // Делаем supabase доступным глобально
-      window.supabase = supabase;
-
-      function showNotification(message, type = 'info') {
-        // Удаляем существующие уведомления
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(notification => notification.remove());
-        
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.remove();
+      document.getElementById('googleLoginBtn').addEventListener('click', () => {
+        supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth-callback.html`
           }
-        }, 5000);
-      }
-
-      // Очищаем URL от возможных OAuth параметров при загрузке
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('access_token') || urlParams.has('error') || urlParams.has('code')) {
-        console.log('Очищаем URL от OAuth параметров...');
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-
-      // Проверяем состояние авторизации и обрабатываем callback
-      supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session);
-        
-        if (event === 'SIGNED_IN' && session) {
-          console.log('Пользователь успешно авторизован');
-          showNotification('Успешная авторизация!', 'success');
-          
-          // Показываем блок авторизованного пользователя
-          document.getElementById('auth-status').style.display = 'block';
-          document.getElementById('login-section').style.display = 'none';
-          
-          // Перенаправляем на главную через 2 секунды
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 2000);
-        } else if (event === 'SIGNED_OUT' || !session) {
-          console.log('Пользователь не авторизован');
-          
-          // Показываем форму входа
-          document.getElementById('auth-status').style.display = 'none';
-          document.getElementById('login-section').style.display = 'block';
-        }
-      });
-
-      // Проверяем текущую сессию при загрузке
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
-        if (error) {
-          console.error('Ошибка при получении сессии:', error);
-          // При ошибке показываем форму входа
-          document.getElementById('auth-status').style.display = 'none';
-          document.getElementById('login-section').style.display = 'block';
-          return;
-        }
-
-        if (session && session.user) {
-          console.log('Найдена активная сессия:', session.user);
-          document.getElementById('auth-status').style.display = 'block';
-          document.getElementById('login-section').style.display = 'none';
-        } else {
-          console.log('Активная сессия не найдена');
-          document.getElementById('auth-status').style.display = 'none';
-          document.getElementById('login-section').style.display = 'block';
-        }
-      });
-
-      // Функция выхода из аккаунта
-      window.handleLogout = async function() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) {
-            console.error('Ошибка при выходе:', error);
-            showNotification('Ошибка при выходе из аккаунта', 'error');
-          } else {
-            showNotification('Вы успешно вышли из аккаунта', 'success');
-            
-            // Показываем форму входа
-            document.getElementById('auth-status').style.display = 'none';
-            document.getElementById('login-section').style.display = 'block';
-          }
-        } catch (error) {
-          console.error('Неожиданная ошибка при выходе:', error);
-          showNotification('Ошибка при выходе из аккаунта', 'error');
-        }
-      };
-
-      // Обработчик отправки формы авторизации
-      document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const loginBtn = document.getElementById('loginBtn');
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
-
-        // Простая валидация
-        if (!email || !password) {
-          showNotification('Заполните все поля', 'error');
-          return;
-        }
-
-        // Блокируем кнопку во время запроса
-        loginBtn.disabled = true;
-        loginBtn.textContent = 'Вход...';
-
-        try {
-          console.log('Попытка авторизации с email:', email);
-          
-          const { data, error } = await supabase.auth.signInWithPassword({ 
-            email, 
-            password 
-          });
-          
-          if (error) {
-            console.error('Ошибка авторизации:', error);
-            let errorMessage = 'Ошибка авторизации';
-            
-            if (error.message.includes('Invalid login credentials')) {
-              errorMessage = 'Неверный email или пароль';
-            } else if (error.message.includes('Email not confirmed')) {
-              errorMessage = 'Подтвердите email перед входом';
-            } else if (error.message.includes('Too many requests')) {
-              errorMessage = 'Слишком много попыток. Попробуйте позже';
-            }
-            
-            showNotification(errorMessage, 'error');
-            return;
-          }
-
-          // Успешная авторизация обрабатывается в onAuthStateChange
-        } catch (err) {
-          console.error('Неожиданная ошибка при авторизации:', err);
-          showNotification('Не удалось войти. Попробуйте позже', 'error');
-        } finally {
-          // Разблокируем кнопку
-          loginBtn.disabled = false;
-          loginBtn.textContent = 'Войти';
-        }
-      });
-
-      // Обработчик входа через Google
-      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-        const googleBtn = document.getElementById('googleLoginBtn');
-        
-        googleBtn.disabled = true;
-        
-        try {
-          console.log('Попытка входа через Google');
-          
-          const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: `${window.location.origin}/login.html`
-            }
-          });
-          
-          if (error) {
-            console.error('Ошибка входа через Google:', error);
-            showNotification('Ошибка входа через Google', 'error');
-          }
-        } catch (err) {
-          console.error('Неожиданная ошибка при входе через Google:', err);
-          showNotification('Не удалось войти через Google', 'error');
-        } finally {
-          googleBtn.disabled = false;
-        }
+        });
       });
     </script>
-    
-    <script type="module" src="scripts.js"></script>
-    <script src="/js/search.js"></script>
-    <script src="/js/chat.js"></script>
+          <script src="js/chat.js"></script>
   </body>
 </html>
