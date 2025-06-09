@@ -6,109 +6,103 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
-import MainPage from "./pages/MainPage";
+import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
-import ProductPage from "./pages/ProductPage";
+import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import Profile from "./pages/Profile";
+import OrderSuccess from "./pages/OrderSuccess";
+import Account from "./pages/account/Account";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Contacts from "./pages/Contacts";
-import AboutUs from "./pages/AboutUs";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import ErrorPage from "./pages/ErrorPage";
-import WishlistPage from "./pages/WishlistPage";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import NotFound from "./pages/NotFound";
+import Wishlist from "./pages/Wishlist";
 import ResetPassword from "./pages/auth/ResetPassword";
-import UpdatePassword from "./pages/auth/UpdatePassword";
-import AdminPanel from "./pages/AdminPanel";
+import AdminPanel from "./pages/admin/AdminPanel";
 import ChatWidget from "@/components/chat/ChatWidget";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainPage />,
-    errorElement: <ErrorPage />,
+    element: <Index />,
+    errorElement: <NotFound />,
   },
   {
     path: "/catalog",
     element: <Catalog />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/product/:productId",
-    element: <ProductPage />,
-    errorElement: <ErrorPage />,
+    path: "/product/:id",
+    element: <ProductDetail />,
+    errorElement: <NotFound />,
   },
   {
     path: "/cart",
     element: <Cart />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
     path: "/wishlist",
-    element: <WishlistPage />,
-    errorElement: <ErrorPage />,
+    element: <Wishlist />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/checkout",
-    element: <Checkout />,
-    errorElement: <ErrorPage />,
+    path: "/order-success",
+    element: <OrderSuccess />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/profile",
-    element: <Profile />,
-    errorElement: <ErrorPage />,
+    path: "/account",
+    element: <Account />,
+    errorElement: <NotFound />,
   },
   {
     path: "/login",
     element: <Login />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
     path: "/register",
     element: <Register />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
     path: "/reset-password",
     element: <ResetPassword />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "/update-password",
-    element: <UpdatePassword />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
     path: "/contacts",
     element: <Contacts />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/about-us",
-    element: <AboutUs />,
-    errorElement: <ErrorPage />,
+    path: "/about",
+    element: <About />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/privacy-policy",
-    element: <PrivacyPolicy />,
-    errorElement: <ErrorPage />,
+    path: "/privacy",
+    element: <Privacy />,
+    errorElement: <NotFound />,
   },
   {
-    path: "/terms-of-service",
-    element: <TermsOfService />,
-    errorElement: <ErrorPage />,
+    path: "/terms",
+    element: <Terms />,
+    errorElement: <NotFound />,
   },
   {
     path: "/admin",
     element: <AdminPanel />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFound />,
   },
   {
     path: "*",
-    element: <ErrorPage />,
+    element: <NotFound />,
   },
 ]);
 
