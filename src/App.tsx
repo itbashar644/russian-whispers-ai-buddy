@@ -1,5 +1,4 @@
 
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
@@ -16,6 +15,7 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Account from "./pages/account/Account";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import AuthCallback from "./pages/auth/AuthCallback";
 import Contacts from "./pages/Contacts";
 import About from "./pages/About";
 import Privacy from "./pages/Privacy";
@@ -70,6 +70,11 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+    errorElement: <NotFound />,
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
     errorElement: <NotFound />,
   },
   {
