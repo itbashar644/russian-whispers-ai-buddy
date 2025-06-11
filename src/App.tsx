@@ -27,6 +27,18 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import AdminPanel from "./pages/admin/AdminPanel";
 import ChatWidget from "@/components/chat/ChatWidget";
 
+// Wrapper component that includes YandexMetrika inside Router context
+const AppWithMetrika = () => {
+  return (
+    <>
+      <YandexMetrika />
+      <RouterProvider router={router} />
+      <ChatWidget />
+      <Toaster />
+    </>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -131,10 +143,7 @@ function App() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <YandexMetrika />
-                <RouterProvider router={router} />
-                <ChatWidget />
-                <Toaster />
+                <AppWithMetrika />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
