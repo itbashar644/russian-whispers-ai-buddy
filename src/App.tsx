@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import YandexMetrika from "@/components/analytics/YandexMetrika";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -130,6 +131,7 @@ function App() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
+                <YandexMetrika />
                 <RouterProvider router={router} />
                 <ChatWidget />
                 <Toaster />
@@ -143,4 +145,3 @@ function App() {
 }
 
 export default App;
-
