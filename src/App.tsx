@@ -2,12 +2,11 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
-import YandexMetrika from "@/components/analytics/YandexMetrika";
+import AppLayout from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
@@ -25,100 +24,78 @@ import NotFound from "./pages/NotFound";
 import Wishlist from "./pages/Wishlist";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AdminPanel from "./pages/admin/AdminPanel";
-import ChatWidget from "@/components/chat/ChatWidget";
-
-// Wrapper component that includes YandexMetrika inside Router context
-const AppWithMetrika = () => {
-  return (
-    <>
-      <YandexMetrika />
-      <RouterProvider router={router} />
-      <ChatWidget />
-      <Toaster />
-    </>
-  );
-};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Index />,
+    element: <AppLayout />,
     errorElement: <NotFound />,
-  },
-  {
-    path: "/catalog",
-    element: <Catalog />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/product/:id",
-    element: <ProductDetail />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/cart",
-    element: <Cart />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/wishlist",
-    element: <Wishlist />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/order-success",
-    element: <OrderSuccess />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/account",
-    element: <Account />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/auth/callback",
-    element: <AuthCallback />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/contacts",
-    element: <Contacts />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/about",
-    element: <About />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/privacy",
-    element: <Privacy />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/terms",
-    element: <Terms />,
-    errorElement: <NotFound />,
-  },
-  {
-    path: "/admin/*",
-    element: <AdminPanel />,
-    errorElement: <NotFound />,
+    children: [
+      {
+        index: true,
+        element: <Index />,
+      },
+      {
+        path: "catalog",
+        element: <Catalog />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductDetail />,
+      },
+      {
+        path: "cart",
+        element: <Cart />,
+      },
+      {
+        path: "wishlist",
+        element: <Wishlist />,
+      },
+      {
+        path: "order-success",
+        element: <OrderSuccess />,
+      },
+      {
+        path: "account",
+        element: <Account />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "register",
+        element: <Register />,
+      },
+      {
+        path: "auth/callback",
+        element: <AuthCallback />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPassword />,
+      },
+      {
+        path: "contacts",
+        element: <Contacts />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "privacy",
+        element: <Privacy />,
+      },
+      {
+        path: "terms",
+        element: <Terms />,
+      },
+      {
+        path: "admin/*",
+        element: <AdminPanel />,
+      },
+    ],
   },
   {
     path: "*",
@@ -143,7 +120,7 @@ function App() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <AppWithMetrika />
+                <RouterProvider router={router} />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
