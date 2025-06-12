@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import Wishlist from "./pages/Wishlist";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AdminPanel from "./pages/admin/AdminPanel";
+import Delivery from "./pages/Delivery";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "delivery",
+        element: <Delivery />,
       },
       {
         path: "privacy",
