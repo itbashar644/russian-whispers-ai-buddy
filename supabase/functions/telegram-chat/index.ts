@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -60,16 +59,11 @@ async function handleSendMessage(req: Request, supabase: any) {
   }
 
   try {
-    // Очищаем chatId от лишних кавычек если они есть
-    const cleanChatId = typeof chatId === 'string' ? chatId.replace(/^"(.*)"$/, '$1') : chatId
-    console.log('Original chatId:', chatId)
-    console.log('Cleaned chatId:', cleanChatId)
-
     // Ensure chat session exists
     const { data: existingSession, error: sessionCheckError } = await supabase
       .from('chat_sessions')
       .select('id')
-      .eq('id', cleanChatId)
+      .eq('id', chatId)
       .single()
 
     if (sessionCheckError && sessionCheckError.code === 'PGRST116') {
@@ -77,7 +71,7 @@ async function handleSendMessage(req: Request, supabase: any) {
       const { error: createSessionError } = await supabase
         .from('chat_sessions')
         .insert({
-          id: cleanChatId,
+          id: chatId,
           customer_name: name,
           customer_email: email
         })
@@ -95,7 +89,7 @@ async function handleSendMessage(req: Request, supabase: any) {
     const { error: messageError } = await supabase
       .from('chat_messages')
       .insert({
-        chat_id: cleanChatId,
+        chat_id: chatId,
         message: message,
         is_from_admin: false,
         is_read: false
@@ -110,7 +104,7 @@ async function handleSendMessage(req: Request, supabase: any) {
     }
 
     // Try to send to Telegram bot
-    await sendToTelegramBot(cleanChatId, message, name, email)
+    await sendToTelegramBot(chatId, message, name, email)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -135,14 +129,10 @@ async function handleGetMessages(req: Request, supabase: any) {
   }
 
   try {
-    // Очищаем chatId от лишних кавычек если они есть
-    const cleanChatId = typeof chatId === 'string' ? chatId.replace(/^"(.*)"$/, '$1') : chatId
-    console.log('Getting messages for cleaned chatId:', cleanChatId)
-
     const { data: messages, error } = await supabase
       .from('chat_messages')
       .select('*')
-      .eq('chat_id', cleanChatId)
+      .eq('chat_id', chatId)
       .order('created_at', { ascending: true })
 
     if (error) {
@@ -153,7 +143,6 @@ async function handleGetMessages(req: Request, supabase: any) {
       })
     }
 
-    console.log('Found messages:', messages?.length || 0)
     return new Response(JSON.stringify({ messages: messages || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -177,13 +166,10 @@ async function handleMarkAsRead(req: Request, supabase: any) {
   }
 
   try {
-    // Очищаем chatId от лишних кавычек если они есть
-    const cleanChatId = typeof chatId === 'string' ? chatId.replace(/^"(.*)"$/, '$1') : chatId
-
     const { error } = await supabase
       .from('chat_messages')
       .update({ is_read: true })
-      .eq('chat_id', cleanChatId)
+      .eq('chat_id', chatId)
       .eq('is_from_admin', true)
 
     if (error) {
@@ -304,7 +290,7 @@ Reply to chat ID: ${chatId}
 Ваш ответ здесь...
     `.trim()
 
-    const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -313,12 +299,6 @@ Reply to chat ID: ${chatId}
         parse_mode: 'Markdown'
       })
     })
-
-    if (!response.ok) {
-      console.error('Failed to send Telegram message:', await response.text())
-    } else {
-      console.log('Telegram message sent successfully')
-    }
   } catch (error) {
     console.error('Error sending to Telegram:', error)
   }

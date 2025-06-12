@@ -15,10 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import RegisterFormSchema from "@/pages/auth/schemas/registerFormSchema";
 import { toast } from "sonner";
-import { formatAuthError } from "@/utils/auth/errorFormatter";
 
 type FormData = z.infer<typeof RegisterFormSchema>;
 
@@ -27,8 +26,6 @@ export default function RegisterForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
   
   const form = useForm<FormData>({
     resolver: zodResolver(RegisterFormSchema),
@@ -43,17 +40,15 @@ export default function RegisterForm() {
   async function onSubmit(data: FormData) {
     setIsLoading(true);
     setShowLoginPrompt(false);
-    setShowEmailConfirmation(false);
     
     try {
       const result = await signupWithEmail(data.email, data.password, { name: data.name });
       
       if (result.success) {
-        setUserEmail(data.email);
-        setShowEmailConfirmation(true);
         toast.success("Регистрация успешна!", {
-          description: "Проверьте вашу почту для подтверждения регистрации.",
+          description: "Теперь вы можете войти в свой аккаунт.",
         });
+        navigate("/login");
       } else if (result.isExistingUser) {
         // User already exists, show login prompt
         setShowLoginPrompt(true);
@@ -62,70 +57,18 @@ export default function RegisterForm() {
           message: "Пользователь с таким email уже существует",
         });
       } else {
-        const errorMessage = result.error ? 
-          formatAuthError(new Error(typeof result.error === 'string' ? result.error : result.error.message || 'Unknown error')) : 
-          "Что-то пошло не так. Попробуйте еще раз.";
         toast.error("Ошибка при регистрации", {
-          description: errorMessage,
+          description: result.message || "Что-то пошло не так. Попробуйте еще раз.",
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? formatAuthError(error) : "Что-то пошло не так. Попробуйте еще раз.";
       toast.error("Ошибка при регистрации", {
-        description: errorMessage,
+        description: "Что-то пошло не так. Попробуйте еще раз.",
       });
       console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }
-  }
-
-  if (showEmailConfirmation) {
-    return (
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <Mail className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Подтвердите вашу почту</h2>
-          <p className="text-muted-foreground">
-            Мы отправили письмо с подтверждением на адрес:
-          </p>
-          <p className="font-medium text-blue-600">{userEmail}</p>
-        </div>
-        
-        <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
-          <p className="mb-2">
-            <strong>Что делать дальше:</strong>
-          </p>
-          <ol className="list-decimal list-inside space-y-1 text-left">
-            <li>Проверьте вашу почту (включая папку "Спам")</li>
-            <li>Найдите письмо от нас с темой подтверждения регистрации</li>
-            <li>Нажмите на ссылку в письме для подтверждения</li>
-            <li>После подтверждения вернитесь на страницу входа</li>
-          </ol>
-        </div>
-        
-        <div className="space-y-3">
-          <Button 
-            onClick={() => setShowEmailConfirmation(false)} 
-            variant="outline"
-            className="w-full"
-          >
-            Изменить email или попробовать снова
-          </Button>
-          
-          <Button asChild className="w-full">
-            <Link to="/login">
-              Перейти на страницу входа
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
   }
 
   return (

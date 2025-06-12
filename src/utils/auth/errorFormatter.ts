@@ -8,7 +8,7 @@ export function formatAuthError(error: AuthError | Error): string {
   const errorMessage = error.message || "Unknown error";
   
   if (errorMessage.includes("Email not confirmed")) {
-    return "Пожалуйста, подтвердите вашу электронную почту. Проверьте почтовый ящик и перейдите по ссылке из письма для подтверждения регистрации.";
+    return "Электронная почта не подтверждена. Пожалуйста, проверьте вашу почту.";
   } else if (errorMessage.includes("Invalid login credentials")) {
     return "Неправильный email или пароль";
   } else if (errorMessage.includes("User already registered")) {
