@@ -23,7 +23,7 @@ export const getChatId = (): string => {
     if (stored) {
       cachedChatId = stored;
     } else {
-      // Генерируем новый уникальный ID
+      // Генерируем новый уникальный ID без префиксов и специальных символов
       cachedChatId = `chat_${Date.now()}_${uuidv4()}`;
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("chat_id", cachedChatId);
