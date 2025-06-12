@@ -62,7 +62,9 @@ export default function RegisterForm() {
           message: "Пользователь с таким email уже существует",
         });
       } else {
-        const errorMessage = result.error ? formatAuthError(new Error(result.error)) : "Что-то пошло не так. Попробуйте еще раз.";
+        const errorMessage = result.error ? 
+          formatAuthError(new Error(typeof result.error === 'string' ? result.error : result.error.message || 'Unknown error')) : 
+          "Что-то пошло не так. Попробуйте еще раз.";
         toast.error("Ошибка при регистрации", {
           description: errorMessage,
         });
