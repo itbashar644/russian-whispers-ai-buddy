@@ -14,6 +14,11 @@ interface OrderItem {
     title?: string;
     imageUrl?: string;
     price?: number;
+    colorVariants?: Array<{
+      color: string;
+      imageUrl?: string;
+    }>;
+    additionalImages?: string[];
   };
 }
 
@@ -45,7 +50,29 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
           {items.map((item, index) => {
             // Безопасно извлекаем данные, обрабатывая различные форматы
             const productName = item.product?.title || item.productName || 'Товар';
-            const productImage = item.product?.imageUrl || '';
+            
+            // Улучшенная логика получения изображения товара
+            let productImage = "";
+            
+            // Сначала пытаемся получить изображение из продукта
+            if (item.product?.imageUrl) {
+              productImage = item.product.imageUrl;
+            }
+            // Если есть цветовые варианты и выбран цвет, ищем соответствующее изображение
+            else if (item?.color && item.product?.colorVariants && Array.isArray(item.product.colorVariants)) {
+              const colorVariant = item.product.colorVariants.find(variant => 
+                variant.color && variant.color.toLowerCase() === item.color?.toLowerCase()
+              );
+              if (colorVariant?.imageUrl) {
+                productImage = colorVariant.imageUrl;
+              } else if (item.product?.imageUrl) {
+                productImage = item.product.imageUrl;
+              }
+            }
+            // Попытка получить изображение из дополнительных изображений
+            else if (item.product?.additionalImages && Array.isArray(item.product.additionalImages) && item.product.additionalImages.length > 0) {
+              productImage = item.product.additionalImages[0];
+            }
             
             // Get price from either direct property or from product object
             const itemPrice = typeof item.price === 'number' && item.price > 0
@@ -70,13 +97,18 @@ const OrderItemsDetails: React.FC<OrderItemsDetailsProps> = ({ items }) => {
                         />
                       </div>
                     )}
+                    {!productImage && (
+                      <div className="h-10 w-10 rounded overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <span className="text-xs text-gray-500">Нет фото</span>
+                      </div>
+                    )}
                     
                     <div>
                       <div className="font-medium">{productName}</div>
-                    <div className="text-xs space-x-2">
+                      <div className="text-xs space-x-2">
                         {item.color && <span>Цвет: {item.color}</span>}
                         {item.size && <span>Размер: {item.size}</span>}
-                      {item.articleNumber && <span>Артикул: {item.articleNumber}</span>}
+                        {item.articleNumber && <span>Артикул: {item.articleNumber}</span>}
                       </div>
                     </div>
                   </div>

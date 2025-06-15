@@ -53,7 +53,34 @@ const OrderItemTable: React.FC<OrderItemTableProps> = ({ items }) => {
               const price = itemPrice > 0 ? itemPrice : productPrice;
               
               const title = product?.title || item?.productName || "Товар";
-              const imageUrl = product?.imageUrl || "";
+              
+              // Улучшенная логика получения изображения товара
+              let imageUrl = "";
+              
+              // Сначала пытаемся получить изображение из продукта
+              if (product?.imageUrl) {
+                imageUrl = product.imageUrl;
+              }
+              // Если есть цветовые варианты и выбран цвет, ищем соответствующее изображение
+              else if (item?.color && product?.colorVariants && Array.isArray(product.colorVariants)) {
+                const colorVariant = product.colorVariants.find(variant => 
+                  variant.color && variant.color.toLowerCase() === item.color.toLowerCase()
+                );
+                if (colorVariant?.imageUrl) {
+                  imageUrl = colorVariant.imageUrl;
+                } else if (product?.imageUrl) {
+                  imageUrl = product.imageUrl;
+                }
+              }
+              // Попытка получить изображение из дополнительных изображений
+              else if (product?.additionalImages && Array.isArray(product.additionalImages) && product.additionalImages.length > 0) {
+                imageUrl = product.additionalImages[0];
+              }
+              // Fallback к основному изображению продукта
+              else if (product?.imageUrl) {
+                imageUrl = product.imageUrl;
+              }
+              
               const color = item?.color || null;
               const size = item?.size || null;
               const articleNumber = item?.articleNumber || product?.articleNumber || null;
