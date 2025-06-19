@@ -15,45 +15,56 @@ const StaticProductRedirect = () => {
       }
 
       try {
-        // Извлекаем slug из имени файла (product-{slug}.html -> {slug})
-        const match = filename.match(/^product-(.+)\.html$/);
-        if (!match) {
-          console.log('Invalid filename format:', filename);
-          setLoading(false);
-          return;
-        }
-
-        const slug = match[1];
-        console.log('Extracted slug:', slug);
-
-        // Сначала проверяем, является ли slug UUID'ом (для обратной совместимости)
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (uuidRegex.test(slug)) {
-          console.log('Direct UUID detected:', slug);
-          setProductId(slug);
-          setLoading(false);
-          return;
-        }
-
-        // Загружаем маппинг для поиска ID по slug'у
-        const response = await fetch('/product-mapping.json');
-        if (!response.ok) {
-          console.error('Failed to load product mapping');
-          setLoading(false);
-          return;
-        }
-
-        const mapping = await response.json();
-        console.log('Product mapping loaded:', mapping);
-
-        // Ищем продукт по slug'у
-        const foundProductId = Object.keys(mapping).find(id => mapping[id] === slug);
+        console.log('Processing filename:', filename);
         
-        if (foundProductId) {
-          console.log('Found product ID by slug:', foundProductId);
-          setProductId(foundProductId);
+        // Удаляем .html если есть
+        const cleanFilename = filename.replace(/\.html$/, '');
+        console.log('Clean filename:', cleanFilename);
+
+        // Проверяем, является ли это прямым UUID (для старых ссылок)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidRegex.test(cleanFilename)) {
+          console.log('Direct UUID detected:', cleanFilename);
+          setProductId(cleanFilename);
+          setLoading(false);
+          return;
+        }
+
+        // Пытаемся извлечь slug из формата product-{slug}
+        if (cleanFilename.startsWith('product-')) {
+          const slug = cleanFilename.substring('product-'.length);
+          console.log('Extracted slug from product- format:', slug);
+          
+          // Проверяем, не является ли slug UUID'ом
+          if (uuidRegex.test(slug)) {
+            console.log('Slug is UUID:', slug);
+            setProductId(slug);
+            setLoading(false);
+            return;
+          }
+
+          // Загружаем маппинг для поиска ID по slug'у
+          const response = await fetch('/product-mapping.json');
+          if (!response.ok) {
+            console.error('Failed to load product mapping');
+            setLoading(false);
+            return;
+          }
+
+          const mapping = await response.json();
+          console.log('Product mapping loaded:', mapping);
+
+          // Ищем продукт по slug'у
+          const foundProductId = Object.keys(mapping).find(id => mapping[id] === slug);
+          
+          if (foundProductId) {
+            console.log('Found product ID by slug:', foundProductId);
+            setProductId(foundProductId);
+          } else {
+            console.log('Product not found in mapping for slug:', slug);
+          }
         } else {
-          console.log('Product not found in mapping for slug:', slug);
+          console.log('Filename does not match expected patterns:', cleanFilename);
         }
       } catch (error) {
         console.error('Error loading product mapping:', error);
