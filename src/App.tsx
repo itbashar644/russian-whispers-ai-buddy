@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
@@ -10,6 +9,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
+import StaticProductRedirect from "./pages/StaticProductRedirect";
 import Cart from "./pages/Cart";
 import OrderSuccess from "./pages/OrderSuccess";
 import Account from "./pages/account/Account";
@@ -43,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: "product/:id",
         element: <ProductDetail />,
+      },
+      {
+        path: ":filename",
+        element: <StaticProductRedirect />,
       },
       {
         path: "cart",

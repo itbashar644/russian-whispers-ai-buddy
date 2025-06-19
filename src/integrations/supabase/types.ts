@@ -92,6 +92,145 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory: {
+        Row: {
+          category: string
+          current_stock: number | null
+          id: string
+          last_restocked: string | null
+          max_stock: number | null
+          min_stock: number | null
+          name: string
+          price: number
+          product_id: string
+          sku: string
+          status: string | null
+          supplier: string | null
+        }
+        Insert: {
+          category: string
+          current_stock?: number | null
+          id?: string
+          last_restocked?: string | null
+          max_stock?: number | null
+          min_stock?: number | null
+          name: string
+          price: number
+          product_id: string
+          sku: string
+          status?: string | null
+          supplier?: string | null
+        }
+        Update: {
+          category?: string
+          current_stock?: number | null
+          id?: string
+          last_restocked?: string | null
+          max_stock?: number | null
+          min_stock?: number | null
+          name?: string
+          price?: number
+          product_id?: string
+          sku?: string
+          status?: string | null
+          supplier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_history: {
+        Row: {
+          change_amount: number
+          change_type: string
+          id: string
+          new_stock: number
+          previous_stock: number
+          product_id: string
+          product_name: string
+          reason: string | null
+          sku: string
+          timestamp: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          change_amount: number
+          change_type: string
+          id?: string
+          new_stock: number
+          previous_stock: number
+          product_id: string
+          product_name: string
+          reason?: string | null
+          sku: string
+          timestamp?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          change_amount?: number
+          change_type?: string
+          id?: string
+          new_stock?: number
+          previous_stock?: number
+          product_id?: string
+          product_name?: string
+          reason?: string | null
+          sku?: string
+          timestamp?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_credentials: {
+        Row: {
+          api_key: string | null
+          client_id: string | null
+          created_at: string
+          id: number
+          marketplace: string
+          updated_at: string
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: number
+          marketplace: string
+          updated_at?: string
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: number
+          marketplace?: string
+          updated_at?: string
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           email: string
@@ -127,6 +266,7 @@ export type Database = {
           id: string
           items: Json
           order_number: number
+          source: string
           status: string
           total: number
           tracking_number: string | null
@@ -144,6 +284,7 @@ export type Database = {
           id: string
           items: Json
           order_number?: number
+          source?: string
           status?: string
           total: number
           tracking_number?: string | null
@@ -161,6 +302,7 @@ export type Database = {
           id?: string
           items?: Json
           order_number?: number
+          source?: string
           status?: string
           total?: number
           tracking_number?: string | null
@@ -201,6 +343,7 @@ export type Database = {
           updated_at: string
           video_type: string | null
           video_url: string | null
+          wildberries_sku: string | null
           wildberries_url: string | null
         }
         Insert: {
@@ -233,6 +376,7 @@ export type Database = {
           updated_at?: string
           video_type?: string | null
           video_url?: string | null
+          wildberries_sku?: string | null
           wildberries_url?: string | null
         }
         Update: {
@@ -265,6 +409,7 @@ export type Database = {
           updated_at?: string
           video_type?: string | null
           video_url?: string | null
+          wildberries_sku?: string | null
           wildberries_url?: string | null
         }
         Relationships: [
@@ -288,6 +433,7 @@ export type Database = {
           phone: string | null
           preferredcontactmethod: string | null
           savedaddresses: Json | null
+          status: Database["public"]["Enums"]["user_status"]
           telegramnickname: string | null
           updated_at: string | null
         }
@@ -301,6 +447,7 @@ export type Database = {
           phone?: string | null
           preferredcontactmethod?: string | null
           savedaddresses?: Json | null
+          status?: Database["public"]["Enums"]["user_status"]
           telegramnickname?: string | null
           updated_at?: string | null
         }
@@ -314,6 +461,7 @@ export type Database = {
           phone?: string | null
           preferredcontactmethod?: string | null
           savedaddresses?: Json | null
+          status?: Database["public"]["Enums"]["user_status"]
           telegramnickname?: string | null
           updated_at?: string | null
         }
@@ -343,6 +491,93 @@ export type Database = {
         }
         Relationships: []
       }
+      wildberries_products: {
+        Row: {
+          article: string | null
+          barcode: string | null
+          brand: string | null
+          category: string | null
+          characteristics: Json | null
+          color: string | null
+          created_at: string
+          description: string | null
+          discount_price: number | null
+          feedbacks_count: number | null
+          id: string
+          nm_id: number
+          photos: Json | null
+          price: number | null
+          rating: number | null
+          size: string | null
+          sku: string
+          status: string | null
+          stock_quantity: number | null
+          synced_at: string | null
+          tags: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+          videos: Json | null
+          warehouse_id: number | null
+        }
+        Insert: {
+          article?: string | null
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          characteristics?: Json | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          discount_price?: number | null
+          feedbacks_count?: number | null
+          id?: string
+          nm_id: number
+          photos?: Json | null
+          price?: number | null
+          rating?: number | null
+          size?: string | null
+          sku: string
+          status?: string | null
+          stock_quantity?: number | null
+          synced_at?: string | null
+          tags?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+          videos?: Json | null
+          warehouse_id?: number | null
+        }
+        Update: {
+          article?: string | null
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          characteristics?: Json | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          discount_price?: number | null
+          feedbacks_count?: number | null
+          id?: string
+          nm_id?: number
+          photos?: Json | null
+          price?: number | null
+          rating?: number | null
+          size?: string | null
+          sku?: string
+          status?: string | null
+          stock_quantity?: number | null
+          synced_at?: string | null
+          tags?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          videos?: Json | null
+          warehouse_id?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -362,6 +597,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "user"
+      user_status: "pending" | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -478,6 +714,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "user"],
+      user_status: ["pending", "approved"],
     },
   },
 } as const
