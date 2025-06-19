@@ -2,23 +2,13 @@
 {
   "rewrites": [
     {
-      "source": "/product/(.*)",
-      "destination": "/product-$1.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-    {
-  "rewrites": [
-    { "source": "/product/(.*)", "destination": "/product-$1.html" },
-    { "source": "/(.*)", "destination": "/index.html" }   // <- добавить после строки 7
-  ],
-  "routes": [
-    { "src": "/product/([^/]+)", "dest": "/product-$1.html", "status": 200 }
-  ]
-}
-
   ],
   "routes": [
     {
-      "src": "/product/([^/]+)",
+      "src": "/product-([^/]+)\\.html",
       "dest": "/product-$1.html",
       "status": 200
     }
