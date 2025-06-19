@@ -35,9 +35,25 @@ export const getActiveProducts = async (): Promise<Product[]> => {
  */
 export const getBestsellers = async (limit = 8): Promise<Product[]> => {
   await refreshCacheIfNeeded();
-  return getProductsCache()
-    .filter(product => product.isBestseller && !product.archived)
-    .slice(0, limit);
+  const allProducts = getProductsCache();
+  
+  console.log("Getting bestsellers from", allProducts.length, "total products");
+  
+  const bestsellers = allProducts.filter(product => {
+    const isBestseller = product.isBestseller === true;
+    const isNotArchived = !product.archived;
+    
+    if (isBestseller) {
+      console.log("Found bestseller:", product.title, "isBestseller:", product.isBestseller, "archived:", product.archived);
+    }
+    
+    return isBestseller && isNotArchived;
+  });
+  
+  console.log("Total bestsellers found:", bestsellers.length);
+  console.log("Bestsellers:", bestsellers.map(p => ({ title: p.title, isBestseller: p.isBestseller })));
+  
+  return bestsellers.slice(0, limit);
 };
 
 /**
@@ -45,9 +61,25 @@ export const getBestsellers = async (limit = 8): Promise<Product[]> => {
  */
 export const getNewProducts = async (limit = 8): Promise<Product[]> => {
   await refreshCacheIfNeeded();
-  return getProductsCache()
-    .filter(product => product.isNew && !product.archived)
-    .slice(0, limit);
+  const allProducts = getProductsCache();
+  
+  console.log("Getting new products from", allProducts.length, "total products");
+  
+  const newProducts = allProducts.filter(product => {
+    const isNew = product.isNew === true;
+    const isNotArchived = !product.archived;
+    
+    if (isNew) {
+      console.log("Found new product:", product.title, "isNew:", product.isNew, "archived:", product.archived);
+    }
+    
+    return isNew && isNotArchived;
+  });
+  
+  console.log("Total new products found:", newProducts.length);
+  console.log("New products:", newProducts.map(p => ({ title: p.title, isNew: p.isNew })));
+  
+  return newProducts.slice(0, limit);
 };
 
 /**
