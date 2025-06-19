@@ -37,21 +37,38 @@ export const getBestsellers = async (limit = 8): Promise<Product[]> => {
   await refreshCacheIfNeeded();
   const allProducts = getProductsCache();
   
+  console.log("=== BESTSELLERS DEBUG ===");
   console.log("Getting bestsellers from", allProducts.length, "total products");
+  
+  // Детальная диагностика каждого товара
+  allProducts.forEach(product => {
+    console.log(`Product "${product.title}":`, {
+      isBestseller: product.isBestseller,
+      isBestsellerType: typeof product.isBestseller,
+      archived: product.archived,
+      archivedType: typeof product.archived
+    });
+  });
   
   const bestsellers = allProducts.filter(product => {
     const isBestseller = product.isBestseller === true;
     const isNotArchived = !product.archived;
+    const result = isBestseller && isNotArchived;
     
     if (isBestseller) {
-      console.log("Found bestseller:", product.title, "isBestseller:", product.isBestseller, "archived:", product.archived);
+      console.log("Found bestseller:", product.title, "isBestseller:", product.isBestseller, "archived:", product.archived, "willBeIncluded:", result);
     }
     
-    return isBestseller && isNotArchived;
+    return result;
   });
   
   console.log("Total bestsellers found:", bestsellers.length);
-  console.log("Bestsellers:", bestsellers.map(p => ({ title: p.title, isBestseller: p.isBestseller })));
+  console.log("Bestsellers list:", bestsellers.map(p => ({ 
+    title: p.title, 
+    isBestseller: p.isBestseller,
+    archived: p.archived 
+  })));
+  console.log("=== END BESTSELLERS DEBUG ===");
   
   return bestsellers.slice(0, limit);
 };
@@ -63,21 +80,38 @@ export const getNewProducts = async (limit = 8): Promise<Product[]> => {
   await refreshCacheIfNeeded();
   const allProducts = getProductsCache();
   
+  console.log("=== NEW PRODUCTS DEBUG ===");
   console.log("Getting new products from", allProducts.length, "total products");
+  
+  // Детальная диагностика каждого товара
+  allProducts.forEach(product => {
+    console.log(`Product "${product.title}":`, {
+      isNew: product.isNew,
+      isNewType: typeof product.isNew,
+      archived: product.archived,
+      archivedType: typeof product.archived
+    });
+  });
   
   const newProducts = allProducts.filter(product => {
     const isNew = product.isNew === true;
     const isNotArchived = !product.archived;
+    const result = isNew && isNotArchived;
     
     if (isNew) {
-      console.log("Found new product:", product.title, "isNew:", product.isNew, "archived:", product.archived);
+      console.log("Found new product:", product.title, "isNew:", product.isNew, "archived:", product.archived, "willBeIncluded:", result);
     }
     
-    return isNew && isNotArchived;
+    return result;
   });
   
   console.log("Total new products found:", newProducts.length);
-  console.log("New products:", newProducts.map(p => ({ title: p.title, isNew: p.isNew })));
+  console.log("New products list:", newProducts.map(p => ({ 
+    title: p.title, 
+    isNew: p.isNew,
+    archived: p.archived 
+  })));
+  console.log("=== END NEW PRODUCTS DEBUG ===");
   
   return newProducts.slice(0, limit);
 };

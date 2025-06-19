@@ -3,7 +3,8 @@ import { Product } from "@/types/product";
 
 // Трансформация товара из формата Supabase в тип Product
 export const transformSupabaseToProduct = (supabaseProduct: any): Product => {
-  console.log("Transforming product from Supabase:", supabaseProduct.title, supabaseProduct);
+  console.log("Transforming product from Supabase:", supabaseProduct.title);
+  console.log("Raw Supabase data:", supabaseProduct);
   
   // Безопасное извлечение дополнительных изображений
   let additionalImages: string[] = [];
@@ -90,6 +91,10 @@ export const transformSupabaseToProduct = (supabaseProduct: any): Product => {
     }
   }
 
+  // Более строгая обработка булевых значений
+  const isBestseller = supabaseProduct.is_bestseller === true || supabaseProduct.is_bestseller === 'true' || supabaseProduct.is_bestseller === 1;
+  const isNew = supabaseProduct.is_new === true || supabaseProduct.is_new === 'true' || supabaseProduct.is_new === 1;
+
   const product: Product = {
     id: supabaseProduct.id,
     title: supabaseProduct.title || '',
@@ -107,8 +112,8 @@ export const transformSupabaseToProduct = (supabaseProduct: any): Product => {
     sizes: sizes,
     countryOfOrigin: supabaseProduct.country_of_origin || 'Россия',
     specifications: specifications,
-    isNew: Boolean(supabaseProduct.is_new),
-    isBestseller: Boolean(supabaseProduct.is_bestseller),
+    isNew: isNew,
+    isBestseller: isBestseller,
     articleNumber: supabaseProduct.article_number || undefined,
     barcode: supabaseProduct.barcode || undefined,
     ozonUrl: supabaseProduct.ozon_url || undefined,
@@ -124,9 +129,12 @@ export const transformSupabaseToProduct = (supabaseProduct: any): Product => {
   console.log("Transformed product:", {
     title: product.title,
     additionalImages: product.additionalImages,
+    additionalImagesCount: product.additionalImages?.length || 0,
     isNew: product.isNew,
     isBestseller: product.isBestseller,
-    colors: product.colors
+    colors: product.colors,
+    originalIsBestseller: supabaseProduct.is_bestseller,
+    originalIsNew: supabaseProduct.is_new
   });
 
   return product;
@@ -134,7 +142,7 @@ export const transformSupabaseToProduct = (supabaseProduct: any): Product => {
 
 // Трансформация товара из типа Product в формат для Supabase
 export const transformProductToSupabase = (product: Product): any => {
-  console.log("Transforming product to Supabase:", product.title, product);
+  console.log("Transforming product to Supabase:", product.title);
   
   const supabaseProduct = {
     id: product.id,
