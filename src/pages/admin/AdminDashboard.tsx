@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, Package, Users, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { products } from "@/data/products";
+import { getActiveProducts } from "@/data/products";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
-    totalProducts: products.length,
+    totalProducts: 0,
     totalOrders: 0,
     totalCustomers: 0,
     totalRevenue: 0
@@ -18,6 +18,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        // Get products count
+        const products = await getActiveProducts();
+        
         // Get orders that are not archived
         const { data: orders, error: ordersError } = await supabase
           .from('orders')
@@ -34,12 +37,13 @@ const AdminDashboard = () => {
         if (profilesError) throw profilesError;
         
         // Calculate stats
+        const totalProducts = products.length;
         const totalOrders = orders ? orders.length : 0;
         const totalCustomers = profiles ? profiles.length : 0;
         const totalRevenue = orders ? orders.reduce((sum, order) => sum + Number(order.total), 0) : 0;
         
         setStats({
-          totalProducts: products.length,
+          totalProducts,
           totalOrders,
           totalCustomers,
           totalRevenue
